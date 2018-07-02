@@ -125,12 +125,12 @@ public class DeviceConfigUtils {
         if (deviceConfigHasDuplicatedUnitType) {
             for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
                 if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
-                    return deviceUnitConfig.getLabel() + "_" + LabelProcessor.getFirstLabel(unitTemplateConfig.getLabel());
+                    return deviceUnitConfig.getLabel() + "_" + LabelProcessor.getBestMatch(unitTemplateConfig.getLabel());
                 }
             }
             throw new CouldNotPerformException("DeviceClass[" + deviceClass.getId() + "] does not contain UnitTemplateConfig[" + unitConfig.getUnitTemplateConfigId() + "]!");
         }
         // because device does not contain duplicated unit types, the device label can be used without any conflicts.
-        return LabelProcessor.getFirstLabel(deviceUnitConfig.getLabel());
+        return LabelProcessor.getBestMatch(deviceUnitConfig.getLabel());
     }
 }

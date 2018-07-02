@@ -48,7 +48,7 @@ public class DeviceClassRequiredFieldConsistencyHandler extends AbstractProtoBuf
 
         if (!entry.getMessage().hasLabel()) {
             try {
-                LabelProcessor.getFirstLabel(entry.getMessage().getLabel());
+                LabelProcessor.getBestMatch(entry.getMessage().getLabel());
             } catch (NotAvailableException ex) {
                 throw new InvalidStateException("DeviceClass is missing label");
             }

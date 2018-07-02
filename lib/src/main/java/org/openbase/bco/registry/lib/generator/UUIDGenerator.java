@@ -47,7 +47,7 @@ public class UUIDGenerator<M extends GeneratedMessage> implements IdGenerator<St
                 if (message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL) != null) {
                     if (message.hasField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL))) {
                         LabelType.Label label = (LabelType.Label) message.getField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL));
-                        return LabelProcessor.getFirstLabel(label) + ":" + UUID.randomUUID().toString();
+                        return LabelProcessor.getBestMatch(label) + ":" + UUID.randomUUID().toString();
                     }
                 }
             }

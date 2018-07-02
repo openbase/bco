@@ -69,7 +69,7 @@ public class BCORegistryPrinter {
 
         // prepare devices
         for (DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
-            maxUnitLabelLength = Math.max(maxUnitLabelLength, LabelProcessor.getFirstLabel(deviceClass.getLabel()).length());
+            maxUnitLabelLength = Math.max(maxUnitLabelLength, LabelProcessor.getBestMatch(deviceClass.getLabel()).length());
             deviceNumberByClassMap.put(deviceClass.getId(), 0);
         }
         for (UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
@@ -105,7 +105,7 @@ public class BCORegistryPrinter {
         List<DeviceClass> devicesList = Registries.getClassRegistry().getDeviceClasses();
         devicesList.sort(Comparator.comparing(deviceClass -> {
             try {
-                return LabelProcessor.getFirstLabel(deviceClass.getLabel());
+                return LabelProcessor.getBestMatch(deviceClass.getLabel());
             } catch (NotAvailableException ex) {
                 return deviceClass.getId();
             }
@@ -116,7 +116,7 @@ public class BCORegistryPrinter {
             if (deviceNumberByClassMap.get(deviceClass.getId()) == 0) {
                 continue;
             }
-            printEntry(LabelProcessor.getFirstLabel(deviceClass.getLabel()), deviceNumberByClassMap.get(deviceClass.getId()));
+            printEntry(LabelProcessor.getBestMatch(deviceClass.getLabel()), deviceNumberByClassMap.get(deviceClass.getId()));
         }
         System.out.println(LINE_DELIMITER_SMALL);
         System.out.println("");

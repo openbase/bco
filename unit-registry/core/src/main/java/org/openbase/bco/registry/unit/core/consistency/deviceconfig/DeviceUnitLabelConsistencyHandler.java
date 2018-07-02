@@ -76,7 +76,7 @@ public class DeviceUnitLabelConsistencyHandler extends DefaultUnitLabelConsisten
             }
 
             final DeviceClass deviceClass = deviceClassRegistry.get(unitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
-            return deviceClass.getCompany() + " " + LabelProcessor.getFirstLabel(deviceClass.getLabel()) + " " + super.generateDefaultLabel(unitConfig);
+            return deviceClass.getCompany() + " " + LabelProcessor.getBestMatch(deviceClass.getLabel()) + " " + super.generateDefaultLabel(unitConfig);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate unit label!", ex);
         }

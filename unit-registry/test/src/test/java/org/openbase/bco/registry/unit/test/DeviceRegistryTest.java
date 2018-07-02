@@ -82,8 +82,8 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         String company = "Fibaro";
 
         String deviceLabel = "TestSensor";
-        String deviceScope = "/" + LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getRootLocationConfig().getLabel()).toLowerCase() + "/" + "device" + "/" + deviceLabel.toLowerCase() + "/";
-        String expectedUnitScope = "/" + LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getRootLocationConfig().getLabel()).toLowerCase() + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + deviceLabel.toLowerCase() + "/";
+        String deviceScope = "/" + LabelProcessor.getBestMatch(Registries.getUnitRegistry().getRootLocationConfig().getLabel()).toLowerCase() + "/" + "device" + "/" + deviceLabel.toLowerCase() + "/";
+        String expectedUnitScope = "/" + LabelProcessor.getBestMatch(Registries.getUnitRegistry().getRootLocationConfig().getLabel()).toLowerCase() + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + deviceLabel.toLowerCase() + "/";
 
         // units are automatically added when a unit template config in the device class exists
         DeviceClass motionSensorClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("F_MotionSensor", productNumber, company, UnitType.BATTERY)).get();
@@ -116,9 +116,9 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
         assertEquals("The device label is not set as the id if it is empty!",
                 deviceClass.getCompany() + " " +
-                        LabelProcessor.getFirstLabel(deviceClass.getLabel()) + " " +
+                        LabelProcessor.getBestMatch(deviceClass.getLabel()) + " " +
                         deviceWithoutLabel.getAlias(0),
-                LabelProcessor.getFirstLabel(deviceWithoutLabel.getLabel()));
+                LabelProcessor.getBestMatch(deviceWithoutLabel.getLabel()));
     }
 
     /**
@@ -386,7 +386,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         LabelProcessor.addLabel(deviceBuilder.getLabelBuilder(), Locale.ENGLISH, label);
         device = Registries.getUnitRegistry().updateUnitConfig(deviceBuilder.build()).get().toBuilder();
         dalUnit = Registries.getUnitRegistry().getUnitConfigById(device.getDeviceConfig().getUnitId(0));
-        assertEquals(LabelProcessor.getFirstLabel(device.getLabel()), LabelProcessor.getFirstLabel(dalUnit.getLabel()));
+        assertEquals(LabelProcessor.getBestMatch(device.getLabel()), LabelProcessor.getBestMatch(dalUnit.getLabel()));
 
         deviceConfig = device.getDeviceConfigBuilder();
         inventoryState = deviceConfig.getInventoryStateBuilder();

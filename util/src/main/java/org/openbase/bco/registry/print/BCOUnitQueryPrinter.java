@@ -108,7 +108,7 @@ public class BCOUnitQueryPrinter {
             // print by containing label
             unitConfigs.clear();
             for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
-                if (LabelProcessor.getFirstLabel(unitConfig.getLabel()).toLowerCase().contains(args[0].toLowerCase())) {
+                if (LabelProcessor.getBestMatch(unitConfig.getLabel()).toLowerCase().contains(args[0].toLowerCase())) {
                     unitConfigs.add(unitConfig);
                 }
             }
@@ -234,7 +234,7 @@ public class BCOUnitQueryPrinter {
         int maxScopeLength = 0;
         int maxAliasLength = 0;
         for (final UnitConfig unitConfig : unitConfigList) {
-            maxUnitLabelLength = Math.max(maxUnitLabelLength, LabelProcessor.getFirstLabel(unitConfig.getLabel()).length());
+            maxUnitLabelLength = Math.max(maxUnitLabelLength, LabelProcessor.getBestMatch(unitConfig.getLabel()).length());
             maxLocationUnitLabelLength = Math.max(maxLocationUnitLabelLength, getLocationLabel(unitConfig).length());
             maxScopeLength = Math.max(maxScopeLength, ScopeGenerator.generateStringRep(unitConfig.getScope()).length());
             maxAliasLength = Math.max(maxAliasLength, Arrays.toString(unitConfig.getAliasList().toArray()).length());
@@ -251,7 +251,7 @@ public class BCOUnitQueryPrinter {
                 + "  "
                 + "[ " + StringProcessor.fillWithSpaces(generateStringRep(unitConfig.getAliasList()), maxAliasLength) + " ]"
                 + "  "
-                + StringProcessor.fillWithSpaces(LabelProcessor.getFirstLabel(unitConfig.getLabel()), maxUnitLabelLength, StringProcessor.Alignment.RIGHT)
+                + StringProcessor.fillWithSpaces(LabelProcessor.getBestMatch(unitConfig.getLabel()), maxUnitLabelLength, StringProcessor.Alignment.RIGHT)
                 + " @ " + StringProcessor.fillWithSpaces(getLocationLabel(unitConfig), maxLocationUnitLabelLength)
                 + "  "
                 + "[ " + StringProcessor.fillWithSpaces(ScopeGenerator.generateStringRep(unitConfig.getScope()), maxScopeLength) + " ]"
@@ -260,7 +260,7 @@ public class BCOUnitQueryPrinter {
 
     private static String getLocationLabel(final UnitConfig unitConfig) {
         try {
-            return LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel());
+            return LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel());
         } catch (CouldNotPerformException ex) {
             return "?";
         }

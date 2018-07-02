@@ -98,7 +98,7 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                 if(!dalUnitConfig.getPlacementConfig().hasLocationId() || dalUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
                     throw new NotAvailableException("dalUnitConfig.placementConfig.locationId");
                 }
-                String itemId = generateItemName(entry.getMessage(), LabelProcessor.getFirstLabel(deviceClass.getLabel()), dalUnitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(dalUnitConfig.getPlacementConfig().getLocationId()));
+                String itemId = generateItemName(entry.getMessage(), LabelProcessor.getBestMatch(deviceClass.getLabel()), dalUnitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(dalUnitConfig.getPlacementConfig().getLocationId()));
 
                 MetaConfig metaConfig;
 
@@ -149,7 +149,7 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(unit.getUnitType().toString())
                 + ITEM_SEGMENT_DELIMITER
-                + StringProcessor.transformToIdString(LabelProcessor.getFirstLabel(unit.getLabel()))
+                + StringProcessor.transformToIdString(LabelProcessor.getBestMatch(unit.getLabel()))
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(service.getServiceDescription().getServiceType().toString());
     }

@@ -59,7 +59,7 @@ public class ChildWithSameLabelConsistencyHandler extends AbstractProtoBufRegist
             if (labelConsistencyMap.containsKey(childLocationUnitConfig.getLabel()) && !labelConsistencyMap.get(childLocationUnitConfig.getLabel()).equals(childLocationId)) {
                 throw new InvalidStateException("Location [" + locationUnitConfig.getId() + "," + locationUnitConfig.getLabel() + "] has more than on child with the same label [" + childLocationUnitConfig.getLabel() + "]");
             } else {
-                labelConsistencyMap.put(LabelProcessor.getFirstLabel(childLocationUnitConfig.getLabel()), childLocationId);
+                labelConsistencyMap.put(LabelProcessor.getBestMatch(childLocationUnitConfig.getLabel()), childLocationId);
             }
         }
     }
