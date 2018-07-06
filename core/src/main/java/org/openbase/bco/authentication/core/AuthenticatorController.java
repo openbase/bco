@@ -21,58 +21,48 @@ package org.openbase.bco.authentication.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.PosixFilePermission;
-import java.security.KeyPair;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Future;
+
 import org.apache.commons.lang.RandomStringUtils;
-import javax.crypto.BadPaddingException;
-import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.iface.Launchable;
-import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.bco.authentication.lib.*;
+import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBLocalServer;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.WatchDog;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
-import org.openbase.bco.authentication.lib.AuthenticationService;
-import org.openbase.bco.authentication.lib.CredentialStore;
-import org.openbase.bco.authentication.lib.ExceptionReporter;
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
-import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
-import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.PermissionDeniedException;
-import org.openbase.jul.exception.RejectedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.domotic.authentication.TicketType.Ticket;
 
+import javax.crypto.BadPaddingException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.security.KeyPair;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.concurrent.Future;
+
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorController implements AuthenticationService, Launchable<Void>, VoidInitializable {

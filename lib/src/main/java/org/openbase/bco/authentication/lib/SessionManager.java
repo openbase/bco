@@ -21,22 +21,12 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.IOException;
-import java.security.KeyPair;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
-import javax.crypto.BadPaddingException;
+
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.PermissionDeniedException;
-import org.openbase.jul.exception.RejectedException;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
@@ -49,8 +39,17 @@ import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsCha
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
+import javax.crypto.BadPaddingException;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.security.KeyPair;
+import java.util.Base64;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
- *
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class SessionManager {
@@ -152,11 +151,11 @@ public class SessionManager {
      * TODO: Save Login data, if keepUserLoggedIn set to true
      * Perform a login for a given userId and password.
      *
-     * @param userId Identifier of the user
+     * @param userId       Identifier of the user
      * @param userPassword Password of the user
      * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing
      * both the ClientServerTicket and Authenticator
-     * @throws NotAvailableException If the entered clientId could not be found.
+     * @throws NotAvailableException    If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public synchronized boolean login(String userId, String userPassword) throws CouldNotPerformException, NotAvailableException {
@@ -177,7 +176,7 @@ public class SessionManager {
      * @param clientId Identifier of the user
      * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing
      * both the ClientServerTicket and Authenticator
-     * @throws NotAvailableException If the entered clientId could not be found.
+     * @throws NotAvailableException    If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public synchronized boolean login(String clientId) throws CouldNotPerformException, NotAvailableException {
@@ -189,7 +188,7 @@ public class SessionManager {
      * Perform a relog for the client registered in the store.
      *
      * @return Returns true if relog successful, appropriate exception otherwise
-     * @throws NotAvailableException If the entered clientId could not be found. Or if the clientId was not set in the beginning.
+     * @throws NotAvailableException    If the entered clientId could not be found. Or if the clientId was not set in the beginning.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public synchronized boolean relog() throws CouldNotPerformException, NotAvailableException {
@@ -214,10 +213,10 @@ public class SessionManager {
     /**
      * Perform a login for a given userId and password.
      *
-     * @param id Identifier of the user or client
+     * @param id  Identifier of the user or client
      * @param key Password or private key of the user or client
      * @return Returns true if login successful
-     * @throws NotAvailableException If the entered clientId could not be found.
+     * @throws NotAvailableException    If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     private boolean internalLogin(String id, byte[] key, boolean isUser) throws CouldNotPerformException, NotAvailableException {
@@ -283,7 +282,12 @@ public class SessionManager {
             TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userIdAtClientId).get();
 
             // handle KDC response on client side
-            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userIdAtClientId, userKey, clientKey, ticketSessionKeyWrapper);
+            List<Object> list;
+            try {
+                list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userIdAtClientId, userKey, clientKey, ticketSessionKeyWrapper);
+            } catch (BadPaddingException ex) {
+                throw new CouldNotPerformException("The password you have entered was wrong. Please try again!");
+            }
             TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             byte[] ticketGrantingServiceSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
@@ -502,7 +506,7 @@ public class SessionManager {
     /**
      * Changes the login credentials for a given user.
      *
-     * @param clientId ID of the user / client whose credentials should be changed.
+     * @param clientId       ID of the user / client whose credentials should be changed.
      * @param oldCredentials Old credentials, needed for verification.
      * @param newCredentials New credentials to be set.
      * @throws CouldNotPerformException In case of a communication error between client and server.
@@ -597,9 +601,9 @@ public class SessionManager {
     /**
      * Registers a user.
      *
-     * @param userId the id of the user
+     * @param userId   the id of the user
      * @param password the password of the user
-     * @param isAdmin flag if user should be an administrator
+     * @param isAdmin  flag if user should be an administrator
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public synchronized void registerUser(String userId, String password, boolean isAdmin) throws CouldNotPerformException {
@@ -613,9 +617,9 @@ public class SessionManager {
      * Overwrites duplicate entries on client, if entry to be registered does not exist on server.
      * Does not overwrite duplicate entries on client, if entry does exist on server.
      *
-     * @param userId the id of the user
+     * @param userId   the id of the user
      * @param password the password of the user
-     * @param isAdmin flag if user should be an administrator
+     * @param isAdmin  flag if user should be an administrator
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     private void internalRegister(String id, byte[] key, boolean isAdmin) throws CouldNotPerformException {
