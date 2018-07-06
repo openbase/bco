@@ -24,13 +24,17 @@ package org.openbase.bco.manager.device.test.remote.authentication;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.test.AbstractBCOTest;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
@@ -38,6 +42,7 @@ import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketType.Ticket;
@@ -61,6 +66,12 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
     public ColorableLightRemoteWithAuthenticationTest() {
         sessionManager = new SessionManager();
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Throwable {
+        JPService.registerProperty(JPAuthentication .class, true);
+        AbstractBCODeviceManagerTest.setUpClass();
     }
 
     @Before
