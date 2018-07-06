@@ -30,6 +30,8 @@ import io.socket.client.Socket;
 import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.user.UserRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
@@ -47,14 +49,15 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.state.UserTransitStateType.UserTransitState;
+import rst.domotic.state.UserTransitStateType.UserTransitState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -254,6 +257,31 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 LOGGER.info("Socket disconnected: " + objects[0].toString());
             }).on(Socket.EVENT_ERROR, objects -> {
                 LOGGER.info("Received error: " + objects[0]);
+            }).on("user transit", objects -> {
+                final String transit = (String) objects[0];
+                // TODO: convert this transit value to real transit
+                LOGGER.info("Received user transit " + transit);
+                final Ack ack = (Ack) objects[objects.length - 1];
+                try {
+                    State state = Enum.valueOf(State.class, transit);
+                    final UserRemote userRemote = Units.getUnit(bcoId, false, UserRemote.class);
+                    userRemote.setUserTransitState(UserTransitState.newBuilder().setValue(state).build()).get(3, TimeUnit.SECONDS);
+                    ack.call("SUCCESS");
+                } catch (InterruptedException ex) {
+                    ack.call("FAILED");
+                    Thread.currentThread().interrupt();
+                    ExceptionPrinter.printHistory(ex, LOGGER);
+                    // this should not happen since wait for data is not called
+                } catch (CouldNotPerformException | ExecutionException ex) {
+                    ack.call("FAILED");
+                    ExceptionPrinter.printHistory(ex, LOGGER);
+                } catch (TimeoutException ex) {
+                    ack.call("TIMEOUT");
+                    ExceptionPrinter.printHistory(ex, LOGGER);
+                } catch (IllegalArgumentException ex) {
+                    LOGGER.error("Could not resolve transit as enum value");
+                    ack.call("FAILED");
+                }
             });
         } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
