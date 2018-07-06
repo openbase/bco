@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.ActivityStateType.ActivityState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.PresenceStateType.PresenceState.State;
@@ -65,6 +66,9 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityMultiState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserTransitState.getDefaultInstance()));
     }
 
     public static final String NET_DEVICE_VARIABLE_IDENTIFIER = "NET_DEVICE";
@@ -173,11 +177,11 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    public List<ActivityState> getActivityStateList() throws NotAvailableException {
+    public ActivityMultiState getActivityMultiState() throws NotAvailableException {
         try {
-            return getData().getActivityStateList();
+            return getData().getActivityMultiState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user activity", ex);
+            throw new NotAvailableException("multi activity", ex);
         }
     }
 
@@ -186,16 +190,16 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         try {
             return getData().getUserTransitState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user presence state", ex);
+            throw new NotAvailableException("user transit state", ex);
         }
     }
 
     @Override
-    public Future<ActionFuture> addActivityState(final ActivityState activityState) throws CouldNotPerformException {
+    public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().addActivityState(activityState);
+            dataBuilder.getInternalBuilder().setActivityMultiState(activityMultiState);
         } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set activity to [" + activityState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not set activity to [" + activityMultiState + "] for " + this + "!", ex);
         }
         return CompletableFuture.completedFuture(null);
     }
