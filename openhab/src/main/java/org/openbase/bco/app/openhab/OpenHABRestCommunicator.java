@@ -10,12 +10,12 @@ package org.openbase.bco.app.openhab;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -32,6 +32,7 @@ import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
@@ -89,8 +90,9 @@ public class OpenHABRestCommunicator implements Shutdownable {
     private final Gson gson;
     private final JsonParser jsonParser;
 
-    private final Map<String, EventSourceObservableMapping> topicEventSourceMap;
-    private final SyncObject eventSourceLock = new SyncObject("EventSourceLock");
+    private final SyncObject topicObservableMapLock = new SyncObject("topicObservableMapLock");
+    private final Map<String, Observable<JsonObject>> topicObservableMap;
+    private SseEventSource sseEventSource;
 
     public OpenHABRestCommunicator() {
         final Client client = ClientBuilder.newClient();
@@ -99,16 +101,19 @@ public class OpenHABRestCommunicator implements Shutdownable {
         this.gson = new GsonBuilder().create();
         this.jsonParser = new JsonParser();
 
-        topicEventSourceMap = new HashMap<>();
+        this.topicObservableMap = new HashMap<>();
     }
 
     @Override
     public void shutdown() {
-        synchronized (eventSourceLock) {
-            for (EventSourceObservableMapping mapping : topicEventSourceMap.values()) {
-                mapping.getSseEventSource().close();
+        synchronized (topicObservableMapLock) {
+            for (final Observable<JsonObject> jsonObjectObservable : topicObservableMap.values()) {
+                jsonObjectObservable.shutdown();
             }
-            topicEventSourceMap.clear();
+            topicObservableMap.clear();
+            if (sseEventSource != null) {
+                sseEventSource.close();
+            }
         }
     }
 
@@ -116,29 +121,32 @@ public class OpenHABRestCommunicator implements Shutdownable {
         addSSEObserver(observer, "");
     }
 
-    public void addSSEObserver(Observer<JsonObject> observer, final String topicFilter) {
-        synchronized (eventSourceLock) {
-            if (topicEventSourceMap.containsKey(topicFilter)) {
-                topicEventSourceMap.get(topicFilter).addObserver(observer);
+    public void addSSEObserver(Observer<JsonObject> observer, final String topicRegex) {
+        synchronized (topicObservableMapLock) {
+            if (topicObservableMap.containsKey(topicRegex)) {
+                topicObservableMap.get(topicRegex).addObserver(observer);
                 return;
             }
 
-            final String path = (topicFilter.isEmpty()) ? "" : "?topics=" + topicFilter;
-            final WebTarget webTarget = baseWebTarget.path(path);
-            final SseEventSource sseEventSource = SseEventSource.target(webTarget).build();
-            final ObservableImpl<JsonObject> observable = new ObservableImpl<>();
-            topicEventSourceMap.put(topicFilter, new EventSourceObservableMapping(sseEventSource, observable));
+            if (sseEventSource == null) {
+                final WebTarget webTarget = baseWebTarget.path("events");
+                sseEventSource = SseEventSource.target(webTarget).build();
+                sseEventSource.open();
+            }
 
+            final ObservableImpl<JsonObject> observable = new ObservableImpl<>();
+            observable.addObserver(observer);
+            topicObservableMap.put(topicRegex, observable);
             sseEventSource.register(inboundSseEvent -> {
-                // parse payload as json
-                final JsonObject payload = jsonParser.parse(inboundSseEvent.readData()).getAsJsonObject();
                 try {
-                    observable.notifyObservers(payload);
+                    final JsonObject payload = jsonParser.parse(inboundSseEvent.readData()).getAsJsonObject();
+                    if (payload.get("topic").getAsString().matches(topicRegex)) {
+                        observable.notifyObservers(payload);
+                    }
                 } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify listeners on topic[" + topicFilter + "]", ex), LOGGER);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify listeners on topic[" + topicRegex + "]", ex), LOGGER);
                 }
             });
-            sseEventSource.open();
         }
     }
 
@@ -147,16 +155,9 @@ public class OpenHABRestCommunicator implements Shutdownable {
     }
 
     public void removeSSEObserver(Observer<JsonObject> observer, final String topicFilter) {
-        synchronized (eventSourceLock) {
-            if (topicEventSourceMap.containsKey(topicFilter)) {
-                final EventSourceObservableMapping mapping = topicEventSourceMap.get(topicFilter);
-                mapping.removeObserver(observer);
-
-                if (mapping.getObserverCount() == 0) {
-                    topicEventSourceMap.remove(topicFilter);
-
-                    mapping.getSseEventSource().close();
-                }
+        synchronized (topicObservableMapLock) {
+            if (topicObservableMap.containsKey(topicFilter)) {
+                topicObservableMap.get(topicFilter).removeObserver(observer);
             }
         }
     }
@@ -356,35 +357,6 @@ public class OpenHABRestCommunicator implements Shutdownable {
             return result;
         } else {
             throw new CouldNotPerformException("Response returned with errorCode[" + response.getStatus() + "] and error message[" + result + "]");
-        }
-    }
-
-    private static class EventSourceObservableMapping {
-        private final SseEventSource sseEventSource;
-        private final ObservableImpl<JsonObject> observable;
-        private int observerCount;
-
-        public EventSourceObservableMapping(final SseEventSource sseEventSource, ObservableImpl<JsonObject> objectObservable) {
-            this.sseEventSource = sseEventSource;
-            this.observable = objectObservable;
-        }
-
-        public void addObserver(final Observer<JsonObject> observer) {
-            this.observable.addObserver(observer);
-            this.observerCount++;
-        }
-
-        public void removeObserver(final Observer<JsonObject> observer) {
-            this.observable.removeObserver(observer);
-            this.observerCount--;
-        }
-
-        public int getObserverCount() {
-            return observerCount;
-        }
-
-        public SseEventSource getSseEventSource() {
-            return sseEventSource;
         }
     }
 }

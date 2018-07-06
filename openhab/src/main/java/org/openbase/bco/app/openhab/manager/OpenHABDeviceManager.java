@@ -24,6 +24,7 @@ package org.openbase.bco.app.openhab.manager;
 
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.manager.service.OpenHABServiceFactory;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.registry.remote.Registries;
@@ -32,6 +33,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +45,13 @@ import java.util.Map.Entry;
 
 public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable {
 
-    public static final String ITEM_STATE_TOPIC_FILTER = "/smarthome/items/*/state";
+    public static final String ITEM_STATE_TOPIC_FILTER = "smarthome/items/(.+)/state";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABDeviceManager.class);
 
     private final DeviceManagerController deviceManagerController;
     private final CommandExecutor commandExecutor;
-    private final Observer<Map<String, DeviceController>> synchronizationObserver;
+    private final Observer synchronizationObserver;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
         this.deviceManagerController = new DeviceManagerController(new OpenHABServiceFactory()) {
@@ -70,7 +72,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                 try {
                     commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue());
                 } catch (CouldNotPerformException ex) {
-                    LOGGER.warn("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "] because unit not available");
+                    LOGGER.warn("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "] because unit not available", ex);
                 }
             }
         });
@@ -83,14 +85,14 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        deviceManagerController.getDeviceControllerRegistry().addObserver(synchronizationObserver);
+        deviceManagerController.getUnitControllerRegistry().addObserver(synchronizationObserver);
         deviceManagerController.activate();
         OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        deviceManagerController.getDeviceControllerRegistry().removeObserver(synchronizationObserver);
+        deviceManagerController.getUnitControllerRegistry().removeObserver(synchronizationObserver);
         OpenHABRestCommunicator.getInstance().removeSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
         deviceManagerController.deactivate();
     }

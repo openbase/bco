@@ -10,12 +10,12 @@ package org.openbase.bco.app.openhab.manager;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -23,6 +23,7 @@ package org.openbase.bco.app.openhab.manager;
  */
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.protobuf.Message;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.manager.transform.CommandTransformer;
@@ -45,9 +46,11 @@ public class CommandExecutor implements Observer<JsonObject> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutor.class);
 
     private final UnitControllerRegistry<?, ?> unitControllerRegistry;
+    private final JsonParser jsonParser;
 
     public CommandExecutor(final UnitControllerRegistry unitControllerRegistry) {
         this.unitControllerRegistry = unitControllerRegistry;
+        this.jsonParser = new JsonParser();
     }
 
     @Override
@@ -58,7 +61,7 @@ public class CommandExecutor implements Observer<JsonObject> {
         final String itemName = topic.split(OpenHABRestCommunicator.TOPIC_SEPARATOR)[2];
 
         // extract payload
-        final String state = payload.get(PAYLOAD_KEY).getAsString();
+        final String state = jsonParser.parse(payload.get(PAYLOAD_KEY).getAsString()).getAsJsonObject().get("value").getAsString();
 
         try {
             applyStateUpdate(itemName, state);

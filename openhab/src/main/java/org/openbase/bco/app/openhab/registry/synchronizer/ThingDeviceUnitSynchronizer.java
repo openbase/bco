@@ -10,12 +10,12 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -101,7 +101,13 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
         //TODO: should this whole action be rolled back if one part fails?
         // get device class for thing
-        final DeviceClass deviceClass = getDeviceClassByThing(thingDTO);
+        DeviceClass deviceClass;
+        try {
+            deviceClass = getDeviceClassByThing(thingDTO);
+        } catch (NotAvailableException ex) {
+            logger.warn("Ignore thing[" + thingDTO.UID + "] because no matching device class found");
+            return;
+        }
 
         // create device for this class
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
@@ -293,7 +299,11 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
         }
     }
 
-    private DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
+    public static DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
+        return getDeviceClassByThing(thingDTO.thingTypeUID);
+    }
+
+    public static DeviceClass getDeviceClassByThing(final String thingTypeUID) throws CouldNotPerformException, InterruptedException {
         // iterate over all device classes
         for (final DeviceClass deviceClass : Registries.getClassRegistry(true).getDeviceClasses()) {
             // get the most global meta config
@@ -304,7 +314,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
                 // get the value for the openHAB thing class key
                 String thingUID = metaConfigPool.getValue(OPENHAB_THING_CLASS_KEY);
                 // if the uid starts with that return the according device class
-                if (thingDTO.UID.startsWith(thingUID)) {
+                if (thingTypeUID.equalsIgnoreCase(thingUID)) {
                     return deviceClass;
                 }
             } catch (NotAvailableException ex) {
@@ -312,7 +322,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
             }
         }
         // throw exception because device class could not be found
-        throw new NotAvailableException("DeviceClass for thing[" + thingDTO.UID + "]");
+        throw new NotAvailableException("DeviceClass for thing with type[" + thingTypeUID + "]");
 
         //TODO: this is a possible fallback solution which is only tested for the fibaro motion sensor: remove or keep?
 //        final String[] thingTypeUIDSplit = thingDTO.thingTypeUID.split(":");
