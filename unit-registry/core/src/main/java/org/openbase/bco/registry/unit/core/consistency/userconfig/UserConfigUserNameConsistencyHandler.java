@@ -10,19 +10,18 @@ package org.openbase.bco.registry.unit.core.consistency.userconfig;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.HashMap;
-import java.util.Map;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -31,11 +30,13 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UserConfigUserNameConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
@@ -52,13 +53,13 @@ public class UserConfigUserNameConsistencyHandler extends AbstractProtoBufRegist
         UserConfig userConfig = userUnitConfig.getUserConfig();
 
         if (!userConfig.hasUserName() || userConfig.getUserName().isEmpty()) {
-            throw new NotAvailableException("user.userName");
+            throw new NotAvailableException("user.username");
         }
 
-        if (!userMap.containsKey(userConfig.getUserName())) {
-            userMap.put(userConfig.getUserName(), userConfig);
+        if (!userMap.containsKey(userConfig.getUserName().toLowerCase())) {
+            userMap.put(userConfig.getUserName().toLowerCase(), userConfig);
         } else {
-            throw new InvalidStateException("User [" + userConfig + "] and user [" + userMap.get(userConfig.getUserName()) + "] are registered with the same user name!");
+            throw new InvalidStateException("User [" + userConfig + "] and user [" + userMap.get(userConfig.getUserName()) + "] are registered with the same user name (case is ignored)!");
         }
     }
 

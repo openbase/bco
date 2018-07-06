@@ -44,6 +44,8 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -57,7 +59,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
     private static final String ADMIN_USERNAME = "Admin";
     private static final String BCO_USERNAME = "BCO";
-    public static final String ADMIN_PASSWORD = ADMIN_USERNAME;
+    public static final String ADMIN_PASSWORD = "admin";
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserCreationPlugin.class);
 

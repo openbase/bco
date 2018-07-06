@@ -766,7 +766,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         List<UnitConfig> messages = getUnitConfigs(UnitType.USER);
 
         for (UnitConfig message : messages) {
-            if (message.getUserConfig().getUserName().equals(userName)) {
+            if (message.getUserConfig().getUserName().equalsIgnoreCase(userName)) {
                 return message.getId();
             }
         }
