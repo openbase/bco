@@ -41,6 +41,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import rst.domotic.unit.user.UserDataType.UserData;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -53,7 +54,7 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @author <a href="mailto:agatting@techfak.uni-bielefeld.de">Andreas Gatting</a>
  */
-public class Services extends ServiceStateProcessor {
+    public class Services extends ServiceStateProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Services.class);
 
@@ -70,7 +71,7 @@ public class Services extends ServiceStateProcessor {
         return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll(Service.SERVICE_LABEL, "");
     }
 
-    public static String getServicePrefix(final ServicePattern pattern) throws CouldNotPerformException {
+    public static String getServiceMethodPrefix(final ServicePattern pattern) throws CouldNotPerformException {
         switch (pattern) {
             case CONSUMER:
                 return "";
@@ -81,6 +82,16 @@ public class Services extends ServiceStateProcessor {
             default:
                 throw new NotSupportedException(pattern, Services.class);
         }
+    }
+
+    public static String getServiceMethodSuffix(final ServiceType serviceType) throws CouldNotPerformException {
+
+        // return list prefix for multi services
+        if (serviceType.name().startsWith(Service.MULTI_SERVICE_PREFIX)) {
+            return "List";
+        }
+
+        return "";
     }
 
     /**
@@ -234,13 +245,13 @@ public class Services extends ServiceStateProcessor {
     }
 
     public static Method detectServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
-        return detectServiceMethod(serviceType, getServicePrefix(servicePattern), serviceTempus, instanceClass, argumentClasses);
+        return detectServiceMethod(serviceType, getServiceMethodPrefix(servicePattern), serviceTempus, instanceClass, argumentClasses);
     }
 
-    public static Method detectServiceMethod(final ServiceType serviceType, final String methodPattern, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
+    public static Method detectServiceMethod(final ServiceType serviceType, final String serviceMethodPrefix, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         String messageName = "?";
         try {
-            messageName = methodPattern + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(serviceTempus.CURRENT.name(), ""));
+            messageName = serviceMethodPrefix + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(serviceTempus.CURRENT.name(), "") + getServiceMethodSuffix(serviceType));
             return instanceClass.getMethod(messageName, argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not detect service method[" + messageName + "]!", ex);

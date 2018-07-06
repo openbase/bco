@@ -48,6 +48,9 @@ public interface Service {
     Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();
     Package SERVICE_MODE_PACKAGE = OperationModeType.OperationMode.class.getPackage();
     String SERVICE_LABEL = Service.class.getSimpleName();
+    String MULTI_SERVICE_PREFIX = "MULTI";
+
+
     
     String RESPONSIBLE_ACTION_FIELD_NAME = "responsible_action";
 }

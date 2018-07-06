@@ -78,7 +78,7 @@ public class MultiActivityStateServicePanel extends AbstractServicePanel<MultiAc
     private void updateComboBoxModel() throws CouldNotPerformException {
         Object selected = activityComboBox.getModel().getSelectedItem();
 
-        List<ActivityConfigHolder> activityConfigHolderList = new ArrayList<>();
+        final List<ActivityConfigHolder> activityConfigHolderList = new ArrayList<>();
         for (ActivityConfig activityConfig : Registries.getActivityRegistry().getActivityConfigs()) {
             activityConfigHolderList.add(new ActivityConfigHolder(activityConfig));
         }
