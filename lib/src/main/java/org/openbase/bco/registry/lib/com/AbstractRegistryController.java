@@ -346,7 +346,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     private void waitForRemoteDependencies() throws CouldNotPerformException, InterruptedException {
         for (ProtoBufFileSynchronizedRegistry registry : this.registryList) {
-            logger.info(this + ": wait for remote dependencies of [" + registry + "]");
             registry.waitForRemoteDependencies();
         }
     }
