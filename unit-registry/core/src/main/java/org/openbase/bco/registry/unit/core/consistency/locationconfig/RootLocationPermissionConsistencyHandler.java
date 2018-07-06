@@ -41,9 +41,9 @@ import java.util.Map.Entry;
 
 /**
  * Consistency handler that verifies the following conditions for the root location permission:
- *  - other has always read permissions
- *  - the initial user is the owner of the location
- *  - the owner, the admin group and the bco group get all permissions
+ * - other has always read permissions
+ * - the initial user is the owner of the location
+ * - the owner, the admin group and the bco group get all permissions
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
@@ -72,6 +72,15 @@ public class RootLocationPermissionConsistencyHandler extends AbstractProtoBufRe
             if (!unitConfig.getPermissionConfig().getOtherPermission().getRead()) {
                 unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(true);
                 modification = true;
+            }
+        }
+
+        // the consistency handler can only apply the following changes if the needed authorization groups are already registered
+        if (!aliasIdMap.containsKey(UnitRegistry.ADMIN_USER_ALIAS) || !aliasIdMap.containsKey(UnitRegistry.BCO_GROUP_ALIAS)) {
+            if (modification) {
+                throw new EntryModification(entry.setMessage(unitConfig), this);
+            } else {
+                return;
             }
         }
 
