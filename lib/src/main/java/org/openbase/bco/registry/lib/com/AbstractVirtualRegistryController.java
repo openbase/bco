@@ -42,15 +42,16 @@ import org.openbase.jul.storage.registry.RegistryRemote;
  * @param <MB> The virtual registry message builder.
  * @param <RM> The message type of the real registry which is mirrored by this virtual registry.
  */
+@Deprecated
 public abstract class AbstractVirtualRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>, RM> extends AbstractRegistryController<M, MB> {
     
-    private final VirtualRegistrySynchronizer virtualRegistrySynchronizer;
-
-    /**
-     * These are the depending registries where this registry is based on.
-     */
-    private final List<RegistryRemote> registryRemoteList;
-
+//    private final VirtualRegistrySynchronizer virtualRegistrySynchronizer;
+//
+//    /**
+//     * These are the depending registries where this registry is based on.
+//     */
+//    private final List<RegistryRemote> registryRemoteList;
+//
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
      *
@@ -64,116 +65,116 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
      */
     public AbstractVirtualRegistryController(Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
         super(jpScopePropery, builder);
-        this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
-        this.registryRemoteList = new ArrayList<>();
+//        this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
+//        this.registryRemoteList = new ArrayList<>();
     }
-
-    /**
-     * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
-     *
-     * @param jpScopePropery the scope which is used for registry communication and data publishing.
-     * @param builder the builder to build the registry data message.
-     * @param filterSparselyRegistryData if this flag is true the registry data is only published if non of the internal registries is busy.
-     * @throws InstantiationException
-     */
-    public AbstractVirtualRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
-        super(jpScopePropery, builder, filterSparselyRegistryData);
-        this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
-        this.registryRemoteList = new ArrayList<>();
-    }
-    
-    @Override
-    protected void postInit() throws InitializationException, InterruptedException {
-        super.postInit(); //To change body of generated methods, choose Tools | Templates.
-
-        try {
-            try {
-                registerRegistryRemotes();
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not register all registry remotes!", ex);
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-    
-    @Override
-    protected void registerConsistencyHandler() throws CouldNotPerformException {
-        // not needed for virtual registries.
-    }
-    
-    @Override
-    protected void registerDependencies() throws CouldNotPerformException {
-        // not needed for virtual registries.
-    }
-    
-    @Override
-    protected void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
-        // not needed for virtual registries.
-    }
-    
-    @Override
-    protected void registerRegistries() throws CouldNotPerformException {
-        // not needed for virtual registries.
-    }
-    
-    @Override
-    protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
-        // not needed for virtual registries.
-    }
-    
-    @Override
-    protected void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
-        /* The order here is important!
-         * If the VirtualRegistrySynchronizer would be registered first the data type would be notified while the remote registries
-         * have not synced. This way getter for the VirtualRegistryController would not contain the updated values when called within an observer. */
-        super.activateRemoteRegistries();
-        getRegistryRemotes().forEach((registryRemote) -> {
-            registryRemote.addDataObserver(virtualRegistrySynchronizer);
-            // perform initial sync if data already available
-            if (registryRemote.isDataAvailable()) {
-                try {
-                    virtualRegistrySynchronizer.update(null, (RM) registryRemote.getData());
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Initial sync of [" + this + "] failed", ex), logger, LogLevel.WARN);
-                }
-            }
-        });
-    }
-    
-    @Override
-    protected void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
-        getRegistryRemotes().forEach((registryRemote) -> {
-            registryRemote.removeDataObserver(virtualRegistrySynchronizer);
-        });
-        super.deactivateRemoteRegistries();
-    }
-    
-    protected void registerRegistryRemote(final RegistryRemote registry) {
-        registryRemoteList.add(registry);
-    }
-    
-    protected List<RegistryRemote> getRegistryRemotes() {
-        return registryRemoteList;
-    }
-    
-    protected abstract void registerRegistryRemotes() throws CouldNotPerformException;
-    
-    protected abstract void syncVirtualRegistryFields(final MB virtualDataBuilder, final RM realData) throws CouldNotPerformException;
-    
-    class VirtualRegistrySynchronizer implements Observer<RM> {
-        
-        @Override
-        public void update(Observable<RM> source, RM realData) throws CouldNotPerformException {
-            try {
-                try (ClosableDataBuilder<MB> dataBuilder = getDataBuilder(this)) {
-                    syncVirtualRegistryFields(dataBuilder.getInternalBuilder(), realData);
-                } catch (Exception ex) {
-                    throw new CouldNotPerformException("Could not apply data change!", ex);
-                }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not sync virtual registry!", ex, logger);
-            }
-        }
-    }
+//
+//    /**
+//     * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
+//     *
+//     * @param jpScopePropery the scope which is used for registry communication and data publishing.
+//     * @param builder the builder to build the registry data message.
+//     * @param filterSparselyRegistryData if this flag is true the registry data is only published if non of the internal registries is busy.
+//     * @throws InstantiationException
+//     */
+//    public AbstractVirtualRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
+//        super(jpScopePropery, builder, filterSparselyRegistryData);
+//        this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
+//        this.registryRemoteList = new ArrayList<>();
+//    }
+//
+//    @Override
+//    protected void postInit() throws InitializationException, InterruptedException {
+//        super.postInit(); //To change body of generated methods, choose Tools | Templates.
+//
+//        try {
+//            try {
+//                registerRegistryRemotes();
+//            } catch (CouldNotPerformException ex) {
+//                throw new CouldNotPerformException("Could not register all registry remotes!", ex);
+//            }
+//        } catch (CouldNotPerformException ex) {
+//            throw new InitializationException(this, ex);
+//        }
+//    }
+//
+//    @Override
+//    protected void registerConsistencyHandler() throws CouldNotPerformException {
+//        // not needed for virtual registries.
+//    }
+//
+//    @Override
+//    protected void registerDependencies() throws CouldNotPerformException {
+//        // not needed for virtual registries.
+//    }
+//
+//    @Override
+//    protected void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
+//        // not needed for virtual registries.
+//    }
+//
+//    @Override
+//    protected void registerRegistries() throws CouldNotPerformException {
+//        // not needed for virtual registries.
+//    }
+//
+//    @Override
+//    protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
+//        // not needed for virtual registries.
+//    }
+//
+//    @Override
+//    protected void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
+//        /* The order here is important!
+//         * If the VirtualRegistrySynchronizer would be registered first the data type would be notified while the remote registries
+//         * have not synced. This way getter for the VirtualRegistryController would not contain the updated values when called within an observer. */
+//        super.activateRemoteRegistries();
+//        getRegistryRemotes().forEach((registryRemote) -> {
+//            registryRemote.addDataObserver(virtualRegistrySynchronizer);
+//            // perform initial sync if data already available
+//            if (registryRemote.isDataAvailable()) {
+//                try {
+//                    virtualRegistrySynchronizer.update(null, (RM) registryRemote.getData());
+//                } catch (CouldNotPerformException ex) {
+//                    ExceptionPrinter.printHistory(new CouldNotPerformException("Initial sync of [" + this + "] failed", ex), logger, LogLevel.WARN);
+//                }
+//            }
+//        });
+//    }
+//
+//    @Override
+//    protected void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
+//        getRegistryRemotes().forEach((registryRemote) -> {
+//            registryRemote.removeDataObserver(virtualRegistrySynchronizer);
+//        });
+//        super.deactivateRemoteRegistries();
+//    }
+//
+//    protected void registerRegistryRemote(final RegistryRemote registry) {
+//        registryRemoteList.add(registry);
+//    }
+//
+//    protected List<RegistryRemote> getRegistryRemotes() {
+//        return registryRemoteList;
+//    }
+//
+//    protected abstract void registerRegistryRemotes() throws CouldNotPerformException;
+//
+//    protected abstract void syncVirtualRegistryFields(final MB virtualDataBuilder, final RM realData) throws CouldNotPerformException;
+//
+//    class VirtualRegistrySynchronizer implements Observer<RM> {
+//
+//        @Override
+//        public void update(Observable<RM> source, RM realData) throws CouldNotPerformException {
+//            try {
+//                try (ClosableDataBuilder<MB> dataBuilder = getDataBuilder(this)) {
+//                    syncVirtualRegistryFields(dataBuilder.getInternalBuilder(), realData);
+//                } catch (Exception ex) {
+//                    throw new CouldNotPerformException("Could not apply data change!", ex);
+//                }
+//            } catch (CouldNotPerformException ex) {
+//                ExceptionPrinter.printHistory("Could not sync virtual registry!", ex, logger);
+//            }
+//        }
+//    }
 }
