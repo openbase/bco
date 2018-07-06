@@ -23,9 +23,13 @@ package org.openbase.bco.dal.visual;
  */
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.ImageIcon;
+
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -170,6 +174,12 @@ public class DalVisualRemote extends javax.swing.JFrame {
         JPService.registerProperty(JPAuthentication.class);
         JPService.parseAndExitOnError(args);
 
+
+        try {
+            SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), "admin");
+        } catch (CouldNotPerformException e) {
+            e.printStackTrace();
+        }
 
         /* Create and display the form */
         java.awt.EventQueue.invokeAndWait(() -> {

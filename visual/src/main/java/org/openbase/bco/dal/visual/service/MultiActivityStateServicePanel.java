@@ -78,6 +78,11 @@ public class MultiActivityStateServicePanel extends AbstractServicePanel<MultiAc
     private void updateComboBoxModel() throws CouldNotPerformException {
         Object selected = activityComboBox.getModel().getSelectedItem();
 
+        // if selection is invalid reset it
+        if (!(selected instanceof ActivityConfigHolder)) {
+            selected = null;
+        }
+
         final List<ActivityConfigHolder> activityConfigHolderList = new ArrayList<>();
         for (ActivityConfig activityConfig : Registries.getActivityRegistry().getActivityConfigs()) {
             activityConfigHolderList.add(new ActivityConfigHolder(activityConfig));
@@ -165,19 +170,16 @@ public class MultiActivityStateServicePanel extends AbstractServicePanel<MultiAc
     protected void updateDynamicComponents() {
         try {
             String activityList = "";
-            for (final ActivityState activityState : getProviderService().getActivityStateList()) {
+            for (final String activityId : getProviderService().getActivityMultiState().getActivityIdList()) {
 
-                if (activityState.hasActivityId() && !activityState.getActivityId().isEmpty()) {
-
-                    if (!activityList.isEmpty()) {
-                        activityList += ", ";
-                    }
-
-                    ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityState.getActivityId());
-                    logger.info("state: " + activityConfig.getLabel());
-//                    activityComboBox.getModel().setSelectedItem(new ActivityConfigHolder(activityConfig));
-                    activityList += LabelProcessor.getBestMatch(activityConfig.getLabel());
+                if (!activityList.isEmpty()) {
+                    activityList += ", ";
                 }
+
+                ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityId);
+                logger.info("state: " + activityConfig.getLabel());
+//                    activityComboBox.getModel().setSelectedItem(new ActivityConfigHolder(activityConfig));
+                activityList += LabelProcessor.getBestMatch(activityConfig.getLabel());
             }
             activityStateLabel.setText("Current Activities = " + activityList);
         } catch (CouldNotPerformException ex) {

@@ -22,13 +22,18 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * #L%
  */
 
+import com.google.protobuf.ProtocolStringList;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivityStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.MultiActivityStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.ActivityStateType.ActivityState;
+import rst.domotic.unit.user.UserDataType.UserData;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 
 /**
@@ -36,8 +41,27 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface MultiActivityStateOperationService extends OperationService, MultiActivityStateProviderService {
-    
-    @RPCMethod
-    Future<ActionFuture> addActivityState(final ActivityState activityState) throws CouldNotPerformException;
 
+    @RPCMethod
+    Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException;
+
+    @RPCMethod
+    default Future<ActionFuture> removeActivityState(final ActivityState activityState) throws CouldNotPerformException{
+        final ActivityMultiState.Builder activityMultiStateBuilder = getActivityMultiState().toBuilder();
+        final ArrayList<String> activityIdList = new ArrayList<>(activityMultiStateBuilder.getActivityIdList());
+        activityIdList.remove(activityState);
+        activityMultiStateBuilder.clearActivityId();
+        activityMultiStateBuilder.addAllActivityId(activityIdList);
+        return setActivityMultiState(activityMultiStateBuilder.build());
+    }
+
+    @RPCMethod
+    default Future<ActionFuture> addActivityState(final ActivityState activityState) throws CouldNotPerformException {
+        final ActivityMultiState.Builder activityMultiStateBuilder = getActivityMultiState().toBuilder();
+        final ArrayList<String> activityIdList = new ArrayList<>(activityMultiStateBuilder.getActivityIdList());
+        activityIdList.remove(activityState);
+        activityMultiStateBuilder.clearActivityId();
+        activityMultiStateBuilder.addAllActivityId(activityIdList);
+        return setActivityMultiState(activityMultiStateBuilder.build());
+    }
 }

@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.unit.user;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -37,6 +38,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.ActivityStateType.ActivityState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
@@ -50,9 +52,8 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityMultiState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserTransitState.getDefaultInstance()));
     }
 
@@ -61,9 +62,9 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public List<ActivityState> getActivityStateList() throws NotAvailableException {
+    public ActivityMultiState getActivityMultiState() throws NotAvailableException {
         try {
-            return getData().getActivityStateList();
+            return getData().getActivityMultiState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user activity", ex);
         }
@@ -79,17 +80,17 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public Future<ActionFuture> addActivityState(final ActivityState activityState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityState, ServiceType.MULTI_ACTIVITY_STATE_SERVICE,this));
+    public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE,this));
     }
 
     @Override
-    public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
+    public Future<ActionFuture> setUserTransitState(final UserTransitState userTransitState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
+    public Future<ActionFuture> setPresenceState(final PresenceState presenceState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
     }
 

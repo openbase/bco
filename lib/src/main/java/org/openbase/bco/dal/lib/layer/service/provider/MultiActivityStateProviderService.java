@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.ActivityStateType.ActivityState;
 
 import java.util.List;
@@ -35,5 +36,5 @@ import java.util.List;
 public interface MultiActivityStateProviderService extends ProviderService{
     
     @RPCMethod
-    public List<ActivityState> getActivityStateList() throws NotAvailableException;
+    ActivityMultiState getActivityMultiState() throws NotAvailableException;
 }
