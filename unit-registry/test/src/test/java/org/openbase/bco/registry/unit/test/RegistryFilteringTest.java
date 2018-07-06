@@ -23,11 +23,14 @@ package org.openbase.bco.registry.unit.test;
  */
 
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -35,6 +38,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -44,6 +48,12 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class RegistryFilteringTest extends AbstractBCORegistryTest {
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        AbstractBCORegistryTest.setUpClass();
+        JPService.registerProperty(JPAuthentication.class, true);
+    }
 
 
     @After
