@@ -198,7 +198,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         // post init loads registries
         super.postInit();
 
-        // fill in alias id map
+        // initially fill the alias to id map
+        // afterwards the {@code AliasMapUpdatePlugin} will manage changes on registering, removing or updating of units
         synchronized (aliasIdMapLock) {
             try {
                 for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
@@ -336,8 +337,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
-        CachedTemplateRegistryRemote.getRegistry().waitUntilReady();
-        CachedClassRegistryRemote.getRegistry().waitUntilReady();
+        // the AliasMapUpdatePlugin has to be registered first to apply changes done by the following plugins
+        for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
+            registry.registerPlugin(new AliasMapUpdatePlugin(aliasIdMap, aliasIdMapLock));
+        }
 
         locationUnitConfigRegistry.registerPlugin(new RootLocationPlugin());
         try {
@@ -365,10 +368,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         agentUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         authorizationGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
-
-        for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
-            registry.registerPlugin(new AliasMapUpdatePlugin(aliasIdMap, aliasIdMapLock));
-        }
     }
 
     /**

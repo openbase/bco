@@ -32,6 +32,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 
@@ -152,11 +153,10 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
      */
     @Override
     public Future<Void> waitUntilReadyFuture() {
-        try {
-            return RPCHelper.callRemoteMethod(this, Void.class);
-        } catch (final CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(null, ex);
-        }
+        return GlobalCachedExecutorService.submit(() -> {
+            waitUntilReady();
+            return null;
+        });
     }
 
     /**
