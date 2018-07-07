@@ -23,8 +23,8 @@ package org.openbase.bco.dal.visual.service;
  */
 
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
-import org.openbase.bco.dal.lib.layer.service.operation.MultiActivityStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.MultiActivityStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.ActivityMultiStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.ActivityMultiStateProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class MultiActivityStateServicePanel extends AbstractServicePanel<MultiActivityStateProviderService, ConsumerService, MultiActivityStateOperationService> {
+public class ActivityMultiStateServicePanel extends AbstractServicePanel<ActivityMultiStateProviderService, ConsumerService, ActivityMultiStateOperationService> {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox activityComboBox;
@@ -55,7 +55,7 @@ public class MultiActivityStateServicePanel extends AbstractServicePanel<MultiAc
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public MultiActivityStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
+    public ActivityMultiStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
         initDynamicComponents();
     }

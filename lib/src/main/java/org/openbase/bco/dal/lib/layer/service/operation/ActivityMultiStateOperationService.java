@@ -22,25 +22,21 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * #L%
  */
 
-import com.google.protobuf.ProtocolStringList;
-import org.openbase.bco.dal.lib.layer.service.provider.ActivityStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.MultiActivityStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ActivityMultiStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.ActivityStateType.ActivityState;
-import rst.domotic.unit.user.UserDataType.UserData;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Future;
 
 /**
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface MultiActivityStateOperationService extends OperationService, MultiActivityStateProviderService {
+public interface ActivityMultiStateOperationService extends OperationService, ActivityMultiStateProviderService {
 
     @RPCMethod
     Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException;
