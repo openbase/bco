@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * Converter that changes following service types:
  * <ul>
- *     <li>USER_ACTIVITY_STATE_SERVICE to MULTI_ACTIVITY_STATE_SERVICE</li>
+ *     <li>USER_ACTIVITY_STATE_SERVICE to ACTIVITY_MULTI_STATE_SERVICE</li>
  *     <li>USER_PRESENCE_STATE_SERVICE to USER_TRANSIT_STATE_SERVICE</li>
  * </ul>
  */
@@ -42,7 +42,7 @@ public class ServiceTemplate_0_To_1_DBConverter extends AbstractDBVersionConvert
     public static final String TYPE_FIELD_NAME = "type";
 
     public static final String USER_ACTIVITY_STATE = "USER_ACTIVITY_STATE_SERVICE";
-    public static final String MULTI_ACTIVITY_STATE = "MULTI_ACTIVITY_STATE_SERVICE";
+    public static final String ACTIVITY_MULTI_STATE = "ACTIVITY_MULTI_STATE_SERVICE";
 
     public static final String USER_PRESENCE_STATE = "USER_PRESENCE_STATE_SERVICE";
     public static final String USER_TRANSIT_STATE = "USER_TRANSIT_STATE_SERVICE";
@@ -56,7 +56,7 @@ public class ServiceTemplate_0_To_1_DBConverter extends AbstractDBVersionConvert
         if (outdatedDBEntry.has(TYPE_FIELD_NAME)) {
             String serviceType = outdatedDBEntry.get(TYPE_FIELD_NAME).getAsString();
             if (serviceType.equals(USER_ACTIVITY_STATE)) {
-                outdatedDBEntry.addProperty(TYPE_FIELD_NAME, MULTI_ACTIVITY_STATE);
+                outdatedDBEntry.addProperty(TYPE_FIELD_NAME, ACTIVITY_MULTI_STATE);
             }
 
             if(serviceType.equals(USER_PRESENCE_STATE)) {
