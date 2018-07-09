@@ -157,9 +157,8 @@ public class ActivityMultiStateServicePanel extends AbstractServicePanel<Activit
         }
 
         ActivityConfigHolder selectedActivity = (ActivityConfigHolder) selected;
-        ActivityState activityState = ActivityState.newBuilder().setActivityId(selectedActivity.getActivityConfig().getId()).build();
         try {
-            notifyActionProcessing(getOperationService().addActivityState(activityState));
+            notifyActionProcessing(getOperationService().addActivityState(selectedActivity.getActivityConfig().getId()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set user activity state!", ex), logger);
         }

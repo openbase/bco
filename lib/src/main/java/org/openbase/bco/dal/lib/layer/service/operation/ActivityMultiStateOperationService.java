@@ -42,22 +42,23 @@ public interface ActivityMultiStateOperationService extends OperationService, Ac
     Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException;
 
     @RPCMethod
-    default Future<ActionFuture> removeActivityState(final ActivityState activityState) throws CouldNotPerformException{
+    default Future<ActionFuture> removeActivityState(final String activityId) throws CouldNotPerformException {
         final ActivityMultiState.Builder activityMultiStateBuilder = getActivityMultiState().toBuilder();
         final ArrayList<String> activityIdList = new ArrayList<>(activityMultiStateBuilder.getActivityIdList());
-        activityIdList.remove(activityState);
+        activityIdList.remove(activityId);
         activityMultiStateBuilder.clearActivityId();
         activityMultiStateBuilder.addAllActivityId(activityIdList);
         return setActivityMultiState(activityMultiStateBuilder.build());
     }
 
     @RPCMethod
-    default Future<ActionFuture> addActivityState(final ActivityState activityState) throws CouldNotPerformException {
+    default Future<ActionFuture> addActivityState(final String activityId) throws CouldNotPerformException {
         final ActivityMultiState.Builder activityMultiStateBuilder = getActivityMultiState().toBuilder();
         final ArrayList<String> activityIdList = new ArrayList<>(activityMultiStateBuilder.getActivityIdList());
-        activityIdList.remove(activityState);
+        activityIdList.add(activityId);
         activityMultiStateBuilder.clearActivityId();
         activityMultiStateBuilder.addAllActivityId(activityIdList);
+        System.out.println();
         return setActivityMultiState(activityMultiStateBuilder.build());
     }
 }
