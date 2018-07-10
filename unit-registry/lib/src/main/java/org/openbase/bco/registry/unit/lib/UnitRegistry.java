@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.lib;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 
+import com.google.protobuf.ByteString;
 import org.apache.commons.math3.geometry.euclidean.twod.PolygonsSet;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
@@ -44,6 +45,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
@@ -1243,6 +1245,40 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         }
         return appConfigs;
     }
+
+    /**
+     * Request an authorization token. This methods validates that the user defined in the token by his id has all
+     * the permissions necessary to create the token. If the authorizationToken is valid it is encrypted with
+     * the service server secret key and the resulting byte string returned. The byte string can be distributed to
+     * other components which allows them to execute actions in the users name with permissions as defined in the
+     * token.
+     * <p>
+     * NOTE: This method is not annotated as an RPCMethod on purpose. Tokens can only be requested when authenticated.
+     * Else the token cannot be verified and encrypted which means everybody listening could use it.
+     *
+     * @param authorizationToken the authorizationToken which is verified an encrypted
+     * @return a future of a task that verifies and encrypts the token
+     * @throws CouldNotPerformException if the task cannot be created
+     */
+    Future<ByteString> requestAuthorizationToken(final AuthorizationToken authorizationToken) throws CouldNotPerformException;
+
+    /**
+     * Request an authorization token while being authenticated. The ticket in the authenticated value is used
+     * to authenticate the user and the value has to be an authorizationToken encrypted with the session key.
+     * The user id in the authorization id verified to be the one of the authenticated user. If the id is not set
+     * id will be set to the one of the authenticated user. Afterwards {@link #requestAuthorizationToken(AuthorizationToken)}
+     * is called internally to verify the permissions of the token and to encrypt it with the service server secret key.
+     * The encrypted token will then be converted to a string using Base64, encrypted again using the session key
+     * and set as the value of the AuthenticatedValue.
+     *
+     * @param authenticatedValue The authenticated value for the request containing a valid ticket and an authorizationToken encrypted
+     *                           with the session key.
+     * @return The future of a task that creates an authenticated value containing an updated ticket and the token encoded via Base64
+     * and encrypted with the session key.
+     * @throws CouldNotPerformException if the task cannot be created
+     */
+    @RPCMethod
+    Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
 //    Not yet implemented so temporally removed from interface
 //

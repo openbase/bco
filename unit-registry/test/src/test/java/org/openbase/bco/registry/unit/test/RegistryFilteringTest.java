@@ -22,9 +22,12 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
+import com.google.protobuf.ByteString;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.remote.Registries;
@@ -34,11 +37,12 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
-import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -162,5 +166,25 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         } catch (NotAvailableException ex) {
             assertTrue("Unit configuration cannot be seen even though other has read and access permissions on its location", false);
         }
+    }
+
+    @Test(timeout = 10000)
+    public void testRequestingAuthorizationToken() throws Exception {
+        final String adminUserId = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId();
+        SessionManager.getInstance().login(adminUserId, UserCreationPlugin.ADMIN_PASSWORD);
+
+        final AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder();
+        authorizationToken.setUserId(adminUserId);
+        AuthorizationToken.MapFieldEntry.Builder locationEntry = authorizationToken.addPermissionRuleBuilder();
+        locationEntry.setKey(Registries.getUnitRegistry().getRootLocationConfig().getId());
+        locationEntry.getValueBuilder().setRead(true).setAccess(true).setWrite(false);
+        AuthorizationToken.MapFieldEntry.Builder serviceEntry = authorizationToken.addPermissionRuleBuilder();
+        serviceEntry.setKey(Registries.getTemplateRegistry().getServiceTemplateByType(ServiceType.POWER_STATE_SERVICE).getId());
+        serviceEntry.getValueBuilder().setWrite(true).setRead(true).setAccess(true);
+
+        final ByteString token = Registries.getUnitRegistry().requestAuthorizationToken(authorizationToken.build()).get();
+        final AuthorizationToken decrypted = EncryptionHelper.decryptSymmetric(token, AuthenticatedServerManager.getInstance().getServiceServerSecretKey(), AuthorizationToken.class);
+
+        assertEquals("Returned authorization token does not match", authorizationToken.build(), decrypted);
     }
 }

@@ -22,9 +22,12 @@ package org.openbase.bco.registry.unit.core;
  * #L%
  */
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
@@ -74,6 +77,8 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.MapFieldEntry;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -95,9 +100,13 @@ import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.spatial.ShapeType.Shape;
 
+import javax.crypto.BadPaddingException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
@@ -908,7 +917,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     protected UnitRegistryData filterDataForUser(final UnitRegistryData.Builder dataBuilder, final String userId) throws CouldNotPerformException {
         // Create a filter which removes all unit configs from a list without read permissions to its location by the user
         final ListFilter<UnitConfig> readFilter = unitConfig -> AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
-        // Create a filter which removes unit ids if the user does have access permissions for them
+        // Create a filter which removes unit ids if the user does not have access permissions for them
         final ListFilter<String> readFilterByUnitId = unitId -> AuthorizationHelper.canRead(getUnitConfigById(unitId), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
         // iterate over all fields of unit registry data
         for (FieldDescriptor fieldDescriptor : dataBuilder.getAllFields().keySet()) {
@@ -947,5 +956,106 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         }
 
         return dataBuilder.build();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param authorizationToken {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<ByteString> requestAuthorizationToken(final AuthorizationToken authorizationToken) {
+        return GlobalCachedExecutorService.submit(() -> {
+            // verify that the user has all permissions he defined in the token
+            for (final MapFieldEntry mapFieldEntry : authorizationToken.getPermissionRuleList()) {
+                try {
+                    // evaluate the permissions the given user has for the unit defined in the token
+                    final UnitConfig unitConfig = getUnitConfigById(mapFieldEntry.getKey());
+                    final Permission permission = AuthorizationHelper.getPermission(
+                            unitConfig,
+                            authorizationToken.getUserId(),
+                            getAuthorizationGroupUnitConfigRegistry().getEntryMap(),
+                            getLocationUnitConfigRegistry().getEntryMap());
+
+                    // reject the token if the user tries to give more permissions than he has
+                    if (!AuthorizationHelper.isSubPermission(permission, mapFieldEntry.getValue())) {
+                        throw new RejectedException("User[" + authorizationToken.getUserId() + "] has not enough permissions to create an authorizationToken with permissions[" + mapFieldEntry.getValue() + "] for unit[" + unitConfig.getAlias(0) + "]");
+                    }
+                } catch (CouldNotPerformException ex) {
+                    // the id in the authorization token can also match a unit template or service template
+                    // in this case just validate if the id is valid
+                    if (!(CachedTemplateRegistryRemote.getRegistry().containsUnitTemplateById(mapFieldEntry.getKey()) ||
+                            CachedTemplateRegistryRemote.getRegistry().containsServiceTemplateById(mapFieldEntry.getKey()))) {
+                        // nothing with the given id could be found
+                        throw new CouldNotPerformException("Could not verify permissions for id[" + mapFieldEntry.getKey() + "]", ex);
+                    }
+                }
+            }
+
+            // the requested authorization token is valid, so encrypt it with the service server secret key and return it
+            try {
+                return EncryptionHelper.encryptSymmetric(authorizationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
+            } catch (IOException | CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not encrypt authorization token", ex);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Interrupted while generating an authorization token", ex);
+            }
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                if (!authenticatedValue.hasTicketAuthenticatorWrapper()) {
+                    throw new NotAvailableException("TicketAuthenticatorWrapper");
+                }
+
+                final AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
+                Future<ByteString> internalFuture = null;
+                try {
+                    // evaluate the users ticket
+                    final AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
+
+                    // decrypt authorization token
+                    final AuthorizationToken.Builder authorizationToken =
+                            EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), AuthorizationToken.class).toBuilder();
+
+                    // validate that user in token matches the authenticated user, and when not available set it
+                    if (authorizationToken.hasUserId() && !authorizationToken.getUserId().isEmpty()) {
+                        if (!authorizationToken.getUserId().equals(ticketEvaluationWrapper.getUserId().replace("@", ""))) {
+                            //TODO: maybe this should be possible for admins
+                            throw new RejectedException("Authorized user[" + ticketEvaluationWrapper.getUserId() + "] cannot request a token for another user");
+                        }
+                    } else {
+                        authorizationToken.setUserId(ticketEvaluationWrapper.getUserId());
+                    }
+
+                    internalFuture = requestAuthorizationToken(authorizationToken.build());
+
+                    response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
+                    response.setValue(EncryptionHelper.encryptSymmetric(Base64.getEncoder().encodeToString(internalFuture.get().toByteArray()), ticketEvaluationWrapper.getSessionKey()));
+                    return response.build();
+                } catch (IOException | BadPaddingException ex) {
+                    throw new CouldNotPerformException("Encryption/Decryption of internal value has failed", ex);
+                } catch (InterruptedException ex) {
+                    if (internalFuture != null && !internalFuture.isDone()) {
+                        internalFuture.cancel(true);
+                    }
+                    Thread.currentThread().interrupt();
+                    throw new CouldNotPerformException("Interrupted while verifying and encrypting authorizationToken", ex);
+                }
+            } catch (ExecutionException | CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not verify and encrypt authorizationToken", ex);
+            }
+        });
     }
 }

@@ -22,8 +22,10 @@ package org.openbase.bco.registry.unit.remote;
  * #L%
  */
 
+import com.google.protobuf.ByteString;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticationFuture;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -39,12 +41,14 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.MockUpFilter;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType;
@@ -53,10 +57,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -751,6 +753,43 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param authorizationToken {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<ByteString> requestAuthorizationToken(final AuthorizationToken authorizationToken) {
+        return GlobalCachedExecutorService.submit(() -> {
+            AuthenticationFuture<String> internalFuture = null;
+            try {
+                internalFuture = AuthenticatedServiceProcessor.requestAuthenticatedActionWithoutTransactionSynchronization(authorizationToken, String.class, SessionManager.getInstance(), this::requestAuthorizationTokenAuthenticated);
+                return ByteString.copyFrom(Base64.getDecoder().decode(internalFuture.get()));
+            } catch (CouldNotPerformException | ExecutionException ex) {
+                throw new CouldNotPerformException("Could not request authorization token", ex);
+            } catch (InterruptedException ex) {
+                if (!internalFuture.isDone()) {
+                    internalFuture.cancel(true);
+                }
+                Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Could not request authorization token", ex);
+            }
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
     }
 
     @Override
