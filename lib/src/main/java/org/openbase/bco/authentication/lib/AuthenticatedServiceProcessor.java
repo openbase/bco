@@ -236,6 +236,26 @@ public class AuthenticatedServiceProcessor {
             final SessionManager sessionManager,
             final REMOTE remote,
             final InternalRequestable internalRequestable) throws CouldNotPerformException {
+        return new AuthenticatedSynchronizationFuture<>(requestAuthenticatedActionWithoutTransactionSynchronization(message, responseClass, sessionManager, internalRequestable), remote);
+    }
+
+    /**
+     * Method used by the remote to request an authenticated action from a server.
+     *
+     * @param <SEND>              The type which is send to server for this request.
+     * @param <RESPONSE>          The type with which the server should respond.
+     * @param message             The message which is encrypted and send to the server.
+     * @param responseClass       Class of type RESPONSE to resolve internal types.
+     * @param sessionManager      The session manager from which the ticket is used if a user it logged in.
+     * @param internalRequestable Interface for the internal authenticated request which is called.
+     * @return A future containing the response.
+     * @throws CouldNotPerformException If a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
+     */
+    public static <SEND extends Serializable, RESPONSE> AuthenticationFuture<RESPONSE> requestAuthenticatedActionWithoutTransactionSynchronization(
+            final SEND message,
+            final Class<RESPONSE> responseClass,
+            final SessionManager sessionManager,
+            final InternalRequestable internalRequestable) throws CouldNotPerformException {
         if (sessionManager.isLoggedIn()) {
             // check if login is still valid
             sessionManager.isAuthenticated();
@@ -257,7 +277,7 @@ public class AuthenticatedServiceProcessor {
                     // perform the internal request
                     Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
                     // wrap the response in an authenticated synchronization future
-                    return new AuthenticatedSynchronizationFuture<>(new AuthenticationFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager), remote);
+                    return new AuthenticationFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
                 } catch (IOException | BadPaddingException ex) {
                     throw new CouldNotPerformException("Could not initialize service server request", ex);
                 }
@@ -277,7 +297,7 @@ public class AuthenticatedServiceProcessor {
             // perform the internal request
             Future<AuthenticatedValue> future = internalRequestable.request(authenticateValue.build());
             // wrap the response in an authenticated synchronization future
-            return new AuthenticatedSynchronizationFuture<>(new AuthenticationFuture<>(future, responseClass, null, sessionManager), remote);
+            return new AuthenticationFuture<>(future, responseClass, null, sessionManager);
         }
     }
 

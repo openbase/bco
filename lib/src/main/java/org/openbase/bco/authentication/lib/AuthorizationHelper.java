@@ -366,4 +366,30 @@ public class AuthorizationHelper {
 
         return builder.build();
     }
+
+    /**
+     * Method evaluates if one permission is lower than another. The lower permission is called sub permission.
+     * In this context being a lower permission means giving less rights than another.
+     * Therefore this method returns false if the sub permission has true for one of its value (access, read, write)
+     * while the super permission has false for this value. Otherwise this method returns true.
+     *
+     * @param permission    the super permission
+     * @param subPermission the sub permission
+     * @return if subPermission is indeed a sub permission as described above
+     */
+    public static boolean isSubPermission(final Permission permission, final Permission subPermission) {
+        if (!permission.getAccess() && subPermission.getAccess()) {
+            return false;
+        }
+
+        if (!permission.getRead() && subPermission.getRead()) {
+            return false;
+        }
+
+        if (!permission.getWrite() && subPermission.getWrite()) {
+            return false;
+        }
+
+        return true;
+    }
 }
