@@ -58,10 +58,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Class parsing JSON requests send by Google and fulfilling them.
@@ -544,7 +541,13 @@ public class FulfillmentHandler {
                         try {
                             // create tasks for all grouped dal units
                             for (final UnitConfig hostedUnitConfig : getUnitConfigsHandledByDevice(unitConfig)) {
-                                internalFutureSet.add(createExecutionTask(Units.getUnit(hostedUnitConfig, false), idCommand.getValue()));
+                                // if there is more than one command ignore infrastructure units
+                                if (idCommandMap.size() > 1 && Units.getUnit(unitConfig, false).isInfrastructure()) {
+                                    // add a completed future, this will make google respond with a success message
+                                    internalFutureSet.add(CompletableFuture.completedFuture(null));
+                                } else {
+                                    internalFutureSet.add(createExecutionTask(Units.getUnit(hostedUnitConfig, false), idCommand.getValue()));
+                                }
                             }
 
                             // wait for all tasks and gather exceptions
@@ -578,8 +581,14 @@ public class FulfillmentHandler {
                         return null;
                     });
                 } else {
-                    // dal unit so create a normal execution task
-                    future = createExecutionTask(Units.getUnit(unitConfig, false), idCommand.getValue());
+                    // if there is more than one command ignore infrastructure units
+                    if (idCommandMap.size() > 1 && Units.getUnit(unitConfig, false).isInfrastructure()) {
+                        // add a completed future, this will make google respond with a success message
+                        future = CompletableFuture.completedFuture(null);
+                    } else {
+                        // dal unit so create a normal execution task
+                        future = createExecutionTask(Units.getUnit(unitConfig, false), idCommand.getValue());
+                    }
                 }
 
                 // add future to a map
