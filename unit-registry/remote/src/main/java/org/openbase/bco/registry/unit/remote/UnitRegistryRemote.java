@@ -48,6 +48,7 @@ import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
@@ -789,6 +790,30 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      */
     @Override
     public Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+    }
+
+    @Override
+    public Future<ByteString> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            AuthenticationFuture<String> internalFuture = null;
+            try {
+                internalFuture = AuthenticatedServiceProcessor.requestAuthenticatedActionWithoutTransactionSynchronization(authenticationToken, String.class, SessionManager.getInstance(), this::requestAuthenticationTokenAuthenticated);
+                return ByteString.copyFrom(Base64.getDecoder().decode(internalFuture.get()));
+            } catch (CouldNotPerformException | ExecutionException ex) {
+                throw new CouldNotPerformException("Could not request authentication token", ex);
+            } catch (InterruptedException ex) {
+                if (!internalFuture.isDone()) {
+                    internalFuture.cancel(true);
+                }
+                Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Could not request authentication token", ex);
+            }
+        });
+    }
+
+    @Override
+    public Future<AuthenticatedValue> requestAuthenticationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
     }
 

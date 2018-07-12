@@ -77,6 +77,7 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.MapFieldEntry;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
@@ -1052,6 +1053,69 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                     }
                     Thread.currentThread().interrupt();
                     throw new CouldNotPerformException("Interrupted while verifying and encrypting authorizationToken", ex);
+                }
+            } catch (ExecutionException | CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not verify and encrypt authorizationToken", ex);
+            }
+        });
+    }
+
+    @Override
+    public Future<ByteString> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            // encrypt the authentication token
+            try {
+                return EncryptionHelper.encryptSymmetric(authenticationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
+            } catch (IOException | CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not encrypt authentication token", ex);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Interrupted while generating an authenticationToken token", ex);
+            }
+        });
+    }
+
+    @Override
+    public Future<AuthenticatedValue> requestAuthenticationTokenAuthenticated(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                if (!authenticatedValue.hasTicketAuthenticatorWrapper()) {
+                    throw new NotAvailableException("TicketAuthenticatorWrapper");
+                }
+
+                final AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
+                Future<ByteString> internalFuture = null;
+                try {
+                    // evaluate the users ticket
+                    final AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
+
+                    // decrypt authorization token
+                    final AuthenticationToken.Builder authenticationToken =
+                            EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), AuthenticationToken.class).toBuilder();
+
+                    // validate that user in token matches the authenticated user, and when not available set it
+                    if (authenticationToken.hasUserId() && !authenticationToken.getUserId().isEmpty()) {
+                        if (!authenticationToken.getUserId().equals(ticketEvaluationWrapper.getUserId().replace("@", ""))) {
+                            //TODO: maybe this should be possible for admins
+                            throw new RejectedException("Authorized user[" + ticketEvaluationWrapper.getUserId() + "] cannot request a token for another user");
+                        }
+                    } else {
+                        authenticationToken.setUserId(ticketEvaluationWrapper.getUserId());
+                    }
+
+                    internalFuture = requestAuthenticationToken(authenticationToken.build());
+
+                    response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
+                    response.setValue(EncryptionHelper.encryptSymmetric(Base64.getEncoder().encodeToString(internalFuture.get().toByteArray()), ticketEvaluationWrapper.getSessionKey()));
+                    return response.build();
+                } catch (IOException | BadPaddingException ex) {
+                    throw new CouldNotPerformException("Encryption/Decryption of internal value has failed", ex);
+                } catch (InterruptedException ex) {
+                    if (internalFuture != null && !internalFuture.isDone()) {
+                        internalFuture.cancel(true);
+                    }
+                    Thread.currentThread().interrupt();
+                    throw new CouldNotPerformException("Interrupted while verifying and encrypting authenticationToken", ex);
                 }
             } catch (ExecutionException | CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not verify and encrypt authorizationToken", ex);

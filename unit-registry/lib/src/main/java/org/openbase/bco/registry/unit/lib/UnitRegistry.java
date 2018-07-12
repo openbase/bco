@@ -45,6 +45,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
@@ -1279,6 +1280,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     @RPCMethod
     Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
+    Future<ByteString> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException;
+
+    @RPCMethod
+    Future<AuthenticatedValue> requestAuthenticationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
 //    Not yet implemented so temporally removed from interface
 //
