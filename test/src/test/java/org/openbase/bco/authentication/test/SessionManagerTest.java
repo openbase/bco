@@ -22,25 +22,11 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
-import com.sun.corba.se.impl.orbutil.concurrent.Sync;
-import org.openbase.bco.authentication.mock.MockCredentialStore;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
+import org.junit.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
+import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.mock.MockClientStore;
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.CredentialStore;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.mock.MockCredentialStore;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -51,35 +37,28 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketType.Ticket;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.*;
+
 /**
  * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
  */
-public class SessionManagerTest {
+public class SessionManagerTest extends AuthenticationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManagerTest.class);
 
-    private static AuthenticatorController authenticatorController;
-    private static CredentialStore serverStore;
     private static CredentialStore clientStore;
 
-    private static byte[] serviceServerSecretKey;
 
     public SessionManagerTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-
-        serviceServerSecretKey = EncryptionHelper.generateKey();
-
-        serverStore = new MockCredentialStore();
+        AuthenticationTest.setUpClass();
         clientStore = new MockClientStore();
-
-        authenticatorController = new AuthenticatorController(serverStore, serviceServerSecretKey);
-        authenticatorController.init();
-        authenticatorController.activate();
-        authenticatorController.waitForActivation();
 
         // register an initial user for the authenticator
         try {
@@ -89,13 +68,6 @@ public class SessionManagerTest {
             CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
         } catch (IOException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not register initial user!"), LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        if (authenticatorController != null) {
-            authenticatorController.shutdown();
         }
     }
 

@@ -36,31 +36,11 @@ import static org.junit.Assert.assertTrue;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class ServiceServerManagerTest {
+public class ServiceServerManagerTest extends AuthenticationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorControllerTest.class);
 
-    private static AuthenticatorController authenticatorController;
-
     public ServiceServerManagerTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-
-        authenticatorController = new AuthenticatorController();
-        authenticatorController.init();
-        authenticatorController.activate();
-        authenticatorController.waitForActivation();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        CachedAuthenticationRemote.shutdown();
-        if (authenticatorController != null) {
-            authenticatorController.shutdown();
-        }
     }
 
     @Before
@@ -80,8 +60,6 @@ public class ServiceServerManagerTest {
     public void testServiceServerManagerValidation() throws Exception {
         System.out.println("testServiceServerManagerValidation");
 
-        assertTrue("Initial password has not been generated despite an empty registry", AuthenticatorController.getInitialPassword() != null);
-        
         // register a user from which a ticket can be validated
         String userId = "ServiceServerManagerUser";
         String password = "Security";

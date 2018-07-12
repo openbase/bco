@@ -32,8 +32,8 @@ public class AuthenticatedSynchronizationFuture<T, REMOTE extends DataProvider<?
     private final AuthenticationFuture authenticationFuture;
 
     /**
-     * @param internalFuture
-     * @param dataProvider
+     * @param internalFuture the internal future
+     * @param dataProvider   the data provider
      */
     public AuthenticatedSynchronizationFuture(AuthenticationFuture<T> internalFuture, REMOTE dataProvider) {
         super(internalFuture, dataProvider);

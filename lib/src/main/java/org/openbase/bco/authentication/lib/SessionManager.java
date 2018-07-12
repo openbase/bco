@@ -29,7 +29,6 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -41,9 +40,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 
 import javax.crypto.BadPaddingException;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.security.KeyPair;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -447,22 +444,10 @@ public class SessionManager {
         }
 
         try {
-            Observer<String> observer = (Observable<String> source, String data) -> {
-                LOGGER.warn("Login state change while in isAuthenticated to [" + data + "]" + sessionKey);
-            };
-            this.loginObservable.addObserver(observer);
-            byte[] before = this.sessionKey;
             TicketAuthenticatorWrapper request = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
-            byte[] init = this.sessionKey;
             TicketAuthenticatorWrapper response = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request).get();
-            byte[] after = this.sessionKey;
-            if (this.sessionKey == null) {
-                this.loginObservable.removeObserver(observer);
-                throw new CouldNotPerformException("Why is this happening?[" + before + ", " + init + ", " + after + "]");
-            }
             response = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, request, response);
             this.ticketAuthenticatorWrapper = response;
-            this.loginObservable.removeObserver(observer);
             return true;
         } catch (IOException | BadPaddingException ex) {
             this.logout();
@@ -571,7 +556,7 @@ public class SessionManager {
      * Registers a client.
      *
      * @param clientId the id of the client
-     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws org.openbase.jul.exception.CouldNotPerformException if the client could not registered
      */
     public synchronized void registerClient(String clientId) throws CouldNotPerformException {
         if (this.store == null) {
@@ -604,7 +589,7 @@ public class SessionManager {
      * @param userId   the id of the user
      * @param password the password of the user
      * @param isAdmin  flag if user should be an administrator
-     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws org.openbase.jul.exception.CouldNotPerformException if the user could not be registered
      */
     public synchronized void registerUser(String userId, String password, boolean isAdmin) throws CouldNotPerformException {
         byte[] key = EncryptionHelper.hash(password);

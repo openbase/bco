@@ -133,7 +133,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        if (store.isEmpty()) {
+        if (store.isEmpty() || JPService.testMode()) {
             // Generate private/public key pair for service servers.
             KeyPair keyPair = EncryptionHelper.generateKeyPair();
             store.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false);

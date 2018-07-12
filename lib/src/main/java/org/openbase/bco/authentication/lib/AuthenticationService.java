@@ -1,10 +1,10 @@
 package org.openbase.bco.authentication.lib;
 
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
-import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -186,7 +186,7 @@ public interface AuthenticationService {
      * @param userId ID of the user to check for.
      * @return True, if the user is admin, false if not.
      * @throws NotAvailableException    If the user could not be found.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException if the test could no be performed
      */
     @RPCMethod
     Future<Boolean> isAdmin(String userId) throws NotAvailableException, CouldNotPerformException;
