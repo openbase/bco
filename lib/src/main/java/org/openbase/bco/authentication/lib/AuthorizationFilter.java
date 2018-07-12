@@ -109,8 +109,6 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
             } else {
                 throw new CouldNotPerformException("Authentication failed", ex);
             }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
         }
     }
 

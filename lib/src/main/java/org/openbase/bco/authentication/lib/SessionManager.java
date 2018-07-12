@@ -447,22 +447,10 @@ public class SessionManager {
         }
 
         try {
-            Observer<String> observer = (Observable<String> source, String data) -> {
-                LOGGER.warn("Login state change while in isAuthenticated to [" + data + "]" + sessionKey);
-            };
-            this.loginObservable.addObserver(observer);
-            byte[] before = this.sessionKey;
             TicketAuthenticatorWrapper request = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
-            byte[] init = this.sessionKey;
             TicketAuthenticatorWrapper response = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request).get();
-            byte[] after = this.sessionKey;
-            if (this.sessionKey == null) {
-                this.loginObservable.removeObserver(observer);
-                throw new CouldNotPerformException("Why is this happening?[" + before + ", " + init + ", " + after + "]");
-            }
             response = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, request, response);
             this.ticketAuthenticatorWrapper = response;
-            this.loginObservable.removeObserver(observer);
             return true;
         } catch (IOException | BadPaddingException ex) {
             this.logout();

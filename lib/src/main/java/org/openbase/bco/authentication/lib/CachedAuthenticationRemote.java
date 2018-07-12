@@ -56,7 +56,7 @@ public class CachedAuthenticationRemote {
      * @throws InterruptedException if in the first call to this methods the creation and activation of the remote is interrupted
      * @throws NotAvailableException if the cashed instance is not available
      */
-    public synchronized static AuthenticationRemote getRemote() throws InterruptedException, NotAvailableException {
+    public synchronized static AuthenticationRemote getRemote() throws NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
@@ -68,7 +68,7 @@ public class CachedAuthenticationRemote {
                     authenticationRemote.init();
                     authenticationRemote.activate();
                     authenticationRemote.waitForActivation();
-                } catch (CouldNotPerformException ex) {
+                } catch (Exception ex) {
                     if (authenticationRemote != null) {
                         authenticationRemote.shutdown();
                         authenticationRemote = null;
