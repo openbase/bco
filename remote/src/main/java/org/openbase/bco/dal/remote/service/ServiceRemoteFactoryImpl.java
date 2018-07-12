@@ -21,17 +21,18 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Collection;
+
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+
+import java.util.ArrayList;
+import java.util.Collection;
 //import org.openbase.jul.exception.InstantiationException;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
@@ -56,17 +57,25 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
     }
 
     @Override
+    public AbstractServiceRemote newInitializedInstance(ServiceType serviceType, Collection<UnitConfig> unitConfigs, boolean filterInfrastructureUnits) throws CouldNotPerformException, InterruptedException {
+        AbstractServiceRemote serviceRemote = newInstance(serviceType);
+        serviceRemote.setInfrastructureFilter(filterInfrastructureUnits);
+        serviceRemote.init(unitConfigs);
+        return serviceRemote;
+    }
+
+    @Override
     public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         AbstractServiceRemote serviceRemote = newInstance(serviceType);
         serviceRemote.init(unitConfig);
         return serviceRemote;
     }
-    
+
     @Override
     public AbstractServiceRemote newInitializedInstanceByIds(final ServiceType serviceType, final Collection<String> unitIDs) throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
         final Collection<UnitConfig> unitRemotes = new ArrayList<>();
-        for(String unitId : unitIDs) {
+        for (String unitId : unitIDs) {
             unitRemotes.add(Registries.getUnitRegistry().getUnitConfigById(unitId));
         }
         return newInitializedInstance(serviceType, unitRemotes);
@@ -81,7 +90,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
     @Override
     public AbstractServiceRemote newInstance(final ServiceType serviceType) throws org.openbase.jul.exception.InstantiationException {
         try {
-            return instantiatServiceRemote(loadServiceRemoteClass(serviceType));
+            return instantiateServiceRemote(loadServiceRemoteClass(serviceType));
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(AbstractServiceRemote.class, serviceType.name(), ex);
         }
@@ -96,7 +105,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         }
     }
 
-    private static AbstractServiceRemote instantiatServiceRemote(final Class<? extends AbstractServiceRemote> serviceRemoteClass) throws org.openbase.jul.exception.InstantiationException {
+    private static AbstractServiceRemote instantiateServiceRemote(final Class<? extends AbstractServiceRemote> serviceRemoteClass) throws org.openbase.jul.exception.InstantiationException {
         try {
             AbstractServiceRemote remote = serviceRemoteClass.newInstance();
             return remote;

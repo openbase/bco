@@ -102,7 +102,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
 
     public UnitGroupRemote() throws InstantiationException {
         super(UnitGroupData.class);
-        this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this) {
+        this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this, false) {
             @Override
             protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
                 return getSupportedServiceTypes();

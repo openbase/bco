@@ -101,4 +101,13 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * @return the current session manager.
      */
     SessionManager getSessionManager();
+
+    /**
+     * Returns if this unit belongs to the infrastructure.
+     * Infrastructure units should not be included in actions for multiple units to prevent
+     * accidentally switching of important units for the infrastructure.
+     *
+     * @return if the the infrastructure flag is set to true in a meta config for this unit
+     */
+    boolean isInfrastructure();
 }

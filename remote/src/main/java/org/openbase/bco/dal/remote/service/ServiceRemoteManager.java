@@ -26,6 +26,7 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
@@ -35,7 +36,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
@@ -56,7 +56,6 @@ import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -83,9 +82,15 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
     private final Observer serviceDataObserver;
     private final DataProvider<D> responsibleInstance;
+    private boolean filterInfrastructureUnits;
 
     public ServiceRemoteManager(final DataProvider<D> responsibleInstance) {
+        this(responsibleInstance, true);
+    }
+
+    public ServiceRemoteManager(final DataProvider<D> responsibleInstance, final boolean filterInfrastructureUnits) {
         this.responsibleInstance = responsibleInstance;
+        this.filterInfrastructureUnits = filterInfrastructureUnits;
         this.serviceRemoteMap = new HashMap<>();
         this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
 
@@ -143,7 +148,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 
             // initialize service remotes
             for (final ServiceType serviceType : getManagedServiceTypes()) {
-                final AbstractServiceRemote serviceRemote = serviceRemoteFactory.newInitializedInstance(serviceType, serviceMap.get(serviceType));
+                final AbstractServiceRemote serviceRemote = serviceRemoteFactory.newInitializedInstance(serviceType, serviceMap.get(serviceType), filterInfrastructureUnits);
                 serviceRemoteMap.put(serviceType, serviceRemote);
 
                 // if already active than update the current location state.
@@ -194,7 +199,6 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
      * Method checks if the given {@code ServiceType} is currently available by this {@code ServiceRemoteManager}
      *
      * @param serviceType the {@code ServiceType} to check.
-     *
      * @return returns true if the {@code ServiceType} is available, otherwise false.
      */
     public boolean isServiceAvailable(final ServiceType serviceType) {
