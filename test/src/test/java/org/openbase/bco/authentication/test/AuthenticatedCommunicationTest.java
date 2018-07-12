@@ -47,12 +47,11 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import static junit.framework.TestCase.assertTrue;
 
-public class AuthenticatedCommunicationTest {
+public class AuthenticatedCommunicationTest extends AuthenticationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatedCommunicationTest.class);
 
     private static final Scope SCOPE = new Scope("/test/authentication/communication");
-    private static AuthenticatorController authenticatorController;
 
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
@@ -66,14 +65,7 @@ public class AuthenticatedCommunicationTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-
-        authenticatorController = new AuthenticatorController();
-        authenticatorController.init();
-        authenticatorController.activate();
-        authenticatorController.waitForActivation();
-
-        Assert.assertTrue("Initial password has not been generated despite an empty registry", AuthenticatorController.getInitialPassword() != null);
+        AuthenticationTest.setUpClass();
 
         // register a user from which a ticket can be validated
         registerUser();
@@ -84,14 +76,6 @@ public class AuthenticatedCommunicationTest {
         loginCredentials.setId(USER_ID);
         loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(USER_PASSWORD), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
         CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        CachedAuthenticationRemote.shutdown();
-        if (authenticatorController != null) {
-            authenticatorController.shutdown();
-        }
     }
 
     @Before

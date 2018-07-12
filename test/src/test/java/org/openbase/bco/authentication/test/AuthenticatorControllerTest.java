@@ -21,6 +21,7 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.junit.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
@@ -45,34 +46,13 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.fail;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class AuthenticatorControllerTest {
+public class AuthenticatorControllerTest extends AuthenticationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorControllerTest.class);
 
-    private static AuthenticatorController authenticatorController;
-
     public AuthenticatorControllerTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-
-        authenticatorController = new AuthenticatorController(new MockCredentialStore());
-        authenticatorController.init();
-        authenticatorController.activate();
-        authenticatorController.waitForActivation();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        CachedAuthenticationRemote.shutdown();
-        if (authenticatorController != null) {
-            authenticatorController.shutdown();
-        }
     }
 
     @Before
@@ -198,6 +178,7 @@ public class AuthenticatorControllerTest {
     /**
      * Tests the feature of changing passwords for other users.
      * Only admins should be allowed to do this.
+     *
      * @throws Exception
      */
     @Test(timeout = 5000)
@@ -279,8 +260,8 @@ public class AuthenticatorControllerTest {
 
     /**
      * Test of async communication between ClientRemote and AuthenticatorController.
-     * After login two requests will be sent asynchronously. 
-     * The first request will return later than the second request. 
+     * After login two requests will be sent asynchronously.
+     * The first request will return later than the second request.
      * This should work and only the newest ticket should then be used for further requests.
      *
      * @throws java.lang.Exception
@@ -310,17 +291,17 @@ public class AuthenticatorControllerTest {
 
         // init SS request on client side
         TicketAuthenticatorWrapper request1 = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
-        
+
         Thread.sleep(100);
-        
+
         // init SS request on client side
         TicketAuthenticatorWrapper request2 = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
-        
+
         AuthenticatorType.Authenticator request2auth = EncryptionHelper.decryptSymmetric(request2.getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
         AuthenticatorType.Authenticator request1auth = EncryptionHelper.decryptSymmetric(request1.getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
-        
+
         System.err.println(request2auth.getTimestamp().getTime());
-        System.err.println(request1auth.getTimestamp().getTime());  
+        System.err.println(request1auth.getTimestamp().getTime());
 
         // handle SS request on server side
         TicketAuthenticatorWrapper response2 = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request2).get();
@@ -333,17 +314,17 @@ public class AuthenticatorControllerTest {
 
         // handle SS response on client side
         AuthenticationClientHandler.handleServiceServerResponse(clientSSSessionKey, request1, response1);
-        
+
         SessionManager manager = new SessionManager(clientSSSessionKey);
         manager.setTicketAuthenticatorWrapper(response2);
         manager.setTicketAuthenticatorWrapper(response1);
-        
+
         AuthenticatorType.Authenticator response2auth = EncryptionHelper.decryptSymmetric(response2.getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
         AuthenticatorType.Authenticator sessionManagerAuth = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
-        
+
         System.err.println(response2auth.getTimestamp().getTime());
-        System.err.println(sessionManagerAuth.getTimestamp().getTime());  
-        
+        System.err.println(sessionManagerAuth.getTimestamp().getTime());
+
         Assert.assertTrue(response2auth.getTimestamp().getTime() == sessionManagerAuth.getTimestamp().getTime());
     }
 }
