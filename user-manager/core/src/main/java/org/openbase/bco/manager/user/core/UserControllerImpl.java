@@ -10,59 +10,59 @@ package org.openbase.bco.manager.user.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
-import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
-import rst.domotic.state.ActivityStateType.ActivityState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.PresenceStateType.PresenceState.State;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.user.UserDataType.UserData;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserControllerImpl extends AbstractBaseUnitController<UserData, UserData.Builder> implements UserController {
+
+    public static final String NET_DEVICE_VARIABLE_IDENTIFIER = "NET_DEVICE";
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
@@ -71,12 +71,9 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserTransitState.getDefaultInstance()));
     }
 
-    public static final String NET_DEVICE_VARIABLE_IDENTIFIER = "NET_DEVICE";
-
-    private boolean enabled;
     private final Object netDeviceDetectorMapLock = new SyncObject("NetDeviceDetectorMapLock");
-
     private final Map<String, NetDeviceDetector> netDeviceDetectorMap;
+    private boolean enabled;
 
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UserControllerImpl.class, UserData.newBuilder());
@@ -196,11 +193,12 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     @Override
     public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
-        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setActivityMultiState(activityMultiState);
-        } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set activity to [" + activityMultiState + "] for " + this + "!", ex);
-        }
+//        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
+//            dataBuilder.getInternalBuilder().setActivityMultiState(activityMultiState);
+//        } catch (CouldNotPerformException | NullPointerException ex) {
+//            throw new CouldNotPerformException("Could not set activity to [" + activityMultiState + "] for " + this + "!", ex);
+//        }
+        applyDataUpdate(activityMultiState, ACTIVITY_MULTI_STATE_SERVICE);
         return CompletableFuture.completedFuture(null);
     }
 
@@ -215,22 +213,44 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     @Override
     public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
-        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPresenceState(presenceState);
-        } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set presence to [" + presenceState + "] for " + this + "!", ex);
-        }
+//        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
+//            dataBuilder.getInternalBuilder().setPresenceState(presenceState);
+//        } catch (CouldNotPerformException | NullPointerException ex) {
+//            throw new CouldNotPerformException("Could not set presence to [" + presenceState + "] for " + this + "!", ex);
+//        }
+        applyDataUpdate(presenceState, PRESENCE_STATE_SERVICE);
         return CompletableFuture.completedFuture(null);
     }
 
     @Override
     public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
-        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setUserTransitState(userTransitState);
-        } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set user transit state to [" + userTransitState + "] for " + this + "!", ex);
-        }
+        applyDataUpdate(userTransitState, USER_TRANSIT_STATE_SERVICE);
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    protected void applyDataUpdate(UserData.Builder internalBuilder, ServiceType serviceType) {
+        switch (serviceType) {
+            case USER_TRANSIT_STATE_SERVICE:
+                updateLastWithCurrentState(PRESENCE_STATE_SERVICE, internalBuilder);
+
+                switch (internalBuilder.getUserTransitState().getValue()) {
+                    case LONG_TERM_ABSENT:
+                    case SHORT_TERM_ABSENT:
+                    case SOON_PRESENT:
+                        internalBuilder.getPresenceStateBuilder().setValue(State.ABSENT);
+                        break;
+                    case LONG_TERM_PRESENT:
+                    case SHORT_TERM_PRESENT:
+                    case SOON_ABSENT:
+                        internalBuilder.getPresenceStateBuilder().setValue(State.PRESENT);
+                        break;
+                }
+
+                copyResponsibleAction(USER_TRANSIT_STATE_SERVICE, PRESENCE_STATE_SERVICE, internalBuilder);
+
+                break;
+        }
     }
 
     private class NetDeviceDetector extends ObservableImpl<Boolean> implements Manageable<String> {
@@ -302,6 +322,5 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         public String toString() {
             return getClass().getSimpleName() + "[host:" + hostName + "]";
         }
-
     }
 }
