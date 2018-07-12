@@ -24,7 +24,6 @@ package org.openbase.bco.dal.remote.unit;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
 import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProcessor;
@@ -37,7 +36,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -52,12 +50,10 @@ import rct.Transform;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -69,15 +65,12 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
-import javax.crypto.BadPaddingException;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @param <D> The unit data type.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
@@ -88,6 +81,8 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
+    public static final String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
+
     private UnitTemplate template;
     private boolean initialized = false;
 
@@ -95,6 +90,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
     private SessionManager sessionManager;
+    private boolean infrastructure = false;
 
     public AbstractUnitRemote(final Class<D> dataClass) {
         super(dataClass, UnitConfig.class);
@@ -151,7 +147,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param id
-     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -168,7 +163,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param label
-     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -193,7 +187,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
-     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -210,7 +203,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
-     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -227,7 +219,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
-     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -304,9 +295,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param unitConfig {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
@@ -364,6 +353,13 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             }
         }
 
+        try {
+            infrastructure = Boolean.parseBoolean(generateVariablePool().getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG));
+        } catch (NotAvailableException ex) {
+            // pool or flag not available so set infrastructure to false
+            infrastructure = false;
+        }
+
         return super.applyConfigUpdate(unitConfig);
     }
 
@@ -401,7 +397,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      *
      * @param timeout  {@inheritDoc}
      * @param timeUnit {@inheritDoc}
-     *
      * @throws CouldNotPerformException       {@inheritDoc}
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
@@ -469,7 +464,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @return
-     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
@@ -494,7 +488,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
@@ -512,7 +505,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * otherwise the base location config is returned which refers the location where this unit is placed in.
      *
      * @return a unit config of the base location.
-     *
      * @throws NotAvailableException is thrown if the location config is currently not available.
      */
     public UnitConfig getBaseLocationConfig() throws NotAvailableException {
@@ -529,9 +521,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * otherwise the base location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
-     *
      * @return a location remote instance.
-     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -554,7 +544,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * Method returns the transformation between the root location and this unit.
      *
      * @return a transformation future
-     *
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getRootToUnitTransformationFuture()} instead.
      */
@@ -575,9 +564,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param actionDescription {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -659,5 +646,15 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 return super.toString();
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean isInfrastructure() {
+        return infrastructure;
     }
 }

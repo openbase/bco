@@ -21,14 +21,15 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Factory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.Collection;
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, ServiceType> {
@@ -37,63 +38,72 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
      * Creates and initializes a service remote out of the given service type
      * and a collection of unitConfigs.
      *
-     * newInitializedInstance
-     *
      * @param serviceType The remote service type.
      * @param unitConfigs The collection of units which are controlled by the new service remote instance.
      * @return the new created service remote.
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     * @throws InterruptedException     is thrown if the current thread is externally interrupted.
      */
-    public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException;
+    AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException;
+
+    /**
+     * Creates and initializes a service remote out of the given service type, a collection of unitConfigs and a flag
+     * determining if infrastructure units should be filtered.
+     *
+     * @param serviceType               The remote service type.
+     * @param unitConfigs               The collection of units which are controlled by the new service remote instance.
+     * @param filterInfrastructureUnits The flag determining if the created service remote filters infrastructure units.
+     * @return the new created service remote.
+     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
+     * @throws InterruptedException     is thrown if the current thread is externally interrupted.
+     */
+    AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs, final boolean filterInfrastructureUnits) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes a service remote out of the given service type
      * and unitConfig.
      *
      * @param serviceType The remote service type.
-     * @param unitConfig The unit which is controlled by the new service remote instance.
+     * @param unitConfig  The unit which is controlled by the new service remote instance.
      * @return the new created service remote.
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     * @throws InterruptedException     is thrown if the current thread is externally interrupted.
      */
-    public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
+    AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes a service remote out of the given service type
      * and a collection of unitConfigs.
      *
-     * newInitializedInstance
-     *
      * @param serviceType The remote service type.
-     * @param unitIds The collection of units which are controlled by the new service remote instance.
+     * @param unitIds     The collection of units which are controlled by the new service remote instance.
      * @return the new created service remote.
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     * @throws InterruptedException     is thrown if the current thread is externally interrupted.
      */
-    public AbstractServiceRemote newInitializedInstanceByIds(final ServiceType serviceType, final Collection<String> unitIds) throws CouldNotPerformException, InterruptedException;
+    AbstractServiceRemote newInitializedInstanceByIds(final ServiceType serviceType, final Collection<String> unitIds) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes a service remote out of the given service type
      * and unitID.
      *
      * @param serviceType The remote service type.
-     * @param unitId The unit id of the unit which should be controlled by the new service remote instance.
+     * @param unitId      The unit id of the unit which should be controlled by the new service remote instance.
      * @return the new created service remote.
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     * @throws InterruptedException     is thrown if the current thread is externally interrupted.
      */
-    public AbstractServiceRemote newInitializedInstanceById(final ServiceType serviceType, final String unitId) throws CouldNotPerformException, InterruptedException;
+    AbstractServiceRemote newInitializedInstanceById(final ServiceType serviceType, final String unitId) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes a service remote out of the given service type
      * and unitConfig.
      *
      * @param serviceType The remote service type.
-     * @param unitConfig The unit which is controlled by the new service remote instance.
+     * @param unitConfig  The unit which is controlled by the new service remote instance.
      * @return the new created service remote.
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     * @throws InterruptedException     is thrown if the current thread is externally interrupted.
      */
     @Deprecated
     public default AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
@@ -119,7 +129,7 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
     /**
      * Creates and initializes a service remote out of the given service type
      * and a collection of unitConfigs.
-     *
+     * <p>
      * newInitializedInstance
      *
      * @param serviceType The remote service type.
