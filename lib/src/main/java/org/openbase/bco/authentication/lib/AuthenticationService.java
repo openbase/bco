@@ -1,10 +1,10 @@
 package org.openbase.bco.authentication.lib;
 
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
-import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -22,12 +22,12 @@ import java.util.concurrent.Future;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -186,7 +186,7 @@ public interface AuthenticationService {
      * @param userId ID of the user to check for.
      * @return True, if the user is admin, false if not.
      * @throws NotAvailableException    If the user could not be found.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException if the test could no be performed
      */
     @RPCMethod
     Future<Boolean> isAdmin(String userId) throws NotAvailableException, CouldNotPerformException;

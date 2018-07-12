@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -29,7 +29,6 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -41,9 +40,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 
 import javax.crypto.BadPaddingException;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.security.KeyPair;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -559,7 +556,7 @@ public class SessionManager {
      * Registers a client.
      *
      * @param clientId the id of the client
-     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws org.openbase.jul.exception.CouldNotPerformException if the client could not registered
      */
     public synchronized void registerClient(String clientId) throws CouldNotPerformException {
         if (this.store == null) {
@@ -592,7 +589,7 @@ public class SessionManager {
      * @param userId   the id of the user
      * @param password the password of the user
      * @param isAdmin  flag if user should be an administrator
-     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws org.openbase.jul.exception.CouldNotPerformException if the user could not be registered
      */
     public synchronized void registerUser(String userId, String password, boolean isAdmin) throws CouldNotPerformException {
         byte[] key = EncryptionHelper.hash(password);

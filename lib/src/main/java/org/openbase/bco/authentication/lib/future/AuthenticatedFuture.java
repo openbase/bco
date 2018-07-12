@@ -10,34 +10,36 @@ package org.openbase.bco.authentication.lib.future;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import javax.crypto.BadPaddingException;
+
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
+import javax.crypto.BadPaddingException;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 /**
  * Abstract future that automatically verifies the response from a server.
  *
+ * @param <RETURN>   The type of value this future returns.
+ * @param <INTERNAL> The type of value the internal future returns.
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
- * @param <RETURN>
- * @param <INTERNAL>
  */
 public abstract class AuthenticatedFuture<RETURN, INTERNAL> implements Future<RETURN> {
 
@@ -50,8 +52,8 @@ public abstract class AuthenticatedFuture<RETURN, INTERNAL> implements Future<RE
      * Create an AuthenticatedFuture that uses the SessionManager singleton for the verification.
      *
      * @param internalFuture The internal future whose result is verified.
-     * @param returnClass Class of type RETURN.
-     * @param wrapper The ticket that was used for the request.
+     * @param returnClass    Class of type RETURN.
+     * @param wrapper        The ticket that was used for the request.
      */
     public AuthenticatedFuture(final Future<INTERNAL> internalFuture, final Class<RETURN> returnClass, final TicketAuthenticatorWrapper wrapper) {
         this(internalFuture, returnClass, wrapper, SessionManager.getInstance());
@@ -61,8 +63,8 @@ public abstract class AuthenticatedFuture<RETURN, INTERNAL> implements Future<RE
      * Create an AuthenticatedFuture.
      *
      * @param internalFuture The internal future whose result is verified.
-     * @param returnClass Class of type RETURN.
-     * @param wrapper The ticket that was used for the request.
+     * @param returnClass    Class of type RETURN.
+     * @param wrapper        The ticket that was used for the request.
      * @param sessionManager The session manager that is used for the verification.
      */
     public AuthenticatedFuture(final Future<INTERNAL> internalFuture, final Class<RETURN> returnClass, final TicketAuthenticatorWrapper wrapper, final SessionManager sessionManager) {
@@ -112,7 +114,7 @@ public abstract class AuthenticatedFuture<RETURN, INTERNAL> implements Future<RE
      *
      * @return RESPONSE converted from the result of the internal future.
      * @throws InterruptedException If interrupted inside of get of the internal future.
-     * @throws ExecutionException If the execution of the internal future failed, the response could not be verified or the conversion to the return type failed.
+     * @throws ExecutionException   If the execution of the internal future failed, the response could not be verified or the conversion to the return type failed.
      */
     @Override
     public RETURN get() throws InterruptedException, ExecutionException {
@@ -131,8 +133,8 @@ public abstract class AuthenticatedFuture<RETURN, INTERNAL> implements Future<RE
      *
      * @return RESPONSE converted from the result of the internal future.
      * @throws InterruptedException If interrupted inside of get of the internal future.
-     * @throws ExecutionException If the execution of the internal future failed, the response could not be verified or the conversion to the return type failed.
-     * @throws TimeoutException If get on the internal future times out.
+     * @throws ExecutionException   If the execution of the internal future failed, the response could not be verified or the conversion to the return type failed.
+     * @throws TimeoutException     If get on the internal future times out.
      */
     @Override
     public RETURN get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {

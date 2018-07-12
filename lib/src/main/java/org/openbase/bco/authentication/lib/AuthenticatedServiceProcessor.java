@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -62,11 +62,12 @@ public class AuthenticatedServiceProcessor {
     /**
      * Method used by the server which performs an authenticated action.
      *
-     * @param <RECEIVE>          The type of value that the server receives to perform its action,
-     * @param <RETURN>           The type of value that the server responds with.
-     * @param authenticatedValue The authenticatedValue which is send with the request.
-     * @param internalClass      Class of type RECEIVE needed to decrypt the received type.
-     * @param executable         Interface defining the cation that the server performs.
+     * @param <RECEIVE>             The type of value that the server receives to perform its action,
+     * @param <RETURN>              The type of value that the server responds with.
+     * @param authenticatedValue    The authenticatedValue which is send with the request.
+     * @param internalClass         Class of type RECEIVE needed to decrypt the received type.
+     * @param transactionIdProvider The object providing the transaction id to be set in the authenticated value.
+     * @param executable            Interface defining the cation that the server performs.
      * @return An AuthenticatedValue which should be send as a response.
      * @throws CouldNotPerformException If one step can not be done, e.g. ticket invalid or encryption failed.
      * @throws InterruptedException     It interrupted while checking permissions.
@@ -154,6 +155,7 @@ public class AuthenticatedServiceProcessor {
      * @param authorizationGroupMap Map of authorization groups to verify if this action can be performed.
      * @param locationMap           Map of locations to verify if this action can be performed.
      * @param internalClass         Class of type RECEIVE needed to decrypt the received type.
+     * @param transactionIdProvider The object providing the transaction id to be set in the authenticated value.
      * @param executable            Interface defining the cation that the server performs.
      * @param configRetrieval       Interface defining which unitConfig should be used to verify the execution of the action.
      * @param authorizationType     The type of authorization which are performed (read, write or access).
@@ -201,6 +203,7 @@ public class AuthenticatedServiceProcessor {
      * @param authorizationGroupMap Map of authorization groups to verify if this action can be performed.
      * @param locationMap           Map of locations to verify if this action can be performed.
      * @param internalClass         Class of type RECEIVE needed to decrypt the received type.
+     * @param transactionIdProvider The object providing the transaction id to be set in the authenticated value.
      * @param executable            Interface defining the cation that the server performs.
      * @param configRetrieval       Interface defining which unitConfig should be used to verify the execution of the action.
      * @return An AuthenticatedValue which should be send as a response.
@@ -223,9 +226,11 @@ public class AuthenticatedServiceProcessor {
      *
      * @param <SEND>              The type which is send to server for this request.
      * @param <RESPONSE>          The type with which the server should respond.
+     * @param <REMOTE>            A combination of a data provider and a transaction id provider. Usually a remote.
      * @param message             The message which is encrypted and send to the server.
      * @param responseClass       Class of type RESPONSE to resolve internal types.
      * @param sessionManager      The session manager from which the ticket is used if a user it logged in.
+     * @param remote              The remote providing a transaction id and a data provider which is updated and triggers transaction id verification.
      * @param internalRequestable Interface for the internal authenticated request which is called.
      * @return A future containing the response.
      * @throws CouldNotPerformException If a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
@@ -347,7 +352,7 @@ public class AuthenticatedServiceProcessor {
          *
          * @param receive Decrypted object that might lead to the UnitConfig.
          * @return UnitConfig that allows to decide whether the user has the permission to perform an action.
-         * @throws CouldNotPerformException
+         * @throws CouldNotPerformException if the unit config could not be retrieved for the decrypted object.
          */
         UnitConfig retrieve(final RECEIVE receive) throws CouldNotPerformException;
     }

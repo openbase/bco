@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -129,6 +129,7 @@ public class CredentialStore {
     /**
      * Sets the permissions to UNIX 600 so only the owner has permission to read and to write to this protected file.
      *
+     * @param file the file that will be protected
      * @throws CouldNotPerformException is thrown if the file could not be protected.
      */
     public static void protectFile(final File file) throws CouldNotPerformException {
@@ -145,7 +146,7 @@ public class CredentialStore {
                 file.setExecutable(true, true);
             }
         } catch (IOException ex) {
-            throw new CouldNotPerformException("Could not protect "+file.getAbsolutePath(), ex);
+            throw new CouldNotPerformException("Could not protect " + file.getAbsolutePath(), ex);
         }
     }
 
@@ -170,11 +171,11 @@ public class CredentialStore {
     /*
      * --------------------- MANIPULATIVE METHODS ------------------------------
      */
+
     /**
      * Determines if there is an entry with given id.
      *
      * @param id the id to check
-     *
      * @return true if existent, false otherwise
      */
     public boolean hasEntry(String id) {
@@ -212,9 +213,7 @@ public class CredentialStore {
      * Get the encrypted login credentials for a given user.
      *
      * @param userId ID of the user whose credentials should be retrieved.
-     *
      * @return The encrypted credentials, if they could be found.
-     *
      * @throws NotAvailableException If the user does not exist in the
      *                               credentials storage.
      */
@@ -263,10 +262,8 @@ public class CredentialStore {
      * Tells whether a given user has administrator permissions.
      *
      * @param userId ID of the user whose credentials should be retrieved.
-     *
      * @return Boolean value indicating whether the user has administrator
      * permissions.
-     *
      * @throws NotAvailableException If the user does not exist in the
      *                               credentials storage.
      */
@@ -283,7 +280,6 @@ public class CredentialStore {
      *
      * @param userId  user to change flag of
      * @param isAdmin boolean whether user is admin or not
-     *
      * @throws NotAvailableException Throws if there is no user given userId
      */
     public void setAdmin(String userId, boolean isAdmin) throws NotAvailableException {

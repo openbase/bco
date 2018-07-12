@@ -53,7 +53,6 @@ public class CachedAuthenticationRemote {
      * which is activated which will be returned. This instance is saved and will be returned on all following calls.
      *
      * @return a cashed authenticator remote
-     * @throws InterruptedException if in the first call to this methods the creation and activation of the remote is interrupted
      * @throws NotAvailableException if the cashed instance is not available
      */
     public synchronized static AuthenticationRemote getRemote() throws NotAvailableException {
