@@ -10,12 +10,12 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -26,19 +26,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.layer.unit.LightController;
 import org.openbase.bco.dal.remote.unit.LightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import org.slf4j.LoggerFactory;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.dal.LightDataType.LightData;
 
 import static org.junit.Assert.assertEquals;
 
@@ -91,7 +87,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+        PowerState state = TimestampProcessor.updateTimestampWithCurrentTime(PowerState.newBuilder().setValue(PowerState.State.OFF)).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightRemote.getId()).applyDataUpdate(state, ServiceType.POWER_STATE_SERVICE);
         lightRemote.requestData().get();
         assertEquals("Light has not been set in time!", state.getValue(), lightRemote.getPowerState().getValue());

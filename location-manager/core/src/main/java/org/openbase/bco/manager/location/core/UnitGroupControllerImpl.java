@@ -99,7 +99,7 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
 
     public UnitGroupControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UnitGroupControllerImpl.class, UnitGroupData.newBuilder());
-        this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this) {
+        this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this, false) {
             @Override
             protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
                 return getSupportedServiceTypes();
