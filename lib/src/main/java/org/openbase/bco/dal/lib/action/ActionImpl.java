@@ -279,6 +279,7 @@ public class ActionImpl implements Action {
 
     private void setRequestedState() throws CouldNotPerformException {
         try (ClosableDataBuilder dataBuilder = unit.getDataBuilder(this)) {
+
             // set the responsible action for the service attribute
             Message.Builder serviceStateBuilder = serviceAttribute.toBuilder();
             Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);

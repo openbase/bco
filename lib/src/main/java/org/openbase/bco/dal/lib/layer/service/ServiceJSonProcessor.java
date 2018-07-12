@@ -54,7 +54,7 @@ public class ServiceJSonProcessor extends ProtoBufJSonProcessor {
     @Override
     public String serialize(final Object serviceAttribute) throws CouldNotPerformException {
         final List<String> filteredFieldList = new ArrayList<>();
-        filteredFieldList.add(TimestampProcessor.TIMESTEMP_FIELD.toLowerCase());
+        filteredFieldList.add(TimestampProcessor.TIMESTEMP_FIELD_NAME);
         filteredFieldList.add(Service.RESPONSIBLE_ACTION_FIELD_NAME);
         return serialize((Message) serviceAttribute, filteredFieldList);
     }

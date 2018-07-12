@@ -79,10 +79,10 @@ import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.timing.TimestampType.Timestamp;
 
+import java.sql.Time;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -94,6 +94,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -246,6 +247,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
+     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -383,7 +385,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
             final String serviceInterfaceName =
                     StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name()) +
-                    StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name());
+                            StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name());
             serviceInterfaceMap.put(serviceInterfaceName, serviceDescription);
         }
 
@@ -519,9 +521,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         Message value = (Message) serviceArgument;
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
+
             // move current state to last state
-            Object currentState = Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.CURRENT, internalBuilder);
-            Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.LAST, internalBuilder, currentState);
+            updateLastWithCurrentState(serviceType, internalBuilder);
 
             Message newState;
 
@@ -540,7 +542,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     }
 
                     // ignore timestamps
-                    if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD.toLowerCase())) {
+                    if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD_NAME)) {
                         continue;
                     }
 
@@ -553,9 +555,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // choose with which value to update
                 if (equalFields) {
 
-                    // use the requested state but update the timestamp
-                    Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, TimestampProcessor.TIMESTEMP_FIELD.toLowerCase());
-                    newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
+                    // use the requested state but update the timestamp if available
+                    if(TimestampProcessor.hasTimestamp(value)) {
+                        Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, TimestampProcessor.TIMESTEMP_FIELD_NAME);
+                        newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
+                    } else {
+                        newState = requestedState;
+                    }
 
                     // clear requested state
                     Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
@@ -615,6 +621,41 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             applyDataUpdate(internalBuilder, serviceType);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + value + "] for " + this + "!", ex);
+        }
+    }
+
+    /**
+     * Method stores the current state into the last state.
+     *
+     * @param serviceType     defines which service state will be transferred.
+     * @param internalBuilder the builder where the changes are applied on.
+     */
+    protected void updateLastWithCurrentState(final ServiceType serviceType, final DB internalBuilder) {
+        try {
+            final Object currentState = Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.CURRENT, internalBuilder);
+            Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.LAST, internalBuilder, currentState);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not save last state!", ex, logger);
+        }
+    }
+
+    /**
+     * Method copies the responsible action of the source state to the target state.
+     * Source as well as the target state are resolved via the builder instance.
+     *
+     * @param sourceServiceType the type which refers the source service state.
+     * @param targetServiceType the type which refers the target service state.
+     * @param builder           the builder used to resolve the service states.
+     */
+    protected void copyResponsibleAction(final ServiceType sourceServiceType, final ServiceType targetServiceType, final DB builder) {
+        try {
+            final Message sourceServiceState = (Message) Services.invokeServiceMethod(sourceServiceType, PROVIDER, ServiceTempus.CURRENT, builder);
+            Message targetServiceState = (Message) Services.invokeServiceMethod(targetServiceType, PROVIDER, ServiceTempus.CURRENT, builder);
+            targetServiceState = Services.setResponsibleAction(Services.getResponsibleAction(sourceServiceState), targetServiceState);
+            Services.invokeOperationServiceMethod(targetServiceType, builder, targetServiceState);
+
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not copy responsible action!", ex, logger);
         }
     }
 
@@ -726,7 +767,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                         Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry().getEntryMap(),
                         Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
                         Type.ACCESS)) {
-                    throw new PermissionDeniedException("User[" + userId + "] has not rights to register a unitConfig");
+                    throw new PermissionDeniedException("User[" + userId + "] access permission denied!");
                 }
             }
         } catch (JPNotAvailableException ex) {

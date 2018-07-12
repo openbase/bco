@@ -22,10 +22,9 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.Message;
-import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.ProtocolMessageEnum;
+import com.google.protobuf.*;
+import org.openbase.bco.dal.lib.action.Action;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -33,9 +32,13 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -82,16 +85,6 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
             default:
                 throw new NotSupportedException(pattern, Services.class);
         }
-    }
-
-    public static String getServiceMethodSuffix(final ServiceType serviceType) throws CouldNotPerformException {
-
-        // return list prefix for multi services
-        if (serviceType.name().startsWith(Service.MULTI_SERVICE_PREFIX)) {
-            return "List";
-        }
-
-        return "";
     }
 
     /**
@@ -251,7 +244,7 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
     public static Method detectServiceMethod(final ServiceType serviceType, final String serviceMethodPrefix, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         String messageName = "?";
         try {
-            messageName = serviceMethodPrefix + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(serviceTempus.CURRENT.name(), "") + getServiceMethodSuffix(serviceType));
+            messageName = serviceMethodPrefix + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(serviceTempus.CURRENT.name(), ""));
             return instanceClass.getMethod(messageName, argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not detect service method[" + messageName + "]!", ex);
@@ -430,4 +423,43 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
     public static Class detectConsumerServiceInterface(final GeneratedMessage serviceState) throws ClassNotFoundException {
         return Class.forName(ConsumerService.class.getPackage().getName() + "." + serviceState.getClass().getSimpleName() + ConsumerService.class.getSimpleName());
     }
+
+    /**
+     * Method returns the action which is responsible for the given state.
+     * @param serviceState the state used to resolve the responsible action.
+     * @return the responsible action.
+     * @throws NotAvailableException is thrown if the related action can not be determine.
+     */
+    public static ActionDescription getResponsibleAction(final MessageOrBuilder serviceState) throws NotAvailableException {
+        final Object actionDescription = serviceState.getField(ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME));
+        if (actionDescription instanceof ActionDescription) {
+            return (ActionDescription) actionDescription;
+        }
+
+        throw new NotAvailableException("ActionDescription");
+    }
+
+    /**
+     * Method set the responsible action of the service state.
+     * @param responsibleAction the action to setup.
+     * @param serviceState the message which is updated with the given responsible action.
+     * @param <M> the type of the service state message.
+     * @return the modified message instance.
+     */
+    public static <M extends Message> M setResponsibleAction(final ActionDescription responsibleAction, final M serviceState) {
+        return (M) setResponsibleAction(responsibleAction, serviceState.toBuilder()).build();
+    }
+
+    /**
+     * Method set the responsible action of the service state.
+     * @param responsibleAction the action to setup.
+     * @param serviceStateBuilder the builder which is updated with the given responsible action.
+     * @param <B> the type of the service state builder.
+     * @return the modified builder instance.
+     */
+    public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) {
+        return (B) serviceStateBuilder.setField(ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME), responsibleAction);
+    }
 }
+
+

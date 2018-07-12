@@ -41,6 +41,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -54,6 +55,12 @@ import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
 
 import java.util.concurrent.Future;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  * * @author Tamino Huxohl
@@ -107,7 +114,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             // add meta config of service config with type ColorStateService
             ServiceConfig colorStateServiceConfig = null;
             for (ServiceConfig serviceConfig : config.getServiceConfigList()) {
-                if (serviceConfig.getServiceDescription().getServiceType() == ServiceType.COLOR_STATE_SERVICE) {
+                if (serviceConfig.getServiceDescription().getServiceType() == COLOR_STATE_SERVICE) {
                     colorStateServiceConfig = serviceConfig;
                 }
             }
@@ -129,7 +136,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
                 if (unitTemplateConfig.getId().equals(config.getUnitTemplateConfigId())) {
                     for (ServiceTemplateConfig serviceTempalteConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
-                        if (serviceTempalteConfig.getServiceType() == ServiceType.COLOR_STATE_SERVICE) {
+                        if (serviceTempalteConfig.getServiceType() == COLOR_STATE_SERVICE) {
                             colorStateServiceTemplateConfig = serviceTempalteConfig;
                         }
                     }
@@ -292,10 +299,22 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     protected void applyDataUpdate(ColorableLightData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case COLOR_STATE_SERVICE:
+
+                updateLastWithCurrentState(BRIGHTNESS_STATE_SERVICE, internalBuilder);
+                updateLastWithCurrentState(POWER_STATE_SERVICE, internalBuilder);
+
                 internalBuilder.getBrightnessStateBuilder().setBrightness(internalBuilder.getColorState().getColor().getHsbColor().getBrightness());
                 internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
+
+                copyResponsibleAction(COLOR_STATE_SERVICE, BRIGHTNESS_STATE_SERVICE, internalBuilder);
+                copyResponsibleAction(COLOR_STATE_SERVICE, POWER_STATE_SERVICE, internalBuilder);
+
                 break;
             case BRIGHTNESS_STATE_SERVICE:
+
+                updateLastWithCurrentState(COLOR_STATE_SERVICE, internalBuilder);
+                updateLastWithCurrentState(POWER_STATE_SERVICE, internalBuilder);
+
                 HSBColor hsb = internalBuilder.getColorState().getColor().getHsbColor().toBuilder().setBrightness(internalBuilder.getBrightnessState().getBrightness()).build();
                 Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsb).build();
                 internalBuilder.setColorState(internalBuilder.getColorState().toBuilder().setColor(color).build());
@@ -305,6 +324,10 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                 } else {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
                 }
+
+                copyResponsibleAction(BRIGHTNESS_STATE_SERVICE, COLOR_STATE_SERVICE, internalBuilder);
+                copyResponsibleAction(BRIGHTNESS_STATE_SERVICE, POWER_STATE_SERVICE, internalBuilder);
+
                 break;
         }
     }

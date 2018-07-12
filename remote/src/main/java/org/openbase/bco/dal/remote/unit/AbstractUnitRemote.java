@@ -334,6 +334,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
 
             for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
+                //todo why not handle latest state?
                 if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
                     continue;
                 }
