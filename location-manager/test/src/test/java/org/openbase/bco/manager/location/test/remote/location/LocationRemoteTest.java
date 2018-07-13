@@ -129,7 +129,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
         }
     }
 
-    private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException, NotAvailableException, InterruptedException {
+    private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException{
         for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getUnitType()).getServiceDescriptionList()) {
             if (serviceDescription.getServiceType() == serviceType && serviceDescription.getPattern() == servicePattern) {
                 return true;
