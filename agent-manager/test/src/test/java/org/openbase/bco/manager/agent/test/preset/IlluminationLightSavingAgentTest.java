@@ -85,9 +85,9 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 
         System.out.println("testIlluminationLightSavingAgent");
 
-        LocationRemote locationRemote = Units.getUnit(MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL), true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        LightSensorRemote lightSensorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.LIGHT_SENSOR, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, LightSensorRemote.class);
+        LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.COLORABLE_LIGHT);
+        LightSensorRemote lightSensorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.LIGHT_SENSOR, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, LightSensorRemote.class);
         LightSensorController lightSensorController = (LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId());
 
         UnitStateAwaiter<LightSensorData, LightSensorRemote> lightSensorStateAwaiter = new UnitStateAwaiter<>(lightSensorRemote);
@@ -174,7 +174,7 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 
     @Override
     UnitConfig getAgentConfig() throws CouldNotPerformException {
-        final UnitConfig.Builder agentConfig = generateAgentConfig(MockRegistry.ILLUMINATION_LIGHT_SAVING_AGENT_LABEL, ILLUMINATION_LIGHT_SAVING_AGENT_LABEL, MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).getId());
+        final UnitConfig.Builder agentConfig = MockRegistry.generateAgentConfig(MockRegistry.LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING, ILLUMINATION_LIGHT_SAVING_AGENT_LABEL, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN);
 
         // generate meta config
         final MetaConfig.Builder metaConfig = agentConfig.getMetaConfigBuilder();

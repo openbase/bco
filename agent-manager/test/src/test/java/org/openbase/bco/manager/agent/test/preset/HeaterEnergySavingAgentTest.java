@@ -89,8 +89,8 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
         Registries.waitForData();
 
-        LocationRemote locationRemote = Units.getUnit(MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL), true, Units.LOCATION);
-        TemperatureControllerRemote temperatureControllerRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.TEMPERATURE_CONTROLLER, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, Units.TEMPERATURE_CONTROLLER);
+        LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
+        TemperatureControllerRemote temperatureControllerRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.TEMPERATURE_CONTROLLER, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.TEMPERATURE_CONTROLLER);
         ConnectionRemote connectionRemote = Units.getUnitsByLabel("Stairs_Hell_Lookout", true, Units.CONNECTION).get(0);
         ReedContactRemote reedContactRemote = Units.getUnitsByLabel("Reed_Stairway_Window", true, Units.REED_CONTACT).get(0);
         ReedContactController reedContactController = (ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId());
@@ -140,6 +140,6 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     @Override
     UnitConfig getAgentConfig() throws CouldNotPerformException {
-        return generateAgentConfig(MockRegistry.HEATER_ENERGY_SAVING_AGENT_LABEL, HEATER_ENERGY_SAVING_AGENT_LABEL, MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).getId()).build();
+        return MockRegistry.generateAgentConfig(MockRegistry.LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING, HEATER_ENERGY_SAVING_AGENT_LABEL, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).build();
     }
 }

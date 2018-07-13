@@ -88,9 +88,9 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
         Registries.waitForData();
 
-        LocationRemote locationRemote = Units.getUnit(MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL), true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.MOTION_DETECTOR, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, Units.MOTION_DETECTOR);
+        LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.COLORABLE_LIGHT);
+        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.MOTION_DETECTOR, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.MOTION_DETECTOR);
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
 
         UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter<>(colorableLightRemote);
@@ -139,6 +139,6 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 
     @Override
     UnitConfig getAgentConfig() throws CouldNotPerformException {
-        return generateAgentConfig(MockRegistry.PRESENCE_LIGHT_AGENT_LABEL, PRESENCE_LIGHT_AGENT_LABEL, MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).getId()).build();
+        return MockRegistry.generateAgentConfig(MockRegistry.LABEL_AGENT_CLASS_PRESENCE_LIGHT, PRESENCE_LIGHT_AGENT_LABEL, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).build();
     }
 }

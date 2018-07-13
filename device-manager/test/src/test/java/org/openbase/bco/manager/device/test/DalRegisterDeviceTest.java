@@ -84,7 +84,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         System.out.println("testRegisterDeviceWhileRunning");
 
         // create a device class, save and remove the second unit template config
-        DeviceClass.Builder deviceClassBuilder = MockRegistry.getDeviceClass("TestRegisterDeviceWhileRunning", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG", UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
+        DeviceClass.Builder deviceClassBuilder = MockRegistry.generateDeviceClass("TestRegisterDeviceWhileRunning", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG", UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
         UnitTemplateConfig powerSwitchTemplateConfig = deviceClassBuilder.getUnitTemplateConfig(1);
         deviceClassBuilder.removeUnitTemplateConfig(1);
 
@@ -93,7 +93,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 //        mockRegistry.waitForDeviceClass(deviceClass);
 
         // register a device with that class and retrieve the colorable light
-        UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.getDeviceConfig(DEVICE_CONFIG_LABEL, "DeviceManagerLauncherTestSerialNumber", deviceClass)).get();
+        UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.generateDeviceConfig(DEVICE_CONFIG_LABEL, "DeviceManagerLauncherTestSerialNumber", deviceClass)).get();
         UnitConfig colorableLightConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
 
         // start a unit remote to that colorable light
@@ -170,7 +170,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         String deviceClassLabel = "SimpleDevice";
         String productNumber = "ab42-123g";
         String company = "SimpleManufacturing";
-        DeviceClass.Builder deviceClassBuilder = MockRegistry.getDeviceClass(deviceClassLabel, productNumber, company, UnitType.COLORABLE_LIGHT, UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
+        DeviceClass.Builder deviceClassBuilder = MockRegistry.generateDeviceClass(deviceClassLabel, productNumber, company, UnitType.COLORABLE_LIGHT, UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
 
         DeviceClass deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
         System.out.println("Registered deviceClass[" + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "]");
@@ -212,7 +212,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
             for (int i = 0; i < 10; ++i) {
                 String serialNumber = productNumber + "-" + i;
                 System.out.println("Register device");
-                final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.getDeviceConfig(deviceConfigLabel + "_" + i, serialNumber, deviceClass)).get();
+                final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.generateDeviceConfig(deviceConfigLabel + "_" + i, serialNumber, deviceClass)).get();
                 assertTrue("DeviceUnitConfig[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel())+ "] is not available after registration!", Registries.getUnitRegistry().containsUnitConfigById(deviceUnitConfig.getId()));
                 final UnitConfig colorableLightConfig1 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
                 final UnitConfig colorableLightConfig2 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(1));

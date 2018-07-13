@@ -21,11 +21,8 @@ package org.openbase.bco.manager.agent.test.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
-import org.junit.After;
 import static org.junit.Assert.assertEquals;
-import org.junit.Before;
+
 import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
@@ -41,23 +38,19 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 import rst.domotic.unit.location.LocationDataType.LocationData;
-import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
@@ -103,9 +96,9 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
         Registries.waitForData();
 
-        LocationRemote locationRemote = Units.getUnit(MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL), true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.MOTION_DETECTOR, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, Units.MOTION_DETECTOR);
+        LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.COLORABLE_LIGHT);
+        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.MOTION_DETECTOR, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.MOTION_DETECTOR);
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
 
         UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter<>(colorableLightRemote);
@@ -156,6 +149,6 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     @Override
     UnitConfig getAgentConfig() throws CouldNotPerformException {
-        return generateAgentConfig(MockRegistry.ABSENCE_ENERGY_SAVING_AGENT_LABEL, ABSENCE_ENERGY_SAVING_AGENT_LABEL, MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).getId()).build();
+        return MockRegistry.generateAgentConfig(MockRegistry.LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING, ABSENCE_ENERGY_SAVING_AGENT_LABEL, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).build();
     }
 }
