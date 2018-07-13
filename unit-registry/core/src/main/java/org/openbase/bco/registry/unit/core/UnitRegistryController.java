@@ -101,8 +101,6 @@ import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.spatial.ShapeType.Shape;
 
-import javax.crypto.BadPaddingException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -995,14 +993,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             }
 
             // the requested authorization token is valid, so encrypt it with the service server secret key and return it
-            try {
-                return EncryptionHelper.encryptSymmetric(authorizationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
-            } catch (IOException | CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not encrypt authorization token", ex);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new CouldNotPerformException("Interrupted while generating an authorization token", ex);
-            }
+            return EncryptionHelper.encryptSymmetric(authorizationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
         });
     }
 
@@ -1045,8 +1036,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                     response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
                     response.setValue(EncryptionHelper.encryptSymmetric(Base64.getEncoder().encodeToString(internalFuture.get().toByteArray()), ticketEvaluationWrapper.getSessionKey()));
                     return response.build();
-                } catch (IOException | BadPaddingException ex) {
-                    throw new CouldNotPerformException("Encryption/Decryption of internal value has failed", ex);
                 } catch (InterruptedException ex) {
                     if (internalFuture != null && !internalFuture.isDone()) {
                         internalFuture.cancel(true);
@@ -1064,14 +1053,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public Future<ByteString> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             // encrypt the authentication token
-            try {
-                return EncryptionHelper.encryptSymmetric(authenticationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
-            } catch (IOException | CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not encrypt authentication token", ex);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new CouldNotPerformException("Interrupted while generating an authenticationToken token", ex);
-            }
+            return EncryptionHelper.encryptSymmetric(authenticationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
         });
     }
 
@@ -1108,8 +1090,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                     response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
                     response.setValue(EncryptionHelper.encryptSymmetric(Base64.getEncoder().encodeToString(internalFuture.get().toByteArray()), ticketEvaluationWrapper.getSessionKey()));
                     return response.build();
-                } catch (IOException | BadPaddingException ex) {
-                    throw new CouldNotPerformException("Encryption/Decryption of internal value has failed", ex);
                 } catch (InterruptedException ex) {
                     if (internalFuture != null && !internalFuture.isDone()) {
                         internalFuture.cancel(true);

@@ -43,9 +43,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -158,11 +155,8 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
         // register at authenticator
         final LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder().setId(adminId);
-        try {
-            loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(ADMIN_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
-        } catch (IOException ex) {
-            throw new CouldNotPerformException("Could not encrypt password", ex);
-        }
+        loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(ADMIN_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
+
         try {
             CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
         } catch (ExecutionException ex) {
@@ -205,7 +199,9 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
     private void registerBCOAtAuthenticator(final String bcoId, final String adminId) throws CouldNotPerformException {
         // login as admin
-        if (!SessionManager.getInstance().login(adminId, ADMIN_PASSWORD)) {
+        try {
+            SessionManager.getInstance().login(adminId, ADMIN_PASSWORD);
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not login as the default admin to register the bco user at the authenticator");
         }
 
