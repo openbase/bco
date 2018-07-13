@@ -31,6 +31,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -97,7 +99,7 @@ public class EncryptionHelperTest {
         assertEquals(str, decrypted);
     }
 
-    @Test(expected = BadPaddingException.class)
+    @Test(expected = CouldNotPerformException.class)
     public void testExceptionsWithWrongKeySymmetric() throws Exception {
         LOGGER.info("testExceptionsWithWrongKey");
 
@@ -110,7 +112,7 @@ public class EncryptionHelperTest {
         EncryptionHelper.decryptSymmetric(encryptedValue, wrongPassword, String.class);
     }
 
-    @Test(expected = BadPaddingException.class)
+    @Test(expected = CouldNotPerformException.class)
     public void testExceptionsWithWrongKeyAsymmetric() throws Exception {
         LOGGER.info("testExceptionsWithWrongKeyAsymmetric");
 

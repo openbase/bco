@@ -30,8 +30,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-import javax.crypto.BadPaddingException;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
@@ -90,11 +88,7 @@ public class AuthenticatedValueFuture<RETURN> extends AuthenticatedFuture<RETURN
     protected RETURN convertFromInternal(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
             if (getSessionManager().isLoggedIn()) {
-                try {
-                    return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), getSessionManager().getSessionKey(), getReturnClass());
-                } catch (BadPaddingException | IOException ex) {
-                    throw new CouldNotPerformException("Decrypting result of internal future failed!", ex);
-                }
+                return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), getSessionManager().getSessionKey(), getReturnClass());
             } else {
                 try {
                     if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {

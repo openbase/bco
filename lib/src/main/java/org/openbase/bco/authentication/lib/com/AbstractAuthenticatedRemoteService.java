@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib.com;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -42,6 +42,10 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
      * Observer updating data on login changes.
      */
     private final Observer<String> loginObserver;
+    /**
+     * Data object for other permissions;
+     */
+    private M otherData;
 
     public AbstractAuthenticatedRemoteService(Class<M> dataClass) {
         super(dataClass);
@@ -49,12 +53,16 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
 
         this.loginObserver = (source, data) -> {
             // somebody new logged in
-            if (isSyncRunning()) {
-                // if a sync task is still running cancel it because it cannot be interpreted anymore anyway
-                requestData().cancel(true);
+            if (otherData != null) {
+                setData(otherData);
             }
-            // trigger a new data request to update data for the user
-            requestData();
+            if (isSyncRunning()) {
+                // if a sync task is still running restart it
+                restartSyncTask();
+            } else {
+                // trigger a new data request to update data for the user
+                requestData();
+            }
         };
     }
 
@@ -86,31 +94,38 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
     }
 
     private class AuthenticatedUpdateHandler implements Handler {
-        
+
         @Override
         public void internalNotify(Event event) {
             try {
                 logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
-                if (event.getData() != null && SessionManager.getInstance().isLoggedIn()) {
-                    // received a new data event from the controller which is filtered for other permissions, so trigger an authenticated request
-                    GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                        if (isSyncRunning()) {
-                            // a sync task is currently running so wait for it to finish and trigger a new one
-                            // to make sure that the latest data update is received
-                            try {
-                                requestData().get(10, TimeUnit.SECONDS);
-                            } catch (InterruptedException ex) {
-                                Thread.currentThread().interrupt();
-                                return null;
-                            } catch (ExecutionException | TimeoutException ex) {
-                                throw new CouldNotPerformException("Could not wait for running sync task", ex);
+                if (event.getData() != null) {
+                    otherData = (M) event.getData();
+                    if (SessionManager.getInstance().isLoggedIn()) {
+                        // received a new data event from the controller which is filtered for other permissions, so trigger an authenticated request
+                        GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+                            if (isSyncRunning()) {
+                                // a sync task is currently running so wait for it to finish and trigger a new one
+                                // to make sure that the latest data update is received
+                                try {
+                                    requestData().get(10, TimeUnit.SECONDS);
+                                } catch (InterruptedException ex) {
+                                    Thread.currentThread().interrupt();
+                                    return null;
+                                } catch (ExecutionException | TimeoutException ex) {
+                                    throw new CouldNotPerformException("Could not wait for running sync task", ex);
+                                } catch (CancellationException ex) {
+                                    logger.error("Cancellation exception", ex);
+                                    // request data was cancelled and is most likely done again by the login observer
+                                    return null;
+                                }
                             }
-                        }
-                        requestData();
-                        return null;
-                    });
-                } else {
-                    applyEventUpdate(event);
+                            requestData();
+                            return null;
+                        });
+                    } else {
+                        applyEventUpdate(event);
+                    }
                 }
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);

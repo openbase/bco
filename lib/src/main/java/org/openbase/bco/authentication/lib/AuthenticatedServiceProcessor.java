@@ -89,7 +89,6 @@ public class AuthenticatedServiceProcessor {
                     throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
                 }
                 // ticket authenticator is available so a logged in user has requested this action
-                try {
                     // evaluate the users ticket
                     AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
 
@@ -105,9 +104,6 @@ public class AuthenticatedServiceProcessor {
                     response.setValue(EncryptionHelper.encryptSymmetric(result, ticketEvaluationWrapper.getSessionKey()));
                     // add updated ticket to response
                     response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
-                } catch (IOException | BadPaddingException ex) {
-                    throw new CouldNotPerformException("Encryption/Decryption of internal value has failed", ex);
-                }
             } else {
                 // ticket no available so request without login
                 try {
@@ -262,30 +258,20 @@ public class AuthenticatedServiceProcessor {
             final SessionManager sessionManager,
             final InternalRequestable internalRequestable) throws CouldNotPerformException {
         if (sessionManager.isLoggedIn()) {
-            // check if login is still valid
-            sessionManager.isAuthenticated();
             // someone is logged in with the session manager
             try {
-                try {
-                    // initialize a ticket for the request
-                    TicketAuthenticatorWrapper ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionManager.getSessionKey(), sessionManager.getTicketAuthenticatorWrapper());
-                    AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
-                    // add the ticket to the authenticated value which is send
-                    authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+                // initialize a ticket for the request
+                TicketAuthenticatorWrapper ticketAuthenticatorWrapper = sessionManager.initializeServiceServerRequest();
+                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+                // add the ticket to the authenticated value which is send
+                authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
 
-                    // encrypt the message which is send with the session key
-                    try {
-                        authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(message, sessionManager.getSessionKey()));
-                    } catch (IOException ex) {
-                        throw new CouldNotPerformException("Could not encrypt userConfig", ex);
-                    }
-                    // perform the internal request
-                    Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
-                    // wrap the response in an authenticated synchronization future
-                    return new AuthenticationFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
-                } catch (IOException | BadPaddingException ex) {
-                    throw new CouldNotPerformException("Could not initialize service server request", ex);
-                }
+                // encrypt the message which is send with the session key
+                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(message, sessionManager.getSessionKey()));
+                // perform the internal request
+                Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
+                // wrap the response in an authenticated synchronization future
+                return new AuthenticationFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not request authenticated Action!", ex);
             }

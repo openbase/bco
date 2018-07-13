@@ -32,8 +32,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-import javax.crypto.BadPaddingException;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutionException;
@@ -164,11 +162,11 @@ public class AuthenticationFuture<RETURN> implements Future<RETURN> {
                 return;
             }
 
-            sessionManager.setTicketAuthenticatorWrapper(AuthenticationClientHandler.handleServiceServerResponse(
+            sessionManager.updateTicketAuthenticatorWrapper(AuthenticationClientHandler.handleServiceServerResponse(
                     this.sessionManager.getSessionKey(),
                     this.wrapper,
                     ticketAuthenticatorWrapper));
-        } catch (IOException | BadPaddingException | CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not verify ServiceServer Response", ex);
         }
     }
@@ -184,11 +182,7 @@ public class AuthenticationFuture<RETURN> implements Future<RETURN> {
     private RETURN convertFromInternal(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
             if (sessionManager.isLoggedIn()) {
-                try {
-                    return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), sessionManager.getSessionKey(), returnClass);
-                } catch (BadPaddingException | IOException ex) {
-                    throw new CouldNotPerformException("Decrypting result of internal future failed!", ex);
-                }
+                return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), sessionManager.getSessionKey(), returnClass);
             } else {
                 try {
                     if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
@@ -210,7 +204,7 @@ public class AuthenticationFuture<RETURN> implements Future<RETURN> {
     }
 
     public AuthenticatedValue getAuthenticatedValue() throws NotAvailableException {
-        if(authenticatedValue == null) {
+        if (authenticatedValue == null) {
             throw new NotAvailableException("authenticated value");
         }
 

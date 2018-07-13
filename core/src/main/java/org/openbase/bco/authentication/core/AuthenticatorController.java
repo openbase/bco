@@ -52,14 +52,11 @@ import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthentic
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.domotic.authentication.TicketType.Ticket;
 
-import javax.crypto.BadPaddingException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.concurrent.Future;
 
 /**
@@ -215,42 +212,36 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServiceSecretKey, serviceServerSecretKey, ticketAuthenticatorWrapper, ticketValidityTime);
-            } catch (RejectedException | BadPaddingException ex) {
+            } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
                 throw new RejectedException(ex.getMessage());
-            } catch (IOException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 return AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper, ticketValidityTime);
                 // TODO: Validate that user/clientId exists in store. Otherwise somebody could still be logged in after being removed from store
             } catch (SessionExpiredException ex) {
                 throw ex;
-            } catch (RejectedException | BadPaddingException ex) {
+            } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
                 throw new RejectedException(ex.getMessage());
-            } catch (IOException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException {
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 // Validate the given authenticator and ticket.
@@ -281,19 +272,16 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 store.setCredentials(userId, newCredentials);
 
                 return response;
-            } catch (RejectedException | BadPaddingException ex) {
+            } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
                 throw new RejectedException(ex.getMessage());
-            } catch (IOException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException {
+    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 if (initialPassword != null && (store.hasOnlyServiceServer() || JPService.testMode())) {
@@ -339,19 +327,16 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 store.addCredentials(newId, key, loginCredentialsChange.getAdmin());
 
                 return response;
-            } catch (RejectedException | BadPaddingException ex) {
+            } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
                 throw new RejectedException(ex.getMessage());
-            } catch (IOException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException {
+    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 // validate the given authenticator and ticket.
@@ -385,19 +370,16 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 this.store.removeEntry(idToRemove);
 
                 return response;
-            } catch (RejectedException | BadPaddingException ex) {
+            } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
                 throw new RejectedException(ex.getMessage());
-            } catch (IOException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException {
+    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 // validate the given authenticator and ticket.
@@ -431,19 +413,16 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 this.store.setAdmin(newId, loginCredentialsChange.getAdmin());
 
                 return response;
-            } catch (RejectedException | BadPaddingException ex) {
+            } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
                 throw new RejectedException(ex.getMessage());
-            } catch (IOException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 // Validate the given authenticator and ticket.
@@ -463,22 +442,17 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(this.serviceServerSecretKey, clientServerSessionKey));
 
                 return authenticatedValue.build();
-            } catch (RejectedException | BadPaddingException ex) {
+            } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
                 throw new RejectedException(ex.getMessage());
-            } catch (IOException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<Boolean> isAdmin(String userId) throws NotAvailableException {
-        return GlobalCachedExecutorService.submit(() -> {
-            return store.isAdmin(userId);
-        });
+    public Future<Boolean> isAdmin(String userId) {
+        return GlobalCachedExecutorService.submit(() -> store.isAdmin(userId));
     }
 
     /**
@@ -494,8 +468,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     @Override
     public Future<Boolean> hasUser(String userId) {
-        return GlobalCachedExecutorService.submit(() -> {
-            return store.hasEntry(userId);
-        });
+        return GlobalCachedExecutorService.submit(() -> store.hasEntry(userId));
     }
 }

@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
@@ -29,8 +30,6 @@ import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthentic
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.timing.TimestampType.Timestamp;
 
-import javax.crypto.BadPaddingException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,10 +50,9 @@ public class AuthenticationClientHandler {
      * @return Returns a list of objects containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
      * 2. A SessionKey representing the TGS session key
-     * @throws BadPaddingException If the decryption of the session key fails, probably because the entered key was wrong.
-     * @throws IOException         If de- or encryption fail because of a general I/O error.
+     * @throws CouldNotPerformException If de-/encryption of the ticket fails
      */
-    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] userKey, byte[] clientKey, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
+    public static List<Object> handleKeyDistributionCenterResponse(final String id, final byte[] userKey, final byte[] clientKey, final TicketSessionKeyWrapper wrapper) throws CouldNotPerformException {
         byte[] ticketGrantingServiceSessionKey = wrapper.getSessionKey().toByteArray();
 
         // decrypt TGS session key
@@ -96,10 +94,9 @@ public class AuthenticationClientHandler {
      * @return Returns a list of objects containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
      * 2. A SessionKey representing the TGS session key
-     * @throws BadPaddingException If the decryption of the session key fails, probably because the entered key was wrong.
-     * @throws IOException         If de- or encryption fail because of a general I/O error.
+     * @throws CouldNotPerformException If de-/encryption of the ticket fails
      */
-    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
+    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws CouldNotPerformException {
         if (isUser) {
             return handleKeyDistributionCenterResponse(id, key, null, wrapper);
         }
@@ -112,23 +109,22 @@ public class AuthenticationClientHandler {
      * Decrypts the ServiceServer (SS) session key with TGS session key
      * Creates an Authenticator containing the clientID and empty timestamp encrypted with the SS session key
      *
-     * @param clientID                        Identifier of the client - must be present in client database
+     * @param clientId                        Identifier of the client - must be present in client database
      * @param ticketGrantingServiceSessionKey TGS session key provided by handleKDCResponse()
      * @param wrapper                         TicketSessionKeyWrapper containing the ClientServerTicket and SS session key
      * @return Returns a list of objects containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
      * 2. A SessionKey representing the SS session key
-     * @throws IOException         If de- or encryption fail because of a general I/O error.
-     * @throws BadPaddingException If the decryption of the service server session key fails because of an incorrect key.
+     * @throws CouldNotPerformException If de-/encryption of the ticket fails
      */
-    public static List<Object> handleTicketGrantingServiceResponse(String clientID, byte[] ticketGrantingServiceSessionKey, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
+    public static List<Object> handleTicketGrantingServiceResponse(final String clientId, final byte[] ticketGrantingServiceSessionKey, final TicketSessionKeyWrapper wrapper) throws CouldNotPerformException {
         // decrypt SS session key
         byte[] SSSessionKey = EncryptionHelper.decryptSymmetric(wrapper.getSessionKey(), ticketGrantingServiceSessionKey, byte[].class);
 
         // create Authenticator with empty timestamp
         // set timestamp in initSSRequest()
         Authenticator.Builder authenticator = Authenticator.newBuilder();
-        authenticator.setClientId(clientID);
+        authenticator.setClientId(clientId);
 
         // create TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = TicketAuthenticatorWrapper.newBuilder();
@@ -149,18 +145,17 @@ public class AuthenticationClientHandler {
      * @param serviceServerSessionKey SS session key provided by handleTGSResponse()
      * @param wrapper                 TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and CST
      * @return Returns a wrapper class containing both the CST and modified Authenticator
-     * @throws BadPaddingException If the decryption of the Authenticator fails.
-     * @throws IOException         If de- or encryption fail because of a general I/O error.
+     * @throws CouldNotPerformException if de-/encrypting the authenticator inside the wrapper fails
      */
-    public static TicketAuthenticatorWrapper initServiceServerRequest(byte[] serviceServerSessionKey, TicketAuthenticatorWrapper wrapper) throws IOException, BadPaddingException {
+    public static TicketAuthenticatorWrapper initServiceServerRequest(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper wrapper) throws CouldNotPerformException {
         // decrypt authenticator
-        Authenticator.Builder authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class).toBuilder();
+        final Authenticator.Builder authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class).toBuilder();
 
         // update timestamp
         authenticator.setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
         // update ticket authenticatorWrapper
-        TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = wrapper.toBuilder();
+        final TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = wrapper.toBuilder();
         ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticator.build(), serviceServerSessionKey));
 
         return ticketAuthenticatorWrapper.build();
@@ -175,11 +170,9 @@ public class AuthenticationClientHandler {
      * @param lastWrapper             Last TicketAuthenticatorWrapper provided by either handleTGSResponse() or handleSSResponse()
      * @param currentWrapper          Current TicketAuthenticatorWrapper provided by (Remote?)
      * @return Returns an TicketAuthenticatorWrapperWrapper containing both the CST and Authenticator
-     * @throws RejectedException   If the timestamps do not match.
-     * @throws IOException         If the decryption of the Authenticators using the SSSessionKey fails.
-     * @throws BadPaddingException if an incorrect key is used
+     * @throws CouldNotPerformException If de-/encryption of the authenticator fails or the timestamps do not match
      */
-    public static TicketAuthenticatorWrapper handleServiceServerResponse(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper lastWrapper, final TicketAuthenticatorWrapper currentWrapper) throws RejectedException, IOException, BadPaddingException {
+    public static TicketAuthenticatorWrapper handleServiceServerResponse(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper lastWrapper, final TicketAuthenticatorWrapper currentWrapper) throws CouldNotPerformException {
         // decrypt authenticators
         Authenticator lastAuthenticator = EncryptionHelper.decryptSymmetric(lastWrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class);
         Authenticator currentAuthenticator = EncryptionHelper.decryptSymmetric(currentWrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class);
@@ -198,7 +191,7 @@ public class AuthenticationClientHandler {
      * @param then the second timestamp
      * @throws RejectedException thrown if the timestamps have a different time
      */
-    public static void validateTimestamp(Timestamp now, Timestamp then) throws RejectedException {
+    public static void validateTimestamp(final Timestamp now, final Timestamp then) throws RejectedException {
         if (now.getTime() + 1 != then.getTime()) {
             throw new RejectedException("Timestamps do not match");
         }

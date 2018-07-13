@@ -36,7 +36,6 @@ import rst.domotic.authentication.TicketType.Ticket;
 import rst.timing.IntervalType.Interval;
 import rst.timing.TimestampType.Timestamp;
 
-import javax.crypto.BadPaddingException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -100,12 +99,11 @@ public class AuthenticationServerHandler {
      * @param wrapper                        TicketAuthenticatorWrapperWrapper that contains both encrypted Authenticator and TGT
      * @param validityTime                   time in milli seconds how long the new ticket is valid from now on
      * @return Returns a wrapper class containing both the CST and SS session key
-     * @throws RejectedException                If timestamp in Authenticator does not fit to time period in TGT
-     *                                          or, if clientID in Authenticator does not match clientID in TGT
-     * @throws IOException                      If de- or encryption fail because of a general I/O error.
-     * @throws javax.crypto.BadPaddingException If the decryption of the Authenticator or TGT fails, probably because the wrong keys were used.
+     * @throws RejectedException        If timestamp in Authenticator does not fit to time period in TGT
+     *                                  or, if clientID in Authenticator does not match clientID in TGT
+     * @throws CouldNotPerformException If de- or encryption fail.
      */
-    public static TicketSessionKeyWrapper handleTGSRequest(final byte[] ticketGrantingServiceSecretKey, final byte[] serviceServerSecretKey, final TicketAuthenticatorWrapper wrapper, final long validityTime) throws RejectedException, IOException, BadPaddingException {
+    public static TicketSessionKeyWrapper handleTGSRequest(final byte[] ticketGrantingServiceSecretKey, final byte[] serviceServerSecretKey, final TicketAuthenticatorWrapper wrapper, final long validityTime) throws RejectedException, CouldNotPerformException {
         // decrypt ticket and authenticator
         Ticket ticketGrantingTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), ticketGrantingServiceSecretKey, Ticket.class);
         byte[] ticketGrantingServiceSessionKey = ticketGrantingTicket.getSessionKeyBytes().toByteArray();
@@ -139,12 +137,11 @@ public class AuthenticationServerHandler {
      * @param wrapper                TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and TGT
      * @param validityTime           time in milli seconds how long the new ticket is valid from now on
      * @return Returns a wrapper class containing both the modified CST and unchanged Authenticator
-     * @throws RejectedException                If timestamp in Authenticator does not fit to time period in TGT
-     *                                          or, if clientID in Authenticator does not match clientID in TGT
-     * @throws IOException                      If de- or encryption fail because of a general I/O error.
-     * @throws javax.crypto.BadPaddingException If the decryption of the Authenticator or CST fails, probably because the wrong keys were used.
+     * @throws RejectedException        If timestamp in Authenticator does not fit to time period in TGT
+     *                                  or, if clientID in Authenticator does not match clientID in TGT
+     * @throws CouldNotPerformException If de- or encryption fail.
      */
-    public static TicketAuthenticatorWrapper handleSSRequest(final byte[] serviceServerSecretKey, final TicketAuthenticatorWrapper wrapper, final long validityTime) throws RejectedException, IOException, BadPaddingException {
+    public static TicketAuthenticatorWrapper handleSSRequest(final byte[] serviceServerSecretKey, final TicketAuthenticatorWrapper wrapper, final long validityTime) throws CouldNotPerformException {
         // decrypt ticket and authenticator
         Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
         Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerTicket.getSessionKeyBytes().toByteArray(), Authenticator.class);

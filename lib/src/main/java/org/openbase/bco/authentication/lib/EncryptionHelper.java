@@ -1,33 +1,20 @@
 package org.openbase.bco.authentication.lib;
 
 import com.google.protobuf.ByteString;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import org.openbase.jul.exception.FatalImplementationErrorException;
 
 /*-
  * #%L
@@ -50,6 +37,7 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 /**
  * A key that is used to encrypt and decrypt tickets during Kerberos
  * authentication
@@ -58,13 +46,13 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
  */
 public class EncryptionHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EncryptionHelper.class);
+
     private static final String ASYMMETRIC_ALGORITHM = "RSA";
-//    private static final String ASYMMETRIC_TRANSFORMATION = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
     private static final String ASYMMETRIC_TRANSFORMATION = ASYMMETRIC_ALGORITHM;
     private static final int ASYMMETRIC_KEY_LENGTH = 1024;
 
     private static final String SYMMETRIC_ALGORITHM = "AES";
-//    private static final String SYMMETRIC_TRANSFORMATION = "AES/CBC/PKCS5Padding";
     private static final String SYMMETRIC_TRANSFORMATION = SYMMETRIC_ALGORITHM;
     private static final int SYMMETRIC_KEY_LENGTH = 128;
 
@@ -83,7 +71,7 @@ public class EncryptionHelper {
             SecretKey secretKey = keyGenerator.generateKey();
             return secretKey.getEncoded();
         } catch (NoSuchAlgorithmException ex) {
-            new FatalImplementationErrorException("Key transformation non existent", EncryptionHelper.class, ex);
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Key transformation non existent", EncryptionHelper.class, ex), LOGGER);
             return null;
         }
     }
@@ -100,13 +88,13 @@ public class EncryptionHelper {
             keyPairGenerator.initialize(ASYMMETRIC_KEY_LENGTH);
             return keyPairGenerator.generateKeyPair();
         } catch (NoSuchAlgorithmException ex) {
-            new FatalImplementationErrorException("Key transformation non existent", EncryptionHelper.class, ex);
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Key transformation non existent", EncryptionHelper.class, ex), LOGGER);
             return null;
         }
     }
 
     /**
-     * Hashes a string that has to be UTF-8 encoeded symmetrically.
+     * Hashes a string that has to be UTF-8 encoded symmetrically.
      *
      * @param string String to be hashed
      * @return Returns a byte[] representing the hashed string
@@ -118,7 +106,7 @@ public class EncryptionHelper {
             key = sha.digest(key);
             return Arrays.copyOf(key, 16);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            new FatalImplementationErrorException("Hashing[" + string + "] failed!", EncryptionHelper.class, ex);
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Hashing[" + string + "] failed!", EncryptionHelper.class, ex), LOGGER);
             return null;
         }
     }
@@ -127,12 +115,11 @@ public class EncryptionHelper {
      * Encrypts any Object into a ByteString using a symmetric key.
      *
      * @param object Object to be encrypted
-     * @param key byte[] to encrypt object with
+     * @param key    byte[] to encrypt object with
      * @return Returns encrypted object as ByteString
-     * @throws IOException Any IO error occurring during the serialization and
-     * encryption.
+     * @throws CouldNotPerformException if encrypting fails encryption.
      */
-    public static ByteString encryptSymmetric(final Serializable object, final byte[] key) throws IOException {
+    public static ByteString encryptSymmetric(final Serializable object, final byte[] key) throws CouldNotPerformException {
         return ByteString.copyFrom(encrypt(object, key, true));
     }
 
@@ -140,26 +127,24 @@ public class EncryptionHelper {
      * Encrypts any Object into a ByteString using a symmetric key
      *
      * @param object Object to be encrypted
-     * @param key byte[] to encrypt object with
+     * @param key    byte[] to encrypt object with
      * @return Returns encrypted object as ByteString
-     * @throws IOException Any IO error occurring during the serialization and
-     * encryption.
+     * @throws CouldNotPerformException if encrypting fails encryption.
      */
-    public static ByteString encryptAsymmetric(final Serializable object, final byte[] key) throws IOException {
+    public static ByteString encryptAsymmetric(final Serializable object, final byte[] key) throws CouldNotPerformException {
         return ByteString.copyFrom(encrypt(object, key, false));
     }
 
     /**
      * Encrypts any Object into a ByteString.
      *
-     * @param object Object to be encrypted
-     * @param key byte[] to encrypt object with
+     * @param object    Object to be encrypted
+     * @param key       byte[] to encrypt object with
      * @param symmetric if the encryption should use a symmetric or asymmetric key
      * @return Returns encrypted object as ByteString
-     * @throws IOException Any IO error occurring during the serialization and
-     * encryption.
+     * @throws CouldNotPerformException if encrypting fails encryption.
      */
-    public static byte[] encrypt(final Serializable object, final byte[] key, final boolean symmetric) throws IOException {
+    public static byte[] encrypt(final Serializable object, final byte[] key, final boolean symmetric) throws CouldNotPerformException {
         try {
             Key keyType;
             Cipher cipher;
@@ -182,57 +167,52 @@ public class EncryptionHelper {
                 }
             }
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException | InvalidKeySpecException ex) {
-            new FatalImplementationErrorException("Unable to encrypt object[" + object + "]", EncryptionHelper.class, ex);
-            return null;
+            throw new FatalImplementationErrorException("Unable to encrypt object[" + object + "]", EncryptionHelper.class, ex);
+        } catch (IOException ex) {
+            throw new CouldNotPerformException("Could not encrypt object[" + object + "]", ex);
         }
     }
 
     /**
      * Decrypt an object with a symmetric key and directly cast it to type T.
      *
-     * @param <T> the type to which the encrypted object is casted
+     * @param <T>             the type to which the encrypted object is casted
      * @param encryptedObject the object encrypted as a ByteString
-     * @param key the key used to decrypt the object
-     * @param encryptedClass the class to which the decrypted object is cast
+     * @param key             the key used to decrypt the object
+     * @param encryptedClass  the class to which the decrypted object is cast
      * @return the decrypted object cast as T
-     * @throws IOException if the encrypted data is corrupted
-     * @throws BadPaddingException if the wrong key is used for decryption
-     * @throws ClassCastException if the encrypted object can not be cast to T
+     * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class
      */
-    public static <T> T decryptSymmetric(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass) throws IOException, BadPaddingException {
+    public static <T> T decryptSymmetric(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass) throws CouldNotPerformException {
         return decrypt(encryptedObject, key, encryptedClass, true);
     }
 
     /**
      * Decrypt an object using an asymmetric key and directly cast it to type T.
      *
-     * @param <T> the type to which the encrypted object is casted
+     * @param <T>             the type to which the encrypted object is casted
      * @param encryptedObject the object encrypted as a ByteString
-     * @param key the key used to decrypt the object
-     * @param encryptedClass the class to which the decrypted object is cast
+     * @param key             the key used to decrypt the object
+     * @param encryptedClass  the class to which the decrypted object is cast
      * @return the decrypted object cast as T
-     * @throws IOException if the encrypted data is corrupted
-     * @throws BadPaddingException if the wrong key is used for decryption
-     * @throws ClassCastException if the encrypted object can not be cast to T
+     * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class
      */
-    public static <T> T decryptAsymmetric(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass) throws IOException, BadPaddingException {
+    public static <T> T decryptAsymmetric(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass) throws CouldNotPerformException {
         return decrypt(encryptedObject, key, encryptedClass, false);
     }
 
     /**
      * Decrypts a ByteString into an Object of type T.
      *
-     * @param <T> the type to which the encrypted object is casted
+     * @param <T>             the type to which the encrypted object is casted
      * @param encryptedObject ByteString to be decrypted
-     * @param key byte[] to decrypt the encrypted object with
-     * @param encryptedClass the class to which the decrypted object is cast
-     * @param symmetric if the key is symmetric or asymmetric
+     * @param key             byte[] to decrypt the encrypted object with
+     * @param encryptedClass  the class to which the decrypted object is cast
+     * @param symmetric       if the key is symmetric or asymmetric
      * @return Returns decrypted object as Object
-     * @throws BadPaddingException if a wrong key is used
-     * @throws IOException if corrupted data
-     * @throws ClassCastException if the encrypted object can not be cast to T
+     * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class
      */
-    public static <T> T decrypt(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws IOException, BadPaddingException, ClassCastException {
+    public static <T> T decrypt(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws CouldNotPerformException {
         return decrypt(encryptedObject.toByteArray(), key, encryptedClass, symmetric);
     }
 
@@ -240,17 +220,15 @@ public class EncryptionHelper {
     /**
      * Decrypts a ByteArray into an Object of type T.
      *
-     * @param <T> the type to which the encrypted object is casted
+     * @param <T>             the type to which the encrypted object is casted
      * @param encryptedObject ByteString to be decrypted
-     * @param key byte[] to decrypt the encrypted object with
-     * @param encryptedClass the class to which the decrypted object is cast
-     * @param symmetric if the key is symmetric or asymmetric
+     * @param key             byte[] to decrypt the encrypted object with
+     * @param encryptedClass  the class to which the decrypted object is cast
+     * @param symmetric       if the key is symmetric or asymmetric
      * @return Returns decrypted object as Object
-     * @throws BadPaddingException if a wrong key is used
-     * @throws IOException if corrupted data
-     * @throws ClassCastException if the encrypted object can not be cast to T
+     * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class
      */
-    public static <T> T decrypt(final byte[] encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws IOException, BadPaddingException, ClassCastException {
+    public static <T> T decrypt(final byte[] encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws CouldNotPerformException {
         try {
             Key keyType;
             Cipher cipher;
@@ -274,6 +252,8 @@ public class EncryptionHelper {
         } catch (NoSuchAlgorithmException | ClassNotFoundException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | InvalidKeySpecException ex) {
             new FatalImplementationErrorException("Decryption of [" + encryptedObject + "] failed", EncryptionHelper.class, ex);
             return null;
+        } catch (IOException | BadPaddingException | ClassCastException ex) {
+            throw new CouldNotPerformException("Could not decrypt byte array to object of type[" + encryptedClass.getName() + "]", ex);
         }
     }
 

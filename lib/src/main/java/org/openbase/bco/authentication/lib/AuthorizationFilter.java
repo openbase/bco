@@ -22,23 +22,18 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
-import java.util.Map;
-
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
-import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
-import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.AbstractFilter;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -102,10 +97,9 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
         }
         try {
             CachedAuthenticationRemote.getRemote();
-            sessionManager.isAuthenticated();
         } catch (CouldNotPerformException ex) {
             if (ex.getCause() instanceof InvalidStateException) {
-                System.out.println("Could not check authenticated because in shutdown");
+                LOGGER.debug("Could not check authenticated because in shutdown");
             } else {
                 throw new CouldNotPerformException("Authentication failed", ex);
             }

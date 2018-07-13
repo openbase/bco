@@ -160,11 +160,11 @@ public abstract class AuthenticatedFuture<RETURN, INTERNAL> implements Future<RE
                 return;
             }
 
-            sessionManager.setTicketAuthenticatorWrapper(AuthenticationClientHandler.handleServiceServerResponse(
+            sessionManager.updateTicketAuthenticatorWrapper(AuthenticationClientHandler.handleServiceServerResponse(
                     this.sessionManager.getSessionKey(),
                     this.wrapper,
                     ticketAuthenticatorWrapper));
-        } catch (IOException | BadPaddingException | CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not verify ServiceServer Response", ex);
         }
     }

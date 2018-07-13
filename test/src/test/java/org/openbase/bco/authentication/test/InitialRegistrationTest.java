@@ -69,6 +69,5 @@ public class InitialRegistrationTest extends AuthenticationTest {
         // test if login works afterwards
         SessionManager.getInstance().login(userId, password);
         assertTrue("User is not logged in", SessionManager.getInstance().isLoggedIn());
-        assertTrue("User cannot be authenticated", SessionManager.getInstance().isAuthenticated());
     }
 }

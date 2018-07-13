@@ -28,12 +28,8 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.processing.SimpleMessageProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
-import javax.crypto.BadPaddingException;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -60,16 +56,12 @@ public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends S
     public static <M extends GeneratedMessage> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final SessionManager sessionManager, final Class<M> dataClass) throws CouldNotPerformException {
         if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
             final byte[] sessionKey = sessionManager.getSessionKey();
-            if(sessionKey == null) {
+            if (sessionKey == null) {
                 // user has logged out while the request was running
                 throw new CouldNotPerformException("Could not decrypt authenticated message");
             }
 
-            try {
-                return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), sessionKey, dataClass);
-            } catch (BadPaddingException | IOException ex) {
-                throw new CouldNotPerformException("Decrypting result of authenticated value failed!", ex);
-            }
+            return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), sessionKey, dataClass);
         } else {
             try {
                 Method parseFrom = dataClass.getMethod("parseFrom", ByteString.class);

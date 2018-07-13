@@ -21,14 +21,9 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import javax.crypto.BadPaddingException;
-import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -42,6 +37,12 @@ import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.domotic.authentication.TicketType.Ticket;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * This class represents a Service Server and provides methods to validate Kerberos client-server-tickets.
@@ -58,7 +59,7 @@ public class AuthenticatedServerManager {
     private byte[] sessionKey;
     private final long ticketValidityTime;
 
-    private AuthenticatedServerManager() throws CouldNotPerformException, InterruptedException {
+    private AuthenticatedServerManager() throws CouldNotPerformException {
         try {
             this.ticketValidityTime = JPService.getProperty(JPSessionTimeout.class).getValue();
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
@@ -70,7 +71,7 @@ public class AuthenticatedServerManager {
         }
     }
 
-    public static synchronized AuthenticatedServerManager getInstance() throws CouldNotPerformException, InterruptedException {
+    public static synchronized AuthenticatedServerManager getInstance() throws CouldNotPerformException {
         if (instance == null) {
             instance = new AuthenticatedServerManager();
         }
@@ -88,10 +89,10 @@ public class AuthenticatedServerManager {
      *
      * @param wrapper TicketAuthenticatorWrapper holding information about the ticket's validity and the client ID.
      * @return A wrapper containing the client id, the updated ticket for the response and the session key.
-     * @throws IOException For I/O errors during the decryption.
-     * @throws RejectedException If the ticket is not valid.
+     * @throws CouldNotPerformException on de-/encryption errors
+     * @throws RejectedException        If the ticket is not valid.
      */
-    public TicketEvaluationWrapper evaluateClientServerTicket(final TicketAuthenticatorWrapper wrapper) throws IOException, RejectedException {
+    public TicketEvaluationWrapper evaluateClientServerTicket(final TicketAuthenticatorWrapper wrapper) throws CouldNotPerformException, RejectedException {
         try {
             // decrypt ticket and authenticator
             Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
@@ -111,11 +112,6 @@ public class AuthenticatedServerManager {
             response.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticatorBuilder.build(), clientServerTicket.getSessionKeyBytes().toByteArray()));
 
             return new TicketEvaluationWrapper(authenticator.getClientId(), clientServerTicket.getSessionKeyBytes().toByteArray(), response.build());
-        } catch (IOException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
-        } catch (BadPaddingException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new RejectedException(ex);
         } catch (RejectedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         }
@@ -153,8 +149,6 @@ public class AuthenticatedServerManager {
             list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(id, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
-        } catch (BadPaddingException ex) {
-            throw new CouldNotPerformException("The local private key is wrong.");
         } catch (ExecutionException | JPNotAvailableException | CouldNotPerformException | IOException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Login failed!", ex);
@@ -167,16 +161,19 @@ public class AuthenticatedServerManager {
      * @throws CouldNotPerformException
      * @throws InterruptedException
      */
-    private void requestServiceServerSecretKey() throws CouldNotPerformException, InterruptedException {
+    private void requestServiceServerSecretKey() throws CouldNotPerformException {
         try {
             ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey, ticketAuthenticatorWrapper);
             AuthenticatedValue value = CachedAuthenticationRemote.getRemote().requestServiceServerSecretKey(ticketAuthenticatorWrapper).get();
             ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, value.getTicketAuthenticatorWrapper());
 
             serviceServerSecretKey = EncryptionHelper.decryptSymmetric(value.getValue(), sessionKey, byte[].class);
-        } catch (ExecutionException | RejectedException | IOException | BadPaddingException ex) {
+        } catch (ExecutionException | CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Could not get the service server secret key.", ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Interrupted while requesting key", ex);
         }
     }
 
@@ -204,8 +201,8 @@ public class AuthenticatedServerManager {
         /**
          * Create a new wrapper containing the updated ticket, the user id and the session key.
          *
-         * @param userId The id of the user whose ticket was evaluated.
-         * @param sessionKey The session key of the session of the user whose ticket was evaluated.
+         * @param userId                     The id of the user whose ticket was evaluated.
+         * @param sessionKey                 The session key of the session of the user whose ticket was evaluated.
          * @param ticketAuthenticatorWrapper The updated ticket which should be send as a response to the client.
          */
         public TicketEvaluationWrapper(final String userId, final byte[] sessionKey, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {

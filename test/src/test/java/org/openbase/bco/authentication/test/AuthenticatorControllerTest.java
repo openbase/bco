@@ -23,14 +23,12 @@ package org.openbase.bco.authentication.test;
  */
 
 import org.junit.*;
-import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.bco.authentication.mock.MockCredentialStore;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
@@ -126,7 +124,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000, expected = BadPaddingException.class)
+    @Test(timeout = 5000, expected = CouldNotPerformException.class)
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
 
@@ -314,17 +312,5 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
 
         // handle SS response on client side
         AuthenticationClientHandler.handleServiceServerResponse(clientSSSessionKey, request1, response1);
-
-        SessionManager manager = new SessionManager(clientSSSessionKey);
-        manager.setTicketAuthenticatorWrapper(response2);
-        manager.setTicketAuthenticatorWrapper(response1);
-
-        AuthenticatorType.Authenticator response2auth = EncryptionHelper.decryptSymmetric(response2.getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
-        AuthenticatorType.Authenticator sessionManagerAuth = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
-
-        System.err.println(response2auth.getTimestamp().getTime());
-        System.err.println(sessionManagerAuth.getTimestamp().getTime());
-
-        Assert.assertTrue(response2auth.getTimestamp().getTime() == sessionManagerAuth.getTimestamp().getTime());
     }
 }

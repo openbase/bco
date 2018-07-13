@@ -55,30 +55,26 @@ public class CredentialStore {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
     protected final HashMap<String, LoginCredentials> credentials;
     private final String filename;
-    private final File credentialFile;
     private final Base64.Encoder encoder;
     private final Base64.Decoder decoder;
+    private File credentialFile;
 
     private final ProtoBufFileProcessor<LoginCredentialsCollection, LoginCredentialsCollection, LoginCredentialsCollection.Builder> fileProcessor;
 
-    public CredentialStore(final String filename) throws InitializationException {
-        try {
-            this.filename = filename;
-            this.credentialFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
-            this.credentials = new HashMap<>();
-            this.fileProcessor = new ProtoBufFileProcessor<>(LoginCredentialsCollection.newBuilder());
-            this.encoder = Base64.getEncoder();
-            this.decoder = Base64.getDecoder();
-        } catch (JPNotAvailableException ex) {
-            throw new InitializationException(this, ex);
-        }
+    public CredentialStore(final String filename) {
+        this.filename = filename;
+        this.credentials = new HashMap<>();
+        this.fileProcessor = new ProtoBufFileProcessor<>(LoginCredentialsCollection.newBuilder());
+        this.encoder = Base64.getEncoder();
+        this.decoder = Base64.getDecoder();
     }
 
     public void init() throws InitializationException {
         try {
+            this.credentialFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
             this.loadStore();
             this.setStorePermissions();
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | JPNotAvailableException ex) {
             throw new InitializationException(CredentialStore.class, ex);
         }
     }
@@ -99,9 +95,7 @@ public class CredentialStore {
 
         // load new ones out of the credential store.
         LoginCredentialsCollection collection = fileProcessor.deserialize(credentialFile);
-        collection.getElementList().forEach((entry) -> {
-            credentials.put(entry.getId(), entry);
-        });
+        collection.getElementList().forEach((entry) -> credentials.put(entry.getId(), entry));
     }
 
     /**
@@ -191,8 +185,8 @@ public class CredentialStore {
      */
     public SimpleEntry<String, LoginCredentials> getFirstEntry() {
         if (!this.credentials.isEmpty()) {
-            String firstKey = (String) new ArrayList(this.credentials.keySet()).get(0);
-            return new SimpleEntry(firstKey, this.credentials.get(firstKey));
+            String firstKey = new ArrayList<>(this.credentials.keySet()).get(0);
+            return new SimpleEntry<>(firstKey, this.credentials.get(firstKey));
         }
         return null;
     }

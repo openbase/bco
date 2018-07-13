@@ -39,6 +39,10 @@ import java.util.concurrent.*;
 public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage, CONFIG extends GeneratedMessage> extends AbstractConfigurableRemote<M, CONFIG> {
 
     private final Observer<String> loginObserver;
+    /**
+     * Data object for other permissions;
+     */
+    private M otherData;
 
     public AbstractAuthenticatedConfigurableRemote(final Class<M> dataClass, final Class<CONFIG> configClass) {
         super(dataClass, configClass);
@@ -46,12 +50,16 @@ public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage,
 
         this.loginObserver = (source, data) -> {
             // somebody new logged in
-            if (isSyncRunning()) {
-                // if a sync task is still running cancel it because it cannot be interpreted anymore anyway
-                requestData().cancel(true);
+            if (otherData != null) {
+                setData(otherData);
             }
-            // trigger a new data request to update data for the user
-            requestData();
+            if (isSyncRunning()) {
+                // if a sync task is still running restart it
+                restartSyncTask();
+            } else {
+                // trigger a new data request to update data for the user
+                requestData();
+            }
         };
     }
 
@@ -88,26 +96,33 @@ public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage,
         public void internalNotify(Event event) {
             try {
                 logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
-                if (event.getData() != null && SessionManager.getInstance().isLoggedIn()) {
-                    // received a new data event from the controller which is filtered for other permissions, so trigger an authenticated request
-                    GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                        if (isSyncRunning()) {
-                            // a sync task is currently running so wait for it to finish and trigger a new one
-                            // to make sure that the latest data update is received
-                            try {
-                                requestData().get(10, TimeUnit.SECONDS);
-                            } catch (InterruptedException ex) {
-                                Thread.currentThread().interrupt();
-                                return null;
-                            } catch (ExecutionException | TimeoutException ex) {
-                                throw new CouldNotPerformException("Could not wait for running sync task", ex);
+                if (event.getData() != null) {
+                    otherData = (M) event.getData();
+                    if (SessionManager.getInstance().isLoggedIn()) {
+                        // received a new data event from the controller which is filtered for other permissions, so trigger an authenticated request
+                        GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+                            if (isSyncRunning()) {
+                                // a sync task is currently running so wait for it to finish and trigger a new one
+                                // to make sure that the latest data update is received
+                                try {
+                                    requestData().get(10, TimeUnit.SECONDS);
+                                } catch (InterruptedException ex) {
+                                    Thread.currentThread().interrupt();
+                                    return null;
+                                } catch (ExecutionException | TimeoutException ex) {
+                                    throw new CouldNotPerformException("Could not wait for running sync task", ex);
+                                } catch (CancellationException ex) {
+                                    logger.error("Cancellation exception", ex);
+                                    // request data was cancelled and is most likely done again by the login observer
+                                    return null;
+                                }
                             }
-                        }
-                        requestData();
-                        return null;
-                    });
-                } else {
-                    applyEventUpdate(event);
+                            requestData();
+                            return null;
+                        });
+                    } else {
+                        applyEventUpdate(event);
+                    }
                 }
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);

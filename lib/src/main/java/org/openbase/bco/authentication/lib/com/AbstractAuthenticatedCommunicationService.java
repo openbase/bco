@@ -38,8 +38,6 @@ import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.rsb.ScopeType.Scope;
 
-import java.io.IOException;
-
 
 public abstract class AbstractAuthenticatedCommunicationService<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements AuthenticatedRequestable<M> {
 
@@ -85,25 +83,18 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Genera
     @Override
     public AuthenticatedValue requestDataAuthenticated(final TicketAuthenticatorWrapper ticket) throws CouldNotPerformException {
         logger.debug("requestStatusAuthenticated of " + this);
-        try {
-            // evaluate the ticket
-            AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(ticket);
+        // evaluate the ticket
+        AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(ticket);
 
-            // filter data for user
-            M newData = filterDataForUser(cloneDataBuilder(), ticketEvaluationWrapper.getUserId());
+        // filter data for user
+        M newData = filterDataForUser(cloneDataBuilder(), ticketEvaluationWrapper.getUserId());
 
-            // build response
-            AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
-            response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
-            response.setValue(EncryptionHelper.encryptSymmetric(newData, ticketEvaluationWrapper.getSessionKey()));
+        // build response
+        AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
+        response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
+        response.setValue(EncryptionHelper.encryptSymmetric(newData, ticketEvaluationWrapper.getSessionKey()));
 
-            return response.build();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not request data because interruption while validating ticket", ex);
-        } catch (IOException ex) {
-            throw new CouldNotPerformException("Could not request data authenticated because encryption or decryption with session key failed", ex);
-        }
+        return response.build();
     }
 
     @Override
