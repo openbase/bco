@@ -581,14 +581,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
-    private boolean isLoggedIn() {
-        return sessionManager != null && sessionManager.isLoggedIn();
-    }
-
-    private boolean isAuthenticated() throws CouldNotPerformException {
-        return sessionManager != null && sessionManager.isAuthenticated();
-    }
-
     @Override
     public SessionManager getSessionManager() {
         return sessionManager;

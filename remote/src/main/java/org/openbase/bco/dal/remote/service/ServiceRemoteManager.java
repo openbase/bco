@@ -62,8 +62,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import javax.crypto.BadPaddingException;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
@@ -360,15 +358,13 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                                 for (Future<ActionFuture> actionFuture : input) {
                                     AuthenticationClientHandler.handleServiceServerResponse(ticketEvaluationWrapper.getSessionKey(), initializedTicket, actionFuture.get().getTicketAuthenticatorWrapper());
                                 }
-                            } catch (IOException | BadPaddingException ex) {
-                                throw new CouldNotPerformException("Could not validate response because it could not be decrypted", ex);
                             } catch (ExecutionException ex) {
                                 throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                             }
                         }
                         return null;
                     }, generateSnapshotActions(snapshot, initializedTicket, ticketEvaluationWrapper.getSessionKey()));
-                } catch (BadPaddingException | IOException ex) {
+                } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Could not update ticket for further requests", ex);
                 }
             } else {
@@ -410,12 +406,8 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                 // prepare authenticated value to request action
                 AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
                 authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
-                try {
-                    authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescription.build(), sessionKey));
-                    futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
-                } catch (IOException ex) {
-                    throw new CouldNotPerformException("Could not encrypt userConfig", ex);
-                }
+                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescription.build(), sessionKey));
+                futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
             } else {
                 futureCollection.add(unitRemote.applyAction(actionDescription.build()));
             }
