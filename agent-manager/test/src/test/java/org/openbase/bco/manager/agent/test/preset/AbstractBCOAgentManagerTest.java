@@ -122,11 +122,5 @@ public abstract class AbstractBCOAgentManagerTest extends AbstractBCOTest {
 
     abstract UnitConfig getAgentConfig() throws CouldNotPerformException;
 
-    UnitConfig.Builder generateAgentConfig(final String agentClassLabel, final String label, final String locationId) {
-        final UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.AGENT);
-        agentUnitConfig.getAgentConfigBuilder().setAgentClassId(MockRegistry.AGENT_LABEL_ID_MAP.get(agentClassLabel));
-        agentUnitConfig.getPlacementConfigBuilder().setLocationId(locationId);
-        LabelProcessor.addLabel(agentUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
-        return agentUnitConfig;
-    }
+
 }

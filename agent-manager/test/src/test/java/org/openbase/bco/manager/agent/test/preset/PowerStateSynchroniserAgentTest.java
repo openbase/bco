@@ -22,40 +22,28 @@ package org.openbase.bco.manager.agent.test.preset;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
 
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
-import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
 import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
-import rst.spatial.PlacementConfigType.PlacementConfig;
 import rst.vision.HSBColorType.HSBColor;
-import sun.management.resources.agent;
-
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -67,7 +55,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PowerStateSynchroniserAgentTest.class);
 
-    private static final String AGENT_LABEL = "Power_State_Sync_Agent_Unit_Test";
+    private static final String AGENT_ANIAS = "Power_State_Sync_Agent_Unit_Test";
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
@@ -178,7 +166,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
 
     @Override
     UnitConfig getAgentConfig() throws CouldNotPerformException {
-        final UnitConfig.Builder agentUnitConfig = generateAgentConfig(MockRegistry.POWER_STATE_SYNCHRONISER_AGENT_LABEL, AGENT_LABEL, Registries.getUnitRegistry().getRootLocationConfig().getId());
+        final UnitConfig.Builder agentUnitConfig = MockRegistry.generateAgentConfig(MockRegistry.LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER, AGENT_ANIAS, MockRegistry.ALIAS_LOCATION_ROOT_PARADISE);
 
         // generate meta config
         final MetaConfig.Builder metaConfig = agentUnitConfig.getMetaConfigBuilder();
