@@ -21,24 +21,19 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.openbase.bco.dal.lib.layer.unit.TemperatureSensorController;
+
+import org.junit.*;
 import org.openbase.bco.dal.remote.unit.TemperatureSensorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
@@ -79,8 +74,8 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;
-        TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-        ((TemperatureSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
+        TemperatureState temperatureState = TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(temperature)).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId()).applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperatureState().getTemperature(), 0.1);
     }
@@ -94,8 +89,8 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetTemperatureAlarmState() throws Exception {
         System.out.println("getTemperatureAlarmState");
-        AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
-        ((TemperatureSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).applyDataUpdate(alarmState, ServiceType.TEMPERATURE_ALARM_STATE_SERVICE);
+        AlarmState alarmState = TimestampProcessor.updateTimestampWithCurrentTime(AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build());
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId()).applyDataUpdate(alarmState, ServiceType.TEMPERATURE_ALARM_STATE_SERVICE);
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature alarm state returns the wrong value!", alarmState.getValue(), temperatureSensorRemote.getTemperatureAlarmState().getValue());
     }

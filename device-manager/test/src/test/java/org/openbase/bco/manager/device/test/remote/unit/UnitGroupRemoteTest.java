@@ -21,15 +21,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.*;
 
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -37,7 +33,6 @@ import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -56,8 +51,12 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
@@ -72,8 +71,8 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
         AbstractBCODeviceManagerTest.setUpClass();
 
         try {
-            UnitConfig unitGrouptConfig = registerUnitGroup();
-            unitGroupRemote = Units.getUnit(unitGrouptConfig, true, UnitGroupRemote.class);
+            UnitConfig unitGroupConfig = registerUnitGroup();
+            unitGroupRemote = Units.getUnit(unitGroupConfig, true, UnitGroupRemote.class);
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -183,7 +182,7 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).build();
         try {
             unitGroupRemote.setBrightnessState(brightnessState).get();
-            fail("Brighntess service has been used even though the group config is only defined for power service");
+            fail("Brightness service has been used even though the group config is only defined for power service");
         } catch (CouldNotPerformException ex) {
         }
     }

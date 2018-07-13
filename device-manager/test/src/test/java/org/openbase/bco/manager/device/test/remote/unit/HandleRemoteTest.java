@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.unit.HandleRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.HandleStateType.HandleState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -77,8 +78,8 @@ public class HandleRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
-        HandleState handlestate = HandleState.newBuilder().setPosition(90).build();
-        ((HandleController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(handleRemote.getId())).applyDataUpdate(handlestate, ServiceType.HANDLE_STATE_SERVICE);
+        HandleState handlestate = TimestampProcessor.updateTimestampWithCurrentTime(HandleState.newBuilder().setPosition(90)).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(handleRemote.getId()).applyDataUpdate(handlestate, ServiceType.HANDLE_STATE_SERVICE);
         handleRemote.requestData().get();
         Assert.assertEquals("The getter for the handle state returns the wrong value!", handlestate.getPosition(), handleRemote.getHandleState().getPosition());
     }

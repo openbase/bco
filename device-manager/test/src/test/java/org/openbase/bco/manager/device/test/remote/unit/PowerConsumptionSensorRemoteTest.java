@@ -21,23 +21,18 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
+
+import org.junit.*;
 import org.openbase.bco.dal.remote.unit.PowerConsumptionSensorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTest {
@@ -81,11 +76,11 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
         double consumption = 200d;
         double voltage = 100d;
         double current = 2d;
-        PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
-        ((PowerConsumptionSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).applyDataUpdate(state, ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
+        PowerConsumptionState state = TimestampProcessor.updateTimestampWithCurrentTime(PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage)).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerConsumptionRemote.getId()).applyDataUpdate(state, ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
         powerConsumptionRemote.requestData().get();
         Assert.assertEquals("The getter for the power consumption returns the wrong voltage value!", state.getVoltage(), powerConsumptionRemote.getPowerConsumptionState().getVoltage(), 0.1);
         Assert.assertEquals("The getter for the power consumption returns the wrong consumption value!", state.getConsumption(), powerConsumptionRemote.getPowerConsumptionState().getConsumption(), 0.1);
-        Assert.assertEquals("The getter for the power consumption returns the wrong cirremt value!", state.getCurrent(), powerConsumptionRemote.getPowerConsumptionState().getCurrent(), 0.1);
+        Assert.assertEquals("The getter for the power consumption returns the wrong current value!", state.getCurrent(), powerConsumptionRemote.getPowerConsumptionState().getCurrent(), 0.1);
     }
 }

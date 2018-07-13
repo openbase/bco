@@ -21,23 +21,18 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.openbase.bco.dal.lib.layer.unit.ReedContactController;
+
+import org.junit.*;
 import org.openbase.bco.dal.remote.unit.ReedContactRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ContactStateType.ContactState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
@@ -77,8 +72,8 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
-        ContactState state = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
-        ((ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId())).applyDataUpdate(state, ServiceType.CONTACT_STATE_SERVICE);
+        ContactState state = TimestampProcessor.updateTimestampWithCurrentTime(ContactState.newBuilder().setValue(ContactState.State.OPEN)).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId()).applyDataUpdate(state, ServiceType.CONTACT_STATE_SERVICE);
         reedContactRemote.requestData().get();
         Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state.getValue(), reedContactRemote.getContactState().getValue());
     }

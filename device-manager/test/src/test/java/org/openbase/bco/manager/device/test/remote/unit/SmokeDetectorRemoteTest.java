@@ -21,24 +21,19 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.openbase.bco.dal.lib.layer.unit.SmokeDetectorController;
+
+import org.junit.*;
 import org.openbase.bco.dal.remote.unit.SmokeDetectorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.SmokeStateType.SmokeState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
@@ -80,8 +75,8 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
-        AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
-        ((SmokeDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).applyDataUpdate(alarmState, ServiceType.SMOKE_ALARM_STATE_SERVICE);
+        AlarmState alarmState = TimestampProcessor.updateTimestampWithCurrentTime(AlarmState.newBuilder().setValue(AlarmState.State.ALARM)).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId()).applyDataUpdate(alarmState, ServiceType.SMOKE_ALARM_STATE_SERVICE);
         smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke alarm state returns the wrong value!", alarmState.getValue(), smokeDetectorRemote.getSmokeAlarmState().getValue());
     }
@@ -94,8 +89,8 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
-        SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(13d).build();
-        ((SmokeDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).applyDataUpdate(smokeState, ServiceType.SMOKE_STATE_SERVICE);
+        SmokeState smokeState = TimestampProcessor.updateTimestampWithCurrentTime(SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(13d)).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId()).applyDataUpdate(smokeState, ServiceType.SMOKE_STATE_SERVICE);
         smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke state returns the wrong value!", smokeState.getValue(), smokeDetectorRemote.getSmokeState().getValue());
     }
