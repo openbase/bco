@@ -33,8 +33,6 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.test.AbstractBCOTest;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
@@ -42,7 +40,6 @@ import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketType.Ticket;
@@ -76,8 +73,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
     @Before
     public void setUp() throws CouldNotPerformException, InterruptedException {
-        boolean result = sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
-        assertEquals(true, result);
+        sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
 
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
         colorableLightRemote.setSessionManager(sessionManager);
@@ -132,8 +128,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         // login client
         System.out.println("login client");
-        boolean result = sessionManager.login(registered.getId());
-        assertEquals(true, result);
+        sessionManager.login(registered.getId());
 
         // make ticket invalid
         byte[] serviceServerSecretKey = AuthenticatedServerManager.getInstance().getServiceServerSecretKey();
@@ -152,7 +147,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         TicketAuthenticatorWrapper.Builder wrapperBuilder = sessionManager.getTicketAuthenticatorWrapper().toBuilder();
         wrapperBuilder.setTicket(EncryptionHelper.encryptSymmetric(cstb.build(), serviceServerSecretKey));
 
-        sessionManager.setTicketAuthenticatorWrapper(wrapperBuilder.build());
+        sessionManager.updateTicketAuthenticatorWrapper(wrapperBuilder.build());
 
         // execute action
         System.out.println("execute action");
@@ -188,7 +183,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         TicketAuthenticatorWrapper.Builder wrapperBuilder = sessionManager.getTicketAuthenticatorWrapper().toBuilder();
         wrapperBuilder.setTicket(EncryptionHelper.encryptSymmetric(cstb.build(), serviceServerSecretKey));
 
-        sessionManager.setTicketAuthenticatorWrapper(wrapperBuilder.build());
+        sessionManager.updateTicketAuthenticatorWrapper(wrapperBuilder.build());
 
         // execute action
         System.out.println("execute action");
