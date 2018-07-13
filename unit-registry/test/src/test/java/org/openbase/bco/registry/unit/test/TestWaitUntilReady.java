@@ -30,7 +30,6 @@ import org.openbase.bco.authentication.lib.future.AuthenticatedSynchronizationFu
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -71,7 +70,7 @@ public class TestWaitUntilReady {
         try {
             JPService.setupJUnitTestMode();
             MockRegistryHolder.newMockRegistry();
-            ((UnitRegistryController) MockRegistry.getUnitRegistry()).getDeviceUnitConfigRegistry().registerConsistencyHandler(new ConsistencyHandler<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder>, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder>>() {
+            MockRegistry.registerUnitConsistencyHandler(new ConsistencyHandler<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder>, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder>>() {
 
                 boolean alreadyDelayed = false;
                 int counter = 0;
@@ -121,7 +120,7 @@ public class TestWaitUntilReady {
         final String productNumber = "ReadyProductNumber";
         final String company = "ReadyCompany";
 
-        DeviceClass deviceClass = MockRegistry.getDeviceClass(deviceClassLabel, productNumber, company, UnitType.POWER_SWITCH, UnitType.BUTTON, UnitType.HANDLE);
+        DeviceClass deviceClass = MockRegistry.generateDeviceClass(deviceClassLabel, productNumber, company, UnitType.POWER_SWITCH, UnitType.BUTTON, UnitType.HANDLE);
         deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClass).get();
 
         Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
@@ -135,7 +134,7 @@ public class TestWaitUntilReady {
         delayConsistencyCheck = true;
         for (int i = 0; i < iterations; ++i) {
             waitedUntilReady = false;
-            UnitConfig deviceUnitConfig = MockRegistry.getDeviceConfig(deviceLabel + i, String.valueOf(i), deviceClass);
+            UnitConfig deviceUnitConfig = MockRegistry.generateDeviceConfig(deviceLabel + i, String.valueOf(i), deviceClass);
 //            System.out.println("Trigger device registration!");
             AuthenticatedSynchronizationFuture registrationFuture = (AuthenticatedSynchronizationFuture) Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
 //            System.out.println("Wait until ready");

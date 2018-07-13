@@ -320,7 +320,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitAliasUniqueVerificationConsistencyHandler(this), UnitConfig.class);
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(), UnitConfig.class);
-        registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
+        registerConsistencyHandler(new BoundingBoxConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new TransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(authorizationGroupUnitConfigRegistry, locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new AccessPermissionConsistencyHandler(), UnitConfig.class);

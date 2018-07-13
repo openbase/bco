@@ -27,18 +27,13 @@ import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
-import org.openbase.bco.registry.activity.lib.ActivityRegistry;
 import org.openbase.bco.registry.activity.remote.CachedActivityRegistryRemote;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
-import org.openbase.bco.registry.clazz.lib.ClassRegistry;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
-import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
-import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -46,12 +41,13 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.storage.registry.ConsistencyHandler;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.slf4j.LoggerFactory;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
 import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
@@ -66,11 +62,13 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.InventoryStateType;
 import rst.domotic.state.InventoryStateType.InventoryState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
+import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
@@ -93,27 +91,78 @@ import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class    MockRegistry {
+public class MockRegistry {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MockRegistry.class);
 
+    public static final String ALIAS_DEVICE_COLORABLE_LIGHT = "PH_Hue_E27_Device";
+    public static final String ALIAS_DEVICE_COLORABLE_LIGHT_BORROWED = "PH_Hue_E27_Device_BORROWED";
+    public static final String ALIAS_DEVICE_COLORABLE_LIGHT_DEVICE_STAIRWAY = "PH_Hue_E27_Device_Stairway";
+    public static final String ALIAS_DEVICE_COLORABLE_LIGHT_HEAVEN = "PH_Hue_E27_Device_Heaven";
+    public static final String ALIAS_DEVICE_COLORABLE_LIGHT_HELL = "PH_Hue_E27_Device_Hell";
+    public static final String ALIAS_DEVICE_F_FGS_221 = "F_FGS221_Device";
+    public static final String ALIAS_DEVICE_GI_429496730210000_DEVICE = "GI_429496730210000_Device";
+    public static final String ALIAS_DEVICE_HA_ABC = "HA_ABC_Device";
+    public static final String ALIAS_DEVICE_HA_TYA_663_A = "HA_TYA663A_Device";
+    public static final String ALIAS_DEVICE_HM_ROTARY_HANDLE_SENSOR = "HM_RotaryHandleSensor_Device";
+    public static final String ALIAS_DEVICE_MOTION_SENSOR = "F_MotionSensor_Device";
+    public static final String ALIAS_DEVICE_MOTION_SENSOR_HEAVEN = "F_MotionSensor_Device_Heaven";
+    public static final String ALIAS_DEVICE_MOTION_SENSOR_HELL = "F_MotionSensor_Device_Hell";
+    public static final String ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY = "F_MotionSensor_Device_Stairway";
+    public static final String ALIAS_DEVICE_POWER_PLUG = "PW_PowerPlug_Device";
+    public static final String ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS = "Reed_Heaven_Stairs";
+    public static final String ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS = "Reed_Hell_Stairs";
+    public static final String ALIAS_DEVICE_REED_SWITCH_HOMEMATIC = "HM_ReedSwitch_Device";
+    public static final String ALIAS_DEVICE_REED_SWITCH_STAIRWAY_WINDOW = "Reed_Stairway_Window";
+    public static final String ALIAS_DEVICE_ROLLERSHUTTER = "HA_TYA628C_Device";
+    public static final String ALIAS_DEVICE_SMOKE_DETECTOR = "Fibaro_SmokeDetector_Device";
+    public static final String ALIAS_DEVICE_TEMPERATURE_CONTROLLER = "Gire_TemperatureController_Device";
+    public static final String ALIAS_DEVICE_TEMPERATURE_CONTROLLER_STAIRWAY_TO_HEAVEN = "Gire_TemperatureController_Device_Stairway";
+    public static final String ALIAS_DOOR_GATE = "Gate";
+    public static final String ALIAS_DOOR_STAIRS_HEAVEN_GATE = "Stairs_Heaven_Gate";
+    public static final String ALIAS_DOOR_STAIRS_HELL_GATE = "Stairs_Hell_Gate";
+    public static final String ALIAS_LOCATION_GARDEN = "Garden";
+    public static final String ALIAS_LOCATION_HEAVEN = "Heaven";
+    public static final String ALIAS_LOCATION_HELL = "Hell";
+    public static final String ALIAS_LOCATION_ROOT_PARADISE = "Paradise";
+    public static final String ALIAS_LOCATION_STAIRWAY_TO_HEAVEN = "Stairway to Heaven";
+    public static final String ALIAS_REED_SWITCH_STAIRWAY_WINDOW = "Reed_Stairway_Window";
+    public static final String ALIAS_USER_MAX_MUSTERMANN = "MaxMustermann";
+    public static final String ALIAS_WINDOW_STAIRS_HELL_LOOKOUT = "Stairs_Hell_Lookout";
+
+    public static final String BINDING_OPENHAB = "OPENHAB";
+
+    public static final String COMPANY_FIBARO = "Fibaro";
+    public static final String COMPANY_GIRA = "Gira";
+    public static final String COMPANY_HAGER = "Hager";
+    public static final String COMPANY_HOMEMATIC = "Homematic";
+    public static final String COMPANY_PHILIPS = "Philips";
+    public static final String COMPANY_PLUGWISE = "Plugwise";
+
+    public static final String LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING = "AbsenceEnergySaving";
+    public static final String LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING = "HeaterEnergySaving";
+    public static final String LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING = "IlluminationLightSaving";
+    public static final String LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER = "PowerStateSynchroniser";
+    public static final String LABEL_AGENT_CLASS_PRESENCE_LIGHT = "PresenceLight";
+    public static final String LABEL_DEVICE_CLASS_FIBARO_FGS_221 = "Fibaro_FGS_221";
+    public static final String LABEL_DEVICE_CLASS_FIBARO_FGSS_001 = "Fibaro_FGSS_001";
+    public static final String LABEL_DEVICE_CLASS_FIBARO_MOTION_SENSOR = "Fibaro_MotionSensor";
+    public static final String LABEL_DEVICE_CLASS_GIRA_429496730210000 = "Gira_429496730210000";
+    public static final String LABEL_DEVICE_CLASS_GIRA_429496730250000 = "Gira_429496730250000";
+    public static final String LABEL_DEVICE_CLASS_HAGER_ABC = "Hager_ABC";
+    public static final String LABEL_DEVICE_CLASS_HAGER_TYA_628_C = "Hager_TYA628C";
+    public static final String LABEL_DEVICE_CLASS_HAGER_TYA_663_A1 = "Hager_TYA663A";
+    public static final String LABEL_DEVICE_CLASS_HOMEMATIC_REED_SWITCH = "Homematic_ReedSwitch";
+    public static final String LABEL_DEVICE_CLASS_HOMEMATIC_ROTARY_HANDLE_SENSOR = "Homematic_RotaryHandleSensor";
+    public static final String LABEL_DEVICE_CLASS_PHILIPS_HUE_E_27 = "Philips_Hue_E27";
+    public static final String LABEL_DEVICE_CLASS_PLUGWISE_POWER_PLUG = "Plugwise_PowerPlug";
+
     public static final String USER_NAME = "uSeRnAmE";
+    public static final String USER_FIRST_NAME = "Max";
+    public static final String USER_LAST_NAME = "Mustermann";
+
+    public static final Map<String, String> AGENT_CLASS_LABEL_ID_MAP = new HashMap<>();
     public static UnitConfig testUser;
-
-    public static final String LOCATION_PARADISE_LABEL = "Paradise";
-    public static final String LOCATION_HELL_LABEL = "Hell";
-    public static final String LOCATION_STAIRWAY_TO_HEAVEN_LABEL = "Stairway to Heaven";
-    public static final String LOCATION_HEAVEN_LABEL = "Heaven";
-    public static final String LOCATION_GARDEN_LABEL = "Garden";
-
-    private static final Map<String, String> LOCATION_LABEL_ALIAS_MAP = new HashMap<>();
-
-    public static final String ABSENCE_ENERGY_SAVING_AGENT_LABEL = "AbsenceEnergySaving";
-    public static final String HEATER_ENERGY_SAVING_AGENT_LABEL = "HeaterEnergySaving";
-    public static final String ILLUMINATION_LIGHT_SAVING_AGENT_LABEL = "IlluminationLightSaving";
-    public static final String POWER_STATE_SYNCHRONISER_AGENT_LABEL = "PowerStateSynchroniser";
-    public static final String PRESENCE_LIGHT_AGENT_LABEL = "PresenceLight";
-    public static final Map<String, String> AGENT_LABEL_ID_MAP = new HashMap<>();
 
     public static final AxisAlignedBoundingBox3DFloat DEFAULT_BOUNDING_BOX = AxisAlignedBoundingBox3DFloat.newBuilder()
             .setHeight(10)
@@ -129,11 +178,6 @@ public class    MockRegistry {
     private static ClassRegistryLauncher classRegistryLauncher;
     private static TemplateRegistryLauncher templateRegistryLauncher;
     private static UnitRegistryLauncher unitRegistryLauncher;
-
-    private static ActivityRegistry activityRegistry;
-    private static ClassRegistry classRegistry;
-    private static TemplateRegistry templateRegistry;
-    private static UnitRegistry unitRegistry;
 
     public enum MockServiceTemplate {
         ACTIVATION_STATE_SERVICE(ServiceType.ACTIVATION_STATE_SERVICE, CommunicationType.ACTIVATION_STATE),
@@ -304,7 +348,7 @@ public class    MockRegistry {
                 }
                 return null;
             }));
-            LOGGER.info("Starting authenticator...");
+            LOGGER.debug("Starting authenticator...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
@@ -314,7 +358,6 @@ public class    MockRegistry {
                 try {
                     unitRegistryLauncher = new UnitRegistryLauncher();
                     unitRegistryLauncher.launch();
-                    unitRegistry = unitRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
@@ -324,7 +367,6 @@ public class    MockRegistry {
                 try {
                     classRegistryLauncher = new ClassRegistryLauncher();
                     classRegistryLauncher.launch();
-                    classRegistry = classRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
@@ -334,7 +376,6 @@ public class    MockRegistry {
                 try {
                     templateRegistryLauncher = new TemplateRegistryLauncher();
                     templateRegistryLauncher.launch();
-                    templateRegistry = templateRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
@@ -344,59 +385,58 @@ public class    MockRegistry {
                 try {
                     activityRegistryLauncher = new ActivityRegistryLauncher();
                     activityRegistryLauncher.launch();
-                    activityRegistry = activityRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
             }));
-            LOGGER.info("Starting all registries: unit, class, template, activity...");
+            LOGGER.debug("Starting all registries: unit, class, template, activity...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
             registryStartupTasks.clear();
-            LOGGER.info("Registries started!");
+            LOGGER.debug("Registries started!");
 
-            LOGGER.info("Reinitialize remotes...");
+            LOGGER.debug("Reinitialize remotes...");
             Registries.reinitialize();
-            LOGGER.info("Reinitialized remotes!");
+            LOGGER.debug("Reinitialized remotes!");
             Registries.waitForData();
 
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
-                    LOGGER.info("Update serviceTemplates...");
+                    LOGGER.debug("Update serviceTemplates...");
                     for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
-                        final String id = templateRegistry.getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getType()).getId();
-                        templateRegistry.updateServiceTemplate(mockServiceTemplate.getServiceTemplate().toBuilder().setId(id).build()).get();
+                        final String id = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getType()).getId();
+                        Registries.getTemplateRegistry().updateServiceTemplate(mockServiceTemplate.getServiceTemplate().toBuilder().setId(id).build()).get();
                     }
 
-                    LOGGER.info("Update unitTemplates...");
+                    LOGGER.debug("Update unit templates...");
                     // load templates
                     for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                        String unitTemplateId = templateRegistry.getUnitTemplateByType(template.getTemplate().getType()).getId();
-                        templateRegistry.updateUnitTemplate(template.getTemplate().toBuilder().setId(unitTemplateId).build()).get();
+                        String unitTemplateId = Registries.getTemplateRegistry().getUnitTemplateByType(template.getTemplate().getType()).getId();
+                        Registries.getTemplateRegistry().updateUnitTemplate(template.getTemplate().toBuilder().setId(unitTemplateId).build()).get();
                     }
 
-                    LOGGER.info("Register user...");
+                    LOGGER.debug("Register user...");
                     registerUser();
 
-                    LOGGER.info("Register agentClasses...");
+                    LOGGER.debug("Register agent classes...");
                     registerAgentClasses();
 
-                    LOGGER.info("Register locations...");
+                    LOGGER.debug("Register locations...");
                     registerLocations();
-                    LOGGER.info("Wait until registry is ready...");
+                    LOGGER.debug("Wait until registry is ready...");
                     Registries.waitUntilReady();
 
-                    LOGGER.info("Register devices...");
+                    LOGGER.debug("Register devices...");
                     registerDevices();
-                    LOGGER.info("Wait until registry is ready...");
+                    LOGGER.debug("Wait until registry is ready...");
                     Registries.waitUntilReady();
 
-                    LOGGER.info("Register connections...");
+                    LOGGER.debug("Register connections...");
                     registerConnections();
 
-                    LOGGER.info("Wait for final consistency...");
+                    LOGGER.debug("Wait for final consistency...");
                     Registries.waitUntilReady();
 
                 } catch (CouldNotPerformException | InterruptedException ex) {
@@ -405,12 +445,12 @@ public class    MockRegistry {
                 return null;
             }));
 
-            LOGGER.info("Wait for unitTemplate updates; device, location and user registration...");
+            LOGGER.debug("Wait for unitTemplate updates; device, location and user registration...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
             registryStartupTasks.clear();
-            LOGGER.info("UnitTemplates updated and devices, locations, users and agentClasses registered!");
+            LOGGER.debug("UnitTemplates updated and devices, locations, users and agentClasses registered!");
         } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             shutdown();
             throw new InstantiationException(this, ex);
@@ -448,14 +488,10 @@ public class    MockRegistry {
         CachedTemplateRegistryRemote.shutdown();
     }
 
-    public static UnitConfig getLocationByLabel(final String label) throws CouldNotPerformException {
-        return Registries.getUnitRegistry().getUnitConfigByAlias(LOCATION_LABEL_ALIAS_MAP.get(label));
-    }
-
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
         try {
             // Create paradise
-            List<Vec3DDouble> paradiseVertices = new ArrayList<>();
+            final List<Vec3DDouble> paradiseVertices = new ArrayList<>();
             paradiseVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
             paradiseVertices.add(Vec3DDouble.newBuilder().setX(0).setY(6).setZ(0).build());
             paradiseVertices.add(Vec3DDouble.newBuilder().setX(6).setY(6).setZ(0).build());
@@ -463,15 +499,16 @@ public class    MockRegistry {
             Shape paradiseShape = Shape.newBuilder().addAllFloor(paradiseVertices).build();
 
             // rename default root location home into paradise test location.
-            UnitConfig.Builder rootLocation = unitRegistry.getRootLocationConfig().toBuilder().clearLabel();
+            UnitConfig.Builder rootLocation = Registries.getUnitRegistry().getRootLocationConfig().toBuilder().clearLabel();
             rootLocation.getPlacementConfigBuilder().setShape(paradiseShape);
-            LabelProcessor.addLabel(rootLocation.getLabelBuilder(), Locale.ENGLISH, LOCATION_PARADISE_LABEL);
-            UnitConfig paradise = unitRegistry.updateUnitConfig(rootLocation.build()).get();
+            LabelProcessor.addLabel(rootLocation.getLabelBuilder(), Locale.ENGLISH, ALIAS_LOCATION_ROOT_PARADISE);
+            rootLocation.addAlias(ALIAS_LOCATION_ROOT_PARADISE);
+            UnitConfig paradise = Registries.getUnitRegistry().updateUnitConfig(rootLocation.build()).get();
             LocationConfig tileLocationConfig = LocationConfig.newBuilder().setType(LocationType.TILE).build();
             LocationConfig regionLocationConfig = LocationConfig.newBuilder().setType(LocationType.REGION).build();
 
             // Create hell
-            List<Vec3DDouble> hellVertices = new ArrayList<>();
+            final List<Vec3DDouble> hellVertices = new ArrayList<>();
             hellVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
             hellVertices.add(Vec3DDouble.newBuilder().setX(0).setY(4).setZ(0).build());
             hellVertices.add(Vec3DDouble.newBuilder().setX(2).setY(4).setZ(0).build());
@@ -480,10 +517,10 @@ public class    MockRegistry {
             Pose hellPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(3).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig hellPlacement = PlacementConfig.newBuilder().setPosition(hellPosition).setShape(hellShape).setLocationId(paradise.getId()).build();
-            UnitConfig hell = unitRegistry.registerUnitConfig(getLocationUnitConfig(LOCATION_HELL_LABEL, tileLocationConfig, hellPlacement)).get();
+            UnitConfig hell = registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_HELL, tileLocationConfig, hellPlacement));
 
             // Create stairway to heaven
-            List<Vec3DDouble> stairwayVertices = new ArrayList<>();
+            final List<Vec3DDouble> stairwayVertices = new ArrayList<>();
             stairwayVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
             stairwayVertices.add(Vec3DDouble.newBuilder().setX(0).setY(1).setZ(0).build());
             stairwayVertices.add(Vec3DDouble.newBuilder().setX(4).setY(1).setZ(0).build());
@@ -492,10 +529,10 @@ public class    MockRegistry {
             Pose stairwayPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(0).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig stairwayPlacement = PlacementConfig.newBuilder().setPosition(stairwayPosition).setShape(stairwayShape).setLocationId(paradise.getId()).build();
-            UnitConfig stairwayLocation = unitRegistry.registerUnitConfig(getLocationUnitConfig(LOCATION_STAIRWAY_TO_HEAVEN_LABEL, tileLocationConfig, stairwayPlacement)).get();
+            UnitConfig stairwayLocation = registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, tileLocationConfig, stairwayPlacement));
 
             // Create heaven
-            List<Vec3DDouble> heavenVertices = new ArrayList<>();
+            final List<Vec3DDouble> heavenVertices = new ArrayList<>();
             heavenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
             heavenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(4).setZ(0).build());
             heavenVertices.add(Vec3DDouble.newBuilder().setX(2).setY(4).setZ(0).build());
@@ -504,10 +541,10 @@ public class    MockRegistry {
             Pose heavenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig heavenPlacement = PlacementConfig.newBuilder().setPosition(heavenPosition).setShape(heavenShape).setLocationId(paradise.getId()).build();
-            UnitConfig heavenLocation = unitRegistry.registerUnitConfig(getLocationUnitConfig(LOCATION_HEAVEN_LABEL, tileLocationConfig, heavenPlacement)).get();
+            UnitConfig heavenLocation = registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_HEAVEN, tileLocationConfig, heavenPlacement));
 
             // Create Garden of Eden
-            List<Vec3DDouble> edenVertices = new ArrayList<>();
+            final List<Vec3DDouble> edenVertices = new ArrayList<>();
             edenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
             edenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(2).setZ(0).build());
             edenVertices.add(Vec3DDouble.newBuilder().setX(1).setY(2).setZ(0).build());
@@ -516,21 +553,16 @@ public class    MockRegistry {
             Pose edenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(0).setY(2).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig edenPlacement = PlacementConfig.newBuilder().setPosition(edenPosition).setShape(edenShape).setLocationId(heavenLocation.getId()).build();
-            UnitConfig garden = unitRegistry.registerUnitConfig(getLocationUnitConfig(LOCATION_GARDEN_LABEL, regionLocationConfig, edenPlacement)).get();
-
-            LOCATION_LABEL_ALIAS_MAP.put(LOCATION_GARDEN_LABEL, garden.getAlias(0));
-            LOCATION_LABEL_ALIAS_MAP.put(LOCATION_HEAVEN_LABEL, heavenLocation.getAlias(0));
-            LOCATION_LABEL_ALIAS_MAP.put(LOCATION_HELL_LABEL, hell.getAlias(0));
-            LOCATION_LABEL_ALIAS_MAP.put(LOCATION_PARADISE_LABEL, paradise.getAlias(0));
-            LOCATION_LABEL_ALIAS_MAP.put(LOCATION_STAIRWAY_TO_HEAVEN_LABEL, stairwayLocation.getAlias(0));
+            registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_GARDEN, regionLocationConfig, edenPlacement));
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
     }
 
-    private UnitConfig getLocationUnitConfig(final String label, final LocationConfig locationConfig, final PlacementConfig placementConfig) {
+    private UnitConfig getLocationUnitConfig(final String alias, final LocationConfig locationConfig, final PlacementConfig placementConfig) {
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitType.LOCATION).setLocationConfig(locationConfig).setPlacementConfig(placementConfig);
-        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
+        unitConfig.addAlias(alias);
         return unitConfig.build();
     }
 
@@ -545,50 +577,52 @@ public class    MockRegistry {
     private void registerConnections() throws CouldNotPerformException, InterruptedException {
         try {
             List<String> tileIds = new ArrayList<>();
-            tileIds.add(getLocationByLabel(LOCATION_HEAVEN_LABEL).getId());
-            tileIds.add(getLocationByLabel(LOCATION_HELL_LABEL).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL).getId());
             String reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(getUnitAlias(UnitType.REED_CONTACT)).getId();
-            ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            unitRegistry.registerUnitConfig(getConnectionUnitConfig("Gate", connectionConfig)).get();
+            ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_GATE, connectionConfig));
 
             tileIds.clear();
-            tileIds.add(getLocationByLabel(LOCATION_HEAVEN_LABEL).getId());
-            tileIds.add(getLocationByLabel(LOCATION_STAIRWAY_TO_HEAVEN_LABEL).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).getId());
             reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT).get(0).getId();
-            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            unitRegistry.registerUnitConfig(getConnectionUnitConfig("Stairs_Heaven_Gate", connectionConfig)).get();
+            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_STAIRS_HEAVEN_GATE, connectionConfig));
 
             tileIds.clear();
-            tileIds.add(getLocationByLabel(LOCATION_HELL_LABEL).getId());
-            tileIds.add(getLocationByLabel(LOCATION_STAIRWAY_TO_HEAVEN_LABEL).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).getId());
             reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Hell_Stairs", UnitType.REED_CONTACT).get(0).getId();
-            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            unitRegistry.registerUnitConfig(getConnectionUnitConfig("Stairs_Hell_Gate", connectionConfig)).get();
+            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_STAIRS_HELL_GATE, connectionConfig));
 
             tileIds.clear();
-            tileIds.add(getLocationByLabel(LOCATION_HELL_LABEL).getId());
-            tileIds.add(getLocationByLabel(LOCATION_STAIRWAY_TO_HEAVEN_LABEL).getId());
-            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Stairway_Window", UnitType.REED_CONTACT).get(0).getId();
-            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            unitRegistry.registerUnitConfig(getConnectionUnitConfig("Stairs_Hell_Lookout", connectionConfig)).get();
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).getId());
+            reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_REED_SWITCH_STAIRWAY_WINDOW).getId();
+            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            registerUnitConfig(generateConnectionUnitConfig(ALIAS_WINDOW_STAIRS_HELL_LOOKOUT, connectionConfig));
 
         } catch (ExecutionException | IndexOutOfBoundsException ex) {
             throw new CouldNotPerformException(ex);
         }
     }
 
-    private UnitConfig getConnectionUnitConfig(final String label, final ConnectionConfig connectionConfig) {
+    private UnitConfig generateConnectionUnitConfig(final String alias, final ConnectionConfig connectionConfig) {
         UnitConfig.Builder connectionUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.CONNECTION).setConnectionConfig(connectionConfig);
-        LabelProcessor.addLabel(connectionUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        LabelProcessor.addLabel(connectionUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
+        connectionUnitConfig.addAlias(alias);
         return connectionUnitConfig.build();
     }
 
     private void registerUser() throws CouldNotPerformException, InterruptedException {
-        UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
+        UserConfig.Builder config = UserConfig.newBuilder().setFirstName(USER_FIRST_NAME).setLastName(USER_LAST_NAME).setUserName(USER_NAME);
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
         userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
+        userUnitConfig.addAlias(ALIAS_USER_MAX_MUSTERMANN);
         try {
-            testUser = unitRegistry.registerUnitConfig(userUnitConfig.build()).get();
+            testUser = registerUnitConfig(userUnitConfig.build());
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
@@ -596,11 +630,11 @@ public class    MockRegistry {
 
     private void registerAgentClasses() throws CouldNotPerformException, InterruptedException {
         try {
-            AGENT_LABEL_ID_MAP.put(ABSENCE_ENERGY_SAVING_AGENT_LABEL, classRegistry.registerAgentClass(getAgentClass(ABSENCE_ENERGY_SAVING_AGENT_LABEL)).get().getId());
-            AGENT_LABEL_ID_MAP.put(HEATER_ENERGY_SAVING_AGENT_LABEL, classRegistry.registerAgentClass(getAgentClass(HEATER_ENERGY_SAVING_AGENT_LABEL)).get().getId());
-            AGENT_LABEL_ID_MAP.put(ILLUMINATION_LIGHT_SAVING_AGENT_LABEL, classRegistry.registerAgentClass(getAgentClass(ILLUMINATION_LIGHT_SAVING_AGENT_LABEL)).get().getId());
-            AGENT_LABEL_ID_MAP.put(POWER_STATE_SYNCHRONISER_AGENT_LABEL, classRegistry.registerAgentClass(getAgentClass(POWER_STATE_SYNCHRONISER_AGENT_LABEL)).get().getId());
-            AGENT_LABEL_ID_MAP.put(PRESENCE_LIGHT_AGENT_LABEL, classRegistry.registerAgentClass(getAgentClass(PRESENCE_LIGHT_AGENT_LABEL)).get().getId());
+            AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING)).get().getId());
+            AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING)).get().getId());
+            AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING)).get().getId());
+            AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER)).get().getId());
+            AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_PRESENCE_LIGHT, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_PRESENCE_LIGHT)).get().getId());
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
@@ -615,93 +649,92 @@ public class    MockRegistry {
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
             // colorable light
-            DeviceClass colorableLightClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
+            DeviceClass colorableLightClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_PHILIPS_HUE_E_27, "KV01_18U", COMPANY_PHILIPS, UnitType.COLORABLE_LIGHT)).get();
 
             String serialNumber = "1234-5678-9100";
-            registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, colorableLightClass));
-
-            registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device_BORROWED", serialNumber, InventoryState.State.BORROWED, colorableLightClass));
-            unitRegistry.registerUnitConfig(getDeviceConfig("PH_Hue_E27_Device_Stairway", serialNumber, colorableLightClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
-            unitRegistry.registerUnitConfig(getDeviceConfig("PH_Hue_E27_Device_Heaven", serialNumber, colorableLightClass, LOCATION_HEAVEN_LABEL)).get();
-            unitRegistry.registerUnitConfig(getDeviceConfig("PH_Hue_E27_Device_Hell", serialNumber, colorableLightClass, LOCATION_HELL_LABEL)).get();
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_COLORABLE_LIGHT, serialNumber, colorableLightClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_COLORABLE_LIGHT_BORROWED, serialNumber, InventoryState.State.BORROWED, colorableLightClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_COLORABLE_LIGHT_DEVICE_STAIRWAY, serialNumber, colorableLightClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_COLORABLE_LIGHT_HEAVEN, serialNumber, colorableLightClass, ALIAS_LOCATION_HEAVEN));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_COLORABLE_LIGHT_HELL, serialNumber, colorableLightClass, ALIAS_LOCATION_HELL));
 
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
-            DeviceClass motionSensorClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro",
+            DeviceClass motionSensorClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_FIBARO_MOTION_SENSOR, "FGMS_001", COMPANY_FIBARO,
                     UnitType.MOTION_DETECTOR,
                     UnitType.BATTERY,
                     UnitType.LIGHT_SENSOR,
                     UnitType.TEMPERATURE_SENSOR,
                     UnitType.TAMPER_DETECTOR)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
-            unitRegistry.registerUnitConfig(getDeviceConfig("F_MotionSensor_Device_Stairway", serialNumber, motionSensorClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
-            unitRegistry.registerUnitConfig(getDeviceConfig("F_MotionSensor_Device_Heaven", serialNumber, motionSensorClass, LOCATION_HEAVEN_LABEL)).get();
-            unitRegistry.registerUnitConfig(getDeviceConfig("F_MotionSensor_Device_Hell", serialNumber, motionSensorClass, LOCATION_HELL_LABEL)).get();
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR, serialNumber, motionSensorClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY, serialNumber, motionSensorClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HEAVEN, serialNumber, motionSensorClass, ALIAS_LOCATION_HEAVEN));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HELL, serialNumber, motionSensorClass, ALIAS_LOCATION_HELL));
 
             // button
-            DeviceClass buttonClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira",
+            DeviceClass buttonClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730210000, "429496730210000", COMPANY_GIRA,
                     UnitType.BUTTON)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_GI_429496730210000_DEVICE, serialNumber, buttonClass));
 
             // dimmableLight
-            DeviceClass dimmableLightClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Hager_ABC", "ABC", "Hager",
+            DeviceClass dimmableLightClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HAGER_ABC, "ABC", COMPANY_HAGER,
                     UnitType.DIMMABLE_LIGHT)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("HA_ABC_Device", serialNumber, dimmableLightClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_HA_ABC, serialNumber, dimmableLightClass));
 
             // dimmer
-            DeviceClass dimmerClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager",
+            DeviceClass dimmerClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HAGER_TYA_663_A1, "TYA663A", COMPANY_HAGER,
                     UnitType.DIMMER)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_HA_TYA_663_A, serialNumber, dimmerClass));
 
             // handle
-            DeviceClass handleClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic",
+            DeviceClass handleClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HOMEMATIC_ROTARY_HANDLE_SENSOR, "Sec_RHS", COMPANY_HOMEMATIC,
                     UnitType.HANDLE)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_HM_ROTARY_HANDLE_SENSOR, serialNumber, handleClass));
 
             // light
-            DeviceClass lightClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro",
+            DeviceClass lightClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_FIBARO_FGS_221, "FGS_221", COMPANY_FIBARO,
                     UnitType.LIGHT)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_F_FGS_221, serialNumber, lightClass));
 
             // powerConsumptionSensor, powerPlug
-            DeviceClass powerPlugClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise",
+            DeviceClass powerPlugClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_PLUGWISE_POWER_PLUG, "070140", COMPANY_PLUGWISE,
                     UnitType.POWER_SWITCH,
                     UnitType.POWER_CONSUMPTION_SENSOR)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_POWER_PLUG, serialNumber, powerPlugClass));
 
             // reedSwitch
-            DeviceClass reedSwitchClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic",
-                    UnitType.REED_CONTACT)).get();
+            DeviceClass reedSwitchClass = Registries.getClassRegistry().registerDeviceClass(
+                    generateDeviceClass(LABEL_DEVICE_CLASS_HOMEMATIC_REED_SWITCH, "Sec_SC_2", COMPANY_HOMEMATIC, UnitType.REED_CONTACT)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
-            unitRegistry.registerUnitConfig(getDeviceConfig("Reed_Heaven_Stairs", serialNumber, reedSwitchClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
-            unitRegistry.registerUnitConfig(getDeviceConfig("Reed_Hell_Stairs", serialNumber, reedSwitchClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
-            unitRegistry.registerUnitConfig(getDeviceConfig("Reed_Stairway_Window", serialNumber, reedSwitchClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HOMEMATIC, serialNumber, reedSwitchClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_STAIRWAY_WINDOW, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
 
             // roller shutter
-            DeviceClass rollerShutterClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager",
+            DeviceClass rollerShutterClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HAGER_TYA_628_C, "TYA628C", COMPANY_HAGER,
                     UnitType.ROLLER_SHUTTER)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollerShutterClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_ROLLERSHUTTER, serialNumber, rollerShutterClass));
 
             // smoke detector
-            DeviceClass smokeDetector = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro",
+            DeviceClass smokeDetector = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_FIBARO_FGSS_001, "FGSS_001", COMPANY_FIBARO,
                     UnitType.SMOKE_DETECTOR)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_SMOKE_DETECTOR, serialNumber, smokeDetector));
 
             // temperature controller
-            DeviceClass temperatureControllerClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira",
+            DeviceClass temperatureControllerClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730250000, "429496730250000", COMPANY_GIRA,
                     UnitType.TEMPERATURE_CONTROLLER)).get();
 
-            registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
-            unitRegistry.registerUnitConfig(getDeviceConfig("Gire_TemperatureController_Device_Stairway", serialNumber, temperatureControllerClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_TEMPERATURE_CONTROLLER, serialNumber, temperatureControllerClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_TEMPERATURE_CONTROLLER_STAIRWAY_TO_HEAVEN, serialNumber, temperatureControllerClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
 
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
@@ -709,15 +742,16 @@ public class    MockRegistry {
     }
 
     /**
-     * Registers the given device and updates the label to standard unit type label.
+     * Registers the given unit.
      *
-     * @param deviceUnitConfig
+     * @param unitConfig
+     *
      * @throws CouldNotPerformException
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    private static void registerDeviceUnitConfig(final UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
-        unitRegistry.registerUnitConfig(deviceUnitConfig).get();
+    private static UnitConfig registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        return Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
     }
 
     public static PlacementConfig getDefaultPlacement(UnitConfig location) {
@@ -727,43 +761,44 @@ public class    MockRegistry {
         return PlacementConfig.newBuilder().setPosition(pose).setLocationId(location.getId()).build();
     }
 
-    public static Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
-        List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
+    public static Iterable<ServiceConfigType.ServiceConfig> generateServiceConfig(final UnitTemplate template) {
+        final List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
         template.getServiceDescriptionList().stream().forEach((serviceDescription) -> {
-            BindingConfig bindingServiceConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
+            BindingConfig bindingServiceConfig = BindingConfig.newBuilder().setBindingId(BINDING_OPENHAB).build();
             serviceConfigList.add(ServiceConfig.newBuilder().setServiceDescription(serviceDescription).setBindingConfig(bindingServiceConfig).build());
         });
         return serviceConfigList;
     }
 
-    public static UnitConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz) throws CouldNotPerformException {
-        return getDeviceConfig(label, serialNumber, InventoryState.State.INSTALLED, clazz, LOCATION_PARADISE_LABEL);
+    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, DeviceClass clazz) throws CouldNotPerformException {
+        return generateDeviceConfig(alias, serialNumber, InventoryState.State.INSTALLED, clazz, ALIAS_LOCATION_ROOT_PARADISE);
     }
 
-    public static UnitConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, String locationLabel) throws CouldNotPerformException {
-        return getDeviceConfig(label, serialNumber, InventoryState.State.INSTALLED, clazz, locationLabel);
+    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, DeviceClass clazz, String locationLabel) throws CouldNotPerformException {
+        return generateDeviceConfig(alias, serialNumber, InventoryState.State.INSTALLED, clazz, locationLabel);
     }
 
-    public static UnitConfig getDeviceConfig(String label, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz) throws CouldNotPerformException {
-        return getDeviceConfig(label, serialNumber, inventoryState, clazz, LOCATION_PARADISE_LABEL);
+    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz) throws CouldNotPerformException {
+        return generateDeviceConfig(alias, serialNumber, inventoryState, clazz, ALIAS_LOCATION_ROOT_PARADISE);
     }
 
-    public static UnitConfig getDeviceConfig(String label, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz, String locationLabel) throws CouldNotPerformException {
+    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz, String locationLabel) throws CouldNotPerformException {
         DeviceConfig tmp = DeviceConfig.newBuilder()
                 .setSerialNumber(serialNumber)
                 .setDeviceClassId(clazz.getId())
                 .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(inventoryState))
                 .build();
         UnitConfig.Builder deviceUnitConfig = UnitConfig.newBuilder()
-                .setPlacementConfig(getDefaultPlacement(getLocationByLabel(locationLabel)))
+                .setPlacementConfig(getDefaultPlacement(Registries.getUnitRegistry().getUnitConfigByAlias(locationLabel)))
                 .setDeviceConfig(tmp)
                 .setUnitType(UnitType.DEVICE);
-        LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        deviceUnitConfig.addAlias(alias);
+        LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
         return deviceUnitConfig.build();
     }
 
-    private static List<UnitTemplateConfig> getUnitTemplateConfigs(List<UnitTemplate.UnitType> unitTypes) throws CouldNotPerformException {
-        List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
+    private static List<UnitTemplateConfig> generateUnitTemplateConfigs(List<UnitTemplate.UnitType> unitTypes) throws CouldNotPerformException {
+        final List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
         for (UnitTemplate.UnitType type : unitTypes) {
             Set<ServiceTemplateConfig> serviceTemplateConfigs = new HashSet<>();
             for (ServiceDescription serviceDescription : MockUnitTemplate.getTemplate(type).getServiceDescriptionList()) {
@@ -775,10 +810,10 @@ public class    MockRegistry {
         return unitTemplateConfigs;
     }
 
-    public static DeviceClass getDeviceClass(String label, String productNumber, String company, UnitTemplate.UnitType... types) throws CouldNotPerformException {
+    public static DeviceClass generateDeviceClass(String label, String productNumber, String company, UnitTemplate.UnitType... types) throws CouldNotPerformException {
         List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>(Arrays.asList(types));
         DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setProductNumber(productNumber).setCompany(company)
-                .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(getUnitTemplateConfigs(unitTypeList))
+                .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(generateUnitTemplateConfigs(unitTypeList))
                 .setShape(Shape.newBuilder().setBoundingBox(DEFAULT_BOUNDING_BOX));
         LabelProcessor.addLabel(deviceClass.getLabelBuilder(), Locale.ENGLISH, label);
         return deviceClass.build();
@@ -786,23 +821,20 @@ public class    MockRegistry {
 
     public static BindingConfig getBindingConfig() {
         BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
-        bindingConfigBuilder.setBindingId("OPENHAB");
+        bindingConfigBuilder.setBindingId(MockRegistry.BINDING_OPENHAB);
         return bindingConfigBuilder.build();
     }
 
-    public static ClassRegistry getClassRegistry() {
-        return classRegistry;
+    public static void registerUnitConsistencyHandler(final ConsistencyHandler<String, IdentifiableMessage<String, UnitConfig, Builder>, ProtoBufMessageMap<String, UnitConfig, Builder>, ProtoBufRegistry<String, UnitConfig, Builder>> consistencyHandler) throws CouldNotPerformException {
+        unitRegistryLauncher.getLaunchable().getDeviceUnitConfigRegistry().registerConsistencyHandler(consistencyHandler);
     }
 
-    public static UnitRegistry getUnitRegistry() {
-        return unitRegistry;
-    }
-
-    public static TemplateRegistry getTemplateRegistry() {
-        return templateRegistry;
-    }
-
-    public static ActivityRegistry getActivityRegistry() {
-        return activityRegistry;
+    public static UnitConfig.Builder generateAgentConfig(final String agentClassLabel, final String alias, final String locationAlias) throws CouldNotPerformException {
+        final UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.AGENT);
+        agentUnitConfig.getAgentConfigBuilder().setAgentClassId(AGENT_CLASS_LABEL_ID_MAP.get(agentClassLabel));
+        agentUnitConfig.getPlacementConfigBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigByAlias(locationAlias).getId());
+        LabelProcessor.addLabel(agentUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
+        agentUnitConfig.addAlias(alias);
+        return agentUnitConfig;
     }
 }
