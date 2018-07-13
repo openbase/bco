@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib.com;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -33,20 +33,29 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
 import rsb.Handler;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 import java.util.concurrent.*;
 
 public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMessage> extends RSBRemoteService<M> {
 
+    /**
+     * Observer updating data on login changes.
+     */
     private final Observer<String> loginObserver;
 
     public AbstractAuthenticatedRemoteService(Class<M> dataClass) {
         super(dataClass);
         this.setMessageProcessor(new AuthenticatedMessageProcessor<>(dataClass));
 
-        this.loginObserver = (source, data) -> requestData();
-        SessionManager.getInstance().addLoginObserver(this.loginObserver);
+        this.loginObserver = (source, data) -> {
+            // somebody new logged in
+            if (isSyncRunning()) {
+                // if a sync task is still running cancel it because it cannot be interpreted anymore anyway
+                requestData().cancel(true);
+            }
+            // trigger a new data request to update data for the user
+            requestData();
+        };
     }
 
     @Override
@@ -64,36 +73,42 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
         }
     }
 
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+        SessionManager.getInstance().addLoginObserver(loginObserver);
+    }
+
+    @Override
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        SessionManager.getInstance().removeLoginObserver(loginObserver);
+        super.deactivate();
+    }
+
     private class AuthenticatedUpdateHandler implements Handler {
-
-        Future task = null;
-        Future requestTask = null;
-
+        
         @Override
         public void internalNotify(Event event) {
             try {
                 logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
                 if (event.getData() != null && SessionManager.getInstance().isLoggedIn()) {
-                    if (requestTask != null && !requestTask.isDone()) {
-                        if (task == null) {
-                            task = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                                try {
-                                    requestTask.get(10, TimeUnit.SECONDS);
-                                    requestData();
-                                    task = null;
-                                } catch (InterruptedException e) {
-                                    Thread.currentThread().interrupt();
-                                } catch (ExecutionException | TimeoutException ex) {
-                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Request data failed", ex), logger);
-                                } catch (CouldNotPerformException ex) {
-                                    ExceptionPrinter.printHistory("Could not request data", ex, logger);
-                                }
+                    // received a new data event from the controller which is filtered for other permissions, so trigger an authenticated request
+                    GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+                        if (isSyncRunning()) {
+                            // a sync task is currently running so wait for it to finish and trigger a new one
+                            // to make sure that the latest data update is received
+                            try {
+                                requestData().get(10, TimeUnit.SECONDS);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
                                 return null;
-                            });
+                            } catch (ExecutionException | TimeoutException ex) {
+                                throw new CouldNotPerformException("Could not wait for running sync task", ex);
+                            }
                         }
-                    } else {
-                        requestTask = requestData();
-                    }
+                        requestData();
+                        return null;
+                    });
                 } else {
                     applyEventUpdate(event);
                 }

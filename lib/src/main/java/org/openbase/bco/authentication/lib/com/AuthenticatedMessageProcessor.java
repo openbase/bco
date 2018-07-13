@@ -59,7 +59,7 @@ public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends S
 
     public static <M extends GeneratedMessage> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final SessionManager sessionManager, final Class<M> dataClass) throws CouldNotPerformException {
         if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
-            final byte[] sessionKey = SessionManager.getInstance().getSessionKey();
+            final byte[] sessionKey = sessionManager.getSessionKey();
             if(sessionKey == null) {
                 // user has logged out while the request was running
                 throw new CouldNotPerformException("Could not decrypt authenticated message");
