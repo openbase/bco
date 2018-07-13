@@ -21,38 +21,43 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import java.util.Arrays;
 import java.util.List;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
 import rst.geometry.TranslationType.Translation;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.ShapeType.Shape;
 
 
-public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class BoundingBoxConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-        
+
         // filter if config does not contain placement or shape
-        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape() || 
-                unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty() || unitConfig.getPlacementConfig().getShape().getCeilingList().isEmpty()) {
+        if (!unitConfig.hasPlacementConfig() ||
+                !unitConfig.getPlacementConfig().hasShape() ||
+                unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty() && unitConfig.getPlacementConfig().getShape().getCeilingList().isEmpty()) {
             return;
         }
-        
+
         final Shape shape = unitConfig.getPlacementConfig().getShape();
         final AxisAlignedBoundingBox3DFloat newBoundingBox = updateBoundingBox(shape);
 
         //detect changes
-        if(!shape.getBoundingBox().equals(newBoundingBox)) { 
+        if (!shape.getBoundingBox().equals(newBoundingBox)) {
             unitConfig.getPlacementConfigBuilder().getShapeBuilder().setBoundingBox(newBoundingBox);
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
@@ -81,7 +86,7 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
                 maxZ = Math.max(rstVertex.getZ(), maxZ);
             }
         }
-        
+
         final AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloat.newBuilder();
         builder.setDepth((float) (maxY - minY));
         builder.setHeight((float) (maxZ - minZ));
