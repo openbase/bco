@@ -10,12 +10,12 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -23,11 +23,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 
 import org.junit.*;
-import org.openbase.bco.dal.lib.layer.unit.PowerSwitchController;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -81,8 +81,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((PowerSwitchController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId())).applyDataUpdate(state, ServiceType.POWER_STATE_SERVICE);
+        PowerState state = TimestampProcessor.updateTimestampWithCurrentTime(PowerState.newBuilder().setValue(PowerState.State.OFF)).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId()).applyDataUpdate(state, ServiceType.POWER_STATE_SERVICE);
         powerSwitchRemote.requestData().get();
         assertEquals("The getter for the power state returns the wrong value!", state.getValue(), powerSwitchRemote.getPowerState().getValue());
     }

@@ -169,9 +169,9 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         HSBColor color = HSBColor.newBuilder().setHue(370).setSaturation(111).setBrightness(122).build();
         try {
             colorableLightRemote.setColor(color);
-            Assert.assertTrue("Exception does not occure if invalid service state is set!", false);
+            Assert.assertTrue("Exception does not occur if invalid service state is set!", false);
         } catch (VerificationFailedException ex) {
-            // should occure!
+            // should occur!
         }
         Assert.assertNotEquals("Invalid color has been applied!", color, colorableLightRemote.getHSBColor());
     }

@@ -23,12 +23,12 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 
 import org.junit.*;
-import org.openbase.bco.dal.lib.layer.unit.BatteryController;
 import org.openbase.bco.dal.remote.unit.BatteryRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BatteryStateType.BatteryState;
@@ -69,7 +69,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of getBattaryLevel method, of class BatteryRemote.
+     * Test of getBatteryLevel method, of class BatteryRemote.
      *
      * @throws java.lang.Exception
      */
@@ -78,16 +78,16 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
         try {
             System.out.println("getBatteryLevel");
             double level = 34.0;
-            BatteryState state = BatteryState.newBuilder().setLevel(level).build();
-            ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).applyDataUpdate(state, ServiceType.BATTERY_STATE_SERVICE);
+            BatteryState state = TimestampProcessor.updateTimestampWithCurrentTime(BatteryState.newBuilder().setLevel(level)).build();
+            deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId()).applyDataUpdate(state, ServiceType.BATTERY_STATE_SERVICE);
             batteryRemote.requestData().get();
             assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
             assertEquals("The battery state has not been updated according to the level!", BatteryState.State.OK, batteryRemote.getData().getBatteryState().getValue());
 
             BatteryState lastState = batteryRemote.getBatteryState();
             level = 9.5;
-            state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.INSUFFICIENT).build();
-            ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).applyDataUpdate(state, ServiceType.BATTERY_STATE_SERVICE);
+            state = TimestampProcessor.updateTimestampWithCurrentTime(BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.INSUFFICIENT)).build();
+            deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId()).applyDataUpdate(state, ServiceType.BATTERY_STATE_SERVICE);
             batteryRemote.requestData().get();
             assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
             assertEquals("The battery state value has not been updated correctly!", state.getValue(), batteryRemote.getData().getBatteryState().getValue());
