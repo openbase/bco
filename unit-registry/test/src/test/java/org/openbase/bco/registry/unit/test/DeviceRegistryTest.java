@@ -23,15 +23,12 @@ package org.openbase.bco.registry.unit.test;
  */
 
 import org.junit.Test;
+import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import rst.configuration.EntryType;
 import rst.configuration.MetaConfigType;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
@@ -42,7 +39,6 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.InventoryStateType.InventoryState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -50,12 +46,16 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType;
+import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
 import rst.geometry.TranslationType;
-import rst.math.Vec3DDoubleType;
+import rst.geometry.TranslationType.Translation;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.ShapeType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import static junit.framework.TestCase.*;
@@ -290,29 +290,28 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
     @Test(timeout = 5000)
     public void testBoundingBoxConsistencyHandler() throws Exception {
-        // how to get a test unit?
-        UnitConfig testUnit = UnitConfig.newBuilder().setUnitType(UnitTemplate.UnitType.COLORABLE_LIGHT).build();
 
-        // UnitConfig testUnit = Registries.getClassRegistry().getUnitConfigById("PH_Hue_E27_Device");
-        TranslationType.Translation.Builder translationBuilder = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0);
-        Vec3DDoubleType.Vec3DDouble vector1 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(0.1).setY(4.2).setZ(0.0).build();
-        Vec3DDoubleType.Vec3DDouble vector2 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(3.6).setY(0.0).setZ(0.0).build();
-        Vec3DDoubleType.Vec3DDouble vector3 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(5.1).setY(2.9).setZ(0.0).build();
-        Vec3DDoubleType.Vec3DDouble vector4 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(2.7).setY(2.1).setZ(0.0).build();
-        ArrayList<Vec3DDouble> values = new ArrayList<>(Arrays.asList(vector1, vector2, vector3, vector4));
-        ShapeType.Shape shapeBuilder = ShapeType.Shape.newBuilder().addAllFloor(values).build();
-        testUnit.toBuilder().getPlacementConfigBuilder().setShape(shapeBuilder);
+        // request a unit
+        final UnitConfig.Builder testUnit = Registries.getUnitRegistry().getUnitConfigByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH)).toBuilder();
 
-        //Registries.getClassRegistry().updateUnitConfig(testUnit).get();
-        ShapeType.Shape shape = testUnit.getPlacementConfig().getShape();
+        // setup shape
+        final Vec3DDouble vector1 = Vec3DDouble.newBuilder().setX(0.1).setY(4.2).setZ(0.0).build();
+        final Vec3DDouble vector2 = Vec3DDouble.newBuilder().setX(3.6).setY(0.0).setZ(0.0).build();
+        final Vec3DDouble vector3 = Vec3DDouble.newBuilder().setX(5.1).setY(2.9).setZ(0.0).build();
+        final Vec3DDouble vector4 = Vec3DDouble.newBuilder().setX(2.7).setY(2.1).setZ(0.0).build();
+        final ArrayList<Vec3DDouble> values = new ArrayList<>(Arrays.asList(vector1, vector2, vector3, vector4));
+        testUnit.getPlacementConfigBuilder().getShapeBuilder().addAllFloor(values);
 
-        AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat.newBuilder();
+        // update in registry
+        final UnitConfig updatedUnit = Registries.getUnitRegistry().updateUnitConfig(testUnit.build()).get();
+
+        // verify
+        final AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloat.newBuilder();
         builder.setDepth((float) (4.2));
         builder.setHeight((float) (0.0));
         builder.setWidth((float) (5.0));
-        TranslationType.Translation.Builder lfbBuilder = TranslationType.Translation.newBuilder().setX(0.1).setY(0.0).setZ(0.0);
-        builder.setLeftFrontBottom(translationBuilder);
-        //assertTrue(shape.getBoundingBox().equals(builder.build()));
+        builder.setLeftFrontBottom(Translation.newBuilder().setX(0.1).setY(0).setZ(0));
+        assertEquals("Bounding box has not been updated!", builder.build(), updatedUnit.getPlacementConfig().getShape().getBoundingBox());
     }
 
     /**
@@ -340,9 +339,6 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfigBuilder.build()).get();
 
         // test that owner id is still set after registration
-
-        logger.warn("Before: " + deviceUnitConfigBuilder.build().getPermissionConfig());
-        logger.warn("After: " + deviceUnitConfig.getPermissionConfig());
         assertEquals("The device does not have the correct owner id!", owner.getId(), deviceUnitConfig.getPermissionConfig().getOwnerId());
 
         // remove the owner from the registry
