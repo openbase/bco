@@ -353,6 +353,10 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             }
         }
 
+        final UnitConfig result = super.applyConfigUpdate(unitConfig);
+
+        // Note: this block has to be executed after the super call because generating the variable pool uses
+        // the internal unit config which is set in the super call
         try {
             infrastructure = Boolean.parseBoolean(generateVariablePool().getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG));
         } catch (NotAvailableException ex) {
@@ -360,7 +364,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             infrastructure = false;
         }
 
-        return super.applyConfigUpdate(unitConfig);
+        return result;
     }
 
     /**
