@@ -21,14 +21,15 @@ package org.openbase.bco.authentication.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jps.exception.JPValidationException;
 import org.openbase.jps.preset.AbstractJPTime;
 
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class JPSessionTimeout extends AbstractJPTime {
@@ -48,6 +49,18 @@ public class JPSessionTimeout extends AbstractJPTime {
             return DEFAULT_TEST_TIMEOUT;
         }
         return DEFAULT_TIMEOUT;
+    }
+
+    @Override
+    protected void validate() throws JPValidationException {
+        super.validate();
+
+        final long sessionTimeout = getValue();
+        if (sessionTimeout <= 0) {
+            throw new JPValidationException("SessionTimeout is negative or null[" + sessionTimeout + "]");
+        }
+
+        //TODO: should this timeout have a minimum value when not in test mode?
     }
 
     @Override

@@ -30,6 +30,7 @@ import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.authentication.mock.MockCredentialStore;
 import org.openbase.jps.core.JPService;
 
@@ -60,6 +61,6 @@ public class AuthenticationTest {
             authenticatorController.shutdown();
         }
         AuthenticatedServerManager.shutdown();
-        SessionManager.getInstance().completeLogout();
+        SessionManager.getInstance().shutdown();
     }
 }
