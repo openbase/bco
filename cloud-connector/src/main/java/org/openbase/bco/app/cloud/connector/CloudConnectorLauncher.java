@@ -23,6 +23,7 @@ package org.openbase.bco.app.cloud.connector;
  */
 
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.InstantiationException;
@@ -40,6 +41,7 @@ public class CloudConnectorLauncher extends AbstractLauncher<CloudConnector> {
     @Override
     protected void loadProperties() {
         JPService.registerProperty(JPCloudServerURI.class);
+        JPService.registerProperty(JPAuthentication.class);
     }
 
     /**

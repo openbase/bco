@@ -526,6 +526,9 @@ public class FulfillmentHandler {
         final JsonArray commands = new JsonArray();
         payload.add(COMMANDS_KEY, commands);
 
+        // if there is more than one command ignore infrastructure units
+        final boolean filterInfrastructureUnits = idCommandMap.size() > 1;
+
         final Map<String, Future> idFutureMap = new HashMap<>();
         // iterate over all entries, start according tasks to execute the given commands and save futures of these tasks
         for (final Entry<String, List<JsonObject>> idCommand : idCommandMap.entrySet()) {
@@ -541,8 +544,8 @@ public class FulfillmentHandler {
                         try {
                             // create tasks for all grouped dal units
                             for (final UnitConfig hostedUnitConfig : getUnitConfigsHandledByDevice(unitConfig)) {
-                                // if there is more than one command ignore infrastructure units
-                                if (idCommandMap.size() > 1 && Units.getUnit(unitConfig, false).isInfrastructure()) {
+                                // filter infrastructure units
+                                if (filterInfrastructureUnits && Units.getUnit(unitConfig, false).isInfrastructure()) {
                                     // add a completed future, this will make google respond with a success message
                                     internalFutureSet.add(CompletableFuture.completedFuture(null));
                                 } else {
@@ -581,8 +584,8 @@ public class FulfillmentHandler {
                         return null;
                     });
                 } else {
-                    // if there is more than one command ignore infrastructure units
-                    if (idCommandMap.size() > 1 && Units.getUnit(unitConfig, false).isInfrastructure()) {
+                    // filter infrastructure units
+                    if (filterInfrastructureUnits && Units.getUnit(unitConfig, false).isInfrastructure()) {
                         // add a completed future, this will make google respond with a success message
                         future = CompletableFuture.completedFuture(null);
                     } else {

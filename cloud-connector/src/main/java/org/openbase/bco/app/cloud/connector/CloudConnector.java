@@ -30,8 +30,10 @@ import io.socket.client.Socket;
 import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
@@ -149,7 +151,8 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
             syncPayloadObservable.addObserver((observable, jsonObject) -> {
                 if (isLoggedIn()) {
                     // trigger sync if socket is connected and logged in
-                    socket.emit("requestSync");
+                    //TODO: parse response for an error an write a warning
+                    socket.emit("requestSync", (Ack) objects1 -> LOGGER.info("Received response: " + objects1.getClass().getName()));
                 } else {
                     // not logged or connected so create a task that will trigger the sync when logged in
                     if (syncRequestFuture != null && !syncRequestFuture.isDone()) {
@@ -169,7 +172,8 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
 
                         System.out.println("Request sync");
                         // trigger sync
-                        socket.emit("requestSync");
+                        //TODO: parse response for an error an write a warning
+                        socket.emit("requestSync", (Ack) objects1 -> LOGGER.info("Received response: " + objects1.getClass().getName()));
                         return null;
                     });
                 }
@@ -245,21 +249,12 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                     ack.call(gson.toJson(response));
                 }
             }).on(Socket.EVENT_DISCONNECT, objects -> {
-
-                //TODO: what when server down? try to reconnect every 30 seconds or shutdown?
-//                if (active) {
-//                    socket.connect();
-//                }
-                for (Object object : objects) {
-                    LOGGER.info(object.toString());
-                }
-                // when disconnected
+                // reconnection is automatically done by the socket API, just print that disconnected
                 LOGGER.info("Socket disconnected: " + objects[0].toString());
             }).on(Socket.EVENT_ERROR, objects -> {
                 LOGGER.info("Received error: " + objects[0]);
             }).on("user transit", objects -> {
                 final String transit = (String) objects[0];
-                // TODO: convert this transit value to real transit
                 LOGGER.info("Received user transit " + transit);
                 final Ack ack = (Ack) objects[objects.length - 1];
                 try {
@@ -290,6 +285,17 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
 
     @Override
     public void activate() throws CouldNotPerformException {
+        //TODO: this is just a workaround for current authentication
+        try {
+            if(JPService.getProperty(JPAuthentication.class).getValue()) {
+                SystemLogin.loginBCOUser();
+            }
+        } catch (JPNotAvailableException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         if (socket != null) {
             socket.connect();
             active = true;

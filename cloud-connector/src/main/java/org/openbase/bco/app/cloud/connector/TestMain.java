@@ -26,13 +26,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
-import org.openbase.jps.core.JPService;
+import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.net.URI;
+import java.util.UUID;
 
 public class TestMain {
 
@@ -73,14 +78,14 @@ public class TestMain {
 //        LOGGER.info(new CouldNotPerformException("Could not do this").toString());
 
 //         test sync
-        JsonObject syncRequest = new JsonObject();
-        syncRequest.addProperty(FulfillmentHandler.REQUEST_ID_KEY, /*UUID.randomUUID().toString()*/"id");
-        JsonArray inputs = new JsonArray();
-        JsonObject input = new JsonObject();
-        inputs.add(input);
-        input.addProperty("intent", "action.devices.SYNC");
-        syncRequest.add("inputs", inputs);
-        System.out.println(gson.toJson(syncRequest).replace("\"", "\\\""));
+//        JsonObject syncRequest = new JsonObject();
+//        syncRequest.addProperty(FulfillmentHandler.REQUEST_ID_KEY, /*UUID.randomUUID().toString()*/"id");
+//        JsonArray inputs = new JsonArray();
+//        JsonObject input = new JsonObject();
+//        inputs.add(input);
+//        input.addProperty("intent", "action.devices.SYNC");
+//        syncRequest.add("inputs", inputs);
+//        System.out.println(gson.toJson(syncRequest).replace("\"", "\\\""));
 //
 //        JsonObject jsonObject = fulfillmentHandler.handleRequest(syncRequest);
 //        System.out.println(gson.toJson(jsonObject));
@@ -112,6 +117,15 @@ public class TestMain {
 //            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(TestMain.class));
 //            System.exit(1);
 //        }
+//        try {
+//            Registries.waitForData();
+//            SystemLogin.loginBCOUser();
+//        } catch (CouldNotPerformException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
 
         // test execution
 //        JsonObject request = new JsonObject();
@@ -130,6 +144,11 @@ public class TestMain {
 //        JsonArray devices = new JsonArray();
 //        command.add("devices", devices);
 //        try {
+//            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.POWER_SWITCH)) {
+//                JsonObject device = new JsonObject();
+//                device.addProperty("id", unitConfig.getId());
+//                devices.add(device);
+//            }
 //            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LIGHT)) {
 //                JsonObject device = new JsonObject();
 //                device.addProperty("id", unitConfig.getId());
