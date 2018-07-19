@@ -55,7 +55,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PowerStateSynchroniserAgentTest.class);
 
-    private static final String AGENT_ANIAS = "Power_State_Sync_Agent_Unit_Test";
+    private static final String AGENT_ALIAS = "Power_State_Sync_Agent_Unit_Test";
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
@@ -166,7 +166,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
 
     @Override
     UnitConfig getAgentConfig() throws CouldNotPerformException {
-        final UnitConfig.Builder agentUnitConfig = MockRegistry.generateAgentConfig(MockRegistry.LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER, AGENT_ANIAS, MockRegistry.ALIAS_LOCATION_ROOT_PARADISE);
+        final UnitConfig.Builder agentUnitConfig = MockRegistry.generateAgentConfig(MockRegistry.LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER, AGENT_ALIAS, MockRegistry.ALIAS_LOCATION_ROOT_PARADISE);
 
         // generate meta config
         final MetaConfig.Builder metaConfig = agentUnitConfig.getMetaConfigBuilder();

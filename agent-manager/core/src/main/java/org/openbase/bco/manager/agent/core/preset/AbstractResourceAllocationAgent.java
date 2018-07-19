@@ -30,6 +30,7 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
@@ -55,12 +56,12 @@ public abstract class AbstractResourceAllocationAgent extends AbstractAgentContr
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
+        logger.info("Activating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
         
         // do not activate agents that need the resource allocation to work properly if the resource allocation is turned off
         try {
             if (!JPService.getProperty(JPResourceAllocation.class).getValue()) {
-                logger.info("Skip activatio of agent [" + getConfig().getLabel() + "] because resource allocation is disabled");
+                logger.info("Skip activatio of agent [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "] because resource allocation is disabled");
                 return;
             }
         } catch (JPNotAvailableException ex) {
@@ -72,7 +73,7 @@ public abstract class AbstractResourceAllocationAgent extends AbstractAgentContr
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        logger.info("Deactivating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
         actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deactivate();
     }
