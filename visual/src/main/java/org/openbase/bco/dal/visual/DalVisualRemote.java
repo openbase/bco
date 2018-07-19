@@ -176,9 +176,10 @@ public class DalVisualRemote extends javax.swing.JFrame {
 
 
         try {
-            SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), "admin");
+
+            SystemLogin.loginBCOUser();
         } catch (CouldNotPerformException e) {
-            e.printStackTrace();
+            System.out.println("Local system login failed. Please login via user interface to get system permissions!");
         }
 
         /* Create and display the form */
