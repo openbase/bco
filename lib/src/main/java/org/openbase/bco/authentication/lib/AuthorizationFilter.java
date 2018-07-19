@@ -37,7 +37,9 @@ import java.util.Map;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
+ * @deprecated this filter was only a workaround for registries, because data could not be filtered on service side
  */
+@Deprecated
 public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);

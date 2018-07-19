@@ -39,12 +39,15 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
+import java.io.Serializable;
 import java.security.KeyPair;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -191,6 +194,21 @@ public class SessionManager implements Shutdownable {
         } catch (CouldNotPerformException ex) {
             throw new RejectedException("Initializing request rejected", ex);
         }
+    }
+
+    public <VALUE extends Serializable> AuthenticatedValue initializeRequest(final VALUE value, final String authenticationToken, final String authorizationToken) throws CouldNotPerformException {
+        AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+        authenticatedValue.setTicketAuthenticatorWrapper(initializeServiceServerRequest());
+        authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(value, sessionKey));
+
+        if (authenticationToken != null) {
+            authenticatedValue.setAuthenticationToken(EncryptionHelper.encryptSymmetric(authenticationToken, sessionKey));
+        }
+
+        if (authorizationToken != null) {
+            authenticatedValue.setAuthorizationToken(EncryptionHelper.encryptSymmetric(authorizationToken, sessionKey));
+        }
+        return authenticatedValue.build();
     }
 
     /**
