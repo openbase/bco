@@ -26,9 +26,13 @@ import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -86,8 +90,23 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Genera
         // evaluate the ticket
         AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(ticket);
 
-        // filter data for user
-        M newData = filterDataForUser(cloneDataBuilder(), ticketEvaluationWrapper.getUserId());
+        M newData = null;
+
+        try {
+            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
+                // bypass authentication
+                newData = (M) cloneDataBuilder().build();
+            } else {
+                // filter data for user
+                newData = filterDataForUser(cloneDataBuilder(), ticketEvaluationWrapper.getUserId());
+            }
+        } catch (JPNotAvailableException ex) {
+            ExceptionPrinter.printHistory("Could not validate authentication property.", ex, logger);
+        }
+
+        if (newData == null) {
+            throw new NotAvailableException("data");
+        }
 
         // build response
         AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
@@ -99,6 +118,16 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Genera
 
     @Override
     protected M updateDataToPublish(MB dataBuilder) throws CouldNotPerformException {
+
+        try {
+            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
+                // bypass authentication
+                return (M) dataBuilder.build();
+            }
+        } catch (JPNotAvailableException ex) {
+            ExceptionPrinter.printHistory("Could not validate authentication property.", ex, logger);
+        }
+
         try {
             return filterDataForUser(dataBuilder, null);
         } catch (CouldNotPerformException ex) {
