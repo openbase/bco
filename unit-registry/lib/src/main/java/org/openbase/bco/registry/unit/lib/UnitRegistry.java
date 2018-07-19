@@ -1248,9 +1248,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     }
 
     /**
-     * Request an authorization token. This methods validates that the user defined in the token by his id has all
+     * Request an authorization token. This methods validates that the user defined in the token has all
      * the permissions necessary to create the token. If the authorizationToken is valid it is encrypted with
-     * the service server secret key and the resulting byte string returned. The byte string can be distributed to
+     * the service server secret key and encoded as a string using Base64. This string can be distributed to
      * other components which allows them to execute actions in the users name with permissions as defined in the
      * token.
      * <p>
@@ -1261,16 +1261,16 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @return a future of a task that verifies and encrypts the token
      * @throws CouldNotPerformException if the task cannot be created
      */
-    Future<ByteString> requestAuthorizationToken(final AuthorizationToken authorizationToken) throws CouldNotPerformException;
+    Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken) throws CouldNotPerformException;
 
     /**
      * Request an authorization token while being authenticated. The ticket in the authenticated value is used
-     * to authenticate the user and the value has to be an authorizationToken encrypted with the session key.
-     * The user id in the authorization id verified to be the one of the authenticated user. If the id is not set
+     * to authenticate the user and the value in the authenticated value has to be an authorizationToken encrypted with the session key.
+     * The user id in the authorization id is verified to be the one of the authenticated user. If the id is not set
      * id will be set to the one of the authenticated user. Afterwards {@link #requestAuthorizationToken(AuthorizationToken)}
-     * is called internally to verify the permissions of the token and to encrypt it with the service server secret key.
-     * The encrypted token will then be converted to a string using Base64, encrypted again using the session key
-     * and set as the value of the AuthenticatedValue.
+     * is called internally to verify the permissions of the token, to encrypt it with the service server secret key
+     * and encode it as a string using Base64.
+     * The string will then be encrypted again using the session key and set as the value of the AuthenticatedValue.
      *
      * @param authenticatedValue The authenticated value for the request containing a valid ticket and an authorizationToken encrypted
      *                           with the session key.

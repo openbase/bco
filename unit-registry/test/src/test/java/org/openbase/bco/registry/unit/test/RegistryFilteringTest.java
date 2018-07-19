@@ -43,6 +43,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
+import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -182,8 +183,9 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         serviceEntry.setKey(Registries.getTemplateRegistry().getServiceTemplateByType(ServiceType.POWER_STATE_SERVICE).getId());
         serviceEntry.getValueBuilder().setWrite(true).setRead(true).setAccess(true);
 
-        final ByteString token = Registries.getUnitRegistry().requestAuthorizationToken(authorizationToken.build()).get();
-        final AuthorizationToken decrypted = EncryptionHelper.decryptSymmetric(token, AuthenticatedServerManager.getInstance().getServiceServerSecretKey(), AuthorizationToken.class);
+        final String token = Registries.getUnitRegistry().requestAuthorizationToken(authorizationToken.build()).get();
+        final AuthorizationToken decrypted = EncryptionHelper.decryptSymmetric(
+                ByteString.copyFrom(Base64.getDecoder().decode(token)), AuthenticatedServerManager.getInstance().getServiceServerSecretKey(), AuthorizationToken.class);
 
         assertEquals("Returned authorization token does not match", authorizationToken.build(), decrypted);
     }

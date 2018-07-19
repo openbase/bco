@@ -24,10 +24,7 @@ package org.openbase.bco.registry.unit.core;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
-import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
@@ -964,7 +961,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @return {@inheritDoc}
      */
     @Override
-    public Future<ByteString> requestAuthorizationToken(final AuthorizationToken authorizationToken) {
+    public Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken) {
         return GlobalCachedExecutorService.submit(() -> {
             // verify that the user has all permissions he defined in the token
             for (final MapFieldEntry mapFieldEntry : authorizationToken.getPermissionRuleList()) {
@@ -993,7 +990,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             }
 
             // the requested authorization token is valid, so encrypt it with the service server secret key and return it
-            return EncryptionHelper.encryptSymmetric(authorizationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
+            final ByteString encrypted = EncryptionHelper.encryptSymmetric(authorizationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
+            return Base64.getEncoder().encodeToString(encrypted.toByteArray());
         });
     }
 
@@ -1012,29 +1010,29 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 }
 
                 final AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
-                Future<ByteString> internalFuture = null;
+                Future<String> internalFuture = null;
                 try {
                     // evaluate the users ticket
-                    final AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
+                    final AuthenticationBaseData authenticationBaseData = AuthenticatedServerManager.getInstance().verifyClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
 
                     // decrypt authorization token
                     final AuthorizationToken.Builder authorizationToken =
-                            EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), AuthorizationToken.class).toBuilder();
+                            EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), authenticationBaseData.getSessionKey(), AuthorizationToken.class).toBuilder();
 
                     // validate that user in token matches the authenticated user, and when not available set it
                     if (authorizationToken.hasUserId() && !authorizationToken.getUserId().isEmpty()) {
-                        if (!authorizationToken.getUserId().equals(ticketEvaluationWrapper.getUserId().replace("@", ""))) {
+                        if (!authorizationToken.getUserId().equals(authenticationBaseData.getUserId().replace("@", ""))) {
                             //TODO: maybe this should be possible for admins
-                            throw new RejectedException("Authorized user[" + ticketEvaluationWrapper.getUserId() + "] cannot request a token for another user");
+                            throw new RejectedException("Authorized user[" + authenticationBaseData.getUserId() + "] cannot request a token for another user");
                         }
                     } else {
-                        authorizationToken.setUserId(ticketEvaluationWrapper.getUserId());
+                        authorizationToken.setUserId(authenticationBaseData.getUserId());
                     }
 
                     internalFuture = requestAuthorizationToken(authorizationToken.build());
 
-                    response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
-                    response.setValue(EncryptionHelper.encryptSymmetric(Base64.getEncoder().encodeToString(internalFuture.get().toByteArray()), ticketEvaluationWrapper.getSessionKey()));
+                    response.setTicketAuthenticatorWrapper(authenticationBaseData.getTicketAuthenticatorWrapper());
+                    response.setValue(EncryptionHelper.encryptSymmetric(internalFuture.get(), authenticationBaseData.getSessionKey()));
                     return response.build();
                 } catch (InterruptedException ex) {
                     if (internalFuture != null && !internalFuture.isDone()) {
@@ -1069,26 +1067,26 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 Future<ByteString> internalFuture = null;
                 try {
                     // evaluate the users ticket
-                    final AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
+                    final AuthenticationBaseData authenticationBaseData = AuthenticatedServerManager.getInstance().verifyClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
 
                     // decrypt authorization token
                     final AuthenticationToken.Builder authenticationToken =
-                            EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), AuthenticationToken.class).toBuilder();
+                            EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), authenticationBaseData.getSessionKey(), AuthenticationToken.class).toBuilder();
 
                     // validate that user in token matches the authenticated user, and when not available set it
                     if (authenticationToken.hasUserId() && !authenticationToken.getUserId().isEmpty()) {
-                        if (!authenticationToken.getUserId().equals(ticketEvaluationWrapper.getUserId().replace("@", ""))) {
+                        if (!authenticationToken.getUserId().equals(authenticationBaseData.getUserId().replace("@", ""))) {
                             //TODO: maybe this should be possible for admins
-                            throw new RejectedException("Authorized user[" + ticketEvaluationWrapper.getUserId() + "] cannot request a token for another user");
+                            throw new RejectedException("Authorized user[" + authenticationBaseData.getUserId() + "] cannot request a token for another user");
                         }
                     } else {
-                        authenticationToken.setUserId(ticketEvaluationWrapper.getUserId());
+                        authenticationToken.setUserId(authenticationBaseData.getUserId());
                     }
 
                     internalFuture = requestAuthenticationToken(authenticationToken.build());
 
-                    response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
-                    response.setValue(EncryptionHelper.encryptSymmetric(Base64.getEncoder().encodeToString(internalFuture.get().toByteArray()), ticketEvaluationWrapper.getSessionKey()));
+                    response.setTicketAuthenticatorWrapper(authenticationBaseData.getTicketAuthenticatorWrapper());
+                    response.setValue(EncryptionHelper.encryptSymmetric(Base64.getEncoder().encodeToString(internalFuture.get().toByteArray()), authenticationBaseData.getSessionKey()));
                     return response.build();
                 } catch (InterruptedException ex) {
                     if (internalFuture != null && !internalFuture.isDone()) {

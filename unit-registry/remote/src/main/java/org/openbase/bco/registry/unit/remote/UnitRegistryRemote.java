@@ -761,24 +761,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      *
      * @param authorizationToken {@inheritDoc}
      * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ByteString> requestAuthorizationToken(final AuthorizationToken authorizationToken) {
-        return GlobalCachedExecutorService.submit(() -> {
-            AuthenticationFuture<String> internalFuture = null;
-            try {
-                internalFuture = AuthenticatedServiceProcessor.requestAuthenticatedActionWithoutTransactionSynchronization(authorizationToken, String.class, SessionManager.getInstance(), this::requestAuthorizationTokenAuthenticated);
-                return ByteString.copyFrom(Base64.getDecoder().decode(internalFuture.get()));
-            } catch (CouldNotPerformException | ExecutionException ex) {
-                throw new CouldNotPerformException("Could not request authorization token", ex);
-            } catch (InterruptedException ex) {
-                if (!internalFuture.isDone()) {
-                    internalFuture.cancel(true);
-                }
-                Thread.currentThread().interrupt();
-                throw new CouldNotPerformException("Could not request authorization token", ex);
-            }
-        });
+    public Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken) throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedActionWithoutTransactionSynchronization(
+                authorizationToken,
+                String.class,
+                SessionManager.getInstance(),
+                this::requestAuthorizationTokenAuthenticated
+        );
     }
 
     /**
