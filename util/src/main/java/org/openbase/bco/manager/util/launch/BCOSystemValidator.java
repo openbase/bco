@@ -129,7 +129,7 @@ public class BCOSystemValidator {
                     System.out.println(StringProcessor.fillWithSpaces("Unit Connections", LABEL_RANGE, Alignment.RIGHT) + "  " + AnsiColor.colorize(OK, AnsiColor.ANSI_GREEN));
                 }
             }
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | CancellationException ex) {
             System.out.println("killed");
             System.exit(253);
             return;

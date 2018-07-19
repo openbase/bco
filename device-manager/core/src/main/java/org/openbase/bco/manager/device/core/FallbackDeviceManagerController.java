@@ -22,7 +22,7 @@ package org.openbase.bco.manager.device.core;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
+import org.openbase.bco.dal.lib.layer.service.mock.OperationServiceFactoryMock;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -52,7 +52,7 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
     public void init() throws InitializationException, InterruptedException {
         try {
             Registries.getClassRegistry(true);
-            deviceManagerController = new DeviceManagerController(ServiceFactoryMock.getInstance()) {
+            deviceManagerController = new DeviceManagerController(OperationServiceFactoryMock.getInstance()) {
 
                 @Override
                 public boolean isSupported(UnitConfig config) throws CouldNotPerformException {

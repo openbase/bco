@@ -22,6 +22,7 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -167,6 +168,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     @Override
     public String getUserName() throws NotAvailableException {
         try {
+            // todo pleminoq: limit to other permissions.
             return getConfig().getUserConfig().getUserName();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("username", ex);
@@ -176,6 +178,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     @Override
     public ActivityMultiState getActivityMultiState() throws NotAvailableException {
         try {
+            // todo pleminoq: limit to other permissions.
             return getData().getActivityMultiState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("multi activity", ex);
@@ -185,6 +188,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     @Override
     public UserTransitState getUserTransitState() throws NotAvailableException {
         try {
+            // todo pleminoq: limit to other permissions.
             return getData().getUserTransitState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user transit state", ex);
@@ -193,18 +197,13 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     @Override
     public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
-//        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-//            dataBuilder.getInternalBuilder().setActivityMultiState(activityMultiState);
-//        } catch (CouldNotPerformException | NullPointerException ex) {
-//            throw new CouldNotPerformException("Could not set activity to [" + activityMultiState + "] for " + this + "!", ex);
-//        }
-        applyDataUpdate(activityMultiState, ACTIVITY_MULTI_STATE_SERVICE);
-        return CompletableFuture.completedFuture(null);
+        return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ACTIVITY_MULTI_STATE_SERVICE,this).build());
     }
 
     @Override
     public PresenceState getPresenceState() throws NotAvailableException {
         try {
+            // todo pleminoq: limit to other permissions.
             return getData().getPresenceState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("presence", ex);
@@ -213,13 +212,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     @Override
     public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
-//        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-//            dataBuilder.getInternalBuilder().setPresenceState(presenceState);
-//        } catch (CouldNotPerformException | NullPointerException ex) {
-//            throw new CouldNotPerformException("Could not set presence to [" + presenceState + "] for " + this + "!", ex);
-//        }
-        applyDataUpdate(presenceState, PRESENCE_STATE_SERVICE);
-        return CompletableFuture.completedFuture(null);
+        return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(presenceState, PRESENCE_STATE_SERVICE,this).build());
     }
 
     @Override
@@ -229,7 +222,8 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    protected void applyDataUpdate(UserData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyCustomDataUpdate(UserData.Builder internalBuilder, ServiceType serviceType) {
+        logger.info("state;" + internalBuilder.build());
         switch (serviceType) {
             case USER_TRANSIT_STATE_SERVICE:
                 updateLastWithCurrentState(PRESENCE_STATE_SERVICE, internalBuilder);

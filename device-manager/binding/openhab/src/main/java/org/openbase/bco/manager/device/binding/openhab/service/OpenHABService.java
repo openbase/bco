@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  */
 
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABImpl;
 import org.openbase.bco.manager.device.binding.openhab.transform.ItemNameLoader;
@@ -103,6 +104,11 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
     }
 
     public ST getUnit() {
+        return unit;
+    }
+
+    @Override
+    public ServiceProvider getServiceProvider() {
         return unit;
     }
 

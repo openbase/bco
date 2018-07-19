@@ -21,8 +21,8 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.mock.OperationServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
@@ -35,7 +35,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
@@ -44,7 +43,6 @@ import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
-import rst.domotic.state.InventoryStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -60,7 +58,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     private static DeviceManagerController instance;
 
     private final DeviceControllerFactory deviceControllerFactory;
-    private final ServiceFactory serviceFactory;
+    private final OperationServiceFactory operationServiceFactory;
     private final UnitSimulationManager unitSimulationManager;
 
     private final ControllerRegistryImpl<String, DeviceController> deviceControllerRegistry;
@@ -77,19 +75,19 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
      * @throws InterruptedException
      */
     public DeviceManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        this(ServiceFactoryMock.getInstance());
+        this(OperationServiceFactoryMock.getInstance());
     }
 
-    public DeviceManagerController(final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        this(serviceFactory, new DeviceControllerFactoryImpl(serviceFactory));
+    public DeviceManagerController(final OperationServiceFactory operationServiceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+        this(operationServiceFactory, new DeviceControllerFactoryImpl(operationServiceFactory));
     }
 
-    public DeviceManagerController(final ServiceFactory serviceFactory, final DeviceControllerFactory deviceControllerFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerController(final OperationServiceFactory operationServiceFactory, final DeviceControllerFactory deviceControllerFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             DeviceManagerController.instance = this;
 
             this.deviceControllerFactory = deviceControllerFactory;
-            this.serviceFactory = serviceFactory;
+            this.operationServiceFactory = operationServiceFactory;
 
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
             this.deviceControllerRegistry = new ControllerRegistryImpl<>();
@@ -198,8 +196,8 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     }
 
     @Override
-    public ServiceFactory getServiceFactory() throws NotAvailableException {
-        return serviceFactory;
+    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
+        return operationServiceFactory;
     }
 
     @Override

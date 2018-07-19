@@ -22,7 +22,7 @@ package org.openbase.bco.manager.device.lib;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
-import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.RegistryImpl;
@@ -32,7 +32,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface DeviceManager extends ServiceFactoryProvider, DeviceFactoryProvider {
+public interface DeviceManager extends OperationServiceFactoryProvider, DeviceFactoryProvider {
 
     public RegistryImpl<String, DeviceController> getDeviceControllerRegistry() throws NotAvailableException;
 

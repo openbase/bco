@@ -21,7 +21,7 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -33,25 +33,25 @@ import org.openbase.jul.exception.NotAvailableException;
  */
 public class GenericDeviceController extends AbstractDeviceController {
 
-    private final ServiceFactory serviceFactory;
+    private final OperationServiceFactory operationServiceFactory;
 
-    public GenericDeviceController(final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
+    public GenericDeviceController(final OperationServiceFactory operationServiceFactory) throws InstantiationException, CouldNotPerformException {
         super(GenericDeviceController.class);
         try {
-            if (serviceFactory == null) {
+            if (operationServiceFactory == null) {
                 throw new NotAvailableException("service factory");
             }
-            this.serviceFactory = serviceFactory;
+            this.operationServiceFactory = operationServiceFactory;
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     @Override
-    public ServiceFactory getServiceFactory() throws NotAvailableException {
-        if (serviceFactory == null) {
-            throw new NotAvailableException(ServiceFactory.class);
+    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
+        if (operationServiceFactory == null) {
+            throw new NotAvailableException(OperationServiceFactory.class);
         }
-        return serviceFactory;
+        return operationServiceFactory;
     }
 }

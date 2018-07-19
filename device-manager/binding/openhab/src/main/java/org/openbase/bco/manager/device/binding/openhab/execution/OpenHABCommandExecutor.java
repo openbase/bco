@@ -21,6 +21,7 @@ package org.openbase.bco.manager.device.binding.openhab.execution;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -104,7 +105,7 @@ public class OpenHABCommandExecutor {
     public void receiveUpdate(OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
         LOGGER.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
         OpenhabCommandMetaData metaData = new OpenhabCommandMetaData(command);
-        Object serviceData = OpenhabCommandTransformer.getServiceData(command, metaData.getServiceType());
+        Message serviceData = OpenhabCommandTransformer.getServiceData(command, metaData.getServiceType());
 
         if (serviceData == null) {
             return;

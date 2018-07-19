@@ -21,7 +21,7 @@ package org.openbase.bco.manager.app.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -43,23 +43,23 @@ public abstract class AbstractAppController extends AbstractExecutableBaseUnitCo
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
-    private final ServiceFactory serviceFactory;
+    private final OperationServiceFactory operationServiceFactory;
 
     public AbstractAppController(final Class unitClass) throws org.openbase.jul.exception.InstantiationException {
         this(unitClass, null);
     }
 
-    public AbstractAppController(final Class unitClass, final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException {
+    public AbstractAppController(final Class unitClass, final OperationServiceFactory operationServiceFactory) throws org.openbase.jul.exception.InstantiationException {
         super(unitClass, AppData.newBuilder());
-        this.serviceFactory = serviceFactory;
+        this.operationServiceFactory = operationServiceFactory;
     }
 
     @Override
-    public ServiceFactory getServiceFactory() throws NotAvailableException {
-        if (serviceFactory == null) {
+    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
+        if (operationServiceFactory == null) {
             throw new NotAvailableException("ServiceFactory", new NotSupportedException("Unit hosting", this));
         }
-        return serviceFactory;
+        return operationServiceFactory;
     }
 
     @Override

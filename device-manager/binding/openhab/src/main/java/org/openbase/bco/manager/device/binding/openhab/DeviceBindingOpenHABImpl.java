@@ -22,7 +22,7 @@ package org.openbase.bco.manager.device.binding.openhab;
  * #L%
  */
 import org.openbase.bco.manager.device.binding.openhab.comm.DeviceOpenHABRemote;
-import org.openbase.bco.manager.device.binding.openhab.service.OpenhabServiceFactory;
+import org.openbase.bco.manager.device.binding.openhab.service.OpenhabOperationServiceFactory;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -63,7 +63,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
         try {
             Registries.getClassRegistry(true);
-            deviceManagerController = new DeviceManagerController(new OpenhabServiceFactory()) {
+            deviceManagerController = new DeviceManagerController(new OpenhabOperationServiceFactory()) {
 
                 @Override
                 public boolean isSupported(UnitConfig config) throws CouldNotPerformException {

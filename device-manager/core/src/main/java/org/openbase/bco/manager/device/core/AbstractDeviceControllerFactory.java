@@ -22,7 +22,7 @@ package org.openbase.bco.manager.device.core;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.unit.device.Device;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
@@ -44,14 +44,14 @@ public abstract class AbstractDeviceControllerFactory implements DeviceControlle
 
     public DeviceController newInstance(final UnitConfig deviceUnitConfig, final DeviceManager deviceManager) throws InstantiationException, InterruptedException {
         try {
-            return newInstance(deviceUnitConfig, deviceManager.getServiceFactory());
+            return newInstance(deviceUnitConfig, deviceManager.getOperationServiceFactory());
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(Device.class, deviceUnitConfig.getId(), ex);
         }
     }
 
     @Override
-    public DeviceController newInstance(final UnitConfig deviceUnitConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException {
+    public DeviceController newInstance(final UnitConfig deviceUnitConfig, final OperationServiceFactory operationServiceFactory) throws InstantiationException, InterruptedException {
         try {
             if (deviceUnitConfig == null) {
                 throw new NotAvailableException("deviceConfig");
@@ -73,7 +73,7 @@ public abstract class AbstractDeviceControllerFactory implements DeviceControlle
                 throw new NotAvailableException("deviceConfig.placement.locationId");
             }
 
-            final GenericDeviceController genericDeviceController = new GenericDeviceController(serviceFactory);
+            final GenericDeviceController genericDeviceController = new GenericDeviceController(operationServiceFactory);
             genericDeviceController.init(deviceUnitConfig);
             return genericDeviceController;
         } catch (CouldNotPerformException ex) {
