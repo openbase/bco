@@ -27,10 +27,10 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
-import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
+import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
@@ -70,6 +70,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -79,10 +80,10 @@ import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.timing.TimestampType.Timestamp;
 
-import java.sql.Time;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -94,7 +95,6 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -247,7 +247,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
-     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -460,10 +459,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, ticketEvaluationWrapper) -> {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
             try {
-                verifyAccessPermission(ticketEvaluationWrapper);
-
+                final String userString = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
+                // TODO: user string should be set in action description ... all authentication info should be updated here
+//                logger.warn("Apply action for [" + userString + "]");
                 try {
                     applyAction(actionDescription).get();
                 } catch (ExecutionException ex) {
@@ -556,7 +556,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 if (equalFields) {
 
                     // use the requested state but update the timestamp if available
-                    if(TimestampProcessor.hasTimestamp(value)) {
+                    if (TimestampProcessor.hasTimestamp(value)) {
                         Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, TimestampProcessor.TIMESTEMP_FIELD_NAME);
                         newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
                     } else {
@@ -703,7 +703,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException, InterruptedException {
         return restoreSnapshot(snapshot);
         //TODO: implementation has to be fixed like in ServiceRemoteManager
         //        try {
@@ -738,9 +738,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, ticketEvaluationWrapper) -> {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, authenticationBaseData) -> {
             try {
-                verifyAccessPermission(ticketEvaluationWrapper);
+                verifyAccessPermission(authenticationBaseData, ServiceType.UNKNOWN);
 
                 try {
 //                    internalRestoreSnapshot(snapshot, ticketEvaluationWrapper).get();
@@ -756,22 +756,85 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }));
     }
 
-    private void verifyAccessPermission(final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+    private String verifyAccessPermission(final AuthenticationBaseData authenticationBaseData, final ServiceType serviceType) throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                final String userId = ticketEvaluationWrapper == null ? null : ticketEvaluationWrapper.getUserId();
+                final UnitConfig unitConfig = getConfig();
+                final UnitType unitType = getUnitType();
+                final PermissionType permissionType = PermissionType.ACCESS;
+                try {
+                    String userId;
+                    if (authenticationBaseData == null) {
+                        userId = null;
+                    } else {
+                        if (authenticationBaseData.getAuthenticationToken() != null) {
+                            userId = authenticationBaseData.getAuthenticationToken().getUserId();
+                        } else {
+                            userId = authenticationBaseData.getUserId();
+                        }
+                    }
 
-                // check for write permissions
-                if (!AuthorizationHelper.canDo(getConfig(),
-                        userId,
-                        Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry().getEntryMap(),
-                        Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
-                        Type.ACCESS)) {
+                    // check if authenticated user has access permissions
+                    if (AuthorizationHelper.canDo(unitConfig,
+                            userId,
+                            Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry().getEntryMap(),
+                            Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
+                            permissionType)) {
+                        return resolveUserName(userId);
+                    }
+
+                    // check if authorization token gives him access permissions
+                    if (authenticationBaseData != null && authenticationBaseData.getAuthorizationToken() != null) {
+                        String result = resolveUserName(userId);
+                        result += " authorized by ";
+                        result += Registries.getUnitRegistry().getUnitConfigById(authenticationBaseData.getAuthorizationToken().getUserId()).getUserConfig().getUserName();
+                        for (final AuthorizationToken.MapFieldEntry entry : authenticationBaseData.getAuthorizationToken().getPermissionRuleList()) {
+                            if (serviceType != null && serviceType != ServiceType.UNKNOWN && Registries.getTemplateRegistry().containsServiceTemplateById(entry.getKey())) {
+                                if (serviceType == Registries.getTemplateRegistry().getServiceTemplateById(entry.getKey()).getType() && AuthorizationHelper.permitted(entry.getValue(), permissionType)) {
+                                    // token grants access permissions for service type
+                                    return result;
+                                }
+                            } else if (unitType != null && unitType != UnitType.UNKNOWN && Registries.getTemplateRegistry().containsUnitTemplateById(entry.getKey())) {
+                                if (unitType == Registries.getTemplateRegistry().getUnitTemplateById(entry.getKey()).getType() && AuthorizationHelper.permitted(entry.getValue(), permissionType)) {
+                                    // token grants access permissions for the unit type
+                                    return result;
+                                }
+                            } else if (entry.getKey().equals(unitConfig.getId()) && AuthorizationHelper.permitted(entry.getValue(), permissionType)) {
+                                return result;
+                            } else if (Registries.getUnitRegistry().containsUnitConfigById(entry.getKey())) {
+                                final UnitConfig location = Registries.getUnitRegistry().getUnitConfigById(entry.getKey());
+                                if (location.getUnitType() == UnitType.LOCATION && location.getLocationConfig().getUnitIdList().contains(unitConfig.getId()) && AuthorizationHelper.permitted(entry.getValue(), permissionType)) {
+                                    return result;
+                                }
+                            }
+                        }
+                    }
                     throw new PermissionDeniedException("User[" + userId + "] access permission denied!");
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not verify permissions for unit[" + unitConfig.getAlias(0) + "]", ex);
                 }
+            } else {
+                return "Other";
             }
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+        }
+    }
+
+    private String resolveUserName(final String userId) throws CouldNotPerformException {
+        if (userId == null || userId.isEmpty()) {
+            return "Other";
+        } else {
+            final String[] split = userId.split("@");
+            if (split.length > 1) {
+                String result = "";
+                result += Registries.getUnitRegistry().getUnitConfigById(split[0]).getUserConfig().getUserName();
+                result += "@";
+                result += Registries.getUnitRegistry().getUnitConfigById(split[1]).getUserConfig().getUserName();
+                return result;
+            } else {
+                return Registries.getUnitRegistry().getUnitConfigById(userId.replace("@", "")).getUserConfig().getUserName();
+            }
         }
     }
 
