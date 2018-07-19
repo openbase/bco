@@ -1052,4 +1052,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             }
         }
     }
+
+    @Override
+    public Message getServiceState(ServiceType serviceType) throws NotAvailableException {
+        if (serviceType != this.serviceType) {
+            throw new NotAvailableException("ServiceState", new InvalidStateException("ServiceType["+serviceType.name()+"] not compatible with "+ this));
+        }
+        return getData();
+    }
+
+    @Override
+    public ServiceProvider getServiceProvider() {
+        return this;
+    }
 }

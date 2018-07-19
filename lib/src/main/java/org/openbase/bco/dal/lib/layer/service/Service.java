@@ -21,21 +21,9 @@ package org.openbase.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
-import java.lang.reflect.Method;
-import java.util.Collection;
 
-import com.google.protobuf.Message;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import rst.domotic.mode.OperationModeType;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ContactStateType;
 
 /**
@@ -48,9 +36,12 @@ public interface Service {
     Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();
     Package SERVICE_MODE_PACKAGE = OperationModeType.OperationMode.class.getPackage();
     String SERVICE_LABEL = Service.class.getSimpleName();
-    String MULTI_SERVICE_PREFIX = "MULTI";
 
-
-    
     String RESPONSIBLE_ACTION_FIELD_NAME = "responsible_action";
+
+    /**
+     * Method returns the unit or remote instance which offers this service.
+     * @return
+     */
+    ServiceProvider getServiceProvider();
 }

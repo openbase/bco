@@ -1,6 +1,6 @@
 package org.openbase.bco.dal.lib.layer.unit;
 
-import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 
 /*
  * #%L
@@ -30,6 +30,6 @@ import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
  *
  * @param <D> the data type of this unit used for the state synchronization.
  */
-public interface UnitHost<D> extends Unit<D>, ServiceFactoryProvider {
+public interface UnitHost<D> extends Unit<D>, OperationServiceFactoryProvider {
 
 }

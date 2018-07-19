@@ -13,7 +13,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
@@ -60,17 +59,6 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     }
 
     @Override
-    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        try {
-            this.powerStateService = getServiceFactory().newPowerService(this);
-            this.brightnessStateService = getServiceFactory().newBrightnessService(this);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setPowerState(PowerState state) throws CouldNotPerformException {
         try {
             Services.verifyOperationServiceState(state);
@@ -104,7 +92,7 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     }
     
     @Override
-    protected void applyDataUpdate(DimmerData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyCustomDataUpdate(DimmerData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case BRIGHTNESS_STATE_SERVICE:
                 if (internalBuilder.getBrightnessState().getBrightness() == 0) {

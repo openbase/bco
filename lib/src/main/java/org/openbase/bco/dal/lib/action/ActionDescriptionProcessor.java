@@ -7,7 +7,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -95,6 +95,7 @@ public class ActionDescriptionProcessor {
      * @param actionParameter type which contains several parameters which are updated in the actionDescription
      * @param actionAuthority the actionAuthority for the actionDescription
      * @param initiator       the initiator type for the resourceAllocation in the actionDescription
+     *
      * @return an ActionDescription that only misses unit and service information
      */
     public static ActionDescription.Builder getActionDescription(final ActionParameter actionParameter, final ActionAuthority actionAuthority, final ResourceAllocation.Initiator initiator) {
@@ -159,6 +160,7 @@ public class ActionDescriptionProcessor {
      *
      * @param actionAuthority the actionAuthority for the actionDescription
      * @param initiator       the initiator type for the resourceAllocation in the actionDescription
+     *
      * @return
      */
     public static ActionDescription.Builder getActionDescription(final ActionAuthority actionAuthority, final ResourceAllocation.Initiator initiator) {
@@ -203,6 +205,7 @@ public class ActionDescriptionProcessor {
      * Updates the executionTimePeriod of the given actionDescription.
      *
      * @param actionDescription actionDescription
+     *
      * @return an Interval generated as described above
      */
     public static Interval getAllocationInterval(final ActionDescription.Builder actionDescription) {
@@ -222,6 +225,7 @@ public class ActionDescriptionProcessor {
      * To generate the slot the method {@link #getAllocationInterval(ActionDescription.Builder) getAllocationInterval} is used.
      *
      * @param actionDescription the ActionDescription inside which the ResourceAllocation is updated
+     *
      * @return the updated ActionDescription
      */
     public static ActionDescription.Builder updateResourceAllocationSlot(final ActionDescription.Builder actionDescription) {
@@ -234,6 +238,7 @@ public class ActionDescriptionProcessor {
      * Build an ActionReference from a given ActionDescription which can be added to an action chain.
      *
      * @param actionDescription the ActionDescription from which the ActionReference is generated
+     *
      * @return an ActionReference for the given ActionDescription
      */
     public static ActionReference getActionReferenceFromActionDescription(final ActionDescriptionOrBuilder actionDescription) {
@@ -252,6 +257,7 @@ public class ActionDescriptionProcessor {
      *
      * @param actionDescription the ActionDescription which is updated
      * @param parentAction      the ActionDescription of the action which is the cause for the new action
+     *
      * @return the updated ActionDescription
      */
     public static ActionDescription.Builder updateActionChain(final ActionDescription.Builder actionDescription, final ActionDescriptionOrBuilder parentAction) {
@@ -264,6 +270,7 @@ public class ActionDescriptionProcessor {
      * Check if the ResourceAllocation inside the ActionDescription has a token in its id field.
      *
      * @param actionDescription the ActionDescription which is checked
+     *
      * @return true if the id field contains a # which it the token separator and else false
      */
     public static boolean hasResourceAllocationToken(final ActionDescriptionOrBuilder actionDescription) {
@@ -275,6 +282,7 @@ public class ActionDescriptionProcessor {
      * This method does nothing if the id already contains a token.
      *
      * @param actionDescription the ActionDescription which is updated
+     *
      * @return the updated ActionDescription
      */
     public static ActionDescription.Builder generateToken(final ActionDescription.Builder actionDescription) {
@@ -293,6 +301,7 @@ public class ActionDescriptionProcessor {
      * while keeping the token if there si one.
      *
      * @param actionDescription the action description which is updated as described above
+     *
      * @return the action description which is updated as described above
      */
     public static ActionDescription.Builder updateResourceAllocationId(final ActionDescription.Builder actionDescription) {
@@ -311,6 +320,7 @@ public class ActionDescriptionProcessor {
      * Method generates a description for the given action pipeline.
      *
      * @param actionDescriptionCollection a collection of depending action descriptions.
+     *
      * @return a human readable description of the action pipeline.
      */
     public static String getDescription(final Collection<ActionDescription> actionDescriptionCollection) {
@@ -331,7 +341,9 @@ public class ActionDescriptionProcessor {
      *
      * @param serviceAttribute the service attribute that will be applied by this action
      * @param serviceType      the service type according to the service attribute
+     *
      * @return the generated action description
+     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
@@ -361,7 +373,9 @@ public class ActionDescriptionProcessor {
      * @param serviceAttribute the service attribute that will be applied by this action
      * @param serviceType      the service type according to the service attribute
      * @param unitType         the service type according to the service attribute
+     *
      * @return the generated action description
+     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
@@ -378,7 +392,7 @@ public class ActionDescriptionProcessor {
     }
 
     /**
-     * Generates an action description according to the configuration of this unit remote.
+     * Generates an action description according to the configuration of the given unit.
      * The action description is generated using the ActionDescriptionProcessor.
      * This method will set the service state description according to the service attribute and service type
      * and replace several keys in the description to make it human readable.
@@ -386,12 +400,15 @@ public class ActionDescriptionProcessor {
      *
      * @param serviceAttribute the service attribute that will be applied by this action
      * @param serviceType      the service type according to the service attribute
+     * @param unit             the unit to control.
+     *
      * @return the generated action description
+     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
-    public static ActionDescription.Builder generateActionDescriptionBuilderAndUpdate(final Message serviceAttribute, final ServiceType serviceType, final UnitRemote<?> unitRemote) throws CouldNotPerformException {
-        return updateActionDescription(generateActionDescriptionBuilder(serviceAttribute, serviceType), serviceAttribute, serviceType, unitRemote);
+    public static ActionDescription.Builder generateActionDescriptionBuilderAndUpdate(final Message serviceAttribute, final ServiceType serviceType, final Unit<?> unit) throws CouldNotPerformException {
+        return updateActionDescription(generateActionDescriptionBuilder(serviceAttribute, serviceType), serviceAttribute, serviceType, unit);
     }
 
     /**
@@ -403,11 +420,14 @@ public class ActionDescriptionProcessor {
      * @param actionDescription the action description which will be updated
      * @param serviceAttribute  the service attribute that will be applied by this action
      * @param serviceType       the service type according to the service attribute
+     * @param unit             the unit to control.
+     *
      * @return the updated action description
+     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
-    public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType, final UnitRemote<?> unitRemote) throws CouldNotPerformException {
+    public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType, final Unit<?> unit) throws CouldNotPerformException {
 
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
@@ -416,10 +436,10 @@ public class ActionDescriptionProcessor {
             actionDescription.setDescription(ActionDescriptionProcessor.GENERIC_ACTION_DESCRIPTION);
         }
 
-        serviceStateDescription.setUnitId(unitRemote.getId());
-        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
+        serviceStateDescription.setUnitId(unit.getId());
+        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unit.getScope()));
 
-        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unit.getLabel()));
 
         String username = "";
         if (SessionManager.getInstance().getUserId() != null) {
@@ -440,7 +460,7 @@ public class ActionDescriptionProcessor {
         if (actionDescription.hasLabel() && !LabelProcessor.isEmpty(actionDescription.getLabel())) {
             final String label = LabelProcessor.getBestMatch(actionDescription.getLabel());
             actionDescription.clearLabel();
-            LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+            LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.LABEL_KEY, unit.getLabel()));
         }
 
         return updateActionDescription(actionDescription, serviceAttribute, serviceType);
@@ -450,6 +470,7 @@ public class ActionDescriptionProcessor {
      * Method detects if a human or the system is triggering this action.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Experimental
@@ -474,6 +495,7 @@ public class ActionDescriptionProcessor {
      * Method detects if a user or the system is triggering this action.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Experimental
@@ -502,7 +524,9 @@ public class ActionDescriptionProcessor {
      * @param actionDescription the action description that will be updated
      * @param serviceAttribute  the service attribute that will be applied by this action
      * @param serviceType       the service type according to the service attribute
+     *
      * @return the updated action description
+     *
      * @throws CouldNotPerformException if the service attribute cannot be verified or if the service attribute cannot
      *                                  be serialized
      */

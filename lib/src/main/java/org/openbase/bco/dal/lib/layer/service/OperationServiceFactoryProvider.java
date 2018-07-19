@@ -28,7 +28,7 @@ import org.openbase.jul.exception.NotAvailableException;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ServiceFactoryProvider {
+public interface OperationServiceFactoryProvider {
 
-    public ServiceFactory getServiceFactory() throws NotAvailableException;
+    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException;
 }

@@ -23,8 +23,10 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
@@ -49,7 +51,13 @@ public interface ServiceProvider {
     @RPCMethod
     Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
 
+    default Future<ActionFuture> applyAction(final ActionDescription.Builder actionDescriptioBuildern) throws CouldNotPerformException {
+        return applyAction(actionDescriptioBuildern.build());
+    }
+
     void addServiceStateObserver(final ServiceType serviceType, final Observer observer);
 
     void removeServiceStateObserver(final ServiceType serviceType, final Observer observer);
+
+    Message getServiceState(final ServiceType serviceType) throws NotAvailableException;
 }

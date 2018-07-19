@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.lib.layer.service.provider;
+package org.openbase.bco.dal.lib.layer.service;
 
 /*
  * #%L
@@ -21,21 +21,17 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.state.PowerStateType.PowerState;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
+import org.openbase.bco.dal.lib.layer.service.operation.*;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.pattern.Factory;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface PowerStateProviderService extends ProviderService {
+public interface OperationServiceFactory {
 
-    @RPCMethod
-    default PowerState getPowerState() throws NotAvailableException {
-        return (PowerState) getServiceProvider().getServiceState(POWER_STATE_SERVICE);
-    }
+    <UNIT extends Unit> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException;
 }

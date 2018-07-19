@@ -57,18 +57,7 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     public MonitorController(final UnitHost unitHost, final MonitorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(MonitorController.class, unitHost, builder);
     }
-    
-    @Override
-    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        try {
-            this.powerStateService = getServiceFactory().newPowerService(this);
-            this.standbyStateService = getServiceFactory().newStandbyService(this);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-    
+
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");

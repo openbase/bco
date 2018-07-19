@@ -23,7 +23,9 @@ package org.openbase.bco.dal.remote.unit;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
 import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProcessor;
@@ -71,9 +73,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @param <D> The unit data type.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
+
+    public static final String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
@@ -81,14 +86,11 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
-    public static final String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
-
-    private UnitTemplate template;
-    private boolean initialized = false;
-
     private final Observer<UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
+    private UnitTemplate template;
+    private boolean initialized = false;
     private SessionManager sessionManager;
     private boolean infrastructure = false;
 
@@ -147,6 +149,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param id
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -163,6 +166,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param label
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -187,6 +191,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -203,6 +208,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -219,6 +225,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -295,7 +302,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param unitConfig {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
@@ -397,6 +406,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      *
      * @param timeout  {@inheritDoc}
      * @param timeUnit {@inheritDoc}
+     *
      * @throws CouldNotPerformException       {@inheritDoc}
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
@@ -464,6 +474,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @return
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
@@ -488,6 +499,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
@@ -505,6 +517,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * otherwise the base location config is returned which refers the location where this unit is placed in.
      *
      * @return a unit config of the base location.
+     *
      * @throws NotAvailableException is thrown if the location config is currently not available.
      */
     public UnitConfig getBaseLocationConfig() throws NotAvailableException {
@@ -521,7 +534,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * otherwise the base location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     *
      * @return a location remote instance.
+     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -530,20 +545,10 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     /**
-     * Sets the session Manager which is used for the authentication of the
-     * client/user
-     *
-     * @param sessionManager an instance of SessionManager
-     */
-    @Override
-    public void setSessionManager(SessionManager sessionManager) {
-        this.sessionManager = sessionManager;
-    }
-
-    /**
      * Method returns the transformation between the root location and this unit.
      *
      * @return a transformation future
+     *
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getRootToUnitTransformationFuture()} instead.
      */
@@ -564,7 +569,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param actionDescription {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -584,6 +591,17 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     @Override
     public SessionManager getSessionManager() {
         return sessionManager;
+    }
+
+    /**
+     * Sets the session Manager which is used for the authentication of the
+     * client/user
+     *
+     * @param sessionManager an instance of SessionManager
+     */
+    @Override
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
     }
 
     @Override
@@ -619,6 +637,15 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             return RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not restore snapshot!", ex);
+        }
+    }
+
+    @Override
+    public Message getServiceState(final ServiceType serviceType) throws NotAvailableException {
+        try {
+            return Services.invokeProviderServiceMethod(serviceType, getData());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ServiceState", ex);
         }
     }
 

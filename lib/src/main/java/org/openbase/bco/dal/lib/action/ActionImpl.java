@@ -61,14 +61,12 @@ import java.util.concurrent.Future;
 public class ActionImpl implements Action {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
-
+    protected final AbstractUnitController unit;
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
     private final ServiceJSonProcessor serviceJSonProcessor;
+    protected ActionDescription.Builder actionDescriptionBuilder;
     private Message serviceAttribute;
     private ServiceDescription serviceDescription;
-
-    protected final AbstractUnitController unit;
-    protected ActionDescription.Builder actionDescriptionBuilder;
 
     public ActionImpl(final AbstractUnitController unit) {
         this.unit = unit;
@@ -164,7 +162,7 @@ public class ActionImpl implements Action {
                             updateActionState(ActionState.State.EXECUTING);
 
                             try {
-                                waitForExecution(Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute));
+                                waitForExecution(unit.performOperationService(serviceAttribute, serviceDescription.getServiceType()));
 //                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
@@ -217,6 +215,10 @@ public class ActionImpl implements Action {
                     updateActionState(ActionState.State.INITIATING);
 
                     try {
+
+                        // Verify service state
+                        Services.verifyOperationServiceState(serviceAttribute);
+
                         // Verify authority
                         final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
 
@@ -241,8 +243,7 @@ public class ActionImpl implements Action {
                             updateActionState(ActionState.State.EXECUTING);
 
                             try {
-                                waitForExecution(Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute));
-
+                                waitForExecution(unit.performOperationService(serviceAttribute, serviceDescription.getServiceType()));
 //                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
@@ -260,7 +261,6 @@ public class ActionImpl implements Action {
                             updateActionState(ActionState.State.ABORTED);
                             throw ex;
                         }
-
                     } catch (CouldNotPerformException ex) {
                         updateActionState(ActionState.State.REJECTED);
                         throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
@@ -294,6 +294,7 @@ public class ActionImpl implements Action {
      * {@inheritDoc }
      *
      * @return {@inheritDoc }
+     *
      * @throws NotAvailableException {@inheritDoc }
      */
     @Override
@@ -306,11 +307,11 @@ public class ActionImpl implements Action {
         LOGGER.debug("StateUpdate[" + state.name() + "] of " + this);
     }
 
-    private void waitForExecution(final Object result) throws ExecutionException, InterruptedException {
-        if(result instanceof Future) {
-            ((Future) result).get();
-        } else {
-            LOGGER.warn("Service["+serviceDescription.getServiceType()+"] implementation of "+unit+" does not provide feedback about triggered operation! Just continue without feedback...");
+    private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
+        try {
+            result.get();
+        } catch (ExecutionException | CancellationException ex) {
+            throw new CouldNotPerformException("Action execution aborted!", ex);
         }
     }
 

@@ -22,16 +22,27 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
+import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.schedule.FutureProcessor;
+import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.Future;
 
 /**
  *
@@ -39,30 +50,76 @@ import rst.domotic.unit.UnitConfigType;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitController<M, MB> implements ServiceFactoryProvider {
+public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitController<M, MB> implements OperationServiceFactoryProvider {
+
+    private Map<ServiceType, OperationService> operationServiceMap;
 
     private final UnitHost unitHost;
-    private final ServiceFactory serviceFactory;
+    private final OperationServiceFactory operationServiceFactory;
 
     public AbstractDALUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws InstantiationException {
         super(unitClass, builder);
         try {
-            if (unitHost.getServiceFactory() == null) {
+            if (unitHost.getOperationServiceFactory() == null) {
                 throw new NotAvailableException("service factory");
             }
+            this.operationServiceMap = new TreeMap<>();
             this.unitHost = unitHost;
-            this.serviceFactory = unitHost.getServiceFactory();
+            this.operationServiceFactory = unitHost.getOperationServiceFactory();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     @Override
-    public ServiceFactory getServiceFactory() throws NotAvailableException {
-        return serviceFactory;
+    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+
+        final Set<ServiceType> registeredServiceTypes = operationServiceMap.keySet();
+
+        try {
+            for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+
+                // filter non operation services
+                if (serviceDescription.getPattern() != ServicePattern.OPERATION) {
+                    continue;
+                }
+
+                // filter already handled services
+                if (registeredServiceTypes.contains(serviceDescription.getServiceType())) {
+                    registeredServiceTypes.remove(serviceDescription.getServiceType());
+                    continue;
+                }
+
+                operationServiceMap.put(serviceDescription.getServiceType(), getOperationServiceFactory().newInstance(serviceDescription.getServiceType(), this));
+            }
+
+            // remove deleted services
+            for (final ServiceType outdatedServiceType : registeredServiceTypes) {
+                operationServiceMap.remove(outdatedServiceType);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
+        return operationServiceFactory;
     }
 
     public UnitHost getUnitHost() {
         return unitHost;
+    }
+
+    @Override
+    public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
+        //logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to PowerState [" + serviceState + "]");
+        try {
+            Services.verifyOperationServiceState(serviceState);
+            return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
+        }
     }
 }

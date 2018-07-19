@@ -59,17 +59,6 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
     }
 
     @Override
-    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        try {
-            this.powerService = getServiceFactory().newPowerService(this);
-            this.brightnessService = getServiceFactory().newBrightnessService(this);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
         try {
@@ -104,7 +93,7 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
     }
 
     @Override
-    protected void applyDataUpdate(DimmableLightData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyCustomDataUpdate(DimmableLightData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case BRIGHTNESS_STATE_SERVICE:
                 if (internalBuilder.getBrightnessState().getBrightness() == 0) {

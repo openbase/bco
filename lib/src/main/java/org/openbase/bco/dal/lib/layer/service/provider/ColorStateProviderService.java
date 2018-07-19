@@ -32,6 +32,9 @@ import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
 import rst.domotic.state.ColorStateType.ColorState;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
+
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -39,22 +42,23 @@ import rst.domotic.state.ColorStateType.ColorState;
 public interface ColorStateProviderService extends ProviderService {
 
     @RPCMethod
-    public ColorState getColorState() throws NotAvailableException;
+    default ColorState getColorState() throws NotAvailableException {
+        return (ColorState) getServiceProvider().getServiceState(COLOR_STATE_SERVICE);
+    }
 
-    default public Color getColor() throws NotAvailableException {
+    default Color getColor() throws NotAvailableException {
         return getColorState().getColor();
     }
 
-    default public HSBColor getHSBColor() throws NotAvailableException {
+    default HSBColor getHSBColor() throws NotAvailableException {
         return getColorState().getColor().getHsbColor();
     }
 
-    default public RGBColor getRGBColor() throws NotAvailableException {
+    default RGBColor getRGBColor() throws NotAvailableException {
         return getColorState().getColor().getRgbColor();
     }
 
     /**
-     * Please use
      *
      * @return
      * @throws CouldNotPerformException
@@ -72,7 +76,7 @@ public interface ColorStateProviderService extends ProviderService {
     
     static void verifyColorState(final ColorState colorState) throws VerificationFailedException {
         if(!colorState.hasColor()) {
-            throw new VerificationFailedException("Color state unknown!");
+            throw new VerificationFailedException("Color state not available!");
         }
         verifyColor(colorState.getColor());
     }

@@ -82,7 +82,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 import rst.timing.TimestampType.Timestamp;
 
-import java.sql.Time;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -106,9 +105,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     private final Observer<UnitRegistryData> unitRegistryObserver;
+
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
-    private final List<Service> serviceList;
+//    private final List<Service> serviceList;
 
     private UnitTemplate template;
     private boolean initialized = false;
@@ -117,7 +117,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
-        this.serviceList = new ArrayList<>();
+//        this.serviceList = new ArrayList<>();
         this.unitDataObservableMap = new HashMap<>();
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
@@ -368,13 +368,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return template;
     }
 
-    public Collection<Service> getServices() {
-        return Collections.unmodifiableList(serviceList);
-    }
-
-    public void registerService(final Service service) {
-        serviceList.add(service);
-    }
+//    public Collection<Service> getServices() {
+//        return Collections.unmodifiableList(serviceList);
+//    }
+//
+//    public void registerService(final Service service) {
+//        serviceList.add(service);
+//    }
 
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
@@ -436,6 +436,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Method [" + serviceInterfaceMapEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
         }
+    }
+
+    public Future<ActionFuture> applyUnauthorizedAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+        // todo pleminoq: please perform action with other rights only.
+        return applyAction(actionDescription);
     }
 
     @Override
@@ -514,11 +519,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    @Override
-    public void applyDataUpdate(final Object serviceArgument, final ServiceType serviceType) throws CouldNotPerformException {
-        logger.debug("Apply service[" + serviceType + "] update[" + serviceArgument + "] for " + this + ".");
 
-        Message value = (Message) serviceArgument;
+    @Override
+    public void applyDataUpdate(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException {
+        logger.debug("Apply service[" + serviceType + "] update[" + serviceState + "] for " + this + ".");
+
+        Message value = (Message) serviceState;
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
 
@@ -556,7 +562,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 if (equalFields) {
 
                     // use the requested state but update the timestamp if available
-                    if(TimestampProcessor.hasTimestamp(value)) {
+                    if (TimestampProcessor.hasTimestamp(value)) {
                         Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, TimestampProcessor.TIMESTEMP_FIELD_NAME);
                         newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
                     } else {
@@ -618,7 +624,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
 
             // do custom state depending update in sub classes
-            applyDataUpdate(internalBuilder, serviceType);
+            applyCustomDataUpdate(internalBuilder, serviceType);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + value + "] for " + this + "!", ex);
         }
@@ -665,7 +671,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * @param internalBuilder The data builder of this unit which already contains the updated state.
      * @param serviceType     The service type which has been updated.
      */
-    protected void applyDataUpdate(DB internalBuilder, ServiceType serviceType) {
+    protected void applyCustomDataUpdate(DB internalBuilder, ServiceType serviceType) {
         // overwrite in sub classes if a change in one service also results in a change of another
     }
 
@@ -775,18 +781,39 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    protected D filterDataForUser(DB dataBuilder, String userId) throws CouldNotPerformException {
-        if (AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
-            // user has read permissions so send everything
-            return (D) dataBuilder.build();
-        } else {
-            // filter all service states
-            for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
-                if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
-                    dataBuilder.clearField(fieldDescriptor);
-                }
+    @Override
+    public Message getServiceState(final ServiceType serviceType) throws NotAvailableException {
+        return getServiceState(serviceType, null);
+    }
+
+    protected Message getServiceState(final ServiceType serviceType, String userId) throws NotAvailableException {
+        try {
+            // check if user has permissions to read the service state
+            if (!AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
+                throw new PermissionDeniedException("User[" + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName() + "] has no permission to read " + serviceType.name() + " of " + this);
             }
-            return (D) dataBuilder.build();
+            return Services.invokeProviderServiceMethod(serviceType, getData());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ServiceState", ex);
+        }
+    }
+
+    protected D filterDataForUser(DB dataBuilder, String userId) throws CouldNotPerformException {
+        try {
+            if (AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
+                // user has read permissions so send everything
+                return (D) dataBuilder.build();
+            } else {
+                // filter all service states
+                for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
+                    if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
+                        dataBuilder.clearField(fieldDescriptor);
+                    }
+                }
+                return (D) dataBuilder.build();
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not filter data by user permissions!", ex);
         }
     }
 }

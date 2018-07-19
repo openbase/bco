@@ -806,4 +806,8 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
             throw new NotAvailableException("Variable Provider not available!", ex);
         }
     }
+
+    default ServiceProvider getServiceProvider() {
+        return this;
+    }
 }

@@ -23,6 +23,15 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.schedule.FutureProcessor;
+import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -31,5 +40,14 @@ import com.google.protobuf.GeneratedMessage;
  * @param <DB> the builder used to build the unit data instance.
  */
 public interface BaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends UnitController<D, DB>, BaseUnit<D> {
-    
+
+    @Override
+    default Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
+        try {
+            applyDataUpdate(serviceState, serviceType);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
+        return CompletableFuture.completedFuture(null);
+    }
 }

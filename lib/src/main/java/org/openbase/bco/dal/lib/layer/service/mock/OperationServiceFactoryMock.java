@@ -24,19 +24,16 @@ package org.openbase.bco.dal.lib.layer.service.mock;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
+import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -51,25 +48,39 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class ServiceFactoryMock implements ServiceFactory {
+public class OperationServiceFactoryMock implements OperationServiceFactory {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServiceFactoryMock.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OperationServiceFactoryMock.class);
 
-    private static ServiceFactory instance = new ServiceFactoryMock();
+    private static OperationServiceFactory instance = new OperationServiceFactoryMock();
 
-    public static ServiceFactory getInstance() {
+    public static OperationServiceFactory getInstance() {
         if(instance == null) {
-            instance = new ServiceFactoryMock();
+            instance = new OperationServiceFactoryMock();
         }
         return instance;
     }
     
-    private ServiceFactoryMock() {
+    private OperationServiceFactoryMock() {
     }
 
     @Override
+    public <UNIT extends Unit> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
+        String serviceImplMethodName = "new" + StringProcessor.transformUpperCaseToCamelCase(operationServiceType.name());
+        try {
+            return (OperationService) getClass().getMethod(serviceImplMethodName, unit.getClass()).invoke(unit);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+            throw new InstantiationException("ServiceSimulator", ex);
+        }
+    }
+
     public <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(final UNIT unit) {
         return new BrightnessStateOperationService() {
+
+            @Override
+            public ServiceProvider getServiceProvider() {
+                return unit;
+            }
 
             @Override
             public BrightnessState getBrightnessState() throws NotAvailableException {
@@ -83,9 +94,13 @@ public class ServiceFactoryMock implements ServiceFactory {
         };
     }
 
-    @Override
     public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) {
         return new ColorStateOperationService() {
+
+            @Override
+            public ServiceProvider getServiceProvider() {
+                return unit;
+            }
 
             @Override
             public ColorState getColorState() throws NotAvailableException {
@@ -99,9 +114,13 @@ public class ServiceFactoryMock implements ServiceFactory {
         };
     }
 
-    @Override
     public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) {
         return new PowerStateOperationService() {
+
+            @Override
+            public ServiceProvider getServiceProvider() {
+                return unit;
+            }
 
             @Override
             public PowerState getPowerState() throws NotAvailableException {
@@ -115,9 +134,13 @@ public class ServiceFactoryMock implements ServiceFactory {
         };
     }
 
-    @Override
     public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) {
         return new BlindStateOperationService() {
+
+            @Override
+            public ServiceProvider getServiceProvider() {
+                return unit;
+            }
 
             @Override
             public BlindState getBlindState() throws NotAvailableException {
@@ -131,9 +154,13 @@ public class ServiceFactoryMock implements ServiceFactory {
         };
     }
 
-    @Override
     public <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(final UNIT unit) {
         return new StandbyStateOperationService() {
+
+            @Override
+            public ServiceProvider getServiceProvider() {
+                return unit;
+            }
 
             @Override
             public StandbyStateType.StandbyState getStandbyState() throws NotAvailableException {
@@ -147,9 +174,13 @@ public class ServiceFactoryMock implements ServiceFactory {
         };
     }
 
-    @Override
     public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) {
         return new TargetTemperatureStateOperationService() {
+
+            @Override
+            public ServiceProvider getServiceProvider() {
+                return unit;
+            }
 
             @Override
             public TemperatureState getTargetTemperatureState() throws NotAvailableException {
@@ -162,10 +193,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
         };
     }
-    
-//    private static Future<ActionFuture> update(final Object argument, final Unit unit) throws CouldNotPerformException {
-//        return update(argument, unit, Services.getServiceType(argument));
-//    }
 
     private static Future<ActionFuture> update(final Object argument, final Unit unit, final ServiceType serviceType) throws CouldNotPerformException {
         try {

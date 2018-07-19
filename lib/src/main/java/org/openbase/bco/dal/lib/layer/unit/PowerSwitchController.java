@@ -55,16 +55,6 @@ public class PowerSwitchController extends AbstractDALUnitController<PowerSwitch
     }
     
     @Override
-    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        try {
-            this.powerService = getServiceFactory().newPowerService(this);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-    
-    @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
         try {

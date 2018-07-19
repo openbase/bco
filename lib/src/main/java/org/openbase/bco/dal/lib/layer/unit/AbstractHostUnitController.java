@@ -33,7 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import org.openbase.bco.dal.lib.transform.UnitConfigToUnitClassTransformer;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
@@ -57,7 +57,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @param <D> the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
  */
-public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements UnitHost<D>, ServiceFactoryProvider {
+public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements UnitHost<D>, OperationServiceFactoryProvider {
 
     private final Map<String, AbstractUnitController<?, ?>> unitMap;
     private final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> hostedUnitDiff;

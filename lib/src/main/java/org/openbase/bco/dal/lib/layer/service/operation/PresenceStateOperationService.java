@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
  */
 public interface PresenceStateOperationService extends OperationService, PresenceStateProviderService {
 
-    default public Future<ActionFuture> setPresenceState(final PresenceState.State presence) throws CouldNotPerformException {
+    default Future<ActionFuture> setPresenceState(final PresenceState.State presence) throws CouldNotPerformException {
         return setPresenceState(PresenceState.newBuilder().setValue(presence).build());
     }
 

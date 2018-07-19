@@ -280,14 +280,14 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
         }
     }
 
-    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Message invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, servicePattern, ServiceTempus.CURRENT, instance, arguments);
     }
 
-    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Message invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         try {
-            return detectServiceMethod(serviceType, servicePattern, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
-        } catch (IllegalAccessException | ExceptionInInitializerError ex) {
+            return (Message) detectServiceMethod(serviceType, servicePattern, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
+        } catch (IllegalAccessException | ExceptionInInitializerError | ClassCastException ex) {
             throw new NotSupportedException("ServiceType[" + serviceType.name() + "] with Pattern[" + servicePattern + "]", instance, ex);
         } catch (NullPointerException ex) {
             throw new CouldNotPerformException("Invocation failed because given instance is not available!", ex);
@@ -300,7 +300,7 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
         }
     }
 
-    public static Object invokeProviderServiceMethod(final ServiceType serviceType, final Object instance) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Message invokeProviderServiceMethod(final ServiceType serviceType, final Object instance) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance);
     }
 

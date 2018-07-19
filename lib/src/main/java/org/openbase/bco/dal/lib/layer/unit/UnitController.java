@@ -22,15 +22,17 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import org.openbase.bco.dal.lib.layer.service.Services;
+import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.concurrent.Future;
+
 /**
- *
+ *11111
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  * @param <D> the data type of this unit used for the state synchronization.
@@ -54,5 +56,7 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
      * @param serviceArgument
      * @throws CouldNotPerformException
      */
-    void applyDataUpdate(final Object serviceArgument, final ServiceType serviceType) throws CouldNotPerformException;
+    void applyDataUpdate(final Message serviceArgument, final ServiceType serviceType) throws CouldNotPerformException;
+
+    Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType);
 }

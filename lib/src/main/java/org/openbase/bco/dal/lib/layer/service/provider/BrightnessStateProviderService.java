@@ -27,6 +27,8 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
+
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -34,7 +36,9 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
 public interface BrightnessStateProviderService extends ProviderService {
 
     @RPCMethod
-    public BrightnessState getBrightnessState() throws NotAvailableException;
+    default BrightnessState getBrightnessState() throws NotAvailableException {
+        return (BrightnessState) getServiceProvider().getServiceState(BRIGHTNESS_STATE_SERVICE);
+    }
 
     static void verifyBrightnessState(final BrightnessState brightnessState) throws VerificationFailedException {
         switch (brightnessState.getBrightnessDataUnit()) {

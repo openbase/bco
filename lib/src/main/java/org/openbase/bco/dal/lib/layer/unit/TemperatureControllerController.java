@@ -26,7 +26,6 @@ import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOp
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
@@ -50,17 +49,7 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
     public TemperatureControllerController(final UnitHost unitHost, final TemperatureControllerData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TemperatureControllerController.class, unitHost, builder);
     }
-    
-    @Override
-    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        try {
-            this.targetTemperatureStateService = getServiceFactory().newTargetTemperatureService(this);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-    
+
     @Override
     public Future<ActionFuture> setTargetTemperatureState(final TemperatureState value) throws CouldNotPerformException {
         logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to targetTemperatureState [" + value + "]");

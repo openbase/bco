@@ -89,18 +89,6 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        try {
-            this.powerService = getServiceFactory().newPowerService(this);
-            this.colorService = getServiceFactory().newColorService(this);
-            this.brightnessService = getServiceFactory().newBrightnessService(this);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         updateNeutralWhiteValue(config);
         return super.applyConfigUpdate(config);
@@ -209,15 +197,6 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         return powerService.setPowerState(state);
     }
 
-    @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("powerState", ex);
-        }
-    }
-
     //    public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
 //        logger.debug("Apply colorState Update[" + colorState + "] for " + this + ".");
 //
@@ -243,15 +222,6 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             return colorService.setColor(HSBColorToRGBColorTransformer.transform(state.getColor().getRgbColor()));
         } else {
             return colorService.setColorState(state);
-        }
-    }
-
-    @Override
-    public ColorState getColorState() throws NotAvailableException {
-        try {
-            return getData().getColorState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("colorState", ex);
         }
     }
 
@@ -287,16 +257,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
-        try {
-            return getData().getBrightnessState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("brightnessState", ex);
-        }
-    }
-
-    @Override
-    protected void applyDataUpdate(ColorableLightData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyCustomDataUpdate(ColorableLightData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case COLOR_STATE_SERVICE:
 

@@ -60,16 +60,6 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     }
 
     @Override
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        try {
-            blindStateService = getServiceFactory().newShutterService(this);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to BlindState [" + state + "]");
 

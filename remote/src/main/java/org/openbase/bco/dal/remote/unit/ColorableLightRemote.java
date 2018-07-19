@@ -178,34 +178,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerState", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState, ServiceType.POWER_STATE_SERVICE, this));
-    }
-
-    @Override
-    public ColorState getColorState() throws NotAvailableException {
-        try {
-            return getData().getColorState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ColorState", ex);
-        }
-    }
-
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
-        try {
-            return getData().getBrightnessState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("BrightnessState", ex);
-        }
     }
 }

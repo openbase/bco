@@ -75,7 +75,7 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
     }
 
     @Override
-    protected void applyDataUpdate(BatteryData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyCustomDataUpdate(BatteryData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case BATTERY_STATE_SERVICE:
                 if (!internalBuilder.getBatteryState().hasValue() || internalBuilder.getBatteryState().getValue() == BatteryState.State.UNKNOWN) {
