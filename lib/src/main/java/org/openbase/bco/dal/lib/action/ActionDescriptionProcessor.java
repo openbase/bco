@@ -421,20 +421,20 @@ public class ActionDescriptionProcessor {
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
 
-        String username = "";
-        if (SessionManager.getInstance().getUserId() != null) {
-            username += Registries.getUnitRegistry().getUnitConfigById(SessionManager.getInstance().getUserId()).getUserConfig().getUserName();
-        }
-        if (SessionManager.getInstance().getClientId() != null) {
-            if (!username.isEmpty()) {
-                username += "@";
-            }
-            username += Registries.getUnitRegistry().getUnitConfigById(SessionManager.getInstance().getClientId()).getUserConfig().getUserName();
-        }
-        if (username.isEmpty()) {
-            username = "Other";
-        }
-        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
+//        String username = "";
+//        if (SessionManager.getInstance().getUserId() != null) {
+//            username += Registries.getUnitRegistry().getUnitConfigById(SessionManager.getInstance().getUserId()).getUserConfig().getUserName();
+//        }
+//        if (SessionManager.getInstance().getClientId() != null) {
+//            if (!username.isEmpty()) {
+//                username += "@";
+//            }
+//            username += Registries.getUnitRegistry().getUnitConfigById(SessionManager.getInstance().getClientId()).getUserConfig().getUserName();
+//        }
+//        if (username.isEmpty()) {
+//            username = "Other";
+//        }
+//        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
 
         //TODO: provide label in different languages for LabelProcessor and replace according to user logged in
         if (actionDescription.hasLabel() && !LabelProcessor.isEmpty(actionDescription.getLabel())) {
@@ -520,9 +520,9 @@ public class ActionDescriptionProcessor {
         description = description.replace(ActionDescriptionProcessor.SERVICE_TYPE_KEY, StringProcessor.transformToCamelCase(serviceType.name()));
 
         // update authority if available
-        if (actionDescription.hasActionAuthority() && actionDescription.getActionAuthority().hasAuthority()) {
-            description = description.replace(ActionDescriptionProcessor.AUTHORITY_KEY, StringProcessor.transformToCamelCase(actionDescription.getActionAuthority().getAuthority().name()));
-        }
+//        if (actionDescription.hasActionAuthority() && actionDescription.getActionAuthority().hasAuthority()) {
+//            description = description.replace(ActionDescriptionProcessor.AUTHORITY_KEY, StringProcessor.transformToCamelCase(actionDescription.getActionAuthority().getAuthority().name()));
+//        }
 
         // TODO: also replace SERVICE_ATTRIBUTE_KEY in description with a nice serviceAttribute representation
         String serviceAttributeRepresentation = StringProcessor.formatHumanReadable(serviceAttribute.toBuilder().clearField(ProtoBufFieldProcessor.getFieldDescriptor(serviceAttribute, Service.RESPONSIBLE_ACTION_FIELD_NAME)).build().toString());
