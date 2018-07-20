@@ -759,6 +759,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private String verifyAccessPermission(final AuthenticationBaseData authenticationBaseData, final ServiceType serviceType) throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
+                //TODO: this check should also include verifying the access token and allowing anything if the user
+                // is part of the admin group, also it should be moved to a helper class because methods like
+                // updating unit configs now also have to check for tokens...
                 final UnitConfig unitConfig = getConfig();
                 final UnitType unitType = getUnitType();
                 final PermissionType permissionType = PermissionType.ACCESS;
@@ -828,9 +831,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             final String[] split = userId.split("@");
             if (split.length > 1) {
                 String result = "";
-                result += Registries.getUnitRegistry().getUnitConfigById(split[0]).getUserConfig().getUserName();
-                result += "@";
-                result += Registries.getUnitRegistry().getUnitConfigById(split[1]).getUserConfig().getUserName();
+                if (!split[0].isEmpty()) {
+                    result += Registries.getUnitRegistry().getUnitConfigById(split[0]).getUserConfig().getUserName();
+                }
+                if (!split[1].isEmpty()) {
+                    if (!result.isEmpty()) {
+                        result += "@";
+                    }
+                    result += Registries.getUnitRegistry().getUnitConfigById(split[1]).getUserConfig().getUserName();
+                }
                 return result;
             } else {
                 return Registries.getUnitRegistry().getUnitConfigById(userId.replace("@", "")).getUserConfig().getUserName();

@@ -42,6 +42,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
@@ -573,13 +574,13 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, this.getSessionManager(), this, this::applyActionAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, this.getSessionManager(), this::applyActionAuthenticated);
     }
 
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
@@ -614,13 +615,13 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
     @Override
     public Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), this, this::restoreSnapshotAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), this::restoreSnapshotAuthenticated);
     }
 
     @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class);
+            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class), this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not restore snapshot!", ex);
         }
