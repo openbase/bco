@@ -28,12 +28,15 @@ import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.domotic.authentication.TicketType.Ticket;
@@ -41,6 +44,7 @@ import rst.domotic.authentication.TicketType.Ticket;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -84,19 +88,54 @@ public class AuthenticatedServerManager {
     }
 
     /**
-     * Validates the ticket from a given TicketAuthenticatorWrapper and returns the client ID,
-     * if the ticket is valid.
+     * Verifies the ticket from a given AuthenticatedValue and returns authentication base data
+     * containing values according to the data in the authenticated value.
      *
-     * @param wrapper TicketAuthenticatorWrapper holding information about the ticket's validity and the client ID.
-     * @return A wrapper containing the client id, the updated ticket for the response and the session key.
+     * @param authenticatedValue AuthenticationBaseData holding information about the authorized user and send tokens
+     * @return an authentication base data object containing the user id, the session key and an updated ticket and tokens
+     * @throws NotAvailableException    if the authenticated value does not contain a ticket
      * @throws CouldNotPerformException on de-/encryption errors
      * @throws RejectedException        If the ticket is not valid.
      */
-    public TicketEvaluationWrapper evaluateClientServerTicket(final TicketAuthenticatorWrapper wrapper) throws CouldNotPerformException, RejectedException {
+    public AuthenticationBaseData verifyClientServerTicket(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException, RejectedException {
+        if (!authenticatedValue.hasTicketAuthenticatorWrapper()) {
+            throw new NotAvailableException("TicketAuthenticatorWrapper");
+        }
+
+        // create authentication base data from ticket
+        final AuthenticationBaseData authenticationBaseData = verifyClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
+
+        // if authenticated value has this token encrypt it and add it to the return data
+        if (authenticatedValue.hasAuthorizationToken()) {
+            String tokenString = EncryptionHelper.decryptSymmetric(authenticatedValue.getAuthorizationToken(), authenticationBaseData.getSessionKey(), String.class);
+            AuthorizationToken decrypt = EncryptionHelper.decrypt(Base64.getDecoder().decode(tokenString), serviceServerSecretKey, AuthorizationToken.class, true);
+            authenticationBaseData.setAuthorizationToken(decrypt);
+        }
+
+        // if authenticated value has this token encrypt it and add it to the return data
+        if (authenticatedValue.hasAuthenticationToken()) {
+            String tokenString = EncryptionHelper.decryptSymmetric(authenticatedValue.getAuthenticationToken(), authenticationBaseData.getSessionKey(), String.class);
+            AuthenticationToken decrypt = EncryptionHelper.decrypt(Base64.getDecoder().decode(tokenString), serviceServerSecretKey, AuthenticationToken.class, true);
+            authenticationBaseData.setAuthenticationToken(decrypt);
+        }
+
+        return authenticationBaseData;
+    }
+
+    /**
+     * Verifies the ticket from a given TicketAuthenticatorWrapper and returns authentication base data
+     * containing values according to the authentication.
+     *
+     * @param ticketAuthenticatorWrapper TicketAuthenticatorWrapper holding information about the ticket's validity and the client ID.
+     * @return an authentication base data object containing the user id, the session key and an updated ticket
+     * @throws CouldNotPerformException on de-/encryption errors
+     * @throws RejectedException        If the ticket is not valid.
+     */
+    public AuthenticationBaseData verifyClientServerTicket(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException, RejectedException {
         try {
             // decrypt ticket and authenticator
-            Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
-            Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerTicket.getSessionKeyBytes().toByteArray(), Authenticator.class);
+            Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getTicket(), serviceServerSecretKey, Ticket.class);
+            Authenticator authenticator = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getAuthenticator(), clientServerTicket.getSessionKeyBytes().toByteArray(), Authenticator.class);
 
             // compare clientIDs and timestamp to period
             AuthenticationServerHandler.validateTicket(clientServerTicket, authenticator);
@@ -107,11 +146,11 @@ public class AuthenticatedServerManager {
             authenticatorBuilder.setTimestamp(authenticator.getTimestamp().toBuilder().setTime(authenticator.getTimestamp().getTime() + 1));
 
             // update TicketAuthenticatorWrapper
-            TicketAuthenticatorWrapper.Builder response = wrapper.toBuilder();
+            TicketAuthenticatorWrapper.Builder response = ticketAuthenticatorWrapper.toBuilder();
             response.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket, serviceServerSecretKey));
             response.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticatorBuilder.build(), clientServerTicket.getSessionKeyBytes().toByteArray()));
 
-            return new TicketEvaluationWrapper(authenticator.getClientId(), clientServerTicket.getSessionKeyBytes().toByteArray(), response.build());
+            return new AuthenticationBaseData(authenticator.getClientId(), clientServerTicket.getSessionKeyBytes().toByteArray(), response.build());
         } catch (RejectedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         }
@@ -157,16 +196,21 @@ public class AuthenticatedServerManager {
 
     /**
      * Requests the service server secret key from the AuthenticationController.
+     * This can only be performed after being {@link #login()} has been called.
      *
-     * @throws CouldNotPerformException
-     * @throws InterruptedException
+     * @throws CouldNotPerformException if the key cannot be requested
      */
     private void requestServiceServerSecretKey() throws CouldNotPerformException {
         try {
+            // init ticket for the request
             ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey, ticketAuthenticatorWrapper);
-            AuthenticatedValue value = CachedAuthenticationRemote.getRemote().requestServiceServerSecretKey(ticketAuthenticatorWrapper).get();
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, value.getTicketAuthenticatorWrapper());
+            // perform the request
+            final AuthenticatedValue value = CachedAuthenticationRemote.getRemote().requestServiceServerSecretKey(ticketAuthenticatorWrapper).get();
+            // validate the response
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(sessionKey,
+                    ticketAuthenticatorWrapper, value.getTicketAuthenticatorWrapper());
 
+            // decrypt and save service server secret key
             serviceServerSecretKey = EncryptionHelper.decryptSymmetric(value.getValue(), sessionKey, byte[].class);
         } catch (ExecutionException | CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -178,49 +222,11 @@ public class AuthenticatedServerManager {
     }
 
     /**
-     * Should only be used in tests and thus returns null when not in test mode.
+     * Get the service server secret key.
      *
-     * @return the internal service server secret key
+     * @return the service server secret key
      */
     public byte[] getServiceServerSecretKey() {
-        if (JPService.testMode()) {
-            return serviceServerSecretKey;
-        }
-        return null;
-    }
-
-    /**
-     * Wrapper used to return all values which are needed by an authenticated server after verification.
-     */
-    public class TicketEvaluationWrapper {
-
-        private final String userId;
-        private final byte[] sessionKey;
-        private final TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
-
-        /**
-         * Create a new wrapper containing the updated ticket, the user id and the session key.
-         *
-         * @param userId                     The id of the user whose ticket was evaluated.
-         * @param sessionKey                 The session key of the session of the user whose ticket was evaluated.
-         * @param ticketAuthenticatorWrapper The updated ticket which should be send as a response to the client.
-         */
-        public TicketEvaluationWrapper(final String userId, final byte[] sessionKey, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
-            this.userId = userId;
-            this.sessionKey = sessionKey;
-            this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public byte[] getSessionKey() {
-            return sessionKey;
-        }
-
-        public TicketAuthenticatorWrapper getTicketAuthenticatorWrapper() {
-            return ticketAuthenticatorWrapper;
-        }
+        return serviceServerSecretKey;
     }
 }

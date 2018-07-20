@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.lib.com;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
@@ -33,6 +34,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -80,6 +82,10 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Genera
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
+            if (ex.getCause().getCause() instanceof InvalidStateException) {
+                // this can happen if the registries already shutdown
+                return null;
+            }
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not request status update.", ex), logger, LogLevel.ERROR);
         }
     }
@@ -88,7 +94,7 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Genera
     public AuthenticatedValue requestDataAuthenticated(final TicketAuthenticatorWrapper ticket) throws CouldNotPerformException {
         logger.debug("requestStatusAuthenticated of " + this);
         // evaluate the ticket
-        AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(ticket);
+        final AuthenticationBaseData authenticationBaseData = AuthenticatedServerManager.getInstance().verifyClientServerTicket(ticket);
 
         M newData = null;
 
@@ -98,7 +104,7 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Genera
                 newData = (M) cloneDataBuilder().build();
             } else {
                 // filter data for user
-                newData = filterDataForUser(cloneDataBuilder(), ticketEvaluationWrapper.getUserId());
+                newData = filterDataForUser(cloneDataBuilder(), authenticationBaseData.getUserId());
             }
         } catch (JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Could not validate authentication property.", ex, logger);
@@ -110,8 +116,8 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Genera
 
         // build response
         AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
-        response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
-        response.setValue(EncryptionHelper.encryptSymmetric(newData, ticketEvaluationWrapper.getSessionKey()));
+        response.setTicketAuthenticatorWrapper(authenticationBaseData.getTicketAuthenticatorWrapper());
+        response.setValue(EncryptionHelper.encryptSymmetric(newData, authenticationBaseData.getSessionKey()));
 
         return response.build();
     }
@@ -129,9 +135,17 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Genera
         }
 
         try {
-            return filterDataForUser(dataBuilder, null);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not filter data builder for rights", ex);
+            if (JPService.getProperty(JPAuthentication.class).getValue()) {
+                try {
+                    return filterDataForUser(dataBuilder, null);
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not filter data builder for rights", ex);
+                }
+            } else {
+                return (M) dataBuilder.build();
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not update data to publish", ex);
         }
     }
 

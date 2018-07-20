@@ -49,7 +49,7 @@ public class AuthorizationHelper {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthorizationHelper.class);
 
-    public enum Type {
+    public enum PermissionType {
         READ,
         WRITE,
         ACCESS
@@ -66,7 +66,7 @@ public class AuthorizationHelper {
      * @return True if the user can read from the unit, false if not.
      */
     public static boolean canRead(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
-        return canDo(unitConfig, userId, groups, locations, Type.READ);
+        return canDo(unitConfig, userId, groups, locations, PermissionType.READ);
     }
 
     /**
@@ -80,7 +80,7 @@ public class AuthorizationHelper {
      * @return True if the user can write to the unit, false if not.
      */
     public static boolean canWrite(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
-        return canDo(unitConfig, userId, groups, locations, Type.WRITE);
+        return canDo(unitConfig, userId, groups, locations, PermissionType.WRITE);
     }
 
     /**
@@ -93,7 +93,7 @@ public class AuthorizationHelper {
      * @return True if the user can access the unit, false if not.
      */
     public static boolean canAccess(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
-        return canDo(unitConfig, userId, groups, locations, Type.ACCESS);
+        return canDo(unitConfig, userId, groups, locations, PermissionType.ACCESS);
     }
 
     /**
@@ -114,14 +114,7 @@ public class AuthorizationHelper {
                 .build();
     }
 
-    public static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) {
-
-        // BUG WORKAROUND
-        // todo remove me after fixing openbase/bco.authentication#61
-//        if(unitConfig.getUnitType() == UnitType.UNKNOWN) {
-//            return true;
-//        }
-
+    public static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, PermissionType type) {
         if (!isAuthenticationUnit(unitConfig) && !isRootLocation(unitConfig, locations)) {
             // check if the given user has read permissions for the parent location otherwise skip all further checks
             try {
@@ -157,7 +150,7 @@ public class AuthorizationHelper {
      * @param type             The permission type to check.
      * @return True if the user has the given permission, false if not.
      */
-    private static boolean canDo(final PermissionConfig permissionConfig, final String userId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) {
+    private static boolean canDo(final PermissionConfig permissionConfig, final String userId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, PermissionType type) {
         // Other
         if (permitted(permissionConfig.getOtherPermission(), type)) {
             return true;
@@ -202,7 +195,7 @@ public class AuthorizationHelper {
         return false;
     }
 
-    private static boolean permitted(final Permission permission, final Type type) {
+    public static boolean permitted(final Permission permission, final PermissionType type) {
         switch (type) {
             case READ:
                 return permission.getRead();

@@ -22,31 +22,29 @@ package org.openbase.bco.authentication.lib.future;
  * #L%
  */
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class AuthenticationFuture<RETURN> implements Future<RETURN> {
+/**
+ * Abstract future that automatically verifies the response from a server.
+ *
+ * @param <RETURN>   The type of value this future returns.
+ * @param <INTERNAL> The type of value the internal future returns.
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
+ */
+public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements Future<RETURN> {
 
-    private final Future<AuthenticatedValue> internalFuture;
+    private final Future<INTERNAL> internalFuture;
     private final SessionManager sessionManager;
     private final Class<RETURN> returnClass;
     private final TicketAuthenticatorWrapper wrapper;
-
-    private AuthenticatedValue authenticatedValue = null;
 
     /**
      * Create an AuthenticatedFuture that uses the SessionManager singleton for the verification.
@@ -55,7 +53,7 @@ public class AuthenticationFuture<RETURN> implements Future<RETURN> {
      * @param returnClass    Class of type RETURN.
      * @param wrapper        The ticket that was used for the request.
      */
-    public AuthenticationFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnClass, final TicketAuthenticatorWrapper wrapper) {
+    public AbstractAuthenticationFuture(final Future<INTERNAL> internalFuture, final Class<RETURN> returnClass, final TicketAuthenticatorWrapper wrapper) {
         this(internalFuture, returnClass, wrapper, SessionManager.getInstance());
     }
 
@@ -67,7 +65,7 @@ public class AuthenticationFuture<RETURN> implements Future<RETURN> {
      * @param wrapper        The ticket that was used for the request.
      * @param sessionManager The session manager that is used for the verification.
      */
-    public AuthenticationFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnClass, final TicketAuthenticatorWrapper wrapper, final SessionManager sessionManager) {
+    public AbstractAuthenticationFuture(final Future<INTERNAL> internalFuture, final Class<RETURN> returnClass, final TicketAuthenticatorWrapper wrapper, final SessionManager sessionManager) {
         this.internalFuture = internalFuture;
         this.returnClass = returnClass;
         this.sessionManager = sessionManager;
@@ -118,11 +116,10 @@ public class AuthenticationFuture<RETURN> implements Future<RETURN> {
      */
     @Override
     public RETURN get() throws InterruptedException, ExecutionException {
-        AuthenticatedValue authenticatedValue = internalFuture.get();
-        this.authenticatedValue = authenticatedValue;
+        INTERNAL internalResult = internalFuture.get();
         try {
-            verifyResponse(authenticatedValue.getTicketAuthenticatorWrapper());
-            return convertFromInternal(authenticatedValue);
+            verifyResponse(getTicketFromInternal(internalResult));
+            return convertFromInternal(internalResult);
         } catch (CouldNotPerformException ex) {
             throw new ExecutionException("Could not execute authentication", ex);
         }
@@ -133,17 +130,16 @@ public class AuthenticationFuture<RETURN> implements Future<RETURN> {
      * the internal future to REPONSE.
      *
      * @return RESPONSE converted from the result of the internal future.
-     * @throws InterruptedException                  If interrupted inside of get of the internal future.
-     * @throws ExecutionException                    If the execution of the internal future failed, the response could not be verified or the conversion to the return type failed.
-     * @throws java.util.concurrent.TimeoutException If get on the internal future times out.
+     * @throws InterruptedException If interrupted inside of get of the internal future.
+     * @throws ExecutionException   If the execution of the internal future failed, the response could not be verified or the conversion to the return type failed.
+     * @throws TimeoutException     If get on the internal future times out.
      */
     @Override
     public RETURN get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        AuthenticatedValue authenticatedValue = internalFuture.get(timeout, unit);
-        this.authenticatedValue = authenticatedValue;
+        INTERNAL internalResult = internalFuture.get(timeout, unit);
         try {
-            verifyResponse(authenticatedValue.getTicketAuthenticatorWrapper());
-            return convertFromInternal(authenticatedValue);
+            verifyResponse(getTicketFromInternal(internalResult));
+            return convertFromInternal(internalResult);
         } catch (CouldNotPerformException ex) {
             throw new ExecutionException("Could not execute authentication", ex);
         }
@@ -172,42 +168,41 @@ public class AuthenticationFuture<RETURN> implements Future<RETURN> {
     }
 
     /**
-     * Decrypt the value inside the authenticated value or parse from byte string if no one is logged in.
-     * {@inheritDoc}
+     * Get the return class.
      *
-     * @param authenticatedValue The result from the internal future.
-     * @return The encrypted or parsed value inside the authenticated value.
-     * @throws CouldNotPerformException If the decryption failed or the message cannot be parsed from a byte string.
+     * @return The return class given in the constructor.
      */
-    private RETURN convertFromInternal(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        try {
-            if (sessionManager.isLoggedIn()) {
-                return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), sessionManager.getSessionKey(), returnClass);
-            } else {
-                try {
-                    if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
-                        if (!GeneratedMessage.class.isAssignableFrom(returnClass)) {
-                            throw new CouldNotPerformException("AuthenticatedValue has a value but the client method did not expect one");
-                        }
-
-                        Method parseFrom = returnClass.getMethod("parseFrom", ByteString.class);
-                        return (RETURN) parseFrom.invoke(null, authenticatedValue.getValue());
-                    }
-                    return null;
-                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    throw new CouldNotPerformException("Could not invoke parseFrom method on [" + returnClass.getSimpleName() + "]", ex);
-                }
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("COuld not get return value from internal value", ex);
-        }
+    protected Class<RETURN> getReturnClass() {
+        return returnClass;
     }
 
-    public AuthenticatedValue getAuthenticatedValue() throws NotAvailableException {
-        if (authenticatedValue == null) {
-            throw new NotAvailableException("authenticated value");
-        }
+    /**
+     * Get the session manager used by this authenticated future.
+     *
+     * @return The session manager given in the constructor.
+     */
+    protected SessionManager getSessionManager() {
+        return sessionManager;
+    }
 
-        return authenticatedValue;
+    /**
+     * Method defining how to get the ticket from the result of the internal future.
+     *
+     * @param internalType The result from the internal future.
+     * @return Ticket extracted from the internal type.
+     */
+    protected abstract TicketAuthenticatorWrapper getTicketFromInternal(INTERNAL internalType);
+
+    /**
+     * Method defining how to get the return value from the result of the internal future.
+     *
+     * @param internalType The result from the internal future.
+     * @return Return value converted from the internal type.
+     * @throws CouldNotPerformException If the conversion from the internal type fails.
+     */
+    protected abstract RETURN convertFromInternal(INTERNAL internalType) throws CouldNotPerformException;
+
+    public Future<INTERNAL> getInternalFuture() {
+        return internalFuture;
     }
 }

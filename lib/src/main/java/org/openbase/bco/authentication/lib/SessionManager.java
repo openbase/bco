@@ -27,20 +27,27 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.PermissionDeniedException;
+import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
+import java.io.Serializable;
 import java.security.KeyPair;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -51,7 +58,7 @@ import java.util.regex.Pattern;
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
-public class SessionManager {
+public class SessionManager implements Shutdownable {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
     private static final String STORE_FILENAME = "client_credential_store.json";
@@ -114,6 +121,12 @@ public class SessionManager {
      * @param credentialStore the credential store used by the session manager.
      */
     public SessionManager(final CredentialStore credentialStore) {
+        try {
+            // register shutdown hook
+            Shutdownable.registerShutdownHook(this);
+        } catch (CouldNotPerformException ex) {
+            LOGGER.warn("Could not register session manager shutdown hook", ex);
+        }
         // create login observable
         this.loginObservable = new ObservableImpl<>();
         // add executor service so that it is not waited for notifications and so that they are done in parallel
@@ -122,7 +135,7 @@ public class SessionManager {
         this.credentialStore = credentialStore;
         try {
             this.credentialStore.init();
-        } catch (InitializationException ex) {
+        } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not init credential store for session manager", ex);
         }
     }
@@ -181,6 +194,21 @@ public class SessionManager {
         } catch (CouldNotPerformException ex) {
             throw new RejectedException("Initializing request rejected", ex);
         }
+    }
+
+    public <VALUE extends Serializable> AuthenticatedValue initializeRequest(final VALUE value, final String authenticationToken, final String authorizationToken) throws CouldNotPerformException {
+        AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+        authenticatedValue.setTicketAuthenticatorWrapper(initializeServiceServerRequest());
+        authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(value, sessionKey));
+
+        if (authenticationToken != null) {
+            authenticatedValue.setAuthenticationToken(EncryptionHelper.encryptSymmetric(authenticationToken, sessionKey));
+        }
+
+        if (authorizationToken != null) {
+            authenticatedValue.setAuthorizationToken(EncryptionHelper.encryptSymmetric(authorizationToken, sessionKey));
+        }
+        return authenticatedValue.build();
     }
 
     /**
@@ -345,13 +373,14 @@ public class SessionManager {
             if (stayLoggedIn || !isUser) {
                 try {
                     final Long sessionTimeout = JPService.getProperty(JPSessionTimeout.class).getValue();
+                    final long delay = (long) ((3 * sessionTimeout) / 4.0d);
                     ticketRenewalTask = GlobalScheduledExecutorService.scheduleWithFixedDelay(() -> {
                         try {
                             renewTicket();
                         } catch (CouldNotPerformException ex) {
                             LOGGER.warn("Could not renew ticket", ex);
                         }
-                    }, sessionTimeout - 5000, sessionTimeout, TimeUnit.MILLISECONDS);
+                    }, delay, delay, TimeUnit.MILLISECONDS);
                 } catch (JPNotAvailableException ex) {
                     LOGGER.warn("Could not start ticket renewal task", ex);
                 }
@@ -420,6 +449,9 @@ public class SessionManager {
      * This method will also logout the client. This is mostly necessary for unit tests.
      */
     public synchronized void completeLogout() {
+        if (ticketRenewalTask != null && !ticketRenewalTask.isDone()) {
+            ticketRenewalTask.cancel(true);
+        }
         userId = null;
         clientId = null;
         sessionKey = null;
@@ -792,5 +824,10 @@ public class SessionManager {
 
     public String getClientId() {
         return clientId;
+    }
+
+    @Override
+    public void shutdown() {
+        completeLogout();
     }
 }
