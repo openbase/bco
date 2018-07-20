@@ -259,12 +259,13 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         System.out.println("Updating deviceClass...");
         clazz = Registries.getClassRegistry().updateDeviceClass(clazz.toBuilder().addUnitTemplateConfig(unitTemplateConfig3).build()).get();
         config = Registries.getUnitRegistry().getUnitConfigById(config.getId());
-        // the update is not synced immediatly to the device config, thus this waits and fails if the timeout is exceeded
+        // the update is not synced immediately to the device config, thus this waits and fails if the timeout is exceeded
         while (config.getDeviceConfig().getUnitIdCount() != clazz.getUnitTemplateConfigCount()) {
             Thread.sleep(100);
             config = Registries.getUnitRegistry().getUnitConfigById(config.getId());
         }
         assertEquals("Unit configs and templates differ after the update of the device class", config.getDeviceConfig().getUnitIdCount(), clazz.getUnitTemplateConfigCount());
+        Registries.getUnitRegistry().waitUntilReady();
 
         dalUnitConfigs.clear();
         for (String unitId : config.getDeviceConfig().getUnitIdList()) {

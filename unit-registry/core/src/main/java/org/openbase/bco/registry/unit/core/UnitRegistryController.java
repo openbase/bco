@@ -25,6 +25,7 @@ package org.openbase.bco.registry.unit.core;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import org.openbase.bco.authentication.lib.*;
+import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
@@ -51,6 +52,7 @@ import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUser
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserPermissionConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.*;
+import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
 import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
@@ -62,6 +64,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rst.storage.registry.consistency.TransformationFrameConsistencyHandler;
@@ -76,9 +79,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
-import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.MapFieldEntry;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
-import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -98,10 +98,7 @@ import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.spatial.ShapeType.Shape;
 
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -509,34 +506,21 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(),
-                UnitConfig.class,
-                this,
-                (UnitConfig unitConfig) -> {
-                    UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).register(unitConfig);
-                    return result;
-                },
-                (UnitConfig unitConfig) -> {
-                    // If the unit has a location, use the location's UnitConfig for the permissions.
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this, (unitConfig, authenticationBaseData) -> {
+                    // find the location the unit will be placed at
+                    final UnitConfig location;
                     if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
-                        return getLocationUnitConfigRegistry().getMessage(unitConfig.getPlacementConfig().getLocationId());
+                        location = getLocationUnitConfigRegistry().getMessage(unitConfig.getPlacementConfig().getLocationId());
+                    } else {
+                        location = getRootLocationConfig();
                     }
 
-                    // Else, user the permission for the root location
-                    UnitConfig rootLocation = null;
-                    for (UnitConfig locationUnitConfig : getLocationUnitConfigRegistry().getMessages()) {
-                        if (locationUnitConfig.getLocationConfig().getRoot()) {
-                            rootLocation = locationUnitConfig;
-                            break;
-                        }
-                    }
-                    if (rootLocation == null) {
-                        // no root location yet available so use all rights
-                        PermissionConfig.Builder permissionConfig = PermissionConfig.newBuilder();
-                        permissionConfig.setOtherPermission(Permission.newBuilder().setAccess(true).setRead(true).setWrite(true));
-                        rootLocation = UnitConfig.newBuilder().setPermissionConfig(permissionConfig).build();
-                    }
-                    return rootLocation;
+                    // check the authentication data include write permissions for the location
+                    // this will throw an exception if it is not the case
+                    AuthorizationWithTokenHelper.canDo(authenticationBaseData, location, PermissionType.WRITE, this);
+
+                    // register the new unit config
+                    return getUnitConfigRegistry(unitConfig.getUnitType()).register(unitConfig);
                 }
         ));
     }
@@ -574,12 +558,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
             try {
-                return registry.contains(unitConfigId);
+                if (registry.contains(unitConfigId)) {
+                    return true;
+                }
             } catch (CouldNotPerformException ex) {
                 // ignore and throw a new exception if no registry contains the entry
             }
         }
-        throw new CouldNotPerformException("None of the unit registries contains an entry with the id [" + unitConfigId + "]");
+        return false;
     }
 
     @Override
@@ -597,13 +583,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
-                this,
-                (UnitConfig unitConfig) -> {
-                    UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).update(unitConfig);
-                    return result;
-                },
-                (UnitConfig unitConfig) -> getUnitConfigById(unitConfig.getId())
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this,
+                (unitConfig, authenticationBaseData) -> {
+                    // verify write permissions for the old unit config
+                    final UnitConfig old = getUnitConfigRegistry(unitConfig.getUnitType()).getMessage(unitConfig.getId());
+                    AuthorizationWithTokenHelper.canDo(authenticationBaseData, old, PermissionType.WRITE, this);
+                    return getUnitConfigRegistry(unitConfig.getUnitType()).update(unitConfig);
+                }
         ));
     }
 
@@ -617,13 +603,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
-                this,
-                (UnitConfig unitConfig) -> {
-                    UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).remove(unitConfig);
-                    return result;
-                },
-                (UnitConfig unitConfig) -> getUnitConfigById(unitConfig.getId())
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this,
+                (unitConfig, authenticationBaseData) -> {
+                    // verify write permissions for the old unit config
+                    final UnitConfig old = getUnitConfigRegistry(unitConfig.getUnitType()).getMessage(unitConfig.getId());
+                    AuthorizationWithTokenHelper.canDo(authenticationBaseData, old, PermissionType.WRITE, this);
+                    return getUnitConfigRegistry(unitConfig.getUnitType()).remove(unitConfig);
+                }
         ));
     }
 
@@ -964,30 +950,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken) {
         return GlobalCachedExecutorService.submit(() -> {
             // verify that the user has all permissions he defined in the token
-            for (final MapFieldEntry mapFieldEntry : authorizationToken.getPermissionRuleList()) {
-                try {
-                    // evaluate the permissions the given user has for the unit defined in the token
-                    final UnitConfig unitConfig = getUnitConfigById(mapFieldEntry.getKey());
-                    final Permission permission = AuthorizationHelper.getPermission(
-                            unitConfig,
-                            authorizationToken.getUserId(),
-                            getAuthorizationGroupUnitConfigRegistry().getEntryMap(),
-                            getLocationUnitConfigRegistry().getEntryMap());
-
-                    // reject the token if the user tries to give more permissions than he has
-                    if (!AuthorizationHelper.isSubPermission(permission, mapFieldEntry.getValue())) {
-                        throw new RejectedException("User[" + authorizationToken.getUserId() + "] has not enough permissions to create an authorizationToken with permissions[" + mapFieldEntry.getValue() + "] for unit[" + unitConfig.getAlias(0) + "]");
-                    }
-                } catch (CouldNotPerformException ex) {
-                    // the id in the authorization token can also match a unit template or service template
-                    // in this case just validate if the id is valid
-                    if (!(CachedTemplateRegistryRemote.getRegistry().containsUnitTemplateById(mapFieldEntry.getKey()) ||
-                            CachedTemplateRegistryRemote.getRegistry().containsServiceTemplateById(mapFieldEntry.getKey()))) {
-                        // nothing with the given id could be found
-                        throw new CouldNotPerformException("Could not verify permissions for id[" + mapFieldEntry.getKey() + "]", ex);
-                    }
-                }
-            }
+            AuthorizationWithTokenHelper.verifyAuthorizationToken(authorizationToken, this);
 
             // the requested authorization token is valid, so encrypt it with the service server secret key and return it
             final ByteString encrypted = EncryptionHelper.encryptSymmetric(authorizationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
@@ -1099,5 +1062,15 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 throw new CouldNotPerformException("Could not verify and encrypt authorizationToken", ex);
             }
         });
+    }
+
+    @Override
+    public Map<String, IdentifiableMessage<String, UnitConfig, Builder>> getAuthorizationGroupMap() throws CouldNotPerformException {
+        return authorizationGroupUnitConfigRegistry.getEntryMap();
+    }
+
+    @Override
+    public Map<String, IdentifiableMessage<String, UnitConfig, Builder>> getLocationMap() throws CouldNotPerformException {
+        return locationUnitConfigRegistry.getEntryMap();
     }
 }

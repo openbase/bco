@@ -811,6 +811,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
+    public Map<String, IdentifiableMessage<String, UnitConfig, Builder>> getAuthorizationGroupMap() throws CouldNotPerformException {
+        return authorizationGroupUnitConfigRemoteRegistry.getEntryMap();
+    }
+
+    @Override
+    public Map<String, IdentifiableMessage<String, UnitConfig, Builder>> getLocationMap() throws CouldNotPerformException {
+        return locationUnitConfigRemoteRegistry.getEntryMap();
+    }
+
+    @Override
     public Boolean isConsistent() throws CouldNotPerformException {
         return isAgentUnitRegistryConsistent() &&
                 isAppUnitRegistryConsistent() &&
