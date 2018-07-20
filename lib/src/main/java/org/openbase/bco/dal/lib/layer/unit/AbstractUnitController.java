@@ -525,7 +525,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public void applyDataUpdate(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException {
         logger.debug("Apply service[" + serviceType + "] update[" + serviceState + "] for " + this + ".");
 
-        Message value = (Message) serviceState;
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
 
@@ -542,7 +541,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 boolean equalFields = true;
 
                 Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
-                for (Descriptors.FieldDescriptor field : value.getDescriptorForType().getFields()) {
+                for (Descriptors.FieldDescriptor field : serviceState.getDescriptorForType().getFields()) {
                     // ignore repeated fields, which should be last value occurrences
                     if (field.isRepeated()) {
                         continue;
@@ -553,7 +552,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                         continue;
                     }
 
-                    if (value.hasField(field) && requestedState.hasField(field) && !(value.getField(field).equals(requestedState.getField(field)))) {
+                    if (serviceState.hasField(field) && requestedState.hasField(field) && !(serviceState.getField(field).equals(requestedState.getField(field)))) {
                         equalFields = false;
                         break;
                     }
@@ -563,9 +562,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 if (equalFields) {
 
                     // use the requested state but update the timestamp if available
-                    if (TimestampProcessor.hasTimestamp(value)) {
-                        Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, TimestampProcessor.TIMESTEMP_FIELD_NAME);
-                        newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
+                    if (TimestampProcessor.hasTimestamp(serviceState)) {
+                        Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTEMP_FIELD_NAME);
+                        newState = requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
                     } else {
                         newState = requestedState;
                     }
@@ -574,11 +573,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
                     internalBuilder.clearField(requestedStateField);
                 } else {
-                    newState = value;
+                    newState = serviceState;
                 }
             } else {
                 // no operation service or no requested state, so just update the current state
-                newState = value;
+                newState = serviceState;
             }
 
             // verify the service state
@@ -593,7 +592,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // copy latestValueOccurrence map from current state, only if available
             Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
             if (latestValueOccurrenceField != null) {
-                Message oldServiceState = (Message) Services.invokeProviderServiceMethod(serviceType, this);
+                Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, this);
                 newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
             }
 
@@ -627,7 +626,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // do custom state depending update in sub classes
             applyCustomDataUpdate(internalBuilder, serviceType);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + serviceState + "] for " + this + "!", ex);
         }
     }
 

@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
@@ -31,24 +32,22 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.schedule.FutureProcessor;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
 
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @param <M> Underling message type.
+ * @param <M>  Underling message type.
  * @param <MB> Message related builder.
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitController<M, MB> implements OperationServiceFactoryProvider {
 
@@ -75,8 +74,7 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
 
-        final Set<ServiceType> registeredServiceTypes = operationServiceMap.keySet();
-
+        final Set<ServiceType> registeredServiceTypes = new HashSet<>(operationServiceMap.keySet());
         try {
             for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 

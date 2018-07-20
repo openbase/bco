@@ -21,11 +21,12 @@ package org.openbase.bco.dal.lib.layer.service.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -44,8 +45,12 @@ import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OperationServiceFactoryMock implements OperationServiceFactory {
@@ -55,146 +60,174 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
     private static OperationServiceFactory instance = new OperationServiceFactoryMock();
 
     public static OperationServiceFactory getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new OperationServiceFactoryMock();
         }
         return instance;
     }
-    
+
     private OperationServiceFactoryMock() {
     }
 
     @Override
     public <UNIT extends Unit> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
-        String serviceImplMethodName = "new" + StringProcessor.transformUpperCaseToCamelCase(operationServiceType.name());
         try {
-            return (OperationService) getClass().getMethod(serviceImplMethodName, unit.getClass()).invoke(unit);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-            throw new InstantiationException("ServiceSimulator", ex);
+            final Class<?> operationServiceClass = Services.loadOperationServiceClass(operationServiceType);
+            String mockClassName = StringProcessor.transformUpperCaseToCamelCase(operationServiceType.name());
+            mockClassName = mockClassName.replace(Service.class.getSimpleName(), OperationService.class.getSimpleName());
+            mockClassName += "Mock";
+            Constructor<?> constructor = getClass().getClassLoader().loadClass(getClass().getName() + "$" + mockClassName).getConstructor(operationServiceClass);
+            return (OperationService) constructor.newInstance(unit);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassNotFoundException | java.lang.InstantiationException ex) {
+            throw new InstantiationException(OperationService.class, operationServiceType.name(), ex);
         }
     }
 
-    public <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(final UNIT unit) {
-        return new BrightnessStateOperationService() {
+    public static class BrightnessStateOperationServiceMock<UNIT extends BrightnessStateOperationService & Unit> implements BrightnessStateOperationService {
 
-            @Override
-            public ServiceProvider getServiceProvider() {
-                return unit;
-            }
+        private final UNIT unit;
 
-            @Override
-            public BrightnessState getBrightnessState() throws NotAvailableException {
-                return unit.getBrightnessState();
-            }
+        public BrightnessStateOperationServiceMock(final UNIT unit) {
+            this.unit = unit;
+        }
 
-            @Override
-            public Future<ActionFuture> setBrightnessState(BrightnessState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BRIGHTNESS_STATE_SERVICE);
-            }
-        };
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return unit;
+        }
+
+        @Override
+        public BrightnessState getBrightnessState() throws NotAvailableException {
+            return unit.getBrightnessState();
+        }
+
+        @Override
+        public Future<ActionFuture> setBrightnessState(BrightnessState state) throws CouldNotPerformException {
+            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BRIGHTNESS_STATE_SERVICE);
+        }
     }
 
-    public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) {
-        return new ColorStateOperationService() {
+    public static class ColorStateOperationServiceMock<UNIT extends ColorStateOperationService & Unit> implements ColorStateOperationService {
 
-            @Override
-            public ServiceProvider getServiceProvider() {
-                return unit;
-            }
+        private final UNIT unit;
 
-            @Override
-            public ColorState getColorState() throws NotAvailableException {
-                return unit.getColorState();
-            }
+        public ColorStateOperationServiceMock(final UNIT unit) {
+            this.unit = unit;
+        }
 
-            @Override
-            public Future<ActionFuture> setColorState(ColorState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.COLOR_STATE_SERVICE);
-            }
-        };
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return unit;
+        }
+
+        @Override
+        public ColorState getColorState() throws NotAvailableException {
+            return unit.getColorState();
+        }
+
+        @Override
+        public Future<ActionFuture> setColorState(ColorState state) throws CouldNotPerformException {
+            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.COLOR_STATE_SERVICE);
+        }
     }
 
-    public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) {
-        return new PowerStateOperationService() {
+    public static class PowerStateOperationServiceMock<UNIT extends PowerStateOperationService & Unit> implements PowerStateOperationService {
 
-            @Override
-            public ServiceProvider getServiceProvider() {
-                return unit;
-            }
+        final UNIT unit;
 
-            @Override
-            public PowerState getPowerState() throws NotAvailableException {
-                return unit.getPowerState();
-            }
+        public PowerStateOperationServiceMock(final UNIT unit) {
+            this.unit = unit;
+        }
 
-            @Override
-            public Future<ActionFuture> setPowerState(PowerState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.POWER_STATE_SERVICE);
-            }
-        };
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return unit;
+        }
+
+        @Override
+        public PowerState getPowerState() throws NotAvailableException {
+            return unit.getPowerState();
+        }
+
+        @Override
+        public Future<ActionFuture> setPowerState(PowerState state) throws CouldNotPerformException {
+            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.POWER_STATE_SERVICE);
+        }
     }
 
-    public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) {
-        return new BlindStateOperationService() {
+    public static class BlindStateOperationServiceMock<UNIT extends BlindStateOperationService & Unit> implements BlindStateOperationService {
 
-            @Override
-            public ServiceProvider getServiceProvider() {
-                return unit;
-            }
+        final UNIT unit;
 
-            @Override
-            public BlindState getBlindState() throws NotAvailableException {
-                return unit.getBlindState();
-            }
+        public BlindStateOperationServiceMock(final UNIT unit) {
+            this.unit = unit;
+        }
 
-            @Override
-            public Future<ActionFuture> setBlindState(BlindState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BLIND_STATE_SERVICE);
-            }
-        };
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return unit;
+        }
+
+        @Override
+        public BlindState getBlindState() throws NotAvailableException {
+            return unit.getBlindState();
+        }
+
+        @Override
+        public Future<ActionFuture> setBlindState(BlindState state) throws CouldNotPerformException {
+            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BLIND_STATE_SERVICE);
+        }
     }
 
-    public <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(final UNIT unit) {
-        return new StandbyStateOperationService() {
+    public static class StandbyStateOperationServiceMock<UNIT extends StandbyStateOperationService & Unit> implements StandbyStateOperationService {
 
-            @Override
-            public ServiceProvider getServiceProvider() {
-                return unit;
-            }
+        final UNIT unit;
 
-            @Override
-            public StandbyStateType.StandbyState getStandbyState() throws NotAvailableException {
-                return unit.getStandbyState();
-            }
+        public StandbyStateOperationServiceMock(final UNIT unit) {
+            this.unit = unit;
+        }
 
-            @Override
-            public Future<ActionFuture> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.STANDBY_STATE_SERVICE);
-            }
-        };
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return unit;
+        }
+
+        @Override
+        public StandbyStateType.StandbyState getStandbyState() throws NotAvailableException {
+            return unit.getStandbyState();
+        }
+
+        @Override
+        public Future<ActionFuture> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
+            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.STANDBY_STATE_SERVICE);
+        }
     }
 
-    public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) {
-        return new TargetTemperatureStateOperationService() {
+    public static class TargetTemperatureStateOperationServiceMock<UNIT extends TargetTemperatureStateOperationService & Unit> implements TargetTemperatureStateOperationService {
 
-            @Override
-            public ServiceProvider getServiceProvider() {
-                return unit;
-            }
+        final UNIT unit;
 
-            @Override
-            public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-                return unit.getTargetTemperatureState();
-            }
+        public TargetTemperatureStateOperationServiceMock(final UNIT unit) {
+            this.unit = unit;
+        }
 
-            @Override
-            public Future<ActionFuture> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
-            }
-        };
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return unit;
+        }
+
+        @Override
+        public TemperatureState getTargetTemperatureState() throws NotAvailableException {
+            return unit.getTargetTemperatureState();
+        }
+
+        @Override
+        public Future<ActionFuture> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
+            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
+        }
     }
 
-    private static Future<ActionFuture> update(final Object argument, final Unit unit, final ServiceType serviceType) throws CouldNotPerformException {
+    private static Future<ActionFuture> update(final Message argument, final Unit unit, final ServiceType serviceType) throws CouldNotPerformException {
         try {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             if (stackTrace == null) {
@@ -203,7 +236,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
                 throw new InvalidStateException("Could not detect method stack!");
             }
             String methodName = "applyDataUpdate";
-            unit.getClass().getMethod(methodName, Object.class, ServiceType.class).invoke(unit, argument, serviceType);
+            unit.getClass().getMethod(methodName, Message.class, ServiceType.class).invoke(unit, argument, serviceType);
             return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);

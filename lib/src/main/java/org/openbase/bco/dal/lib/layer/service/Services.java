@@ -22,9 +22,10 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
-import com.google.protobuf.*;
-import org.openbase.bco.dal.lib.action.Action;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
+import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -33,18 +34,15 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import rst.domotic.unit.user.UserDataType.UserData;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -57,7 +55,7 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @author <a href="mailto:agatting@techfak.uni-bielefeld.de">Andreas Gatting</a>
  */
-    public class Services extends ServiceStateProcessor {
+public class Services extends ServiceStateProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Services.class);
 
@@ -280,13 +278,13 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
         }
     }
 
-    public static Message invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, servicePattern, ServiceTempus.CURRENT, instance, arguments);
     }
 
-    public static Message invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         try {
-            return (Message) detectServiceMethod(serviceType, servicePattern, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
+            return detectServiceMethod(serviceType, servicePattern, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError | ClassCastException ex) {
             throw new NotSupportedException("ServiceType[" + serviceType.name() + "] with Pattern[" + servicePattern + "]", instance, ex);
         } catch (NullPointerException ex) {
@@ -301,7 +299,7 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
     }
 
     public static Message invokeProviderServiceMethod(final ServiceType serviceType, final Object instance) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
-        return invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance);
+        return (Message) invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance);
     }
 
     public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
@@ -426,6 +424,7 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
 
     /**
      * Method returns the action which is responsible for the given state.
+     *
      * @param serviceState the state used to resolve the responsible action.
      * @return the responsible action.
      * @throws NotAvailableException is thrown if the related action can not be determine.
@@ -441,9 +440,10 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
 
     /**
      * Method set the responsible action of the service state.
+     *
      * @param responsibleAction the action to setup.
-     * @param serviceState the message which is updated with the given responsible action.
-     * @param <M> the type of the service state message.
+     * @param serviceState      the message which is updated with the given responsible action.
+     * @param <M>               the type of the service state message.
      * @return the modified message instance.
      */
     public static <M extends Message> M setResponsibleAction(final ActionDescription responsibleAction, final M serviceState) {
@@ -452,13 +452,20 @@ import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKA
 
     /**
      * Method set the responsible action of the service state.
-     * @param responsibleAction the action to setup.
+     *
+     * @param responsibleAction   the action to setup.
      * @param serviceStateBuilder the builder which is updated with the given responsible action.
-     * @param <B> the type of the service state builder.
+     * @param <B>                 the type of the service state builder.
      * @return the modified builder instance.
      */
     public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) {
         return (B) serviceStateBuilder.setField(ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME), responsibleAction);
+    }
+
+    public static Class<?> loadOperationServiceClass(final ServiceType serviceType) throws ClassNotFoundException {
+        final String className = StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replace("Service", "") + OperationService.class.getSimpleName();
+        final String packageString = OperationService.class.getPackage().getName();
+        return Services.class.getClassLoader().loadClass(packageString + "." + className);
     }
 }
 
