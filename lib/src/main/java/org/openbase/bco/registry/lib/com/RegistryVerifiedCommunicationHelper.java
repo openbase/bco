@@ -25,15 +25,16 @@ package org.openbase.bco.registry.lib.com;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.com.TransactionIdProvider;
-import org.openbase.jul.extension.rsb.com.future.TransactionVerificationConversionFuture;
-import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.extension.rst.iface.TransactionIdProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.communication.TransactionValueType.TransactionValue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -47,11 +48,9 @@ public class RegistryVerifiedCommunicationHelper {
         });
     }
 
-    public static <T extends Message, PROVIDER extends DataProvider<?> & TransactionIdProvider> Future<T> requestVerifiedAction(final T type, final PROVIDER dataProvider, final SymmetricCallable<TransactionValue> symmetricCallable) throws CouldNotPerformException {
+    public static <T extends Message> Future<T> requestVerifiedAction(final T type, final SymmetricCallable<TransactionValue> symmetricCallable) throws CouldNotPerformException {
         final TransactionValue transactionValue = TransactionValue.newBuilder().setValue(type.toByteString()).build();
-        final Future<TransactionValue> transactionValueFuture = symmetricCallable.call(transactionValue);
-        final Class<T> messageClass = (Class<T>) type.getClass();
-        return new TransactionVerificationConversionFuture<T>(transactionValueFuture, dataProvider, messageClass);
+        return new TransactionValueConversionFuture<>(symmetricCallable.call(transactionValue), (Class<T>) type.getClass());
     }
 
     public interface SymmetricCallable<T extends Message> {
@@ -64,6 +63,50 @@ public class RegistryVerifiedCommunicationHelper {
             return (T) parseFrom.invoke(null, bytes);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not parse byte string into message class[" + messageClass.getSimpleName() + "]", ex);
+        }
+    }
+
+    private static class TransactionValueConversionFuture<T extends Message> implements Future<T> {
+
+        private final Future<TransactionValue> internalFuture;
+        private final Class<T> returnClass;
+
+        public TransactionValueConversionFuture(final Future<TransactionValue> internalFuture, final Class<T> returnClass) {
+            this.internalFuture = internalFuture;
+            this.returnClass = returnClass;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return internalFuture.cancel(true);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return internalFuture.isCancelled();
+        }
+
+        @Override
+        public boolean isDone() {
+            return internalFuture.isDone();
+        }
+
+        @Override
+        public T get() throws InterruptedException, ExecutionException {
+            try {
+                return parseFrom(internalFuture.get().getValue(), returnClass);
+            } catch (CouldNotPerformException ex) {
+                throw new ExecutionException("Could not parse byte string to class[" + returnClass.getSimpleName() + "]", ex);
+            }
+        }
+
+        @Override
+        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            try {
+                return parseFrom(internalFuture.get(timeout, unit).getValue(), returnClass);
+            } catch (CouldNotPerformException ex) {
+                throw new ExecutionException("Could not parse byte string to class[" + returnClass.getSimpleName() + "]", ex);
+            }
         }
     }
 }

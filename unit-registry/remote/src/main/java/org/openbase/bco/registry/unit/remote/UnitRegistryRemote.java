@@ -25,7 +25,7 @@ package org.openbase.bco.registry.unit.remote;
 import com.google.protobuf.ByteString;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticationFuture;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -40,6 +40,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
@@ -227,13 +228,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      */
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this, this::registerUnitConfigAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::registerUnitConfigAuthenticated);
     }
 
     @Override
     public Future<AuthenticatedValue> registerUnitConfigAuthenticated(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register unit config!", ex);
         }
@@ -284,13 +285,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this, this::updateUnitConfigAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::updateUnitConfigAuthenticated);
     }
 
     @Override
     public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update unit config!", ex);
         }
@@ -298,13 +299,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this, this::removeUnitConfigAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::removeUnitConfigAuthenticated);
     }
 
     @Override
     public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove unit config!", ex);
         }
@@ -765,7 +766,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      */
     @Override
     public Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken) throws CouldNotPerformException {
-        return AuthenticatedServiceProcessor.requestAuthenticatedActionWithoutTransactionSynchronization(
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(
                 authorizationToken,
                 String.class,
                 SessionManager.getInstance(),
@@ -788,9 +789,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     public Future<ByteString> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            AuthenticationFuture<String> internalFuture = null;
+            AuthenticatedValueFuture<String> internalFuture = null;
             try {
-                internalFuture = AuthenticatedServiceProcessor.requestAuthenticatedActionWithoutTransactionSynchronization(authenticationToken, String.class, SessionManager.getInstance(), this::requestAuthenticationTokenAuthenticated);
+                internalFuture = AuthenticatedServiceProcessor.requestAuthenticatedAction(authenticationToken, String.class, SessionManager.getInstance(), this::requestAuthenticationTokenAuthenticated);
                 return ByteString.copyFrom(Base64.getDecoder().decode(internalFuture.get()));
             } catch (CouldNotPerformException | ExecutionException ex) {
                 throw new CouldNotPerformException("Could not request authentication token", ex);

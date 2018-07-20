@@ -26,7 +26,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.lib.future.AuthenticatedSynchronizationFuture;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
@@ -37,6 +37,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
@@ -53,7 +54,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TestWaitUntilReady {
@@ -136,7 +136,8 @@ public class TestWaitUntilReady {
             waitedUntilReady = false;
             UnitConfig deviceUnitConfig = MockRegistry.generateDeviceConfig(deviceLabel + i, String.valueOf(i), deviceClass);
 //            System.out.println("Trigger device registration!");
-            AuthenticatedSynchronizationFuture registrationFuture = (AuthenticatedSynchronizationFuture) Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
+            AuthenticatedValueFuture authenticationFuture = (AuthenticatedValueFuture) Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
+            TransactionSynchronizationFuture synchronizationFuture = (TransactionSynchronizationFuture) authenticationFuture.getInternalFuture();
 //            System.out.println("Wait until ready");
 
             // needed to make sure the registry is processing the registration task.
@@ -149,7 +150,7 @@ public class TestWaitUntilReady {
             long time = System.currentTimeMillis();
             try {
 //                registrationFuture.get();
-                registrationFuture.getInternalFuture().get(5, TimeUnit.MILLISECONDS);
+                synchronizationFuture.getInternalFuture().get(5, TimeUnit.MILLISECONDS);
                 LOGGER.info("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
             } catch (TimeoutException ex) {
                 LOGGER.warn("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");

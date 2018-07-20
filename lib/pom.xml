@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openbase</groupId>
@@ -6,13 +7,13 @@
     <packaging>jar</packaging>
 
     <name>BCO Registry Lib</name>
-    
+
     <parent>
         <groupId>org.openbase</groupId>
         <artifactId>bco.registry</artifactId>
         <version>2.0-SNAPSHOT</version>
     </parent>
-    
+
     <url>https://github.com/openbase/bco.registry/wiki</url>
 
     <licenses>
@@ -28,7 +29,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
-                
+
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -73,7 +74,7 @@
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>bco.authentication.lib</artifactId>
             <version>${dependency.bco.authentication.version}</version>
@@ -81,6 +82,11 @@
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rct</artifactId>
+            <version>${dependency.jul.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.extension.rst.util</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
     </dependencies>

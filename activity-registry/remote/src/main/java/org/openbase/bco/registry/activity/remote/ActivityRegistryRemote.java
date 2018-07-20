@@ -35,6 +35,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.Remote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -92,12 +93,12 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      */
     @Override
     public Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this, this::registerActivityConfigVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::registerActivityConfigVerified);
     }
 
     @Override
     public Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -109,12 +110,12 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      */
     @Override
     public Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this, this::updateActivityConfigVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::updateActivityConfigVerified);
     }
 
     @Override
     public Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -126,12 +127,12 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      */
     @Override
     public Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this, this::removeActivityConfigVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::removeActivityConfigVerified);
     }
 
     @Override
     public Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
