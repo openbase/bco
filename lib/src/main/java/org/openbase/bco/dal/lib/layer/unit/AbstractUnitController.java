@@ -27,12 +27,13 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
-import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
+import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
@@ -42,6 +43,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -93,7 +95,6 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -247,7 +248,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
-     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -465,12 +465,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, ticketEvaluationWrapper) -> {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
             try {
-                verifyAccessPermission(ticketEvaluationWrapper);
-
+                final String authorityString = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
+                final String description = actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, authorityString);
+                // TODO: user string should be set in action description ... all authentication info should be updated here
                 try {
-                    applyAction(actionDescription).get();
+                    applyAction(actionDescription.toBuilder().setDescription(description).build()).get();
                 } catch (ExecutionException ex) {
                     throw new CouldNotPerformException("Could not restore snapshot authenticated", ex);
                 }
@@ -709,7 +710,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException, InterruptedException {
         return restoreSnapshot(snapshot);
         //TODO: implementation has to be fixed like in ServiceRemoteManager
         //        try {
@@ -744,9 +745,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, ticketEvaluationWrapper) -> {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, authenticationBaseData) -> {
             try {
-                verifyAccessPermission(ticketEvaluationWrapper);
+                verifyAccessPermission(authenticationBaseData, ServiceType.UNKNOWN);
 
                 try {
 //                    internalRestoreSnapshot(snapshot, ticketEvaluationWrapper).get();
@@ -762,19 +763,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }));
     }
 
-    private void verifyAccessPermission(final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+    private String verifyAccessPermission(final AuthenticationBaseData authenticationBaseData, final ServiceType serviceType) throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                final String userId = ticketEvaluationWrapper == null ? null : ticketEvaluationWrapper.getUserId();
-
-                // check for write permissions
-                if (!AuthorizationHelper.canDo(getConfig(),
-                        userId,
-                        Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry().getEntryMap(),
-                        Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
-                        Type.ACCESS)) {
-                    throw new PermissionDeniedException("User[" + userId + "] access permission denied!");
-                }
+                return AuthorizationWithTokenHelper.canDo(authenticationBaseData, getConfig(), PermissionType.ACCESS, Registries.getUnitRegistry(), getUnitType(), serviceType);
+            } else {
+                return "Other";
             }
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);

@@ -34,7 +34,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
-import org.openbase.jul.extension.rsb.com.TransactionIdProvider;
+import org.openbase.jul.extension.rst.iface.TransactionIdProvider;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;

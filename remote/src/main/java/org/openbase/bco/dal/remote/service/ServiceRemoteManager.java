@@ -23,7 +23,7 @@ package org.openbase.bco.dal.remote.service;
  */
 
 import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
+import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
@@ -346,24 +346,24 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         return restoreSnapshotAuthenticated(snapshot, null);
     }
 
-    public Future<Void> restoreSnapshotAuthenticated(final Snapshot snapshot, final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshotAuthenticated(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException, InterruptedException {
         try {
-            if (ticketEvaluationWrapper != null) {
+            if (authenticationBaseData != null) {
                 try {
-                    final TicketAuthenticatorWrapper initializedTicket = AuthenticationClientHandler.initServiceServerRequest(ticketEvaluationWrapper.getSessionKey(), ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
+                    final TicketAuthenticatorWrapper initializedTicket = AuthenticationClientHandler.initServiceServerRequest(authenticationBaseData.getSessionKey(), authenticationBaseData.getTicketAuthenticatorWrapper());
 
                     return GlobalCachedExecutorService.allOf(input -> {
-                        if (ticketEvaluationWrapper != null) {
+                        if (authenticationBaseData != null) {
                             try {
                                 for (Future<ActionFuture> actionFuture : input) {
-                                    AuthenticationClientHandler.handleServiceServerResponse(ticketEvaluationWrapper.getSessionKey(), initializedTicket, actionFuture.get().getTicketAuthenticatorWrapper());
+                                    AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, actionFuture.get().getTicketAuthenticatorWrapper());
                                 }
                             } catch (ExecutionException ex) {
                                 throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                             }
                         }
                         return null;
-                    }, generateSnapshotActions(snapshot, initializedTicket, ticketEvaluationWrapper.getSessionKey()));
+                    }, generateSnapshotActions(snapshot, initializedTicket, authenticationBaseData.getSessionKey()));
                 } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Could not update ticket for further requests", ex);
                 }
