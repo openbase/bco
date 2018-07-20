@@ -29,8 +29,10 @@ import org.junit.Test;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
@@ -40,22 +42,37 @@ import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketType.Ticket;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.timing.IntervalType;
 import rst.timing.IntervalType.Interval;
 
+import java.util.concurrent.ExecutionException;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODeviceManagerTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ColorableLightRemoteWithAuthenticationTest.class);
 
     private static ColorableLightRemote colorableLightRemote;
 
@@ -67,7 +84,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        JPService.registerProperty(JPAuthentication .class, true);
+        JPService.registerProperty(JPAuthentication.class, true);
         AbstractBCODeviceManagerTest.setUpClass();
     }
 
@@ -190,5 +207,74 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON).get();
         colorableLightRemote.requestData().get();
         assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+    }
+
+    @Test(timeout = 15000)
+    public void testApplyActionWithToken() throws Exception {
+        System.out.println("testApplyActionWithToken");
+
+        // Remove other access permission from root location so that new users should not be able to control it
+        final UnitConfig.Builder rootLocation = Registries.getUnitRegistry().getRootLocationConfig().toBuilder();
+        rootLocation.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(false);
+        Registries.getUnitRegistry().updateUnitConfig(rootLocation.build()).get();
+
+        // Register a new user that does not have access permissions
+        final String username = "Murray";
+        final String password = "skull";
+        UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.USER);
+        userUnitConfig.getUserConfigBuilder().setFirstName("Murray").setLastName("the skull").setUserName(username);
+        userUnitConfig = Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get().toBuilder();
+        sessionManager.registerUser(userUnitConfig.getId(), password, false);
+
+        // request authentication and authorization tokens for admin user
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationToken.newBuilder().setUserId(sessionManager.getUserId()).build(), null, null);
+        final String authenticationToken = new AuthenticatedValueFuture<>(
+                Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
+                String.class,
+                authenticatedValue.getTicketAuthenticatorWrapper(),
+                sessionManager).get();
+        AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder().setUserId(sessionManager.getUserId());
+        AuthorizationToken.MapFieldEntry.Builder entry = authorizationToken.addPermissionRuleBuilder();
+        entry.setKey(colorableLightRemote.getId());
+        entry.getValueBuilder().setAccess(true).setRead(true).setWrite(false);
+        authenticatedValue = sessionManager.initializeRequest(authorizationToken.build(), null, null);
+        final String token = new AuthenticatedValueFuture<>(
+                Registries.getUnitRegistry().requestAuthorizationTokenAuthenticated(authenticatedValue),
+                String.class,
+                authenticatedValue.getTicketAuthenticatorWrapper(),
+                sessionManager).get();
+
+        // login previously registered user
+        sessionManager.login(userUnitConfig.getId(), password);
+
+        // try to set the power state which should fail
+        try {
+            ExceptionPrinter.setBeQuit(true);
+            colorableLightRemote.setPowerState(State.ON).get();
+            assertTrue("Could set power state without access permissions", false);
+        } catch (ExecutionException ex) {
+            // this should happen
+//            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.INFO);
+        } finally {
+            ExceptionPrinter.setBeQuit(false);
+        }
+
+        PowerState.Builder powerState = PowerState.newBuilder().setValue(State.ON);
+        ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
+
+        authenticatedValue = sessionManager.initializeRequest(actionDescription, null, token);
+        colorableLightRemote.applyActionAuthenticated(authenticatedValue).get();
+        assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
+
+        powerState = PowerState.newBuilder().setValue(State.OFF);
+        actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
+
+        authenticatedValue = sessionManager.initializeRequest(actionDescription, authenticationToken, token);
+        colorableLightRemote.applyActionAuthenticated(authenticatedValue).get();
+        assertEquals(State.OFF, colorableLightRemote.getPowerState().getValue());
+
+        // reset root location permissions to not interfere with other tests
+        rootLocation.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(true);
+        Registries.getUnitRegistry().updateUnitConfig(rootLocation.build()).get();
     }
 }

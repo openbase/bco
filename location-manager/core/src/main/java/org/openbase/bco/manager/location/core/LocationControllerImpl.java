@@ -22,7 +22,7 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
+import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
@@ -31,7 +31,6 @@ import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.location.lib.LocationController;
-
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -40,7 +39,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
@@ -220,8 +218,8 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    protected Future<Void> internalRestoreSnapshot(Snapshot snapshot, TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.restoreSnapshotAuthenticated(snapshot, ticketEvaluationWrapper);
+    protected Future<Void> internalRestoreSnapshot(Snapshot snapshot, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.restoreSnapshotAuthenticated(snapshot, authenticationBaseData);
     }
 
     @Override
