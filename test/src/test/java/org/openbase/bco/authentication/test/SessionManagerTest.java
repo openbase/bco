@@ -228,6 +228,8 @@ public class SessionManagerTest extends AuthenticationTest {
         // now client should be logged in again
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
         assertEquals(ticket.getClientId(), "@" + MockClientStore.CLIENT_ID);
+
+        manager.shutdown();
     }
 
     /**

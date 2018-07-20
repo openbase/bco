@@ -35,45 +35,28 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Future;
 
 /**
- * An AuthenticatedFuture which has an internal Future with an authenticated value and returns a generated message.
+ * Implementation of the abstract authentication future for the AuthenticatedValue type.
  *
- * @param <RETURN> The type of the generated message which is returned.
+ * @param <RETURN> The type of value this future returns.
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class AuthenticatedValueFuture<RETURN> extends AuthenticatedFuture<RETURN, AuthenticatedValue> {
+public class AuthenticatedValueFuture<RETURN> extends AbstractAuthenticationFuture<RETURN, AuthenticatedValue> {
 
     /**
-     * Create a new AuthenticatedValueFuture with the default session manager.
+     * Create an AuthenticationFutureImpl.
      *
-     * @param internalFuture             The internal future.
-     * @param returnValueClass           Class of type RETURN.
-     * @param ticketAuthenticatorWrapper The ticket used for the request.
+     * @param internalFuture The internal future whose result is verified.
+     * @param returnClass    Class of type RETURN.
+     * @param wrapper        The ticket that was used for the request.
+     * @param sessionManager The session manager that is used for the verification.
      */
-    public AuthenticatedValueFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnValueClass, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
-        super(internalFuture, returnValueClass, ticketAuthenticatorWrapper);
+    public AuthenticatedValueFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnClass, final TicketAuthenticatorWrapper wrapper, final SessionManager sessionManager) {
+        super(internalFuture, returnClass, wrapper, sessionManager);
     }
 
-    /**
-     * Create a new AuthenticatedValueFuture
-     *
-     * @param internalFuture             The internal future.
-     * @param returnValueClass           Class of type RETURN.
-     * @param ticketAuthenticatorWrapper The ticket used for the request.
-     * @param sessionManager             Session manager that is used to verify the response.
-     */
-    public AuthenticatedValueFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnValueClass, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final SessionManager sessionManager) {
-        super(internalFuture, returnValueClass, ticketAuthenticatorWrapper, sessionManager);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param internalType {@inheritDoc}
-     * @return The ticket inside the authenticated value.
-     */
     @Override
-    protected TicketAuthenticatorWrapper getTicketFromInternal(AuthenticatedValue internalType) {
-        return internalType.getTicketAuthenticatorWrapper();
+    protected TicketAuthenticatorWrapper getTicketFromInternal(final AuthenticatedValue authenticatedValue) {
+        return authenticatedValue.getTicketAuthenticatorWrapper();
     }
 
     /**
@@ -105,7 +88,7 @@ public class AuthenticatedValueFuture<RETURN> extends AuthenticatedFuture<RETURN
                 }
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("COuld not get return value from internal value", ex);
+            throw new CouldNotPerformException("Could not get return value from internal value", ex);
         }
     }
 }

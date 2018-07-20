@@ -25,8 +25,7 @@ package org.openbase.bco.authentication.lib;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
-import org.openbase.bco.authentication.lib.future.AuthenticatedSynchronizationFuture;
-import org.openbase.bco.authentication.lib.future.AuthenticationFuture;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -34,11 +33,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rsb.com.TransactionIdProvider;
-import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.extension.rst.iface.TransactionIdProvider;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.Serializable;
@@ -214,29 +213,6 @@ public class AuthenticatedServiceProcessor {
      *
      * @param <SEND>              The type which is send to server for this request.
      * @param <RESPONSE>          The type with which the server should respond.
-     * @param <REMOTE>            A combination of a data provider and a transaction id provider. Usually a remote.
-     * @param message             The message which is encrypted and send to the server.
-     * @param responseClass       Class of type RESPONSE to resolve internal types.
-     * @param sessionManager      The session manager from which the ticket is used if a user it logged in.
-     * @param remote              The remote providing a transaction id and a data provider which is updated and triggers transaction id verification.
-     * @param internalRequestable Interface for the internal authenticated request which is called.
-     * @return A future containing the response.
-     * @throws CouldNotPerformException If a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
-     */
-    public static <SEND extends Serializable, RESPONSE, REMOTE extends DataProvider<?> & TransactionIdProvider> Future<RESPONSE> requestAuthenticatedAction(
-            final SEND message,
-            final Class<RESPONSE> responseClass,
-            final SessionManager sessionManager,
-            final REMOTE remote,
-            final InternalRequestable internalRequestable) throws CouldNotPerformException {
-        return new AuthenticatedSynchronizationFuture<>(requestAuthenticatedActionWithoutTransactionSynchronization(message, responseClass, sessionManager, internalRequestable), remote);
-    }
-
-    /**
-     * Method used by the remote to request an authenticated action from a server.
-     *
-     * @param <SEND>              The type which is send to server for this request.
-     * @param <RESPONSE>          The type with which the server should respond.
      * @param message             The message which is encrypted and send to the server.
      * @param responseClass       Class of type RESPONSE to resolve internal types.
      * @param sessionManager      The session manager from which the ticket is used if a user it logged in.
@@ -244,7 +220,7 @@ public class AuthenticatedServiceProcessor {
      * @return A future containing the response.
      * @throws CouldNotPerformException If a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
      */
-    public static <SEND extends Serializable, RESPONSE> AuthenticationFuture<RESPONSE> requestAuthenticatedActionWithoutTransactionSynchronization(
+    public static <SEND extends Serializable, RESPONSE> AuthenticatedValueFuture<RESPONSE> requestAuthenticatedAction(
             final SEND message,
             final Class<RESPONSE> responseClass,
             final SessionManager sessionManager,
@@ -263,7 +239,7 @@ public class AuthenticatedServiceProcessor {
                 // perform the internal request
                 Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
                 // wrap the response in an authenticated synchronization future
-                return new AuthenticationFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
+                return new AuthenticatedValueFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not request authenticated Action!", ex);
             }
@@ -280,7 +256,7 @@ public class AuthenticatedServiceProcessor {
             // perform the internal request
             Future<AuthenticatedValue> future = internalRequestable.request(authenticateValue.build());
             // wrap the response in an authenticated synchronization future
-            return new AuthenticationFuture<>(future, responseClass, null, sessionManager);
+            return new AuthenticatedValueFuture<>(future, responseClass, null, sessionManager);
         }
     }
 
