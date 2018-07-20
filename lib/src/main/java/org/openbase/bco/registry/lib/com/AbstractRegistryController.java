@@ -238,7 +238,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
             // lock internal registries so that no changes can take place while notifying
             lockInternalRegistries();
+            logger.warn("Registry notifying....");
             super.notifyChange();
+            logger.warn("Registry notified....");
         } finally {
             // unlock internal registries only if this thread has locked them before
             if (lock.isWriteLockedByCurrentThread()) {

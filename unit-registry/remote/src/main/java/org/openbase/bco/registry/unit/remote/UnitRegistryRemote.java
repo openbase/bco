@@ -42,6 +42,8 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.MockUpFilter;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
@@ -144,6 +146,18 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+
+        this.getIntenalPriorizedDataObservable().addObserver(new Observer<UnitRegistryData>() {
+            @Override
+            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                logger.warn("UnitRegistryRemote internal sync should now be finished");
+            }
+        });
     }
 
     /**
