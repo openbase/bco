@@ -47,6 +47,8 @@ public class TestMain {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final FulfillmentHandler fulfillmentHandler = new FulfillmentHandler();
 
+        LoginDataHelper.createLoginData("testPwd", "pleminoq@openbase.org");
+
 //        try {
 //            JPService.registerProperty(JPCloudServerURI.class, new URI("http://localhost:5000"));
 //            CloudConnectorLauncher cloudConnectorLauncher = new CloudConnectorLauncher();
