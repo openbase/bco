@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -66,8 +66,13 @@ import java.util.concurrent.*;
 public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private static final String LOGIN_EVENT = "login";
+    private static final String REGISTER_EVENT = "register";
     private static final String REQUEST_SYNC_EVENT = "requestSync";
     private static final String USER_TRANSIT_EVENT = "userTransit";
+
+    private static final String TOKEN_KEY = "accessToken";
+    private static final String SUCCESS_KEY = "success";
+    private static final String ERROR_KEY = "error";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketWrapper.class);
 
@@ -168,9 +173,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             final JsonElement parse = jsonParser.parse((String) request);
             LOGGER.info("Request: " + gson.toJson(parse));
 
+            //TODO: fulfillment handlers also need authorization token...
             // handle request and create response
             LOGGER.info("Call handler");
-            final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), agentUserId);
+            final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), agentUserId, tokenStore.getToken(userId + "@BCO"));
             final String response = gson.toJson(jsonObject);
             LOGGER.info("Handler produced response: " + response);
             // send back response
@@ -185,41 +191,57 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         }
     }
 
-    private void login() {
-        final JsonObject loginInfo;
-        if (loginData != null) {
-            // add username?
-            loginInfo = loginData;
-        } else {
-            loginInfo = new JsonObject();
+    private Future<Void> register() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        socket.emit(REGISTER_EVENT, gson.toJson(loginData), (Ack) objects -> {
             try {
-                loginInfo.addProperty("accessToken", tokenStore.getToken(userId));
-            } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory("Could not login user[" + userId + "] at BCO Cloud", ex, LOGGER);
+                final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
+                if (response.get(SUCCESS_KEY).getAsBoolean()) {
+                    tokenStore.addToken(userId + "@Cloud", response.get(TOKEN_KEY).getAsString());
+                    future.complete(null);
+                } else {
+                    LOGGER.error("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY).getAsString());
+                    future.completeExceptionally(new CouldNotPerformException("Could not register user"));
+                }
+            } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
+                ExceptionPrinter.printHistory("Unexpected response for login request", ex, LOGGER);
+                future.completeExceptionally(new CouldNotPerformException("Could not register user"));
+            }
+        });
+        return future;
+    }
+
+    private void login() {
+        if (loginData != null) {
+            // register user
+            try {
+                register().get(10, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                ExceptionPrinter.printHistory(ex, LOGGER);
+                return;
+            } catch (ExecutionException | TimeoutException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER);
                 return;
             }
         }
 
-        LOGGER.info("Send loginInfo [" + gson.toJson(loginInfo) + "]");
-        socket.emit(LOGIN_EVENT, gson.toJson(loginInfo), (Ack) objects1 -> {
-            try {
-                final String response = objects1[0].toString();
-                if (response.startsWith("ERROR")) {
-                    LOGGER.error("Could not login user[" + userId + "] at BCO Cloud[" + response + "]");
-                    return;
-                }
+        final JsonObject loginInfo = new JsonObject();
+        try {
+            loginInfo.addProperty(TOKEN_KEY, tokenStore.getToken(userId + "@Cloud"));
+        } catch (NotAvailableException ex) {
+            ExceptionPrinter.printHistory("Could not login user[" + userId + "] at BCO Cloud", ex, LOGGER);
+            return;
+        }
 
-                final JsonObject jsonResponse = jsonParser.parse(response).getAsJsonObject();
-                if (jsonResponse.get("success").getAsBoolean()) {
-                    LOGGER.info("Authenticated successfully");
-                    if (jsonResponse.has("accessToken")) {
-                        loggedIn = true;
-                        final String accessToken = jsonResponse.get("accessToken").getAsString();
-                        tokenStore.addToken(userId + "@Cloud", accessToken);
-                        LOGGER.info("Received accessToken[" + accessToken + "]");
-                    }
+        LOGGER.info("Send loginInfo [" + gson.toJson(loginInfo) + "]");
+        socket.emit(LOGIN_EVENT, gson.toJson(loginInfo), (Ack) objects -> {
+            try {
+                final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
+                if (response.get(SUCCESS_KEY).getAsBoolean()) {
+                    LOGGER.info("Logged in [" + userId + "] successfully");
                 } else {
-                    LOGGER.info("Could not login user[" + userId + "] at BCO Cloud");
+                    LOGGER.info("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY));
                 }
             } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
                 ExceptionPrinter.printHistory("Unexpected response for login request", ex, LOGGER);

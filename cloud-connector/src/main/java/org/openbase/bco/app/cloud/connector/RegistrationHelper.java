@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -37,7 +37,7 @@ import java.util.Base64;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LoginDataHelper {
+public class RegistrationHelper {
 
     public static final Integer SALT_LENGTH = 16;
     public static final String HASH_ALGORITHM = "SHA-512";
@@ -45,13 +45,14 @@ public class LoginDataHelper {
     public static final String EMAIL_HASH_KEY = "email_hash";
     public static final String PASSWORD_HASH_KEY = "password_hash";
     public static final String PASSWORD_SALT_KEY = "password_salt";
+    public static final String AUTHORIZATION_TOKEN_KEY = "authorization_token";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoginDataHelper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegistrationHelper.class);
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final Gson gson = new Gson();
 
 
-    public static String createLoginData(final String password, final String email) {
+    public static String createRegistrationData(final String password, final String email, final String authorizationToken) {
         try {
             // generate salt
             final byte[] saltBytes = new byte[SALT_LENGTH];
@@ -75,9 +76,10 @@ public class LoginDataHelper {
             loginData.addProperty(EMAIL_HASH_KEY, emailHash);
             loginData.addProperty(PASSWORD_HASH_KEY, passwordHash);
             loginData.addProperty(PASSWORD_SALT_KEY, passwordSalt);
+            loginData.addProperty(AUTHORIZATION_TOKEN_KEY, authorizationToken);
             return gson.toJson(loginData);
         } catch (NoSuchAlgorithmException ex) {
-            ExceptionPrinter.printHistory(new FatalImplementationErrorException(LoginDataHelper.class, ex), LOGGER);
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException(RegistrationHelper.class, ex), LOGGER);
             return null;
         }
     }

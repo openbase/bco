@@ -24,20 +24,8 @@ package org.openbase.bco.app.cloud.connector;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.openbase.bco.registry.login.SystemLogin;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.StackTracePrinter;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
-import java.util.UUID;
 
 public class TestMain {
 
@@ -47,7 +35,7 @@ public class TestMain {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final FulfillmentHandler fulfillmentHandler = new FulfillmentHandler();
 
-        LoginDataHelper.createLoginData("testPwd", "pleminoq@openbase.org");
+        RegistrationHelper.createRegistrationData("testPwd", "pleminoq@openbase.org");
 
 //        try {
 //            JPService.registerProperty(JPCloudServerURI.class, new URI("http://localhost:5000"));

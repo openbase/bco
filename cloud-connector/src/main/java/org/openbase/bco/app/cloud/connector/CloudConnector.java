@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,7 +27,6 @@ import com.google.gson.JsonParser;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudConnectorScope;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
-import org.openbase.bco.authentication.lib.AuthenticationService;
 import org.openbase.bco.authentication.lib.TokenStore;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.login.SystemLogin;
@@ -36,7 +35,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -84,6 +82,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
             final Scope scope = JPService.getProperty(JPCloudConnectorScope.class).getValue();
             server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(scope, RSBSharedConnectionConfig.getParticipantConfig());
 
+            //TODO register methods, what about a remote?
             // register rpc methods.
 //            RPCHelper.registerInterface(AuthenticationService.class, this, server);
 
@@ -111,7 +110,9 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
             userIdSocketMap.put(userId, socketWrapper);
             socketWrapper.activate();
         } else {
+            // TODO: token should also be contained or  not?
             JsonObject asJsonObject = jsonParser.parse(jsonObject).getAsJsonObject();
+            tokenStore.addToken(userId + "@BCO", asJsonObject.get(RegistrationHelper.AUTHORIZATION_TOKEN_KEY).getAsString());
             if (asJsonObject.has("username")) {
                 final String username = Registries.getUnitRegistry().getUnitConfigById(authenticationBaseData.getUserId()).getUserConfig().getUserName();
                 asJsonObject.addProperty("username", username);
