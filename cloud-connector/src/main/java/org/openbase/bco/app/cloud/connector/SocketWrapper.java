@@ -89,6 +89,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private final Gson gson = new Gson();
     private final JsonParser jsonParser = new JsonParser();
+    private CompletableFuture<Void> loginFuture;
 
     public SocketWrapper(final String userId, final TokenStore tokenStore) {
         this(userId, tokenStore, null);
@@ -219,9 +220,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 ExceptionPrinter.printHistory(ex, LOGGER);
+                loginFuture.completeExceptionally(new CouldNotPerformException("Could not register user[" + userId + "] at BCO Cloud", ex));
                 return;
             } catch (ExecutionException | TimeoutException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);
+                loginFuture.completeExceptionally(new CouldNotPerformException("Could not register user[" + userId + "] at BCO Cloud", ex));
                 return;
             }
         }
@@ -240,11 +243,14 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
                 if (response.get(SUCCESS_KEY).getAsBoolean()) {
                     LOGGER.info("Logged in [" + userId + "] successfully");
+                    loginFuture.complete(null);
                 } else {
                     LOGGER.info("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY));
+                    loginFuture.completeExceptionally(new CouldNotPerformException("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY)));
                 }
             } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
                 ExceptionPrinter.printHistory("Unexpected response for login request", ex, LOGGER);
+                loginFuture.completeExceptionally(new CouldNotPerformException("Could not login user[" + userId + "] at BCO Cloud", ex));
             }
         });
     }
@@ -276,6 +282,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     @Override
     public void activate() throws CouldNotPerformException {
+        loginFuture = new CompletableFuture<>();
         if (socket == null) {
             throw new CouldNotPerformException("Cannot activate before initialization");
         }
@@ -290,6 +297,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         }
         socket.disconnect();
         active = false;
+        loginFuture = null;
     }
 
     @Override
@@ -352,5 +360,9 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             test.add(FulfillmentHandler.PAYLOAD_KEY, syncResponse);
             LOGGER.info("new sync[" + isLoggedIn() + "]:\n" + gson.toJson(test));
         }
+    }
+
+    public Future<Void> getLoginFuture() {
+        return loginFuture;
     }
 }

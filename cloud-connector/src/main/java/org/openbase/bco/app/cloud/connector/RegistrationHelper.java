@@ -46,13 +46,14 @@ public class RegistrationHelper {
     public static final String PASSWORD_HASH_KEY = "password_hash";
     public static final String PASSWORD_SALT_KEY = "password_salt";
     public static final String AUTHORIZATION_TOKEN_KEY = "authorization_token";
+    public static final String AUTO_START_KEY = "auto_start";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RegistrationHelper.class);
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final Gson gson = new Gson();
 
 
-    public static String createRegistrationData(final String password, final String email, final String authorizationToken) {
+    public static String createRegistrationData(final String password, final String authorizationToken, final boolean autoStart) {
         try {
             // generate salt
             final byte[] saltBytes = new byte[SALT_LENGTH];
@@ -66,18 +67,24 @@ public class RegistrationHelper {
             byte[] passwordHashBytes = hashGenerator.digest();
             final String passwordHash = Base64.getEncoder().encodeToString(passwordHashBytes);
 
-            // generate email hash
-            hashGenerator.update(email.getBytes());
-            byte[] emailHashBytes = hashGenerator.digest();
-            final String emailHash = Base64.getEncoder().encodeToString(emailHashBytes);
-
             // generate JsonObject
             final JsonObject loginData = new JsonObject();
-            loginData.addProperty(EMAIL_HASH_KEY, emailHash);
             loginData.addProperty(PASSWORD_HASH_KEY, passwordHash);
             loginData.addProperty(PASSWORD_SALT_KEY, passwordSalt);
             loginData.addProperty(AUTHORIZATION_TOKEN_KEY, authorizationToken);
+            loginData.addProperty(AUTO_START_KEY, autoStart);
             return gson.toJson(loginData);
+        } catch (NoSuchAlgorithmException ex) {
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException(RegistrationHelper.class, ex), LOGGER);
+            return null;
+        }
+    }
+
+    public static String hash(final String toHash) {
+        try {
+            final MessageDigest hashGenerator = MessageDigest.getInstance(HASH_ALGORITHM);
+            hashGenerator.update(toHash.getBytes());
+            return Base64.getEncoder().encodeToString(hashGenerator.digest());
         } catch (NoSuchAlgorithmException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(RegistrationHelper.class, ex), LOGGER);
             return null;

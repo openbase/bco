@@ -35,6 +35,8 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -46,18 +48,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class CloudConnector implements Launchable<Void>, VoidInitializable {
+public class CloudConnector implements Launchable<Void>, VoidInitializable, CloudConnectorInterface {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnector.class);
 
@@ -82,55 +88,18 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
             final Scope scope = JPService.getProperty(JPCloudConnectorScope.class).getValue();
             server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(scope, RSBSharedConnectionConfig.getParticipantConfig());
 
-            //TODO register methods, what about a remote?
             // register rpc methods.
-//            RPCHelper.registerInterface(AuthenticationService.class, this, server);
+            RPCHelper.registerInterface(CloudConnectorInterface.class, this, server);
 
             serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
-
-            //TODO: cloud connector itself needs to be logged in: how to handle the initIal process?
         } catch (CouldNotPerformException | JPNotAvailableException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    private String internalActivate(final String jsonObject, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
-        final String userId = authenticationBaseData.getUserId();
-        if (userIdSocketMap.containsKey(userId) && userIdSocketMap.get(userId).isActive()) {
-            if (userIdSocketMap.get(userId).isActive()) {
-                return "Already active";
-            } else {
-                userIdSocketMap.get(userId).activate();
-                return "Activated";
-            }
-        }
-
-        if (jsonObject.isEmpty()) {
-            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
-            userIdSocketMap.put(userId, socketWrapper);
-            socketWrapper.activate();
-        } else {
-            // TODO: token should also be contained or  not?
-            JsonObject asJsonObject = jsonParser.parse(jsonObject).getAsJsonObject();
-            tokenStore.addToken(userId + "@BCO", asJsonObject.get(RegistrationHelper.AUTHORIZATION_TOKEN_KEY).getAsString());
-            if (asJsonObject.has("username")) {
-                final String username = Registries.getUnitRegistry().getUnitConfigById(authenticationBaseData.getUserId()).getUserConfig().getUserName();
-                asJsonObject.addProperty("username", username);
-            }
-            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, asJsonObject);
-            userIdSocketMap.put(userId, socketWrapper);
-            socketWrapper.activate();
-        }
-
-        return "Success";
-    }
-
-    public Future<AuthenticatedValue> activateForUser(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, this::internalActivate));
-    }
-
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        //TODO: cloud connector itself needs to be logged in: how to handle the initIal process?
         //TODO: this is just a workaround for current authentication
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
@@ -172,5 +141,86 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
             return serverWatchDog.isActive();
         }
         return false;
+    }
+
+    private String connect(final String jsonObject, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
+        final String userId;
+        if (authenticationBaseData.getAuthenticationToken() != null) {
+            userId = authenticationBaseData.getAuthenticationToken().getUserId();
+        } else {
+            userId = authenticationBaseData.getUserId().split("@")[0];
+        }
+
+        try {
+            final JsonObject params = jsonParser.parse(jsonObject).getAsJsonObject();
+
+            if (userIdSocketMap.containsKey(userId)) {
+                if (!params.has("connect")) {
+                    throw new NotAvailableException("connect parameter for registered user[" + userId + "]");
+                }
+
+                final boolean connect = params.get("connect").getAsBoolean();
+                final SocketWrapper socketWrapper = userIdSocketMap.get(userId);
+                if (connect && !socketWrapper.isActive()) {
+                    socketWrapper.activate();
+                    socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
+                } else if (!connect && socketWrapper.isActive()) {
+                    socketWrapper.deactivate();
+                }
+                return "Success";
+            }
+
+            if (tokenStore.contains(userId + "@BCO")) {
+                final SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
+                userIdSocketMap.put(userId, socketWrapper);
+                socketWrapper.activate();
+                socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
+                return "Success";
+            }
+
+            if (!params.has(RegistrationHelper.AUTHORIZATION_TOKEN_KEY)) {
+                throw new NotAvailableException(RegistrationHelper.AUTHORIZATION_TOKEN_KEY);
+            }
+
+            if (!params.has(RegistrationHelper.PASSWORD_HASH_KEY)) {
+                throw new NotAvailableException(RegistrationHelper.PASSWORD_HASH_KEY);
+            }
+
+            if (!params.has(RegistrationHelper.PASSWORD_SALT_KEY)) {
+                throw new NotAvailableException(RegistrationHelper.PASSWORD_SALT_KEY);
+            }
+
+            tokenStore.addToken(userId + "@BCO", params.get(RegistrationHelper.AUTHORIZATION_TOKEN_KEY).getAsString());
+            params.remove(RegistrationHelper.AUTHORIZATION_TOKEN_KEY);
+
+            //TODO where to store this ?
+            boolean autostart = true;
+            if (params.has("auto_start")) {
+                autostart = params.get("auto_start").getAsBoolean();
+                params.remove("auto_start");
+            }
+
+            final UserConfig userConfig = Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig();
+            params.addProperty("username", userConfig.getUserName());
+            params.addProperty(RegistrationHelper.EMAIL_HASH_KEY, RegistrationHelper.hash(userConfig.getEmail()));
+
+            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, params);
+            userIdSocketMap.put(userId, socketWrapper);
+            socketWrapper.activate();
+            socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
+            return "Success";
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not connect to BCO Cloud for user[" + userId + "]", ex);
+        } catch (ExecutionException | TimeoutException ex) {
+            throw new CouldNotPerformException("Could not connect to BCO Cloud for user[" + userId + "]", ex);
+        }
+    }
+
+
+    @Override
+    public Future<AuthenticatedValue> connect(AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() ->
+                AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, this::connect));
     }
 }
