@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,9 +27,8 @@ import com.google.gson.JsonParser;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudConnectorScope;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.TokenStore;
-import org.openbase.bco.authentication.lib.jp.JPAuthentication;
-import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -48,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
 import java.util.HashMap;
@@ -99,29 +99,32 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable, Clou
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigByAlias("CloudConnectorUser");
+        SessionManager.getInstance().login(unitConfig.getId());
         //TODO: cloud connector itself needs to be logged in: how to handle the initIal process?
         //TODO: this is just a workaround for current authentication
-        try {
-            if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                SystemLogin.loginBCOUser();
-            }
-        } catch (JPNotAvailableException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+//        try {
+//            if (JPService.getProperty(JPAuthentication.class).getValue()) {
+//                SystemLogin.loginBCOUser();
+//            }
+//        } catch (JPNotAvailableException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            Thread.currentThread().interrupt();
+//        }
         serverWatchDog.activate();
-        final Set<String> userIds = new HashSet<>();
-        for (final Entry<String, String> entry : tokenStore.getEntryMap().entrySet()) {
-            final String userId = entry.getKey().split("@")[0];
-            if (userIds.contains(userId)) {
-                continue;
-            }
-            userIds.add(userId);
-            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
-            userIdSocketMap.put(userId, socketWrapper);
-            socketWrapper.activate();
-        }
+//        final Set<String> userIds = new HashSet<>();
+//        for (final Entry<String, String> entry : tokenStore.getEntryMap().entrySet()) {
+//            final String userId = entry.getKey().split("@")[0];
+//            if (userIds.contains(userId)) {
+//                continue;
+//            }
+//            userIds.add(userId);
+//            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
+//            userIdSocketMap.put(userId, socketWrapper);
+//            socketWrapper.init();
+//            socketWrapper.activate();
+//        }
     }
 
     @Override
@@ -144,6 +147,8 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable, Clou
     }
 
     private String connect(final String jsonObject, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
+        LOGGER.info("User[" + authenticationBaseData.getUserId() + "] connects..");
+
         final String userId;
         if (authenticationBaseData.getAuthenticationToken() != null) {
             userId = authenticationBaseData.getAuthenticationToken().getUserId();
@@ -173,6 +178,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable, Clou
             if (tokenStore.contains(userId + "@BCO")) {
                 final SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
                 userIdSocketMap.put(userId, socketWrapper);
+                socketWrapper.init();
                 socketWrapper.activate();
                 socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
                 return "Success";
@@ -206,6 +212,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable, Clou
 
             SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, params);
             userIdSocketMap.put(userId, socketWrapper);
+            socketWrapper.init();
             socketWrapper.activate();
             socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
             return "Success";
