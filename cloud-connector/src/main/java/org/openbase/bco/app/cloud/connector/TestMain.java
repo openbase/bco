@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -24,11 +24,18 @@ package org.openbase.bco.app.cloud.connector;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.openbase.bco.authentication.lib.SessionManager;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.UUID;
 
 public class TestMain {
 
@@ -37,14 +44,14 @@ public class TestMain {
     public static void main(String[] args) {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final FulfillmentHandler fulfillmentHandler = new FulfillmentHandler();
-
-        try {
-            Registries.waitForData();
+//
+//        try {
+//            Registries.waitForData();
 //            final String userId = Registries.getUnitRegistry().getUnitConfigByAlias("CloudConnectorUser").getId();
 
-            SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
-            CachedCloudConnectorRemote.getRemote().waitForActivation();
-            CachedCloudConnectorRemote.getRemote().connect(true).get();
+//            SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
+//            CachedCloudConnectorRemote.getRemote().waitForActivation();
+//            CachedCloudConnectorRemote.getRemote().connect(true).get();
 
 //            SessionManager.getInstance().registerClient(userId);
 //
@@ -53,12 +60,10 @@ public class TestMain {
 //
 //            ColorableLightRemote unit = Units.getUnit(Registries.getUnitRegistry().getUnitConfigs(UnitType.COLORABLE_LIGHT).get(0), true, ColorableLightRemote.class);
 //            unit.setPowerState(State.ON).get();
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER);
-            System.exit(1);
-        }
-
-        System.exit(0);
+//        } catch (Exception ex) {
+//            ExceptionPrinter.printHistory(ex, LOGGER);
+//            System.exit(1);
+//        }
 
 //        RegistrationHelper.createRegistrationData("testPwd", "pleminoq@openbase.org");
 
@@ -143,52 +148,53 @@ public class TestMain {
 
 
         // test execution
-//        JsonObject request = new JsonObject();
-//        request.addProperty(FulfillmentHandler.REQUEST_ID_KEY, UUID.randomUUID().toString());
-//        JsonArray inputs = new JsonArray();
-//        request.add("inputs", inputs);
-//        JsonObject input = new JsonObject();
-//        inputs.add(input);
-//        input.addProperty("intent", "action.devices.EXECUTE");
-//        JsonObject payload = new JsonObject();
-//        input.add("payload", payload);
-//        JsonArray commands = new JsonArray();
-//        payload.add("commands", commands);
-//        JsonObject command = new JsonObject();
-//        commands.add(command);
-//        JsonArray devices = new JsonArray();
-//        command.add("devices", devices);
-//        try {
-//            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.POWER_SWITCH)) {
-//                JsonObject device = new JsonObject();
-//                device.addProperty("id", unitConfig.getId());
-//                devices.add(device);
-//            }
-//            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LIGHT)) {
-//                JsonObject device = new JsonObject();
-//                device.addProperty("id", unitConfig.getId());
-//                devices.add(device);
-//            }
-//
-//            JsonArray execution = new JsonArray();
-//            command.add("execution", execution);
-//            JsonObject execute = new JsonObject();
-//            execution.add(execute);
-//            execute.addProperty("command", "action.devices.commands.OnOff");
-//            JsonObject params = new JsonObject();
-//            execute.add("params", params);
-//            params.addProperty("on", true);
-//
-//            System.out.println(gson.toJson(request));
-//
+        JsonObject request = new JsonObject();
+        request.addProperty(FulfillmentHandler.REQUEST_ID_KEY, UUID.randomUUID().toString());
+        JsonArray inputs = new JsonArray();
+        request.add("inputs", inputs);
+        JsonObject input = new JsonObject();
+        inputs.add(input);
+        input.addProperty("intent", "action.devices.EXECUTE");
+        JsonObject payload = new JsonObject();
+        input.add("payload", payload);
+        JsonArray commands = new JsonArray();
+        payload.add("commands", commands);
+        JsonObject command = new JsonObject();
+        commands.add(command);
+        JsonArray devices = new JsonArray();
+        command.add("devices", devices);
+        try {
+            Registries.waitForData();
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.POWER_SWITCH)) {
+                JsonObject device = new JsonObject();
+                device.addProperty("id", unitConfig.getId());
+                devices.add(device);
+            }
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LIGHT)) {
+                JsonObject device = new JsonObject();
+                device.addProperty("id", unitConfig.getId());
+                devices.add(device);
+            }
+
+            JsonArray execution = new JsonArray();
+            command.add("execution", execution);
+            JsonObject execute = new JsonObject();
+            execution.add(execute);
+            execute.addProperty("command", "action.devices.commands.OnOff");
+            JsonObject params = new JsonObject();
+            execute.add("params", params);
+            params.addProperty("on", true);
+
+            System.out.println(gson.toJson(request));
+
 //            JsonObject jsonObject = fulfillmentHandler.handleRequest(request);
 //            System.out.println(gson.toJson(jsonObject));
-//        } catch (Exception ex) {
-//            StackTracePrinter.printStackTrace(ex.getStackTrace(), LoggerFactory.getLogger(TestMain.class), LogLevel.INFO);
-//            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(TestMain.class));
-//            System.exit(1);
-//        }
-//        System.exit(0);
+        } catch (Exception ex) {
+            StackTracePrinter.printStackTrace(ex.getStackTrace(), LoggerFactory.getLogger(TestMain.class), LogLevel.INFO);
+            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(TestMain.class));
+            System.exit(1);
+        }
+        System.exit(0);
 
 
 //        try {
