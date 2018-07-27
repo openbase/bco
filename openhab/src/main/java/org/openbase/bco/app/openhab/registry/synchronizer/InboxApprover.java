@@ -25,6 +25,7 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
 
 import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Activatable;
@@ -63,6 +64,12 @@ public class InboxApprover implements Activatable {
     public void activate() throws CouldNotPerformException {
         active = true;
         this.inboxAddedObservable.addDataObserver(observer);
+        // trigger observer on device class changes, maybe this leads to new things that can be approved
+        Registries.getClassRegistry().getDeviceClassRemoteRegistry().addDataObserver((source, data) -> {
+            for (DiscoveryResultDTO discoveryResult : OpenHABRestCommunicator.getInstance().getDiscoveryResults()) {
+                observer.update(null, discoveryResult);
+            }
+        });
 
         // perform an initial sync by iterating over all items already in the inbox
         try {

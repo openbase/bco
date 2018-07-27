@@ -34,6 +34,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
@@ -105,7 +106,6 @@ public class OpenHABRestCommunicator implements Shutdownable {
         try {
             final Client client = ClientBuilder.newClient();
             final URI openHABRestURI = JPService.getProperty(JPOpenHABURI.class).getValue().resolve(SEPARATOR + REST_TARGET);
-            LOGGER.info("URI: " + openHABRestURI.getPath());
             this.baseWebTarget = client.target(openHABRestURI);
 
 
@@ -228,6 +228,23 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
     public List<EnrichedItemDTO> getItems() throws CouldNotPerformException {
         return jsonElementToTypedList(jsonParser.parse(get(ITEMS_TARGET)), EnrichedItemDTO.class);
+    }
+
+    public EnrichedItemDTO getItem(final String itemName) throws NotAvailableException {
+        try {
+            return jsonToClass(jsonParser.parse(get(ITEMS_TARGET + SEPARATOR + itemName)), EnrichedItemDTO.class);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Item with name[" + itemName + "]");
+        }
+    }
+
+    public boolean hasItem(final String itemName) {
+        try {
+            getItem(itemName);
+            return true;
+        } catch (NotAvailableException ex) {
+            return false;
+        }
     }
 
     public void postCommand(final String itemName, final Command command) throws CouldNotPerformException {
