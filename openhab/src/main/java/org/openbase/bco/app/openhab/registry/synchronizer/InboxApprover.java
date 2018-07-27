@@ -49,8 +49,10 @@ public class InboxApprover implements Activatable {
         this.inboxAddedObservable = new InboxAddedObservable();
         observer = (source, discoveryResultDTO) -> {
             try {
-                // try to find a device class matching the thing type
-                ThingDeviceUnitSynchronizer.getDeviceClassByThing(discoveryResultDTO.thingTypeUID);
+                // try to find a device class matching the thing type or accept all zwave devices
+                if (!discoveryResultDTO.thingUID.startsWith("zwave")) {
+                    ThingDeviceUnitSynchronizer.getDeviceClassByThing(discoveryResultDTO.thingTypeUID);
+                }
                 // matching device class found so approve the thing
                 OpenHABRestCommunicator.getInstance().approve(discoveryResultDTO.thingUID, discoveryResultDTO.label);
             } catch (NotAvailableException ex) {
