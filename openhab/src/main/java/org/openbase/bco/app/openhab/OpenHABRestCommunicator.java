@@ -29,7 +29,11 @@ import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
+import org.openbase.bco.app.openhab.jp.JPOpenHABURI;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
@@ -46,6 +50,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.sse.SseEventSource;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,9 +79,11 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
     public static OpenHABRestCommunicator getInstance() {
         if (instance == null) {
-            instance = new OpenHABRestCommunicator();
             try {
+                instance = new OpenHABRestCommunicator();
                 Shutdownable.registerShutdownHook(instance);
+            } catch (InitializationException ex) {
+                ExceptionPrinter.printHistory("Could not create OpenHABRestCommunicator", ex, LOGGER);
             } catch (CouldNotPerformException ex) {
                 // only thrown if instance would be null
             }
@@ -94,14 +101,21 @@ public class OpenHABRestCommunicator implements Shutdownable {
     private final Map<String, Observable<JsonObject>> topicObservableMap;
     private SseEventSource sseEventSource;
 
-    public OpenHABRestCommunicator() {
-        final Client client = ClientBuilder.newClient();
-        this.baseWebTarget = client.target("http://" + OPENHAB_IP + ":" + PORT + SEPARATOR + REST_TARGET);
+    public OpenHABRestCommunicator() throws InitializationException {
+        try {
+            final Client client = ClientBuilder.newClient();
+            final URI openHABRestURI = JPService.getProperty(JPOpenHABURI.class).getValue().resolve(SEPARATOR + REST_TARGET);
+            LOGGER.info("URI: " + openHABRestURI.getPath());
+            this.baseWebTarget = client.target(openHABRestURI);
 
-        this.gson = new GsonBuilder().create();
-        this.jsonParser = new JsonParser();
 
-        this.topicObservableMap = new HashMap<>();
+            this.gson = new GsonBuilder().create();
+            this.jsonParser = new JsonParser();
+
+            this.topicObservableMap = new HashMap<>();
+        } catch (JPNotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
