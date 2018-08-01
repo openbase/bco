@@ -109,7 +109,11 @@ public class AuthorizationGroupClassGroupConsistencyHandler extends AbstractProt
             }
 
             // find the user belonging to this app or agent
-            userIdList.add(UnitUserCreationPlugin.findUser(message.getId(), userRegistry).getId());
+            try {
+                userIdList.add(UnitUserCreationPlugin.findUser(message.getId(), userRegistry).getId());
+            } catch (NotAvailableException ex) {
+                // if the use is no longer available it will be removed in a later loop
+            }
         }
 
 
