@@ -26,6 +26,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -44,26 +47,16 @@ public class TestMain {
     public static void main(String[] args) {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final FulfillmentHandler fulfillmentHandler = new FulfillmentHandler();
-//
-//        try {
-//            Registries.waitForData();
-//            final String userId = Registries.getUnitRegistry().getUnitConfigByAlias("CloudConnectorUser").getId();
 
-//            SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
-//            CachedCloudConnectorRemote.getRemote().waitForActivation();
-//            CachedCloudConnectorRemote.getRemote().connect(true).get();
-
-//            SessionManager.getInstance().registerClient(userId);
-//
-//            SessionManager.getInstance().logout();
-//            SessionManager.getInstance().login(userId);
-//
-//            ColorableLightRemote unit = Units.getUnit(Registries.getUnitRegistry().getUnitConfigs(UnitType.COLORABLE_LIGHT).get(0), true, ColorableLightRemote.class);
-//            unit.setPowerState(State.ON).get();
-//        } catch (Exception ex) {
-//            ExceptionPrinter.printHistory(ex, LOGGER);
-//            System.exit(1);
-//        }
+        try {
+            Registries.waitForData();
+            SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
+            CachedCloudConnectorRemote.getRemote().waitForActivation();
+            CachedCloudConnectorRemote.getRemote().connect(true).get();
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER);
+            System.exit(1);
+        }
 
 //        RegistrationHelper.createRegistrationData("testPwd", "pleminoq@openbase.org");
 
@@ -148,53 +141,53 @@ public class TestMain {
 
 
         // test execution
-        JsonObject request = new JsonObject();
-        request.addProperty(FulfillmentHandler.REQUEST_ID_KEY, UUID.randomUUID().toString());
-        JsonArray inputs = new JsonArray();
-        request.add("inputs", inputs);
-        JsonObject input = new JsonObject();
-        inputs.add(input);
-        input.addProperty("intent", "action.devices.EXECUTE");
-        JsonObject payload = new JsonObject();
-        input.add("payload", payload);
-        JsonArray commands = new JsonArray();
-        payload.add("commands", commands);
-        JsonObject command = new JsonObject();
-        commands.add(command);
-        JsonArray devices = new JsonArray();
-        command.add("devices", devices);
-        try {
-            Registries.waitForData();
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.POWER_SWITCH)) {
-                JsonObject device = new JsonObject();
-                device.addProperty("id", unitConfig.getId());
-                devices.add(device);
-            }
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LIGHT)) {
-                JsonObject device = new JsonObject();
-                device.addProperty("id", unitConfig.getId());
-                devices.add(device);
-            }
-
-            JsonArray execution = new JsonArray();
-            command.add("execution", execution);
-            JsonObject execute = new JsonObject();
-            execution.add(execute);
-            execute.addProperty("command", "action.devices.commands.OnOff");
-            JsonObject params = new JsonObject();
-            execute.add("params", params);
-            params.addProperty("on", true);
-
-            System.out.println(gson.toJson(request));
-
-//            JsonObject jsonObject = fulfillmentHandler.handleRequest(request);
-//            System.out.println(gson.toJson(jsonObject));
-        } catch (Exception ex) {
-            StackTracePrinter.printStackTrace(ex.getStackTrace(), LoggerFactory.getLogger(TestMain.class), LogLevel.INFO);
-            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(TestMain.class));
-            System.exit(1);
-        }
-        System.exit(0);
+//        JsonObject request = new JsonObject();
+//        request.addProperty(FulfillmentHandler.REQUEST_ID_KEY, UUID.randomUUID().toString());
+//        JsonArray inputs = new JsonArray();
+//        request.add("inputs", inputs);
+//        JsonObject input = new JsonObject();
+//        inputs.add(input);
+//        input.addProperty("intent", "action.devices.EXECUTE");
+//        JsonObject payload = new JsonObject();
+//        input.add("payload", payload);
+//        JsonArray commands = new JsonArray();
+//        payload.add("commands", commands);
+//        JsonObject command = new JsonObject();
+//        commands.add(command);
+//        JsonArray devices = new JsonArray();
+//        command.add("devices", devices);
+//        try {
+//            Registries.waitForData();
+//            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.POWER_SWITCH)) {
+//                JsonObject device = new JsonObject();
+//                device.addProperty("id", unitConfig.getId());
+//                devices.add(device);
+//            }
+//            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LIGHT)) {
+//                JsonObject device = new JsonObject();
+//                device.addProperty("id", unitConfig.getId());
+//                devices.add(device);
+//            }
+//
+//            JsonArray execution = new JsonArray();
+//            command.add("execution", execution);
+//            JsonObject execute = new JsonObject();
+//            execution.add(execute);
+//            execute.addProperty("command", "action.devices.commands.OnOff");
+//            JsonObject params = new JsonObject();
+//            execute.add("params", params);
+//            params.addProperty("on", true);
+//
+//            System.out.println(gson.toJson(request));
+//
+////            JsonObject jsonObject = fulfillmentHandler.handleRequest(request);
+////            System.out.println(gson.toJson(jsonObject));
+//        } catch (Exception ex) {
+//            StackTracePrinter.printStackTrace(ex.getStackTrace(), LoggerFactory.getLogger(TestMain.class), LogLevel.INFO);
+//            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(TestMain.class));
+//            System.exit(1);
+//        }
+//        System.exit(0);
 
 
 //        try {

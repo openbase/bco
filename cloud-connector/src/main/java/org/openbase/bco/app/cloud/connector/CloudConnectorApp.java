@@ -31,7 +31,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface CloudConnectorInterface {
+public interface CloudConnectorApp {
 
     /**
      * Create a connection for a user to the BCO Cloud or stop it. This enables usage of the Google Assistant with BCO.
@@ -46,6 +46,7 @@ public interface CloudConnectorInterface {
      * <li>String: authorization_token</li>
      * <li>Boolean: auto_start</li>
      * </ul>
+     * To create such an string refer to the helper method {@link RegistrationHelper#createRegistrationData(String, String, boolean)}.
      * The password hash and salt will be supplemented with the username and the email hash for the authenticated user
      * and send to the BCO Cloud for the registration. The auto start value is optional and can be used to connect
      * the user automatically if the cloud connector is restarted. Its default value is true.
@@ -59,7 +60,7 @@ public interface CloudConnectorInterface {
      *
      * @param authenticatedValue the authenticated value authenticating a user and containing a value as described above
      * @return a future of the created task
-     * @throws CouldNotPerformException if the task could not be created
+     * @throws CouldNotPerformException if the task could not performed
      */
     @RPCMethod
     Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;

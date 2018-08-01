@@ -30,6 +30,7 @@ import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.TokenStore;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -39,6 +40,7 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -48,13 +50,13 @@ import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -63,18 +65,17 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class CloudConnector implements Launchable<Void>, VoidInitializable, CloudConnectorInterface {
+public class CloudConnectorAppImpl implements Launchable<Void>, VoidInitializable, CloudConnectorApp {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorAppImpl.class);
 
     private final TokenStore tokenStore;
     private final JsonParser jsonParser;
     private final Map<String, SocketWrapper> userIdSocketMap;
 
-    private RSBLocalServer server;
     private WatchDog serverWatchDog;
 
-    public CloudConnector() {
+    public CloudConnectorAppImpl() {
         this.userIdSocketMap = new HashMap<>();
         this.tokenStore = new TokenStore("cloud_connector_token_store.json");
         this.jsonParser = new JsonParser();
@@ -86,10 +87,10 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable, Clou
             tokenStore.init();
 
             final Scope scope = JPService.getProperty(JPCloudConnectorScope.class).getValue();
-            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(scope, RSBSharedConnectionConfig.getParticipantConfig());
+            final RSBLocalServer server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(scope, RSBSharedConnectionConfig.getParticipantConfig());
 
             // register rpc methods.
-            RPCHelper.registerInterface(CloudConnectorInterface.class, this, server);
+            RPCHelper.registerInterface(CloudConnectorApp.class, this, server);
 
             serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
         } catch (CouldNotPerformException | JPNotAvailableException ex) {
@@ -99,19 +100,9 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable, Clou
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigByAlias("CloudConnectorUser");
-        SessionManager.getInstance().login(unitConfig.getId());
-        //TODO: cloud connector itself needs to be logged in: how to handle the initIal process?
-        //TODO: this is just a workaround for current authentication
-//        try {
-//            if (JPService.getProperty(JPAuthentication.class).getValue()) {
-//                SystemLogin.loginBCOUser();
-//            }
-//        } catch (JPNotAvailableException e) {
-//            e.printStackTrace();
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//        }
+        login();
+        //TODO: cloud connector should be an app and thus logged in by an app manager, if the token store
+        // does not contain an authentication token for the cloud it should be generated here
         serverWatchDog.activate();
 //        final Set<String> userIds = new HashSet<>();
 //        for (final Entry<String, String> entry : tokenStore.getEntryMap().entrySet()) {
@@ -125,6 +116,41 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable, Clou
 //            socketWrapper.init();
 //            socketWrapper.activate();
 //        }
+    }
+
+    public static final String CLOUD_CONNECTOR_APP_CLASS_LABEL = "Cloud Connector";
+
+    private void login() throws CouldNotPerformException, InterruptedException {
+        try {
+            Registries.waitForData();
+            String appClassId = "";
+            for (AppClass appClass : Registries.getClassRegistry().getAppClasses()) {
+                if (LabelProcessor.getLabelListByLanguage(Locale.ENGLISH, appClass.getLabel()).contains(CLOUD_CONNECTOR_APP_CLASS_LABEL)) {
+                    appClassId = appClass.getId();
+                    break;
+                }
+            }
+
+            if (appClassId.isEmpty()) {
+                throw new NotAvailableException("Cloud Connector App Class");
+            }
+
+            String appConfigId = "";
+            for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.APP)) {
+                if (unitConfig.getAppConfig().getAppClassId().equals(appClassId)) {
+                    appConfigId = unitConfig.getId();
+                    break;
+                }
+            }
+
+            if (appConfigId.isEmpty()) {
+                throw new NotAvailableException("Cloud Connector App Config");
+            }
+
+            SessionManager.getInstance().login(UnitUserCreationPlugin.findUser(appConfigId, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry()).getId());
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not login Cloud Connector", ex);
+        }
     }
 
     @Override
@@ -146,7 +172,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable, Clou
         return false;
     }
 
-    private String connect(final String jsonObject, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
+    private String connect(final String jsonObject, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
         LOGGER.info("User[" + authenticationBaseData.getUserId() + "] connects..");
 
         final String userId;

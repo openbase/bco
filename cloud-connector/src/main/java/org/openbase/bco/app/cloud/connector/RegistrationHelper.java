@@ -28,6 +28,7 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,8 +40,8 @@ import java.util.Base64;
  */
 public class RegistrationHelper {
 
-    public static final Integer SALT_LENGTH = 16;
-    public static final String HASH_ALGORITHM = "SHA-512";
+    private static final Integer SALT_LENGTH = 16;
+    private static final String HASH_ALGORITHM = "SHA-512";
 
     public static final String EMAIL_HASH_KEY = "email_hash";
     public static final String PASSWORD_HASH_KEY = "password_hash";
@@ -52,38 +53,49 @@ public class RegistrationHelper {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final Gson gson = new Gson();
 
-
+    /**
+     * Create a string which can be send to the cloud connector for an initial user registration.
+     * This method will create a json object as explained in the documentation of {@link CloudConnectorApp#connect(AuthenticatedValue)}
+     * and convert it to a string.
+     * To do this a salt will be generated and the password will be hashed together with the salt.
+     * Both are then encoded using Base64 and added as properties to a json object. The authorization token and
+     * auto start flag are added to the json object as they are.
+     *
+     * @param password           the password the user
+     * @param authorizationToken the authorization token used for the user
+     * @param autoStart          an auto start flag
+     * @return a string representation of a json object as defined above
+     */
     public static String createRegistrationData(final String password, final String authorizationToken, final boolean autoStart) {
-        try {
-            // generate salt
-            final byte[] saltBytes = new byte[SALT_LENGTH];
-            SECURE_RANDOM.nextBytes(saltBytes);
-            final String passwordSalt = Base64.getEncoder().encodeToString(saltBytes);
+        // generate salt
+        final byte[] saltBytes = new byte[SALT_LENGTH];
+        SECURE_RANDOM.nextBytes(saltBytes);
+        final String passwordSalt = Base64.getEncoder().encodeToString(saltBytes);
 
-            // generate password hash
-            final MessageDigest hashGenerator = MessageDigest.getInstance(HASH_ALGORITHM);
-            hashGenerator.update(password.getBytes());
-            hashGenerator.update(passwordSalt.getBytes());
-            byte[] passwordHashBytes = hashGenerator.digest();
-            final String passwordHash = Base64.getEncoder().encodeToString(passwordHashBytes);
+        // generate password hash
+        final String passwordHash = hash(password, passwordSalt);
 
-            // generate JsonObject
-            final JsonObject loginData = new JsonObject();
-            loginData.addProperty(PASSWORD_HASH_KEY, passwordHash);
-            loginData.addProperty(PASSWORD_SALT_KEY, passwordSalt);
-            loginData.addProperty(AUTHORIZATION_TOKEN_KEY, authorizationToken);
-            loginData.addProperty(AUTO_START_KEY, autoStart);
-            return gson.toJson(loginData);
-        } catch (NoSuchAlgorithmException ex) {
-            ExceptionPrinter.printHistory(new FatalImplementationErrorException(RegistrationHelper.class, ex), LOGGER);
-            return null;
-        }
+        // generate JsonObject
+        final JsonObject loginData = new JsonObject();
+        loginData.addProperty(PASSWORD_HASH_KEY, passwordHash);
+        loginData.addProperty(PASSWORD_SALT_KEY, passwordSalt);
+        loginData.addProperty(AUTHORIZATION_TOKEN_KEY, authorizationToken);
+        loginData.addProperty(AUTO_START_KEY, autoStart);
+        return gson.toJson(loginData);
     }
 
-    public static String hash(final String toHash) {
+    /**
+     * Hash a set of strings and encode the resulting hash with Base64.
+     *
+     * @param values the string which should be hashed toghether
+     * @return the hashed and encoded value
+     */
+    public static String hash(final String... values) {
         try {
             final MessageDigest hashGenerator = MessageDigest.getInstance(HASH_ALGORITHM);
-            hashGenerator.update(toHash.getBytes());
+            for (final String value : values) {
+                hashGenerator.update(value.getBytes());
+            }
             return Base64.getEncoder().encodeToString(hashGenerator.digest());
         } catch (NoSuchAlgorithmException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(RegistrationHelper.class, ex), LOGGER);

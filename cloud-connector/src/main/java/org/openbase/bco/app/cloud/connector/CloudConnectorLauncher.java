@@ -32,10 +32,10 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class CloudConnectorLauncher extends AbstractLauncher<CloudConnector> {
+public class CloudConnectorLauncher extends AbstractLauncher<CloudConnectorAppImpl> {
 
     public CloudConnectorLauncher() throws InstantiationException {
-        super(CloudConnectorLauncher.class, CloudConnector.class);
+        super(CloudConnectorLauncher.class, CloudConnectorAppImpl.class);
     }
 
     @Override
