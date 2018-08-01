@@ -52,8 +52,8 @@ import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUser
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserPermissionConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.*;
-import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
 import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
 import org.openbase.bco.registry.unit.lib.jp.*;
@@ -247,6 +247,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigScopeConsistencyHandler());
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorziationGroupDuplicateMemberConsistencyHandler());
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupPermissionConsistencyHandler());
+        authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupClassGroupConsistencyHandler(userUnitConfigRegistry, agentUnitConfigRegistry, appUnitConfigRegistry));
 
         connectionUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTilesConsistencyHandler(locationUnitConfigRegistry));
@@ -359,6 +360,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerPlugin(new DalUnitBoundToHostPlugin(deviceUnitConfigRegistry));
         locationUnitConfigRegistry.registerPlugin(new LocationRemovalPlugin(unitConfigRegistryList, locationUnitConfigRegistry, connectionUnitConfigRegistry));
 
+        agentUnitConfigRegistry.registerPlugin(new UnitUserCreationPlugin(userUnitConfigRegistry, locationUnitConfigRegistry));
+        appUnitConfigRegistry.registerPlugin(new UnitUserCreationPlugin(userUnitConfigRegistry, locationUnitConfigRegistry));
+
+        authorizationGroupUnitConfigRegistry.registerPlugin(new ClassAuthorizationGroupCreationPlugin(/*this*/));
+
         // register transformation publisher plugins.
         locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
         connectionUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
@@ -385,6 +391,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
         authorizationGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
+        authorizationGroupUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
+        authorizationGroupUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
+        authorizationGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry());
+        authorizationGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry());
 
         deviceUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
         deviceUnitConfigRegistry.registerDependency(userUnitConfigRegistry);

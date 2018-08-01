@@ -44,19 +44,27 @@ public class UserUnitLabelConsistencyHandler extends DefaultUnitLabelConsistency
     protected String generateDefaultLabel(UnitConfig unitConfig) throws CouldNotPerformException {
         final UserConfig userConfig = unitConfig.getUserConfig();
 
-        if (!userConfig.hasFirstName() || userConfig.getFirstName().isEmpty()) {
-            throw new NotAvailableException("UserConfig.FirstName");
-        }
-
-        if (!userConfig.hasLastName() || userConfig.getLastName().isEmpty()) {
-            throw new NotAvailableException("UserConfig.LastName");
-        }
-
         if (!userConfig.hasUserName() || userConfig.getUserName().isEmpty()) {
             throw new NotAvailableException("UserConfig.FirstName");
         }
 
-        return userConfig.getUserName() + " (" + userConfig.getFirstName() + " " + userConfig.getLastName() + ")";
+        String label = userConfig.getUserName();
+        String name = "";
+        if (userConfig.hasFirstName() && !userConfig.getFirstName().isEmpty()) {
+            name += userConfig.getFirstName();
+        }
+
+        if (userConfig.hasLastName() && !userConfig.getLastName().isEmpty()) {
+            if (!name.isEmpty()) {
+                name += " ";
+            }
+            name += userConfig.getLastName();
+        }
+
+        if (!name.isEmpty()) {
+            label += " (" + name + ")";
+        }
+        return label;
     }
 
     /**

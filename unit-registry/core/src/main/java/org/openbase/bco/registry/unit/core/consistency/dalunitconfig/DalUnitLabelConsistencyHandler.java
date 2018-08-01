@@ -103,7 +103,7 @@ public class DalUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyH
                 Label oldLabel = oldUnitHostLabelMap.get(dalUnitConfig.getId());
                 if (!oldLabel.equals(hostUnitConfig.getLabel())) {
                     // host label has changed
-                    logger.warn("Host label has changed from [" + oldLabel + "] to [" + hostUnitConfig.getLabel() + "] for unit [" + dalUnitConfig.getAlias(0) + "]");
+                    logger.debug("Host label has changed from [" + oldLabel + "] to [" + hostUnitConfig.getLabel() + "] for unit [" + dalUnitConfig.getAlias(0) + "]");
                     oldUnitHostLabelMap.put(dalUnitConfig.getId(), hostUnitConfig.getLabel());
                     if (dalUnitConfig.getLabel().equals(oldLabel)) {
                         // dal unit label is still the same
