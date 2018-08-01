@@ -54,9 +54,8 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -104,18 +103,20 @@ public class CloudConnectorAppImpl implements Launchable<Void>, VoidInitializabl
         //TODO: cloud connector should be an app and thus logged in by an app manager, if the token store
         // does not contain an authentication token for the cloud it should be generated here
         serverWatchDog.activate();
-//        final Set<String> userIds = new HashSet<>();
-//        for (final Entry<String, String> entry : tokenStore.getEntryMap().entrySet()) {
-//            final String userId = entry.getKey().split("@")[0];
-//            if (userIds.contains(userId)) {
-//                continue;
-//            }
-//            userIds.add(userId);
-//            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
-//            userIdSocketMap.put(userId, socketWrapper);
-//            socketWrapper.init();
-//            socketWrapper.activate();
-//        }
+
+        // start socket connection for all users which are already registered
+        final Set<String> userIds = new HashSet<>();
+        for (final Entry<String, String> entry : tokenStore.getEntryMap().entrySet()) {
+            final String userId = entry.getKey().split("@")[0];
+            if (userIds.contains(userId)) {
+                continue;
+            }
+            userIds.add(userId);
+            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
+            userIdSocketMap.put(userId, socketWrapper);
+            socketWrapper.init();
+            socketWrapper.activate();
+        }
     }
 
     public static final String CLOUD_CONNECTOR_APP_CLASS_LABEL = "Cloud Connector";
