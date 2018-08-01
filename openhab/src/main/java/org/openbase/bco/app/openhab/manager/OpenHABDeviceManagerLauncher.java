@@ -22,7 +22,9 @@ package org.openbase.bco.app.openhab.manager;
  * #L%
  */
 
+import org.openbase.bco.app.openhab.jp.JPOpenHABURI;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDeviceManager> {
@@ -33,7 +35,7 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
 
     @Override
     protected void loadProperties() {
-        //TODO: add according properties
+        JPService.registerProperty(JPOpenHABURI.class);
     }
 
     /**

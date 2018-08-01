@@ -25,6 +25,7 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
 
 import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Activatable;
@@ -48,8 +49,10 @@ public class InboxApprover implements Activatable {
         this.inboxAddedObservable = new InboxAddedObservable();
         observer = (source, discoveryResultDTO) -> {
             try {
-                // try to find a device class matching the thing type
-                ThingDeviceUnitSynchronizer.getDeviceClassByThing(discoveryResultDTO.thingTypeUID);
+                // try to find a device class matching the thing type or accept all zwave devices
+                if (!discoveryResultDTO.thingUID.startsWith("zwave")) {
+                    ThingDeviceUnitSynchronizer.getDeviceClassByThing(discoveryResultDTO.thingTypeUID);
+                }
                 // matching device class found so approve the thing
                 OpenHABRestCommunicator.getInstance().approve(discoveryResultDTO.thingUID, discoveryResultDTO.label);
             } catch (NotAvailableException ex) {
@@ -63,6 +66,12 @@ public class InboxApprover implements Activatable {
     public void activate() throws CouldNotPerformException {
         active = true;
         this.inboxAddedObservable.addDataObserver(observer);
+        // trigger observer on device class changes, maybe this leads to new things that can be approved
+        Registries.getClassRegistry().getDeviceClassRemoteRegistry().addDataObserver((source, data) -> {
+            for (DiscoveryResultDTO discoveryResult : OpenHABRestCommunicator.getInstance().getDiscoveryResults()) {
+                observer.update(null, discoveryResult);
+            }
+        });
 
         // perform an initial sync by iterating over all items already in the inbox
         try {

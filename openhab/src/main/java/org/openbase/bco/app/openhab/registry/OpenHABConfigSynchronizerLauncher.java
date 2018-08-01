@@ -22,8 +22,10 @@ package org.openbase.bco.app.openhab.registry;
  * #L%
  */
 
+import org.openbase.bco.app.openhab.jp.JPOpenHABURI;
 import org.openbase.bco.app.openhab.manager.OpenHABDeviceManagerLauncher;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
@@ -36,7 +38,7 @@ public class OpenHABConfigSynchronizerLauncher extends AbstractLauncher<OpenHABC
 
     @Override
     protected void loadProperties() {
-
+        JPService.registerProperty(JPOpenHABURI.class);
     }
 
     /**

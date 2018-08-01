@@ -92,10 +92,11 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
         // handle initial sync
         try {
-            //TODO: dal unit of the device should also be checked
-            getDeviceForThing(thingDTO);
+            final UnitConfig deviceUnitConfig = getDeviceForThing(thingDTO);
+            registerAndValidateItems(deviceUnitConfig, identifiableEnrichedThingDTO.getDTO());
             return;
         } catch (NotAvailableException ex) {
+            logger.info("Could not find device for thing[" + thingDTO.UID + "]");
             // do nothing
         }
 
@@ -134,10 +135,10 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
         unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
 
         try {
-            UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
+            final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
 
             // create items for dal units of the device
-            registerItems(deviceUnitConfig, thingDTO);
+            registerAndValidateItems(deviceUnitConfig, thingDTO);
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not register device for thing[" + thingDTO.thingTypeUID + "]", ex);
         }
@@ -216,7 +217,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
         throw new NotAvailableException("Location of thing[" + thingDTO + "]");
     }
 
-    private void registerItems(final UnitConfig deviceUnitConfig, final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
+    private void registerAndValidateItems(final UnitConfig deviceUnitConfig, final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
         for (final String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
             final UnitConfig dalUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
 
@@ -246,7 +247,8 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
             for (final Entry<ServiceType, ServicePattern> entry : serviceTypePatternMap.entrySet()) {
                 final ServiceType serviceType = entry.getKey();
                 final ServicePattern servicePattern = entry.getValue();
-                logger.info("Register item for service[" + serviceType.name() + "] of unit[" + dalUnitConfig.getAlias(0) + "]");
+                logger.info("Register/Validate item for service[" + serviceType.name() + "] of unit[" + dalUnitConfig.getAlias(0) + "]");
+
 
                 String channelUID = "";
                 final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
@@ -264,22 +266,31 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
                         final MetaConfigPool metaConfigPool = new MetaConfigPool();
                         metaConfigPool.register(new MetaConfigVariableProvider("ServiceTemplateConfigMetaConfig", serviceTemplateConfig.getMetaConfig()));
                         try {
-                            String channelTypeUID = metaConfigPool.getValue(OPENHAB_THING_CHANNEL_TYPE_UID_KEY);
+                            final String channelIdGuess = thingDTO.UID + ":" + metaConfigPool.getValue(OPENHAB_THING_CHANNEL_TYPE_UID_KEY);
 
                             for (final ChannelDTO channelDTO : thingDTO.channels) {
-                                if (channelDTO.channelTypeUID.equals(channelTypeUID)) {
+                                if (channelDTO.uid.equals(channelIdGuess)) {
                                     channelUID = channelDTO.uid;
                                     break outer;
                                 }
                             }
+                            logger.warn("Could not resolve channel for id [" + channelIdGuess + "]");
                         } catch (NotAvailableException ex) {
-                            logger.warn("Service[" + serviceType.name() + "] of unitTemplateConfig[" + unitTemplateConfig.getType().name() + "] deviceClass[" + deviceClass.getLabel() + "] handled by openHAB app does have a channel configured");
+                            logger.warn("Service[" + serviceType.name() + "] of unitTemplateConfig[" + unitTemplateConfig.getType().name() +
+                                    "] deviceClass[" + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "] handled by openHAB app does have a channel configured");
                         }
                     }
                 }
 
                 if (channelUID.isEmpty()) {
-                    throw new NotAvailableException("ChannelUID for service[" + serviceType.name() + "] of unit[" + dalUnitConfig.getAlias(0) + "]");
+                    logger.warn("ChannelUID for service[" + serviceType.name() + "] of unit[" + dalUnitConfig.getAlias(0) + "] is not available");
+                    continue;
+//                    throw new NotAvailableException("ChannelUID for service[" + serviceType.name() + "] of unit[" + dalUnitConfig.getAlias(0) + "]");
+                }
+
+                if (OpenHABRestCommunicator.getInstance().hasItem(OpenHABItemHelper.generateItemName(dalUnitConfig, serviceType))) {
+                    // item is already registered
+                    continue;
                 }
 
                 // create and register item
@@ -294,18 +305,22 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
                 OpenHABRestCommunicator.getInstance().registerItemChannelLink(itemDTO.name, channelUID);
                 logger.info("Successfully created link between item[" + itemDTO.name + "] and channel[" + channelUID + "]");
             }
-
-
         }
     }
 
-    public static DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
-        return getDeviceClassByThing(thingDTO.thingTypeUID);
+    private static final String ZWAVE_DEVICE_ID_KEY = "zwave_deviceid";
+
+    public static DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+        String classIdentifier = thingDTO.thingTypeUID;
+        if (thingDTO.thingTypeUID.startsWith("zwave")) {
+            classIdentifier = ZWAVE_DEVICE_ID_KEY + ":" + thingDTO.properties.get("zwave_deviceid");
+        }
+        return getDeviceClassByThing(classIdentifier);
     }
 
-    public static DeviceClass getDeviceClassByThing(final String thingTypeUID) throws CouldNotPerformException, InterruptedException {
+    public static DeviceClass getDeviceClassByThing(final String classIdentifier) throws CouldNotPerformException {
         // iterate over all device classes
-        for (final DeviceClass deviceClass : Registries.getClassRegistry(true).getDeviceClasses()) {
+        for (final DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
             // get the most global meta config
             final MetaConfigPool metaConfigPool = new MetaConfigPool();
             metaConfigPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
@@ -314,7 +329,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
                 // get the value for the openHAB thing class key
                 String thingUID = metaConfigPool.getValue(OPENHAB_THING_CLASS_KEY);
                 // if the uid starts with that return the according device class
-                if (thingTypeUID.equalsIgnoreCase(thingUID)) {
+                if (classIdentifier.equalsIgnoreCase(thingUID)) {
                     return deviceClass;
                 }
             } catch (NotAvailableException ex) {
@@ -322,7 +337,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
             }
         }
         // throw exception because device class could not be found
-        throw new NotAvailableException("DeviceClass for thing with type[" + thingTypeUID + "]");
+        throw new NotAvailableException("DeviceClass for class identifier[" + classIdentifier + "]");
 
         //TODO: this is a possible fallback solution which is only tested for the fibaro motion sensor: remove or keep?
 //        final String[] thingTypeUIDSplit = thingDTO.thingTypeUID.split(":");

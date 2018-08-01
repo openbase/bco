@@ -52,7 +52,7 @@ public class InboxAddedObservable extends ObservableDataProviderAdapter<Discover
 
         observerCount = 0;
         this.observer = (observable, jsonObject) -> {
-            JsonObject payload = jsonParser.parse(jsonObject.get("payload").getAsString()).getAsJsonObject();
+            JsonObject payload = jsonParser.parse(jsonObject.get(PAYLOAD_KEY).getAsString()).getAsJsonObject();
             final DiscoveryResultDTO addedThing = gson.fromJson(payload, DiscoveryResultDTO.class);
             getObservable().notifyObservers(addedThing);
         };
