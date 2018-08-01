@@ -248,6 +248,8 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     if (response.get(SUCCESS_KEY).getAsBoolean()) {
                         LOGGER.info("Logged in [" + userId + "] successfully");
                         loginFuture.complete(null);
+                        // trigger initial database sync
+                        socket.emit("requestSync", (Ack) objects1 -> LOGGER.info("Received response: " + objects1.getClass().getName()));
                     } else {
                         LOGGER.info("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY));
                         loginFuture.completeExceptionally(new CouldNotPerformException("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY)));
