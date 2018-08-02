@@ -41,15 +41,18 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.configuration.LabelType.Label;
+import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 
 import java.util.Collections;
@@ -81,7 +84,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private boolean loggedIn = false;
     private String agentUserId;
 
-    private final SyncObject syncRequestLock = new SyncObject("SyncRequestLock");
     private final UnitRegistryObserver unitRegistryObserver;
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -156,6 +158,8 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }).on(USER_TRANSIT_EVENT, objects -> {
                 LOGGER.info("Socket of user[" + userId + "] received transit state request");
                 handleUserTransitUpdate(objects[0], (Ack) objects[objects.length - 1]);
+            }).on("activity", objects -> {
+                handleActivity(objects[0], (Ack) objects[objects.length - 1]);
             });
 
             // add observer to registry that triggers sync requests on changes
@@ -287,6 +291,57 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         }
     }
 
+    private void handleActivity(final Object object, final Ack acknowledgement) {
+        final String activityRepresentation = (String) object;
+        LOGGER.info("Received activity representation: " + activityRepresentation);
+        final JsonObject response = new JsonObject();
+        ActivityConfig activity = null;
+        try {
+            outer:
+            for (final ActivityConfig activityConfig : Registries.getActivityRegistry().getActivityConfigs()) {
+                for (Label.MapFieldEntry entry : activityConfig.getLabel().getEntryList()) {
+                    for (String label : entry.getValueList()) {
+                        if (label.toLowerCase().contains(activityRepresentation)) {
+                            activity = activityConfig;
+                            break outer;
+                        }
+                    }
+                }
+            }
+
+            if (activity == null) {
+                response.addProperty("state", "error");
+                response.addProperty("error", "activity not available");
+                acknowledgement.call(gson.toJson(response));
+                return;
+            }
+
+            final UserRemote userRemote;
+            userRemote = Units.getUnit(userId, true, UserRemote.class);
+            //TODO: when to add and when to replace
+            ActivityMultiState.Builder activityMultiState = ActivityMultiState.newBuilder().addActivityId(activity.getId());
+            userRemote.setActivityMultiState(activityMultiState.build()).get(3, TimeUnit.SECONDS);
+            response.addProperty("state", "success");
+            response.addProperty("activity", LabelProcessor.getBestMatch(activity.getLabel()));
+        } catch (CouldNotPerformException ex) {
+            response.addProperty("state", "error");
+            response.addProperty("error", "unexpected");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } catch (InterruptedException ex) {
+            response.addProperty("state", "error");
+            response.addProperty("error", "interrupted");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } catch (ExecutionException ex) {
+            response.addProperty("state", "error");
+            response.addProperty("error", "execution");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } catch (TimeoutException e) {
+            response.addProperty("state", "pending");
+        }
+
+        acknowledgement.call(gson.toJson(response));
+    }
+
     @Override
     public void activate() throws CouldNotPerformException {
         loginFuture = new CompletableFuture<>();
@@ -318,7 +373,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private class UnitRegistryObserver implements Observer<UnitRegistryData> {
         private JsonObject lastSyncResponse = null;
-        private Future syncRequestFuture = null;
 
         @Override
         public void update(final Observable<UnitRegistryData> source, final UnitRegistryData data) throws Exception {
@@ -332,40 +386,18 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
             lastSyncResponse = syncResponse;
 
+            // trigger sync if socket is connected and logged in
+            // if the user is not logged the login process will trigger an update anyway
             if (isLoggedIn()) {
-                // trigger sync if socket is connected and logged in
                 //TODO: parse response for an error an write a warning
                 socket.emit(REQUEST_SYNC_EVENT, (Ack) objects1 -> LOGGER.info("Received response: " + objects1.getClass().getName()));
-            } else {
-                // not logged or connected so create a task that will trigger the sync when logged in
-                if (syncRequestFuture != null && !syncRequestFuture.isDone()) {
-                    // task has already been created an is running
-                    return;
-                }
 
-                // create task
-                syncRequestFuture = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                    System.out.println("Start task to wait for logged in before requesting sync");
-                    // wait until logged in
-                    synchronized (syncRequestLock) {
-                        if (!isLoggedIn()) {
-                            syncRequestLock.wait();
-                        }
-                    }
-
-                    System.out.println("Request sync");
-                    // trigger sync
-                    //TODO: parse response for an error an write a warning
-                    socket.emit("requestSync", (Ack) objects1 -> LOGGER.info("Received response: " + objects1.getClass().getName()));
-                    return null;
-                });
+                // debug print
+                JsonObject test = new JsonObject();
+                test.addProperty(FulfillmentHandler.REQUEST_ID_KEY, "12345678");
+                test.add(FulfillmentHandler.PAYLOAD_KEY, syncResponse);
+                LOGGER.info("new sync[" + isLoggedIn() + "]:\n" + gson.toJson(test));
             }
-
-            // debug print
-            JsonObject test = new JsonObject();
-            test.addProperty(FulfillmentHandler.REQUEST_ID_KEY, "12345678");
-            test.add(FulfillmentHandler.PAYLOAD_KEY, syncResponse);
-            LOGGER.info("new sync[" + isLoggedIn() + "]:\n" + gson.toJson(test));
         }
     }
 

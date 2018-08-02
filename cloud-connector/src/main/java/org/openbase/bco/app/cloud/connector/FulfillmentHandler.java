@@ -566,7 +566,7 @@ public class FulfillmentHandler {
                                     // gather throws exception on stack
                                     exceptionStack = MultiException.push(internalFuture, ex, exceptionStack);
                                     /* Note: It could be differentiated by exception cause as done below to allow the
-                                     * code below to handle tha failure of this future correctly. However, it is not
+                                     * code below to handle the failure of this future correctly. However, it is not
                                      * clear how this should be done. What if one dal unit fails because it is offline
                                      * and another could not execute the given action. Therefore it is not differentiated
                                      * and this task fails if one internal task fails.
@@ -754,7 +754,6 @@ public class FulfillmentHandler {
 
     public static void setError(final JsonObject jsonObject, final Exception exception, final ErrorCode errorCode) {
         setError(jsonObject, exception.toString(), errorCode);
-
         ExceptionPrinter.printHistory(exception, LOGGER);
     }
 
