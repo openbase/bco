@@ -36,12 +36,14 @@ import org.openbase.jul.exception.RejectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
 import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -62,34 +64,37 @@ public class AuthorizationWithTokenHelper {
      */
     public static void verifyAuthorizationToken(final AuthorizationToken authorizationToken, final UnitRegistry unitRegistry) throws CouldNotPerformException {
         try {
-            for (final AuthorizationToken.MapFieldEntry entry : authorizationToken.getPermissionRuleList()) {
-                // entry is for a unit
-                if (unitRegistry.containsUnitConfigById(entry.getKey())) {
-                    // evaluate the permissions the given user has for the unit defined in the token
-                    final UnitConfig unitConfig = unitRegistry.getUnitConfigById(entry.getKey());
-                    final Permission permission = AuthorizationHelper.getPermission(unitConfig, authorizationToken.getUserId(), unitRegistry.getAuthorizationGroupMap(), unitRegistry.getLocationMap());
+            for (final PermissionRule permissionRule : authorizationToken.getPermissionRuleList()) {
+                // make sure the unit with the given id exists
+                final UnitConfig unitConfig;
+                try {
+                    unitConfig = unitRegistry.getUnitConfigById(permissionRule.getUnitId());
 
-                    // reject the token if the user tries to give more permissions than he has
-                    if (!AuthorizationHelper.isSubPermission(permission, entry.getValue())) {
-                        throw new RejectedException("User[" + authorizationToken.getUserId() + "] has not enough permissions to create an authorizationToken with permissions[" + entry.getValue() + "] for unit[" + unitConfig.getAlias(0) + "]");
+                    // make sure the unit template with the given id exists
+                    if (permissionRule.hasUnitTemplateId()) {
+                        CachedTemplateRegistryRemote.getRegistry().getUnitTemplateById(permissionRule.getUnitTemplateId());
                     }
 
+                    // make sure the service template with the given id exists
+                    if (permissionRule.hasServiceTemplateId()) {
+                        CachedTemplateRegistryRemote.getRegistry().getServiceTemplateById(permissionRule.getServiceTemplateId());
+                    }
+                } catch (CouldNotPerformException ex) {
+                    throw new RejectedException("Invalid unit id, service template id or unit template id", ex);
+                }
+
+                // a filter reduces permissions so everything the permission does not need to be verified
+                if (permissionRule.getFilter()) {
                     continue;
                 }
 
-                // entry can also be for a service type or unit type
-                // in this case just verify the id
-                final TemplateRegistry templateRegistry = CachedTemplateRegistryRemote.getRegistry();
-                if (templateRegistry.containsServiceTemplateById(entry.getKey())) {
-                    continue;
-                }
+                // evaluate the permissions the given user has for the unit defined in the token
+                final Permission permission = AuthorizationHelper.getPermission(unitConfig, authorizationToken.getUserId(), unitRegistry.getAuthorizationGroupMap(), unitRegistry.getLocationMap());
 
-                if (templateRegistry.containsUnitTemplateById(entry.getKey())) {
-                    continue;
+                // reject the token if the user tries to give more permissions than he has
+                if (!AuthorizationHelper.isSubPermission(permission, permissionRule.getPermission())) {
+                    throw new RejectedException("User[" + authorizationToken.getUserId() + "] has not enough permissions to create an authorizationToken with permissions[" + permissionRule.getPermission() + "] for unit[" + unitConfig.getAlias(0) + "]");
                 }
-
-                // throw an exception that the id in the token is invalid
-                throw new NotAvailableException("UnitConfig, ServiceTemplate or UnitTemplate with id [" + entry.getKey() + "]");
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could verify access token", ex);
@@ -125,9 +130,9 @@ public class AuthorizationWithTokenHelper {
      * @param permissionType         the permission type which is checked
      * @param unitRegistry           unit registry used to resolve ids
      * @param unitType               the unit type for which is checked if the authorization tokens gives permissions for it, if it is null
-     *                               or unknown it will be ignored
+     *                               it will be ignored
      * @param serviceType            the service type for which is checked if the authorization tokens gives permissions for it, if it is null
-     *                               or unknown it will be ignored
+     *                               it will be ignored
      * @return a string representing the authorized user, this is either just the username of the authenticated user
      * or the username of the authenticated user followed by the username of the issuer of the authorization token
      * @throws CouldNotPerformException thrown if the user does not have permissions or if the check fails
@@ -161,11 +166,13 @@ public class AuthorizationWithTokenHelper {
             }
 
             try {
-                // user is part of the admin group so allow anything
-                final ProtocolStringList memberIdList = unitRegistry.getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList();
-                for (final String id : userId.split("@")) {
-                    if (memberIdList.contains(id)) {
-                        return resolveUsername(userId, unitRegistry);
+                // test if user is part of the admin group
+                if (userId != null) {
+                    final ProtocolStringList memberIdList = unitRegistry.getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList();
+                    for (final String id : userId.split("@")) {
+                        if (memberIdList.contains(id)) {
+                            return resolveUsername(userId, unitRegistry);
+                        }
                     }
                 }
             } catch (NotAvailableException ex) {
@@ -195,52 +202,85 @@ public class AuthorizationWithTokenHelper {
             final UnitRegistry unitRegistry,
             final UnitType unitType,
             final ServiceType serviceType) throws CouldNotPerformException {
+
+
+        // verify if the token grants the necessary permissions
+        final TemplateRegistry templateRegistry = CachedTemplateRegistryRemote.getRegistry();
+        final Set<PermissionRule> grantingPermissionSet = new HashSet<>();
+        final Set<PermissionRule> filteringPermissionSet = new HashSet<>();
+        for (final PermissionRule permissionRule : authorizationToken.getPermissionRuleList()) {
+            if (permissionRule.getFilter()) {
+                filteringPermissionSet.add(permissionRule);
+            } else {
+                grantingPermissionSet.add(permissionRule);
+            }
+        }
+
+        boolean granted = false;
+        for (final PermissionRule permissionRule : grantingPermissionSet) {
+            if (permitted(unitConfig, permissionRule, unitRegistry, templateRegistry, serviceType, unitType, permissionType)) {
+                granted = true;
+                break;
+            }
+        }
+
+        if (!granted) {
+            throw new PermissionDeniedException("Authorization token does not grant the necessary permissions");
+        }
+
+        for (final PermissionRule permissionRule : filteringPermissionSet) {
+            if (permitted(unitConfig, permissionRule, unitRegistry, templateRegistry, serviceType, unitType, permissionType)) {
+                throw new PermissionDeniedException("Authorization token does not grant the necessary permissions");
+            }
+        }
+
         // build authorization string: x authorized by y
         String result = resolveUsername(userId, unitRegistry);
         result += " authorized by ";
         result += resolveUsername(authorizationToken.getUserId(), unitRegistry);
+        return result;
+    }
 
-        // verify if the token grants the necessary permissions
-        final TemplateRegistry templateRegistry = CachedTemplateRegistryRemote.getRegistry();
-        for (final AuthorizationToken.MapFieldEntry entry : authorizationToken.getPermissionRuleList()) {
-            // check for service permissions
-            if (templateRegistry.containsServiceTemplateById(entry.getKey())) {
-                if (serviceType != null && serviceType != ServiceType.UNKNOWN) {
-                    if (serviceType == templateRegistry.getServiceTemplateById(entry.getKey()).getType() && AuthorizationHelper.permitted(entry.getValue(), permissionType)) {
-                        // token grants permissions for the needed service type
-                        if (canDo(unitConfig, authorizationToken.getUserId(), unitRegistry, permissionType)) {
-                            // token issuer also has the necessary permissions for the unit
-                            return result;
-                        }
-                    }
-                }
+    private static boolean permitted(final UnitConfig unitConfig,
+                                     final PermissionRule permissionRule,
+                                     final UnitRegistry unitRegistry,
+                                     final TemplateRegistry templateRegistry,
+                                     final ServiceType serviceType,
+                                     final UnitType unitType,
+                                     final PermissionType permissionType) throws CouldNotPerformException {
+        // the permission would not grant these permissions anyway so return false
+        // this is done first so that rejections are handled fast
+        if (!AuthorizationHelper.permitted(permissionRule.getPermission(), permissionType)) {
+            return false;
+        }
+        // test if the unit id in the permission rule matches the unit config
+        if (!permissionRule.getUnitId().equals(unitConfig.getId())) {
+            // it does not so test if the unit id belongs to a location
+            final UnitConfig location = unitRegistry.getUnitConfigById(permissionRule.getUnitId());
+            // if it is not a location then the permission rule do not permit what is asked
+            if (location.getUnitType() != UnitType.LOCATION) {
+                return false;
             }
-            // check for unit permissions
-            if (templateRegistry.containsUnitTemplateById(entry.getKey())) {
-                if (unitType != null && unitType != UnitType.UNKNOWN) {
-                    if (unitType == templateRegistry.getUnitTemplateById(entry.getKey()).getType() && AuthorizationHelper.permitted(entry.getValue(), permissionType)) {
-                        // token grants permissions for the needed unit type
-                        if (canDo(unitConfig, authorizationToken.getUserId(), unitRegistry, permissionType)) {
-                            // token issuer also has the necessary permissions for the unit
-                            return result;
-                        }
-                    }
-                }
-            }
-            // check if the token directly grants permissions for the needed unit
-            if (entry.getKey().equals(unitConfig.getId()) && AuthorizationHelper.permitted(entry.getValue(), permissionType)) {
-                return result;
-            }
-            // check if the token grants permissions for a location the given unit is in
-            if (unitRegistry.containsUnitConfigById(entry.getKey())) {
-                final UnitConfig location = unitRegistry.getUnitConfigById(entry.getKey());
-                if (location.getUnitType() == UnitType.LOCATION && location.getLocationConfig().getUnitIdList().contains(unitConfig.getId()) && AuthorizationHelper.permitted(entry.getValue(), permissionType)) {
-                    return result;
-                }
+            // if the location does not contain the given unit config the permission rule does not permit it
+            if (!location.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
+                return false;
             }
         }
-
-        throw new PermissionDeniedException("Authorization token does not grant the necessary permissions");
+        // if the given service type is defined and the rule contains a service type which does not match return false
+        if (serviceType != null
+                && serviceType != ServiceType.UNKNOWN
+                && permissionRule.hasServiceTemplateId()
+                && templateRegistry.getServiceTemplateById(permissionRule.getServiceTemplateId()).getType() != serviceType) {
+            return false;
+        }
+        // if the given unit type is defined and the rule contains a unit type which does not match return false
+        if (unitType != null
+                && unitType != UnitType.UNKNOWN
+                && permissionRule.hasUnitTemplateId()
+                && templateRegistry.getUnitTemplateById(permissionRule.getUnitTemplateId()).getType() != unitType) {
+            return false;
+        }
+        return true;
     }
 
     private static String resolveUsername(final String userId, final UnitRegistry unitRegistry) throws CouldNotPerformException {
@@ -264,25 +304,5 @@ public class AuthorizationWithTokenHelper {
                 return unitRegistry.getUnitConfigById(userId.replace("@", "")).getUserConfig().getUserName();
             }
         }
-    }
-
-    /**
-     * Check for a permission type of a unit for a user.
-     * Helper method used to shorten calls to {@link AuthorizationHelper#canDo(UnitConfig, String, Map, Map, PermissionType)}
-     * by resolving both maps from the given unit registry.
-     *
-     * @param unitConfig     the unit config for which permissions are checked
-     * @param userId         the id of the user that is checked if he has the according permissions
-     * @param unitRegistry   registry used to resolve authorization groups and locations for the check.
-     * @param permissionType the permissions type which is checked
-     * @return true if the user has permissions and else false
-     * @throws CouldNotPerformException if the check could not be performed
-     */
-    private static boolean canDo(
-            final UnitConfig unitConfig,
-            final String userId,
-            final UnitRegistry unitRegistry,
-            final PermissionType permissionType) throws CouldNotPerformException {
-        return AuthorizationHelper.canDo(unitConfig, userId, unitRegistry.getAuthorizationGroupMap(), unitRegistry.getLocationMap(), permissionType);
     }
 }

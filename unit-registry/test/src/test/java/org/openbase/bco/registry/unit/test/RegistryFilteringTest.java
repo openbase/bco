@@ -176,12 +176,10 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
 
         final AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder();
         authorizationToken.setUserId(adminUserId);
-        AuthorizationToken.MapFieldEntry.Builder locationEntry = authorizationToken.addPermissionRuleBuilder();
-        locationEntry.setKey(Registries.getUnitRegistry().getRootLocationConfig().getId());
-        locationEntry.getValueBuilder().setRead(true).setAccess(true).setWrite(false);
-        AuthorizationToken.MapFieldEntry.Builder serviceEntry = authorizationToken.addPermissionRuleBuilder();
-        serviceEntry.setKey(Registries.getTemplateRegistry().getServiceTemplateByType(ServiceType.POWER_STATE_SERVICE).getId());
-        serviceEntry.getValueBuilder().setWrite(true).setRead(true).setAccess(true);
+        AuthorizationToken.PermissionRule.Builder locationEntry = authorizationToken.addPermissionRuleBuilder();
+        locationEntry.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
+        locationEntry.getPermissionBuilder().setRead(true).setAccess(true).setWrite(false);
+        locationEntry.setServiceTemplateId(Registries.getTemplateRegistry().getServiceTemplateByType(ServiceType.POWER_STATE_SERVICE).getId());
 
         final String token = Registries.getUnitRegistry().requestAuthorizationToken(authorizationToken.build()).get();
         final AuthorizationToken decrypted = EncryptionHelper.decryptSymmetric(
