@@ -234,9 +234,9 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
                 authenticatedValue.getTicketAuthenticatorWrapper(),
                 sessionManager).get();
         AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder().setUserId(sessionManager.getUserId());
-        AuthorizationToken.MapFieldEntry.Builder entry = authorizationToken.addPermissionRuleBuilder();
-        entry.setKey(colorableLightRemote.getId());
-        entry.getValueBuilder().setAccess(true).setRead(true).setWrite(false);
+        AuthorizationToken.PermissionRule.Builder permissionRuleBuilder = authorizationToken.addPermissionRuleBuilder();
+        permissionRuleBuilder.setUnitId(colorableLightRemote.getId());
+        permissionRuleBuilder.getPermissionBuilder().setAccess(true).setRead(true).setWrite(false);
         authenticatedValue = sessionManager.initializeRequest(authorizationToken.build(), null, null);
         final String token = new AuthenticatedValueFuture<>(
                 Registries.getUnitRegistry().requestAuthorizationTokenAuthenticated(authenticatedValue),
