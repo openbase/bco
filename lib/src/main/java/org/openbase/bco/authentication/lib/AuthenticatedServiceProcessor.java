@@ -24,26 +24,18 @@ package org.openbase.bco.authentication.lib;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.GeneratedMessage;
-import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.PermissionDeniedException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rst.iface.TransactionIdProvider;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -71,6 +63,25 @@ public class AuthenticatedServiceProcessor {
             final Class<RECEIVE> internalClass,
             final TransactionIdProvider transactionIdProvider,
             final InternalIdentifiedProcessable<RECEIVE, RETURN> executable) throws CouldNotPerformException {
+        return authenticatedAction(authenticatedValue, internalClass, executable).toBuilder().setTransactionId(transactionIdProvider.getTransactionId()).build();
+    }
+
+    /**
+     * Method used by the server which performs an authenticated action.
+     *
+     * @param <RECEIVE>          The type of value that the server receives to perform its action,
+     * @param <RETURN>           The type of value that the server responds with.
+     * @param authenticatedValue The authenticatedValue which is send with the request.
+     * @param internalClass      Class of type RECEIVE needed to decrypt the received type.
+     * @param executable         Interface defining the action that the server performs. This executable should
+     *                           also perform authorization if needed.
+     * @return An AuthenticatedValue which should be send as a response.
+     * @throws CouldNotPerformException If one step can not be done, e.g. ticket invalid or encryption failed.
+     */
+    public static <RECEIVE extends Serializable, RETURN extends Serializable> AuthenticatedValue authenticatedAction(
+            final AuthenticatedValue authenticatedValue,
+            final Class<RECEIVE> internalClass,
+            final InternalIdentifiedProcessable<RECEIVE, RETURN> executable) throws CouldNotPerformException {
         try {
             // start to build the response
             AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
@@ -90,8 +101,6 @@ public class AuthenticatedServiceProcessor {
 
                 // execute the action of the server
                 RETURN result = executable.process(decrypted, authenticationBaseData);
-                // set transaction id in response
-                response.setTransactionId(transactionIdProvider.getTransactionId());
 
                 // encrypt the result and add it to the response
                 response.setValue(EncryptionHelper.encryptSymmetric(result, authenticationBaseData.getSessionKey()));
@@ -114,8 +123,6 @@ public class AuthenticatedServiceProcessor {
 
                     // execute the action of the server
                     RETURN result = executable.process(message, null);
-                    // set transaction id in response
-                    response.setTransactionId(transactionIdProvider.getTransactionId());
                     if (result != null) {
                         if (!(result instanceof GeneratedMessage)) {
                             throw new CouldNotPerformException("Result[" + result + "] of authenticated action is not a message or not null and therefore not supported");

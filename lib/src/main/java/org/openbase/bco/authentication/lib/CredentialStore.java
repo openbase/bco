@@ -135,9 +135,11 @@ public class CredentialStore {
                 Files.setPosixFilePermissions(file.toPath(), perms);
             } catch (UnsupportedOperationException ex) {
                 // apply windows fallback
-                file.setReadable(true, true);
-                file.setWritable(true, true);
-                file.setExecutable(true, true);
+                if (!file.setReadable(true, true)
+                        || !file.setWritable(true, true)
+                        || !file.setExecutable(true, true)) {
+                    throw new CouldNotPerformException("Could not protect " + file.getAbsolutePath(), ex);
+                }
             }
         } catch (IOException ex) {
             throw new CouldNotPerformException("Could not protect " + file.getAbsolutePath(), ex);
