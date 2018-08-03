@@ -47,20 +47,20 @@ public interface ColorStateOperationService extends OperationService, ColorState
     public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException;
 
     @RPCMethod
-    default public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+    default Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
         return setColor(DEFAULT_NEUTRAL_WHITE);
     }
 
     @RPCMethod
-    default public Future<ActionFuture> setColor(final HSBColor color) throws CouldNotPerformException {
+    default Future<ActionFuture> setColor(final HSBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(color).build());
     }
 
-    default public Future<ActionFuture> setColor(final Color color) throws CouldNotPerformException {
+    default Future<ActionFuture> setColor(final Color color) throws CouldNotPerformException {
         return setColorState(ColorState.newBuilder().setColor(color).build());
     }
 
-    default public Future<ActionFuture> setColor(final RGBColor color) throws CouldNotPerformException {
+    default Future<ActionFuture> setColor(final RGBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.RGB).setRgbColor(color).build());
     }
 
@@ -72,7 +72,7 @@ public interface ColorStateOperationService extends OperationService, ColorState
      * @deprecated Please use the org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer or org.openbase.jul.visual.javafx.transform.JFXColorToHSBColorTransformer to tranform colors into compatible types.
      */
     @Deprecated
-    default public Future<ActionFuture> setColor(final java.awt.Color color) throws CouldNotPerformException {
+    default Future<ActionFuture> setColor(final java.awt.Color color) throws CouldNotPerformException {
         try {
             float[] hsb = new float[3];
             java.awt.Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
