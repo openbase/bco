@@ -284,15 +284,6 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     }
 
-    @Override
-    public StandbyState getStandbyState() throws NotAvailableException {
-        try {
-            return getData().getStandbyState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("StandbyState", ex);
-        }
-    }
-
     public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
         final List<LocationRemote> childList = new ArrayList<>();
         for (String childId : getConfig().getLocationConfig().getChildIdList()) {

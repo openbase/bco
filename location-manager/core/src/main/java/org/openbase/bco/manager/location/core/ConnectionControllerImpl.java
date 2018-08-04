@@ -383,49 +383,4 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
             throw new VerificationFailedException("ConnectionType verification failed. Connection [" + getConfig().getId() + "] has type [" + getConfig().getConnectionConfig().getType().name() + "] and not [" + connectionType.name() + "]");
         }
     }
-
-    @Override
-    public DoorState getDoorState() throws NotAvailableException {
-        try {
-            verifyConnectionState(ConnectionType.DOOR);
-        } catch (VerificationFailedException ex) {
-            throw new NotAvailableException("Connection verification shows no door state!", ex);
-        }
-
-        try {
-            return getData().getDoorState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("DoorState", ex);
-        }
-    }
-
-    @Override
-    public PassageState getPassageState() throws NotAvailableException {
-        try {
-            verifyConnectionState(ConnectionType.PASSAGE);
-        } catch (VerificationFailedException ex) {
-            throw new NotAvailableException("Connection verification shows no passage state!", ex);
-        }
-
-        try {
-            return getData().getPassageState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PassageState", ex);
-        }
-    }
-
-    @Override
-    public WindowState getWindowState() throws NotAvailableException {
-        try {
-            verifyConnectionState(ConnectionType.WINDOW);
-        } catch (VerificationFailedException ex) {
-            throw new NotAvailableException("Connection verification shows no window state!", ex);
-        }
-
-        try {
-            return getData().getWindowState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("WindowState", ex);
-        }
-    }
 }

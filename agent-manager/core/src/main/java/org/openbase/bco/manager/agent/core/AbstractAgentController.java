@@ -39,6 +39,7 @@ import rst.calendar.DateTimeType;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceStateDescriptionType;
@@ -89,21 +90,16 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
         return completableFuture;
     }
 
-    @Override
-    public EmphasisState getEmphasisState() throws NotAvailableException {
-        return getData().getEmphasisState();
-    }
-
-    protected ActionDescriptionType.ActionDescription.Builder getNewActionDescription(ActionAuthorityType.ActionAuthority actionAuthority,
-            ResourceAllocationType.ResourceAllocation.Initiator initiator,
-            long executionTimePeriod,
-            ResourceAllocationType.ResourceAllocation.Policy policy,
-            ResourceAllocationType.ResourceAllocation.Priority priority,
-            UnitRemote<?> unitRemote,
-            Message serviceAttribute,
-            UnitTemplateType.UnitTemplate.UnitType unitType,
-            ServiceTemplateType.ServiceTemplate.ServiceType serviceType,
-            MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy multiResourceAllocationStrategy) throws CouldNotPerformException {
+    protected ActionDescription.Builder getNewActionDescription(ActionAuthorityType.ActionAuthority actionAuthority,
+                                                                ResourceAllocationType.ResourceAllocation.Initiator initiator,
+                                                                long executionTimePeriod,
+                                                                ResourceAllocationType.ResourceAllocation.Policy policy,
+                                                                ResourceAllocationType.ResourceAllocation.Priority priority,
+                                                                UnitRemote<?> unitRemote,
+                                                                Message serviceAttribute,
+                                                                UnitTemplateType.UnitTemplate.UnitType unitType,
+                                                                ServiceTemplateType.ServiceTemplate.ServiceType serviceType,
+                                                                MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy multiResourceAllocationStrategy) throws CouldNotPerformException {
 
         ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.getActionDescription(actionAuthority, initiator);
         actionDescriptionBuilder.setExecutionTimePeriod(executionTimePeriod);

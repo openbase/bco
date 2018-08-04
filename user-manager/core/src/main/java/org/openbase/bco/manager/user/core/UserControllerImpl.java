@@ -166,48 +166,8 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    public String getUserName() throws NotAvailableException {
-        try {
-            // todo pleminoq: limit to other permissions.
-            return getConfig().getUserConfig().getUserName();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("username", ex);
-        }
-    }
-
-    @Override
-    public ActivityMultiState getActivityMultiState() throws NotAvailableException {
-        try {
-            // todo pleminoq: limit to other permissions.
-            return getData().getActivityMultiState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("multi activity", ex);
-        }
-    }
-
-    @Override
-    public UserTransitState getUserTransitState() throws NotAvailableException {
-        try {
-            // todo pleminoq: limit to other permissions.
-            return getData().getUserTransitState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user transit state", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
         return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ACTIVITY_MULTI_STATE_SERVICE,this).build());
-    }
-
-    @Override
-    public PresenceState getPresenceState() throws NotAvailableException {
-        try {
-            // todo pleminoq: limit to other permissions.
-            return getData().getPresenceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("presence", ex);
-        }
     }
 
     @Override

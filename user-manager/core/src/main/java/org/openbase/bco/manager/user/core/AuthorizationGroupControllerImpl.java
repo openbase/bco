@@ -51,15 +51,6 @@ public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController
     }
 
     @Override
-    public PresenceState getPresenceState() throws NotAvailableException {
-        try {
-            return getData().getPresenceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("presence", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
         try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPresenceState(presenceState);
