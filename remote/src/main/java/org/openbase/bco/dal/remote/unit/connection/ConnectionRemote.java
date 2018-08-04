@@ -49,31 +49,4 @@ public class ConnectionRemote extends AbstractUnitRemote<ConnectionData> impleme
     public ConnectionRemote() {
         super(ConnectionData.class);
     }
-
-    @Override
-    public DoorState getDoorState() throws NotAvailableException {
-        try {
-            return getData().getDoorState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("DoorState", ex);
-        }
-    }
-
-    @Override
-    public PassageState getPassageState() throws NotAvailableException {
-        try {
-            return getData().getPassageState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PassageState", ex);
-        }
-    }
-
-    @Override
-    public WindowState getWindowState() throws NotAvailableException {
-        try {
-            return getData().getWindowState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("WindowState", ex);
-        }
-    }
 }

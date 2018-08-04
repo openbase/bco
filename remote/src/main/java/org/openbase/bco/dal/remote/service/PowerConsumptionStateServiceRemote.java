@@ -43,10 +43,6 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
         super(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, PowerConsumptionState.class);
     }
 
-    public Collection<PowerConsumptionStateProviderService> getPowerConsumptionStateProviderServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the average current and voltage and the sum of the consumption of the underlying services.
@@ -57,11 +53,6 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
     @Override
     protected PowerConsumptionState computeServiceState() throws CouldNotPerformException {
         return getPowerConsumptionState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

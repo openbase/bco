@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.dal.lib.layer.service.provider.ActivationStateProviderService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -45,7 +46,7 @@ import java.util.concurrent.Future;
  * @param <DB> the builder used to build the unit data instance.
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable {
+public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable, ActivationStateProviderService {
 
     public static final String FIELD_ACTIVATION_STATE = "activation_state";
     public static final String FIELD_AUTOSTART = "autostart";
@@ -62,10 +63,6 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
-    }
-
-    public ActivationState getActivationState() throws NotAvailableException {
-        return (ActivationState) getDataField(FIELD_ACTIVATION_STATE);
     }
 
     public Future<ActionFuture> setActivationState(final ActivationState activation) throws CouldNotPerformException {

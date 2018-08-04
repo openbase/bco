@@ -43,13 +43,4 @@ public class MotionDetectorController extends AbstractDALUnitController<MotionDe
     public MotionDetectorController(final UnitHost unitHost, final MotionDetectorData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
         super(MotionDetectorController.class, unitHost, builder);
     }
-
-    @Override
-    public MotionState getMotionState() throws NotAvailableException {
-        try {
-            return getData().getMotionState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("motionState", ex);
-        }
-    }
 }

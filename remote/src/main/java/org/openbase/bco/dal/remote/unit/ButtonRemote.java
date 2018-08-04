@@ -43,13 +43,4 @@ public class ButtonRemote extends AbstractUnitRemote<ButtonData> implements Butt
     public ButtonRemote() {
         super(ButtonData.class);
     }
-
-    @Override
-    public ButtonState getButtonState() throws NotAvailableException {
-        try {
-            return getData().getButtonState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ButtonState", ex);
-        }
-    }
 }

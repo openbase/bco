@@ -63,17 +63,7 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
     }
 
     @Override
-    public ActivationState getActivationState() throws NotAvailableException {
-        return getData().getActivationState();
-    }
-
-    @Override
     public Future<ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
-    }
-
-    @Override
-    public EmphasisState getEmphasisState() throws NotAvailableException {
-        return getData().getEmphasisState();
     }
 }

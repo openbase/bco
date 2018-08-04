@@ -45,10 +45,6 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
         super(ServiceType.TEMPERATURE_STATE_SERVICE, TemperatureState.class);
     }
 
-    public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the average temperature value.
@@ -59,11 +55,6 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
     @Override
     protected TemperatureState computeServiceState() throws CouldNotPerformException {
         return getTemperatureState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public TemperatureState getTemperatureState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

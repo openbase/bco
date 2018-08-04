@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +35,7 @@ import rst.domotic.state.StandbyStateType.StandbyState;
 public interface StandbyStateProviderService extends ProviderService {
 
     @RPCMethod
-    public StandbyState getStandbyState() throws NotAvailableException;
-
+    default StandbyState getStandbyState() throws NotAvailableException {
+        return (StandbyState) getServiceProvider().getServiceState(STANDBY_STATE_SERVICE);
+    }
 }

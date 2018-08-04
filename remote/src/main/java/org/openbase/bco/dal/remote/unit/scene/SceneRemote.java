@@ -58,9 +58,4 @@ public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene 
     public Future<ActionFuture> setActivationState(ActivationState activationState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
-
-    @Override
-    public ActivationState getActivationState() throws NotAvailableException {
-        return getData().getActivationState();
-    }
 }

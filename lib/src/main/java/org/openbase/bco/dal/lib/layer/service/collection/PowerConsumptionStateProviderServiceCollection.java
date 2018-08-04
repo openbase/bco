@@ -21,13 +21,13 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface PowerConsumptionStateProviderServiceCollection extends PowerConsumptionStateProviderService {
@@ -36,17 +36,21 @@ public interface PowerConsumptionStateProviderServiceCollection extends PowerCon
      * Computes the average current and voltage and the sum of the consumption of the underlying services.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
-    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException;
+    default PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
+        return PowerConsumptionStateProviderService.super.getPowerConsumptionState();
+    }
 
     /**
      * Computes the average current and voltage and the sum of the consumption of the underlying service
      * with given unitType.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
-    public PowerConsumptionState getPowerConsumptionState(final UnitType unitType) throws NotAvailableException;
+    PowerConsumptionState getPowerConsumptionState(final UnitType unitType) throws NotAvailableException;
 }

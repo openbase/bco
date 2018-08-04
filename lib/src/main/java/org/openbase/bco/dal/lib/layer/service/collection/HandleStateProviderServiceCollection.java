@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.HandleStateType.HandleState;
@@ -39,7 +40,9 @@ public interface HandleStateProviderServiceCollection extends HandleStateProvide
      * @throws NotAvailableException
      */
     @Override
-    public HandleState getHandleState() throws NotAvailableException;
+    default HandleState getHandleState() throws NotAvailableException {
+        return HandleStateProviderService.super.getHandleState();
+    }
 
     /**
      * Computes an average handle state of all services with given unitType.
@@ -48,5 +51,5 @@ public interface HandleStateProviderServiceCollection extends HandleStateProvide
      * @return
      * @throws NotAvailableException
      */
-    public HandleState getHandleState(final UnitType unitType) throws NotAvailableException;
+    HandleState getHandleState(final UnitType unitType) throws NotAvailableException;
 }

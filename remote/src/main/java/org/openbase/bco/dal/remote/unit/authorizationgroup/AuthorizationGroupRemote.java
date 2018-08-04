@@ -57,13 +57,4 @@ public class AuthorizationGroupRemote extends AbstractUnitRemote<AuthorizationGr
     public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
     }
-
-    @Override
-    public PresenceState getPresenceState() throws NotAvailableException {
-        try {
-            return getData().getPresenceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user presence state", ex);
-        }
-    }
 }

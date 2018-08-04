@@ -49,14 +49,11 @@ public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProvi
     public ColorStateServicePanel() throws InstantiationException {
         initComponents();
         
-        colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                try {
-                    notifyActionProcessing(getOperationService().setColor(AWTColorToHSBColorTransformer.transform(colorChooser.getColor())));
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
-                }
+        colorChooser.getSelectionModel().addChangeListener(e -> {
+            try {
+                notifyActionProcessing(getOperationService().setColor(AWTColorToHSBColorTransformer.transform(colorChooser.getColor())));
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
             }
         });
     }
@@ -64,7 +61,7 @@ public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProvi
     @Override
     protected void updateDynamicComponents() {
         try {
-            colorPreviewPanel.setBackground(getProviderService().getJavaAWTColor());
+            colorPreviewPanel.setBackground(AWTColorToHSBColorTransformer.transform(getProviderService().getHSBColor()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update color value!", ex), logger);
         }

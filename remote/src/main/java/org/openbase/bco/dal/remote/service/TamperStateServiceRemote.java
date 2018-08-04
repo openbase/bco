@@ -50,10 +50,6 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
         super(ServiceType.TAMPER_STATE_SERVICE, TamperState.class);
     }
 
-    public Collection<TamperStateProviderService> getTamperStateProviderServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the tamper state as tamper if at least one underlying service detects tamper and else no tamper.
@@ -65,11 +61,6 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
     @Override
     protected TamperState computeServiceState() throws CouldNotPerformException {
         return getTamperState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public TamperState getTamperState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

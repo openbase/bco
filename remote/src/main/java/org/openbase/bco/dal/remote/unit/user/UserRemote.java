@@ -71,15 +71,6 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public UserTransitState getUserTransitState() throws NotAvailableException {
-        try {
-            return getData().getUserTransitState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user presence state", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE,this));
     }
@@ -92,14 +83,5 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     @Override
     public Future<ActionFuture> setPresenceState(final PresenceState presenceState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
-    }
-
-    @Override
-    public PresenceState getPresenceState() throws NotAvailableException {
-        try {
-            return getData().getPresenceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user presence state", ex);
-        }
     }
 }

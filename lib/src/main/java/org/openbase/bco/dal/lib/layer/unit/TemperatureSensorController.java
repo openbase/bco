@@ -45,22 +45,4 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
     public TemperatureSensorController(final UnitHost unitHost, final TemperatureSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TemperatureSensorController.class, unitHost, builder);
     }
-    
-    @Override
-    public TemperatureState getTemperatureState() throws NotAvailableException {
-        try {
-            return getData().getTemperatureState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("temperatureState", ex);
-        }
-    }
-    
-    @Override
-    public AlarmState getTemperatureAlarmState() throws NotAvailableException {
-        try {
-            return getData().getTemperatureAlarmState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("temperatureAlarmState", ex);
-        }
-    }
 }

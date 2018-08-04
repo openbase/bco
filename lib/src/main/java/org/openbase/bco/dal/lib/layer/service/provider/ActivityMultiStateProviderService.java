@@ -28,6 +28,9 @@ import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 
 import java.util.List;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVATION_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVITY_MULTI_STATE_SERVICE;
+
 /**
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
@@ -35,5 +38,7 @@ import java.util.List;
 public interface ActivityMultiStateProviderService extends ProviderService{
     
     @RPCMethod
-    ActivityMultiState getActivityMultiState() throws NotAvailableException;
+    default ActivityMultiState getActivityMultiState() throws NotAvailableException {
+        return (ActivityMultiState) getServiceProvider().getServiceState(ACTIVITY_MULTI_STATE_SERVICE);
+    }
 }

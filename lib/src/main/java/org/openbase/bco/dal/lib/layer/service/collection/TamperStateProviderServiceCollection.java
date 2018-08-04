@@ -21,13 +21,13 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.TamperStateType.TamperState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface TamperStateProviderServiceCollection extends TamperStateProviderService {
@@ -37,17 +37,22 @@ public interface TamperStateProviderServiceCollection extends TamperStateProvide
      * else no tamper.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
-    public TamperState getTamperState() throws NotAvailableException;
+    default TamperState getTamperState() throws NotAvailableException {
+        return TamperStateProviderService.super.getTamperState();
+    }
 
     /**
      * Returns tamper if at least one of the tamperProviders with given unitType returns tamper and
      * else no tamper.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws NotAvailableException
      */
     public TamperState getTamperState(final UnitType unitType) throws NotAvailableException;

@@ -53,10 +53,6 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
         super(ServiceType.BRIGHTNESS_STATE_SERVICE, BrightnessState.class);
     }
 
-    public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
-        return getServices();
-    }
-
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(brightnessState, getServiceType()));
@@ -77,11 +73,6 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
     @Override
     protected BrightnessState computeServiceState() throws CouldNotPerformException {
         return getBrightnessState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

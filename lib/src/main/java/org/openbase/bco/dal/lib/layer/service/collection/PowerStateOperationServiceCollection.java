@@ -22,6 +22,8 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -48,7 +50,9 @@ public interface PowerStateOperationServiceCollection extends PowerStateOperatio
      * @throws NotAvailableException
      */
     @Override
-    public PowerState getPowerState() throws NotAvailableException;
+    default PowerState getPowerState() throws NotAvailableException {
+        return PowerStateOperationService.super.getPowerState();
+    }
 
     /**
      * Returns on if at least one of the powerServices with given unitType is on
@@ -58,5 +62,5 @@ public interface PowerStateOperationServiceCollection extends PowerStateOperatio
      * @return
      * @throws NotAvailableException
      */
-    public PowerState getPowerState(final UnitType unitType) throws NotAvailableException;
+    PowerState getPowerState(final UnitType unitType) throws NotAvailableException;
 }

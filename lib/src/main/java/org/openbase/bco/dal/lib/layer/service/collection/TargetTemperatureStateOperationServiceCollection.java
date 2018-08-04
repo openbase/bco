@@ -21,7 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -29,8 +29,9 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.concurrent.Future;
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface TargetTemperatureStateOperationServiceCollection extends TargetTemperatureStateOperationService {
@@ -42,18 +43,23 @@ public interface TargetTemperatureStateOperationServiceCollection extends Target
      * temperature services.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
-    public TemperatureState getTargetTemperatureState() throws NotAvailableException;
+    default TemperatureState getTargetTemperatureState() throws NotAvailableException {
+        return TargetTemperatureStateOperationService.super.getTargetTemperatureState();
+    }
 
     /**
      * Returns the average target temperature value for a collection of target
      * temperature services with the given unitType.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws NotAvailableException
      */
-    public TemperatureState getTargetTemperatureState(final UnitType unitType) throws NotAvailableException;
+    TemperatureState getTargetTemperatureState(final UnitType unitType) throws NotAvailableException;
 }

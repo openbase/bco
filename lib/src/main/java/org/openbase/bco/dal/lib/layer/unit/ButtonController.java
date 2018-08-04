@@ -68,39 +68,6 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
         super(ButtonController.class, unitHost, builder);
     }
 
-    //    public void updateButtonStateProvider(ButtonState state) throws CouldNotPerformException {
-//        logger.debug("Apply buttonState Update[" + state + "] for " + this + ".");
-//        try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
-//
-//            ButtonState.Builder buttonState = dataBuilder.getInternalBuilder().getButtonStateBuilder();
-//
-//            // Update value
-//            buttonState.setValue(state.getValue());
-//
-//            // Update timestemp if necessary
-//            if (state.getValue() == ButtonState.State.PRESSED || state.getValue() == ButtonState.State.DOUBLE_PRESSED) {
-//                if (!state.hasTimestamp()) {
-//                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
-//                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
-//                }
-//                buttonState.setLastPressed(state.getTimestamp());
-//            }
-//
-//            dataBuilder.getInternalBuilder().setButtonState(buttonState.setTransactionId(buttonState.getTransactionId() + 1));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply buttonState Update[" + state + "] for " + this + "!", ex);
-//        }
-//    }
-//
-    @Override
-    public ButtonState getButtonState() throws NotAvailableException {
-        try {
-            return getData().getButtonState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("buttonState state", ex);
-        }
-    }
-
     @Override
     protected void applyCustomDataUpdate(ButtonData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {

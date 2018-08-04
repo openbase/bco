@@ -44,22 +44,4 @@ public class SmokeDetectorController extends AbstractDALUnitController<SmokeDete
     public SmokeDetectorController(final UnitHost unitHost, SmokeDetectorData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
         super(SmokeDetectorController.class, unitHost, builder);
     }
-
-    @Override
-    public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        try {
-            return getData().getSmokeAlarmState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("smokeState", ex);
-        }
-    }
-
-    @Override
-    public SmokeState getSmokeState() throws NotAvailableException {
-        try {
-            return getData().getSmokeState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("smokestate", ex);
-        }
-    }
 }

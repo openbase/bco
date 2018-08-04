@@ -70,15 +70,6 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     }
     
     @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("powerState", ex);
-        }
-    }
-    
-    @Override
     public Future<ActionFuture> setStandbyState(final StandbyState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to StandbyState [" + state + "]");
         try {
@@ -87,14 +78,5 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
         return standbyStateService.setStandbyState(state);
-    }
-    
-    @Override
-    public StandbyState getStandbyState() throws NotAvailableException {
-        try {
-            return getData().getStandbyState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("standbyState", ex);
-        }
     }
 }

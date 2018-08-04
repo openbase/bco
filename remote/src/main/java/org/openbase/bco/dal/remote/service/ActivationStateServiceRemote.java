@@ -50,10 +50,6 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
         super(ServiceType.ACTIVATION_STATE_SERVICE, ActivationState.class);
     }
 
-    public Collection<ActivationStateOperationService> getActivationStateOperationServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc} Computes the activation state as on if at least one underlying service is on and else off.
      *
@@ -64,11 +60,6 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
     @Override
     protected ActivationState computeServiceState() throws CouldNotPerformException {
         return getActivationState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public ActivationState getActivationState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

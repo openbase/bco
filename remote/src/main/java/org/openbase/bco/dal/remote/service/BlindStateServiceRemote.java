@@ -53,10 +53,6 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         super(ServiceType.BLIND_STATE_SERVICE, BlindState.class);
     }
 
-    public Collection<BlindStateOperationService> getBlindStateOperationServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc} Computes the average opening ratio and the movement state which appears the most.
      *
@@ -66,11 +62,6 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     @Override
     protected BlindState computeServiceState() throws CouldNotPerformException {
         return getBlindState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public BlindState getBlindState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

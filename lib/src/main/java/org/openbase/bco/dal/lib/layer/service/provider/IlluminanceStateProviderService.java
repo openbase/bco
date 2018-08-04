@@ -28,7 +28,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ILLUMINANCE_STATE_SERVICE;
 
 /**
  *
@@ -37,5 +40,7 @@ import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 public interface IlluminanceStateProviderService extends ProviderService {
 
     @RPCMethod
-    public IlluminanceState getIlluminanceState() throws NotAvailableException;
+    default IlluminanceState getIlluminanceState() throws NotAvailableException {
+        return (IlluminanceState) getServiceProvider().getServiceState(ILLUMINANCE_STATE_SERVICE);
+    }
 }

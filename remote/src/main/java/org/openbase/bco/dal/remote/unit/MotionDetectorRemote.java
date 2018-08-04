@@ -43,13 +43,4 @@ public class MotionDetectorRemote extends AbstractUnitRemote<MotionDetectorData>
     public MotionDetectorRemote() {
         super(MotionDetectorData.class);
     }
-
-    @Override
-    public MotionState getMotionState() throws NotAvailableException {
-        try {
-            return getData().getMotionState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("MotionState", ex);
-        }
-    }
 }

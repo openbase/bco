@@ -43,10 +43,6 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
         super(ServiceType.SMOKE_STATE_SERVICE, SmokeState.class);
     }
 
-    public Collection<SmokeStateProviderService> getSmokeStateProviderServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the average smoke level and the state as smoke if at least one underlying services detects smoke.
@@ -61,16 +57,10 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
     }
 
     @Override
-    public SmokeState getSmokeState() throws NotAvailableException {
-        return getData();
-    }
-
-    @Override
     public SmokeState getSmokeState(final UnitType unitType) throws NotAvailableException {
         boolean someSmoke = false;
         SmokeState.State smokeValue = SmokeState.State.NO_SMOKE;
-        Collection<SmokeStateProviderService> smokeStateProviderServices = getSmokeStateProviderServices();
-        int amount = smokeStateProviderServices.size();
+        int amount = getServices(unitType).size();
         double averageSmokeLevel = 0;
         long timestamp = 0;
         for (SmokeStateProviderService service : getServices(unitType)) {

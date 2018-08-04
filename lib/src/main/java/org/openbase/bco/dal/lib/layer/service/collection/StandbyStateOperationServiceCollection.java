@@ -21,7 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -29,8 +29,9 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.concurrent.Future;
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface StandbyStateOperationServiceCollection extends StandbyStateOperationService {
@@ -42,18 +43,23 @@ public interface StandbyStateOperationServiceCollection extends StandbyStateOper
      * else standby.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
-    public StandbyState getStandbyState() throws NotAvailableException;
+    default StandbyState getStandbyState() throws NotAvailableException {
+        return StandbyStateOperationService.super.getStandbyState();
+    }
 
     /**
      * Returns running if at least one of the standbyServices with given unitType is running and
      * else standby.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws NotAvailableException
      */
-    public StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException;
+    StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException;
 }

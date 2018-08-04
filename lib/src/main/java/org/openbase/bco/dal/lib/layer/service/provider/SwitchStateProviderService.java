@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.SwitchStateType.SwitchState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SWITCH_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +35,7 @@ import rst.domotic.state.SwitchStateType.SwitchState;
 public interface SwitchStateProviderService extends ProviderService {
 
     @RPCMethod
-    public SwitchState getSwitchState() throws NotAvailableException;
-
+    default SwitchState getSwitchState() throws NotAvailableException {
+        return (SwitchState) getServiceProvider().getServiceState(SWITCH_STATE_SERVICE);
+    }
 }

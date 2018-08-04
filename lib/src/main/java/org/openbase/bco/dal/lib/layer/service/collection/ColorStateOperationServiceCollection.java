@@ -22,6 +22,8 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -45,7 +47,9 @@ public interface ColorStateOperationServiceCollection extends ColorStateOperatio
      * @throws NotAvailableException
      */
     @Override
-    public ColorState getColorState() throws NotAvailableException;
+    default ColorState getColorState() throws NotAvailableException {
+        return ColorStateOperationService.super.getColorState();
+    }
 
     /**
      * Computes the average RGB color for the underlying services with given unitType.

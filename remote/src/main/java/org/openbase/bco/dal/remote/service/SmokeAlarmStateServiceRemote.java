@@ -46,10 +46,6 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
         super(ServiceType.SMOKE_ALARM_STATE_SERVICE, AlarmState.class);
     }
 
-    public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the alarm state as alarm if at least one underlying service is on alarm and else no alarm.
@@ -60,11 +56,6 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
     @Override
     protected AlarmState computeServiceState() throws CouldNotPerformException {
         return getSmokeAlarmState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

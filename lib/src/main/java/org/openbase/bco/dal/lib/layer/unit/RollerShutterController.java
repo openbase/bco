@@ -87,13 +87,4 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
         }
         return blindStateService.setBlindState(state);
     }
-
-    @Override
-    public BlindState getBlindState() throws NotAvailableException {
-        try {
-            return getData().getBlindState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("blindState", ex);
-        }
-    }
 }

@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PresenceStateType.PresenceState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +35,7 @@ import rst.domotic.state.PresenceStateType.PresenceState;
 public interface PresenceStateProviderService extends ProviderService {
 
     @RPCMethod
-    public PresenceState getPresenceState() throws NotAvailableException;
-
+    default PresenceState getPresenceState() throws NotAvailableException {
+        return (PresenceState) getServiceProvider().getServiceState(PRESENCE_STATE_SERVICE);
+    }
 }

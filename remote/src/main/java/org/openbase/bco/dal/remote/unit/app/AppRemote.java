@@ -56,9 +56,4 @@ public class AppRemote extends AbstractUnitRemote<AppData> implements App {
     public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
-
-    @Override
-    public ActivationState getActivationState() throws NotAvailableException {
-        return getData().getActivationState();
-    }
 }

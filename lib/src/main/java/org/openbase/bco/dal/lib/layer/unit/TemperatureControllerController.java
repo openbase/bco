@@ -55,22 +55,4 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
         logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to targetTemperatureState [" + value + "]");
         return targetTemperatureStateService.setTargetTemperatureState(value);
     }
-    
-    @Override
-    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        try {
-            return getData().getTargetTemperatureState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("targetTemperatureState", ex);
-        }
-    }
-    
-    @Override
-    public TemperatureState getTemperatureState() throws NotAvailableException {
-        try {
-            return getData().getTemperatureState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("actual temperatureState", ex);
-        }
-    }
 }

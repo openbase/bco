@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TamperStateType.TamperState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +35,7 @@ import rst.domotic.state.TamperStateType.TamperState;
 public interface TamperStateProviderService extends ProviderService {
 
     @RPCMethod
-    public TamperState getTamperState() throws NotAvailableException;
-
+    default TamperState getTamperState() throws NotAvailableException {
+        return (TamperState) getServiceProvider().getServiceState(TAMPER_STATE_SERVICE);
+    }
 }

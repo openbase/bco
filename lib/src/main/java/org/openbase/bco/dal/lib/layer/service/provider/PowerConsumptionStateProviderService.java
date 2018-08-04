@@ -23,7 +23,12 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE_VALUE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +37,7 @@ import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 public interface PowerConsumptionStateProviderService extends ProviderService {
 
     @RPCMethod
-    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException;
-
+    default PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
+        return (PowerConsumptionState) getServiceProvider().getServiceState(POWER_CONSUMPTION_STATE_SERVICE);
+    }
 }

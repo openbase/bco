@@ -21,13 +21,13 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.SmokeStateType.SmokeState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface SmokeStateProviderServiceCollection extends SmokeStateProviderService {
@@ -37,10 +37,13 @@ public interface SmokeStateProviderServiceCollection extends SmokeStateProviderS
      * If no service detects smoke and at least one detects some smoke then that is set and else no smoke.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
-    public SmokeState getSmokeState() throws NotAvailableException;
+    default SmokeState getSmokeState() throws NotAvailableException {
+        return SmokeStateProviderService.super.getSmokeState();
+    }
 
     /**
      * Computes the average smoke level and the state as smoke if at least one underlying services detects smoke.
@@ -48,8 +51,10 @@ public interface SmokeStateProviderServiceCollection extends SmokeStateProviderS
      * Only used the smokeStateProvider with given unitType for the evaluation.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws NotAvailableException
      */
-    public SmokeState getSmokeState(final UnitType unitType) throws NotAvailableException;
+    SmokeState getSmokeState(final UnitType unitType) throws NotAvailableException;
 }

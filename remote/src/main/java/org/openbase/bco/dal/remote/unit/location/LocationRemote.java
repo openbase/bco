@@ -436,25 +436,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public StandbyState getStandbyState() throws NotAvailableException {
-        try {
-            return this.getData().getStandbyState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("StandbyState", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
-    }
-
-    @Override
-    public EmphasisState getEmphasisState() throws NotAvailableException {
-        try {
-            return this.getData().getEmphasisState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("EmphasisState", ex);
-        }
     }
 }

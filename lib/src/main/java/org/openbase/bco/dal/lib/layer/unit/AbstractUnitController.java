@@ -109,7 +109,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
-//    private final List<Service> serviceList;
 
     private UnitTemplate template;
     private boolean initialized = false;
@@ -118,7 +117,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
-//        this.serviceList = new ArrayList<>();
         this.unitDataObservableMap = new HashMap<>();
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
@@ -367,14 +365,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
         return template;
     }
-
-//    public Collection<Service> getServices() {
-//        return Collections.unmodifiableList(serviceList);
-//    }
-//
-//    public void registerService(final Service service) {
-//        serviceList.add(service);
-//    }
 
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {

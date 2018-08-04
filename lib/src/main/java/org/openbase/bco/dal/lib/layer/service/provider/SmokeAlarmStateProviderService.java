@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +35,7 @@ import rst.domotic.state.AlarmStateType.AlarmState;
 public interface SmokeAlarmStateProviderService extends ProviderService {
 
     @RPCMethod
-    public AlarmState getSmokeAlarmState() throws NotAvailableException;
-
+    default AlarmState getSmokeAlarmState() throws NotAvailableException {
+        return (AlarmState) getServiceProvider().getServiceState(SMOKE_ALARM_STATE_SERVICE);
+    }
 }

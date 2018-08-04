@@ -70,20 +70,11 @@ public class PresenceStateServiceRemote extends AbstractServiceRemote<PresenceSt
     }
 
     @Override
-    public PresenceState getPresenceState() throws NotAvailableException {
-        return getData();
-    }
-
-    @Override
     public PresenceState getPresenceState(final UnitType unitType) throws NotAvailableException {
         try {
             return (PresenceState) generateFusedState(unitType, State.ABSENT, State.PRESENT).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-    }
-
-    public Collection<PresenceStateProviderService> getPresenceStateProviderServices() throws CouldNotPerformException {
-        return getServices();
     }
 }

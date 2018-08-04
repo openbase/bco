@@ -64,13 +64,4 @@ public class PowerSwitchController extends AbstractDALUnitController<PowerSwitch
         }
         return powerService.setPowerState(state);
     }
-    
-    @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("powerState", ex);
-        }
-    }
 }

@@ -65,14 +65,6 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
 //            throw new CouldNotPerformException("Could not apply batteryState Update[" + batteryState + "] for " + this + "!", ex);
 //        }
 //    }
-    @Override
-    public BatteryState getBatteryState() throws NotAvailableException {
-        try {
-            return getData().getBatteryState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("batteryState", ex);
-        }
-    }
 
     @Override
     protected void applyCustomDataUpdate(BatteryData.Builder internalBuilder, ServiceType serviceType) {

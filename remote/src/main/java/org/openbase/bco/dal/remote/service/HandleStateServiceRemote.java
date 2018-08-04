@@ -43,10 +43,6 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
         super(ServiceType.HANDLE_STATE_SERVICE, HandleState.class);
     }
 
-    public Collection<HandleStateProviderService> getHandleStateProviderServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      *
@@ -56,11 +52,6 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
     @Override
     protected HandleState computeServiceState() throws CouldNotPerformException {
         return getHandleState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public HandleState getHandleState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

@@ -43,13 +43,4 @@ public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsum
     public PowerConsumptionSensorRemote() {
         super(PowerConsumptionSensorData.class);
     }
-
-    @Override
-    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        try {
-            return getData().getPowerConsumptionState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerConsumptionState", ex);
-        }
-    }
 }

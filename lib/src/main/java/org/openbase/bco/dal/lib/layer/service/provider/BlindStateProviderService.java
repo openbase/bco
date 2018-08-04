@@ -28,6 +28,9 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.state.BlindStateType.BlindState;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVITY_MULTI_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE;
+
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -35,7 +38,9 @@ import rst.domotic.state.BlindStateType.BlindState;
 public interface BlindStateProviderService extends ProviderService {
 
     @RPCMethod
-    public BlindState getBlindState() throws NotAvailableException;
+    default BlindState getBlindState() throws NotAvailableException {
+        return (BlindState) getServiceProvider().getServiceState(BLIND_STATE_SERVICE);
+    }
 
     static void verifyBlindState(final BlindState blindState) throws VerificationFailedException {
         try {

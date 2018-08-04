@@ -21,17 +21,20 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.NotAvailableException;
+
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.ContactStateType.ContactState;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE;
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ContactStateProviderService extends ProviderService {
 
     @RPCMethod
-    public ContactState getContactState() throws NotAvailableException;
-
+    default ContactState getContactState() throws NotAvailableException {
+        return (ContactState) getServiceProvider().getServiceState(CONTACT_STATE_SERVICE);
+    }
 }

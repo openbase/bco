@@ -25,6 +25,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVATION_STATE_SERVICE;
+
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -32,6 +34,7 @@ import rst.domotic.state.ActivationStateType.ActivationState;
 public interface ActivationStateProviderService extends ProviderService {
 
     @RPCMethod
-    public ActivationState getActivationState() throws NotAvailableException;
-
+    default ActivationState getActivationState() throws NotAvailableException {
+        return (ActivationState) getServiceProvider().getServiceState(ACTIVATION_STATE_SERVICE);
+    }
 }

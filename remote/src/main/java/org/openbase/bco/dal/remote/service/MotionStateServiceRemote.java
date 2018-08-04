@@ -50,10 +50,6 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
         super(ServiceType.MOTION_STATE_SERVICE, MotionState.class);
     }
 
-    public Collection<MotionStateProviderService> getMotionStateProviderServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the motion state as motion if at least one underlying services replies with motion and else no motion.
@@ -66,11 +62,6 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
     @Override
     protected MotionState computeServiceState() throws CouldNotPerformException {
         return getMotionState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public MotionState getMotionState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

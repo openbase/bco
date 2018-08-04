@@ -44,22 +44,4 @@ public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSenso
     public TemperatureSensorRemote() {
         super(TemperatureSensorData.class);
     }
-
-    @Override
-    public TemperatureState getTemperatureState() throws NotAvailableException {
-        try {
-            return getData().getTemperatureState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TemperatureState", ex);
-        }
-    }
-
-    @Override
-    public AlarmState getTemperatureAlarmState() throws NotAvailableException {
-        try {
-            return getData().getTemperatureAlarmState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TemperatureAlarmStateState", ex);
-        }
-    }
 }

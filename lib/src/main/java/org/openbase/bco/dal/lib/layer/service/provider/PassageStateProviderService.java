@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PassageStateType.PassageState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PASSAGE_STATE_SERVICE;
 
 /**
  *
@@ -32,5 +35,7 @@ import rst.domotic.state.PassageStateType.PassageState;
 public interface PassageStateProviderService extends ProviderService {
 
     @RPCMethod
-    public PassageState getPassageState() throws NotAvailableException;
+    default PassageState getPassageState() throws NotAvailableException {
+        return (PassageState) getServiceProvider().getServiceState(PASSAGE_STATE_SERVICE);
+    }
 }

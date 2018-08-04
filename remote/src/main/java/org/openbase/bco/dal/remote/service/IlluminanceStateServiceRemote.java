@@ -49,10 +49,6 @@ public class IlluminanceStateServiceRemote extends AbstractServiceRemote<Illumin
         super(ServiceType.ILLUMINANCE_STATE_SERVICE, IlluminanceState.class);
     }
 
-    public Collection<IlluminanceStateProviderService> getIlluminanceStateProviderServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the average current and voltage and the sum of the consumption of the underlying services.
@@ -64,11 +60,6 @@ public class IlluminanceStateServiceRemote extends AbstractServiceRemote<Illumin
     @Override
     protected IlluminanceState computeServiceState() throws CouldNotPerformException {
         return getIlluminanceState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public IlluminanceState getIlluminanceState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

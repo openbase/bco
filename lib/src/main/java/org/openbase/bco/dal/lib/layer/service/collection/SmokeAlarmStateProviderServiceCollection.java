@@ -21,13 +21,13 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface SmokeAlarmStateProviderServiceCollection extends SmokeAlarmStateProviderService {
@@ -37,18 +37,23 @@ public interface SmokeAlarmStateProviderServiceCollection extends SmokeAlarmStat
      * else no alarm.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
-    public AlarmState getSmokeAlarmState() throws NotAvailableException;
+    default AlarmState getSmokeAlarmState() throws NotAvailableException {
+        return SmokeAlarmStateProviderService.super.getSmokeAlarmState();
+    }
 
     /**
      * Returns alarm if at least one smokeAlarmStateProvider with given unitType returns alarm
      * else no alarm.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws NotAvailableException
      */
-    public AlarmState getSmokeAlarmState(final UnitType unitType) throws NotAvailableException;
+    AlarmState getSmokeAlarmState(final UnitType unitType) throws NotAvailableException;
 }

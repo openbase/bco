@@ -69,28 +69,10 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     }
 
     @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("powerState", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         return brightnessStateService.setBrightnessState(brightnessState);
     }
 
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
-        try {
-            return getData().getBrightnessState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("brightnessState", ex);
-        }
-    }
-    
     @Override
     protected void applyCustomDataUpdate(DimmerData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {

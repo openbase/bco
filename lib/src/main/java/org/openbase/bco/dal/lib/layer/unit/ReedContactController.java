@@ -43,13 +43,4 @@ public class ReedContactController extends AbstractDALUnitController<ReedContact
     public ReedContactController(final UnitHost unitHost, ReedContactData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ReedContactController.class, unitHost, builder);
     }
-    
-    @Override
-    public ContactState getContactState() throws NotAvailableException {
-        try {
-            return getData().getContactState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("contactState", ex);
-        }
-    }
 }

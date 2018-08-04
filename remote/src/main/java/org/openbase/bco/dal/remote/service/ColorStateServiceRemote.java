@@ -60,10 +60,6 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
         super(ServiceType.COLOR_STATE_SERVICE, ColorState.class);
     }
 
-    public Collection<ColorStateOperationService> getColorStateOperationServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the average RGB color.
@@ -87,17 +83,12 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     }
 
     @Override
-    public ColorState getColorState() throws NotAvailableException {
-        return getData();
-    }
-
-    @Override
     public ColorState getColorState(final UnitType unitType) throws NotAvailableException {
         try {
             double averageRed = 0;
             double averageGreen = 0;
             double averageBlue = 0;
-            int amount = getColorStateOperationServices().size();
+            int amount = getServices(unitType).size();
             long timestamp = 0;
             Collection<ColorStateOperationService> colorStateOperationServiceCollection = getServices(unitType);
             for (ColorStateOperationService service : colorStateOperationServiceCollection) {
@@ -126,7 +117,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     @Override
     public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
         List<Future> futureList = new ArrayList<>();
-        for(ColorStateOperationService colorStateOperationService : getColorStateOperationServices()) {
+        for(ColorStateOperationService colorStateOperationService : getServices()) {
             futureList.add(colorStateOperationService.setNeutralWhite());
         }
         return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), futureList);

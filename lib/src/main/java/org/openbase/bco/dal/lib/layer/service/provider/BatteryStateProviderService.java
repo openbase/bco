@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BatteryStateType.BatteryState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +35,7 @@ import rst.domotic.state.BatteryStateType.BatteryState;
 public interface BatteryStateProviderService extends ProviderService {
 
     @RPCMethod
-    public BatteryState getBatteryState() throws NotAvailableException;
-
+    default BatteryState getBatteryState() throws NotAvailableException {
+        return (BatteryState) getServiceProvider().getServiceState(BATTERY_STATE_SERVICE);
+    }
 }

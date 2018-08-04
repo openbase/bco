@@ -31,6 +31,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -55,20 +56,15 @@ public class HowToControlAColorableLightUnitViaDAL {
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
 
-            LOGGER.info("request the first light unit with the label \"TestUnit_0\"");
-            
-            if (Units.getUnitsByLabel("TestUnit_0", false).isEmpty()) {
-                LOGGER.info("light not found in your setup!");
-                return;
-            }
-            
-            testLight = Units.getUnitsByLabel("TestUnit_0", true, Units.LIGHT_COLORABLE).get(0);
+            LOGGER.info("request the first light unit with the alias \"ColorableLight-0\"");
+
+            testLight = Units.getUnitByAlias("ColorableLight-0", true, Units.LIGHT_COLORABLE);
 
             LOGGER.info("switch the light on");
             testLight.setPowerState(PowerState.State.ON);
 
-            LOGGER.info("switch light color to blue");
-            testLight.setColor(Color.BLUE);
+            LOGGER.info("switch light color to red");
+            testLight.setColor(HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build());
 
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);

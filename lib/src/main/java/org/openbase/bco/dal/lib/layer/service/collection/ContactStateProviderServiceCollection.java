@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.ContactStateType.ContactState;
@@ -40,7 +41,9 @@ public interface ContactStateProviderServiceCollection extends ContactStateProvi
      * @throws NotAvailableException
      */
     @Override
-    public ContactState getContactState() throws NotAvailableException;
+    default ContactState getContactState() throws NotAvailableException {
+        return ContactStateProviderService.super.getContactState();
+    }
 
     /**
      * Returns open if at least one of the contactStateProviders with given unitType returns open

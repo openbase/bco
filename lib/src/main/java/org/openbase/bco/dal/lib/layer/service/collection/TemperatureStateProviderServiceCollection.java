@@ -21,13 +21,13 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface TemperatureStateProviderServiceCollection extends TemperatureStateProviderService {
@@ -37,18 +37,23 @@ public interface TemperatureStateProviderServiceCollection extends TemperatureSt
      * providers.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
-    public TemperatureState getTemperatureState() throws NotAvailableException;
+    default TemperatureState getTemperatureState() throws NotAvailableException {
+        return TemperatureStateProviderService.super.getTemperatureState();
+    }
 
     /**
      * Returns the average temperature value for a collection of temperature
      * providers with a given unit type.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws NotAvailableException
      */
-    public TemperatureState getTemperatureState(final UnitType unitType) throws NotAvailableException;
+    TemperatureState getTemperatureState(final UnitType unitType) throws NotAvailableException;
 }

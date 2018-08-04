@@ -22,6 +22,8 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -44,7 +46,9 @@ public interface BrightnessStateOperationServiceCollection extends BrightnessSta
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException;
+    default BrightnessState getBrightnessState() throws NotAvailableException {
+        return BrightnessStateOperationService.super.getBrightnessState();
+    }
 
     /**
      * Returns the average brightness value for a collection of brightnessServices with given unitType.

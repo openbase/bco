@@ -49,14 +49,4 @@ public class LightSensorRemote extends AbstractUnitRemote<LightSensorData> imple
     public LightSensorRemote() {
         super(LightSensorData.class);
     }
-
-    @Override
-    public IlluminanceState getIlluminanceState() throws NotAvailableException {
-        try {
-            return getData().getIlluminanceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("BrightnessState", ex);
-        }
-    }
-
 }

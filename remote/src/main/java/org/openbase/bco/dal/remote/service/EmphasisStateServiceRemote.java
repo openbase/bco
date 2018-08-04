@@ -52,10 +52,6 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
         super(ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE, EmphasisState.class);
     }
 
-    public Collection<EmphasisStateOperationService> getEmphasisStateOperationServices() throws CouldNotPerformException {
-        return getServices();
-    }
-
     @Override
     protected EmphasisState computeServiceState() throws CouldNotPerformException {
         return getEmphasisState(UnitType.UNKNOWN);
@@ -69,11 +65,6 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
     @Override
     public Future<ActionFutureType.ActionFuture> setEmphasisState(final EmphasisState emphasisState, UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(emphasisState, getServiceType(), unitType));
-    }
-
-    @Override
-    public EmphasisState getEmphasisState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

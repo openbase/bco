@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -40,7 +41,9 @@ public interface PresenceStateProviderServiceCollection extends PresenceStatePro
      * @throws NotAvailableException
      */
     @Override
-    public PresenceState getPresenceState() throws NotAvailableException;
+    default PresenceState getPresenceState() throws NotAvailableException {
+        return PresenceStateProviderService.super.getPresenceState();
+    }
 
     /**
      * Returns presence if at least one presenceDetector with given unitType returns presence else no no presence.

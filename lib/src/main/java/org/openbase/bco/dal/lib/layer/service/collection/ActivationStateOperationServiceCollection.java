@@ -44,7 +44,9 @@ public interface ActivationStateOperationServiceCollection extends ActivationSta
      * @throws NotAvailableException
      */
     @Override
-    public ActivationState getActivationState() throws NotAvailableException;
+    default ActivationState getActivationState() throws NotAvailableException {
+        return ActivationStateOperationService.super.getActivationState();
+    }
 
     /**
      * Returns on if at least one of the power services is on and else off.
@@ -53,5 +55,5 @@ public interface ActivationStateOperationServiceCollection extends ActivationSta
      * @return
      * @throws NotAvailableException
      */
-    public ActivationState getActivationState(final UnitType unitType) throws NotAvailableException;
+    ActivationState getActivationState(final UnitType unitType) throws NotAvailableException;
 }

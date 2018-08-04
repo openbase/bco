@@ -42,13 +42,6 @@ import java.util.concurrent.Future;
  */
 public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOperationService, PowerState> implements PowerStateOperationServiceCollection {
 
-//    public static final String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
-//
-//    public static final boolean INFRASTRUCTURE_UNITS_FILTERED = true;
-//    public static final boolean INFRASTRUCTURE_UNITS_HANDELED = false;
-//
-//    private boolean filterInfrastructureUnits;
-
     /**
      * Constructor creates a new service remote.
      * <p>
@@ -67,44 +60,6 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
      */
     public PowerStateServiceRemote(final boolean filterInfrastructureUnits) {
         super(ServiceType.POWER_STATE_SERVICE, PowerState.class, filterInfrastructureUnits);
-//        this.filterInfrastructureUnits = filterInfrastructureUnits;
-    }
-
-//    @Override
-//    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-//        try {
-//            // check if infrastructure filter is enabled
-//            if (filterInfrastructureUnits) {
-//                Registries.waitForData();
-//                final MetaConfigPool metaConfigPool = new MetaConfigPool();
-//                metaConfigPool.register(new MetaConfigVariableProvider("UnitConfig", config.getMetaConfig()));
-//                if (config.hasUnitHostId() && !config.getUnitHostId().isEmpty()) {
-//                    try {
-//                        metaConfigPool.register(new MetaConfigVariableProvider("UnitHost", Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId()).getMetaConfig()));
-//                    } catch (NotAvailableException ex) {
-//                        logger.warn("Could not check host of unit[" + ScopeGenerator.generateStringRep(config.getScope()) + "] for infrastructure filter because its not available");
-//                    }
-//                }
-//
-//                try {
-//                    //check if the unit is marked as infrastructure
-//                    if (Boolean.parseBoolean(metaConfigPool.getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG))) {
-//                        // do not handle infrastructure unit.
-//                        return;
-//                    }
-//                } catch (NotAvailableException ex) {
-//                    // META_CONFIG_UNIT_INFRASTRUCTURE_FLAG is not available so unit is not marked as infrastructure.
-//                }
-//            }
-//        } catch (CouldNotPerformException ex) {
-//            throw new InitializationException(this, ex);
-//        }
-//        // continue the init process
-//        super.init(config);
-//    }
-
-    public Collection<PowerStateOperationService> getPowerStateOperationServices() {
-        return getServices();
     }
 
     @Override
@@ -127,11 +82,6 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     @Override
     protected PowerState computeServiceState() throws CouldNotPerformException {
         return getPowerState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

@@ -25,6 +25,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.state.DoorStateType.DoorState;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.DOOR_STATE_SERVICE;
+
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -32,5 +34,7 @@ import rst.domotic.state.DoorStateType.DoorState;
 public interface DoorStateProviderService extends ProviderService {
 
     @RPCMethod
-    public DoorState getDoorState() throws NotAvailableException;
+    default DoorState getDoorState() throws NotAvailableException {
+        return (DoorState) getServiceProvider().getServiceState(DOOR_STATE_SERVICE);
+    }
 }

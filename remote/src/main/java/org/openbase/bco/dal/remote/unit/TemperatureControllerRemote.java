@@ -53,25 +53,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     }
 
     @Override
-    public TemperatureState getTemperatureState() throws NotAvailableException {
-        try {
-            return getData().getTemperatureState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TemperatureState", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, this));
-    }
-
-    @Override
-    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        try {
-            return getData().getTargetTemperatureState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TargetTemperatureState", ex);
-        }
     }
 }

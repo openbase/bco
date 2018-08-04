@@ -54,13 +54,4 @@ public class HandleController extends AbstractDALUnitController<HandleData, Hand
 //            throw new CouldNotPerformException("Could not apply handleState Update[" + handleState + "] for " + this + "!", ex);
 //        }
 //    }
-    
-    @Override
-    public HandleState getHandleState() throws NotAvailableException {
-        try {
-            return getData().getHandleState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("handleState", ex);
-        }
-    }
 }

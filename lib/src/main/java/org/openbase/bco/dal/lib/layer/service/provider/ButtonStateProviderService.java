@@ -21,17 +21,20 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.NotAvailableException;
+
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.ButtonStateType.ButtonState;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_STATE_SERVICE;
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ButtonStateProviderService extends ProviderService {
 
     @RPCMethod
-    public ButtonState getButtonState() throws NotAvailableException;
-
+    default ButtonState getButtonState() throws NotAvailableException {
+        return (ButtonState) getServiceProvider().getServiceState(BUTTON_STATE_SERVICE);
+    }
 }

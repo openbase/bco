@@ -65,7 +65,7 @@ public interface ColorStateProviderService extends ProviderService {
      * @deprecated please use org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer instead.
      */
     @Deprecated
-    default public java.awt.Color getJavaAWTColor() throws CouldNotPerformException {
+    default java.awt.Color getJavaAWTColor() throws CouldNotPerformException {
         try {
             final HSBColor color = getHSBColor();
             return java.awt.Color.getHSBColor((((float) color.getHue()) / 360f), (((float) color.getSaturation()) / 100f), (((float) color.getBrightness()) / 100f));

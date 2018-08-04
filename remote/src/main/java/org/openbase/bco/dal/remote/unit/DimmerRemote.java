@@ -60,25 +60,7 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
     }
 
     @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerState", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
-    }
-
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
-        try {
-            return getData().getBrightnessState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("BrightnessState", ex);
-        }
     }
 }

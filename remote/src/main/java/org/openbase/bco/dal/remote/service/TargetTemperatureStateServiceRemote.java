@@ -52,10 +52,6 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
         super(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, TemperatureState.class);
     }
 
-    public Collection<TargetTemperatureStateOperationService> getTargetTemperatureStateOperationServices() {
-        return getServices();
-    }
-
     @Override
     public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(temperatureState, getServiceType()));
@@ -76,11 +72,6 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
     @Override
     protected TemperatureState computeServiceState() throws CouldNotPerformException {
         return getTargetTemperatureState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

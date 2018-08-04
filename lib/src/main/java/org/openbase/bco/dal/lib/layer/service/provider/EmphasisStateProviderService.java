@@ -24,7 +24,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE;
 
 /**
  *
@@ -33,7 +36,9 @@ import rst.domotic.state.EmphasisStateType.EmphasisState;
 public interface EmphasisStateProviderService extends ProviderService {
 
     @RPCMethod
-    public EmphasisState getEmphasisState() throws NotAvailableException;
+    default EmphasisState getEmphasisState() throws NotAvailableException {
+        return (EmphasisState) getServiceProvider().getServiceState(EMPHASIS_STATE_SERVICE);
+    }
 
     static void verifyEmphasisState(final EmphasisState emphasisState) throws VerificationFailedException {
         if (!emphasisState.hasComfort() && !emphasisState.hasSecurity() && !emphasisState.hasEnergy()) {

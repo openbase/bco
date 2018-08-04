@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +35,7 @@ import rst.domotic.state.MotionStateType.MotionState;
 public interface MotionStateProviderService extends ProviderService {
 
     @RPCMethod
-    public MotionState getMotionState() throws NotAvailableException;
-
+    default MotionState getMotionState() throws NotAvailableException {
+        return (MotionState) getServiceProvider().getServiceState(MOTION_STATE_SERVICE);
+    }
 }

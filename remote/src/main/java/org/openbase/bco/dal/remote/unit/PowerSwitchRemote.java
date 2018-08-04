@@ -56,13 +56,4 @@ public class PowerSwitchRemote extends AbstractUnitRemote<PowerSwitchData> imple
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
-
-    @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerState", ex);
-        }
-    }
 }

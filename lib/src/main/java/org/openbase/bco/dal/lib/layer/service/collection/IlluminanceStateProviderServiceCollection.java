@@ -27,13 +27,12 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
 
 /**
- *
  * @author pleminoq
  */
 public interface IlluminanceStateProviderServiceCollection extends IlluminanceStateProviderService {
@@ -42,18 +41,23 @@ public interface IlluminanceStateProviderServiceCollection extends IlluminanceSt
      * Compute the average illuminance measured by the underlying services.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
-    public IlluminanceState getIlluminanceState() throws NotAvailableException;
+    default IlluminanceState getIlluminanceState() throws NotAvailableException {
+        return IlluminanceStateProviderService.super.getIlluminanceState();
+    }
 
     /**
      * Compute the average illuminance measured by the underlying services with given unitType.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws NotAvailableException
      */
-    public IlluminanceState getIlluminanceState(final UnitType unitType) throws NotAvailableException;
+    IlluminanceState getIlluminanceState(final UnitType unitType) throws NotAvailableException;
 
 }

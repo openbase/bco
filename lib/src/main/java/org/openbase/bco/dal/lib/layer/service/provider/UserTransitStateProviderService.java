@@ -24,7 +24,11 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.USER_TRANSIT_STATE_SERVICE;
 
 /**
  *
@@ -33,5 +37,7 @@ import rst.domotic.state.UserTransitStateType.UserTransitState;
 public interface UserTransitStateProviderService extends ProviderService {
     
     @RPCMethod
-    public UserTransitState getUserTransitState() throws NotAvailableException;
+    default UserTransitState getUserTransitState() throws NotAvailableException {
+        return (UserTransitState) getServiceProvider().getServiceState(USER_TRANSIT_STATE_SERVICE);
+    }
 }

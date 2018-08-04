@@ -60,10 +60,6 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(standbyState, getServiceType(), unitType));
     }
 
-    public Collection<StandbyStateOperationService> getStandbyStateOperationServices() {
-        return getServices();
-    }
-
     /**
      * {@inheritDoc}
      * Computes the standby state as running if at least one underlying service is running and else standby.
@@ -74,11 +70,6 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     @Override
     protected StandbyState computeServiceState() throws CouldNotPerformException {
         return getStandbyState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public StandbyState getStandbyState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

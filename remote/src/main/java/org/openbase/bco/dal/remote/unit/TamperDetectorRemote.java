@@ -43,13 +43,4 @@ public class TamperDetectorRemote extends AbstractUnitRemote<TamperDetectorData>
     public TamperDetectorRemote() {
         super(TamperDetectorData.class);
     }
-
-    @Override
-    public TamperState getTamperState() throws NotAvailableException {
-        try {
-            return getData().getTamperState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TamperState", ex);
-        }
-    }
 }

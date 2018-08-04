@@ -45,22 +45,4 @@ public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetectorData> i
     public SmokeDetectorRemote() {
         super(SmokeDetectorData.class);
     }
-
-    @Override
-    public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        try {
-            return getData().getSmokeAlarmState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("SmokeAlarmState", ex);
-        }
-    }
-
-    @Override
-    public SmokeState getSmokeState() throws NotAvailableException {
-        try {
-            return getData().getSmokeState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("SmokeState", ex);
-        }
-    }
 }

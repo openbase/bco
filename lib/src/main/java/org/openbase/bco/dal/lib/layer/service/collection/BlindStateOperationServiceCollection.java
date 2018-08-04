@@ -45,7 +45,9 @@ public interface BlindStateOperationServiceCollection extends BlindStateOperatio
      * @throws NotAvailableException
      */
     @Override
-    public BlindState getBlindState() throws NotAvailableException;
+    default BlindState getBlindState() throws NotAvailableException {
+        return BlindStateOperationService.super.getBlindState();
+    }
 
     /**
      * Returns up if all shutter services of the given unit type are up and else the from up differing
@@ -55,5 +57,5 @@ public interface BlindStateOperationServiceCollection extends BlindStateOperatio
      * @return
      * @throws NotAvailableException
      */
-    public BlindState getBlindState(final UnitType unitType) throws NotAvailableException;
+    BlindState getBlindState(final UnitType unitType) throws NotAvailableException;
 }

@@ -47,16 +47,6 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
     }
 
     /**
-     *
-     * @return
-     * @deprecated please use getServices() instead!
-     */
-    @Deprecated
-    public Collection<ContactStateProviderService> getContactStateProviderServices() {
-        return getServices();
-    }
-
-    /**
      * {@inheritDoc}
      * Computes the contact state as open if at least one underlying service is open and else closed.
      *
@@ -66,11 +56,6 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
     @Override
     protected ContactState computeServiceState() throws CouldNotPerformException {
         return getContactState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public ContactState getContactState() throws NotAvailableException {
-        return getData();
     }
 
     @Override

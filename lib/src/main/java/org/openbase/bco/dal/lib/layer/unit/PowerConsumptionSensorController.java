@@ -43,13 +43,4 @@ public class PowerConsumptionSensorController extends AbstractDALUnitController<
     public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(PowerConsumptionSensorController.class, unitHost, builder);
     }
-    
-    @Override
-    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        try {
-            return getData().getPowerConsumptionState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("powerConsumptionState", ex);
-        }
-    }
 }

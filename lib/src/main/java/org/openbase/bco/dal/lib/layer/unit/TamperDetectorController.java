@@ -43,13 +43,4 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
     public TamperDetectorController(final UnitHost unitHost, final TamperDetectorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TamperDetectorController.class, unitHost, builder);
     }
-
-    @Override
-    public TamperState getTamperState() throws NotAvailableException {
-        try {
-            return getData().getTamperState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("tamperState", ex);
-        }
-    }
 }

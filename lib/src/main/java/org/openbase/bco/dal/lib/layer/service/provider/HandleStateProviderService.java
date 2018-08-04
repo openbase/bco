@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.HandleStateType.HandleState;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_STATE_SERVICE;
 
 /**
  *
@@ -32,6 +35,7 @@ import rst.domotic.state.HandleStateType.HandleState;
 public interface HandleStateProviderService extends ProviderService {
 
     @RPCMethod
-    public HandleState getHandleState() throws NotAvailableException;
-
+    default HandleState getHandleState() throws NotAvailableException {
+        return (HandleState) getServiceProvider().getServiceState(HANDLE_STATE_SERVICE);
+    }
 }

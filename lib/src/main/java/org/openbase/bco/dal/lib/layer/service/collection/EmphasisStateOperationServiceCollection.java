@@ -22,6 +22,8 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -44,7 +46,9 @@ public interface EmphasisStateOperationServiceCollection extends EmphasisStateOp
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    public EmphasisState getEmphasisState() throws NotAvailableException;
+    default EmphasisState getEmphasisState() throws NotAvailableException {
+        return EmphasisStateOperationService.super.getEmphasisState();
+    }
 
     /**
      * Returns the average emphasis value for a collection of brightnessServices with given unitType.
@@ -53,6 +57,6 @@ public interface EmphasisStateOperationServiceCollection extends EmphasisStateOp
      * @return
      * @throws org.openbase.jul.exception.NotAvailableException
      */
-    public EmphasisState getEmphasisState(final UnitType unitType) throws NotAvailableException;
+    EmphasisState getEmphasisState(final UnitType unitType) throws NotAvailableException;
 
 }

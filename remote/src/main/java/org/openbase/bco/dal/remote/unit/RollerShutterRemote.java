@@ -59,13 +59,4 @@ public class RollerShutterRemote extends AbstractUnitRemote<RollerShutterData> i
     public Future<ActionFuture> setBlindState(BlindState blindState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(blindState, ServiceType.BLIND_STATE_SERVICE, this));
     }
-
-    @Override
-    public BlindState getBlindState() throws NotAvailableException {
-        try {
-            return getData().getBlindState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("BlindState", ex);
-        }
-    }
 }

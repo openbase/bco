@@ -64,13 +64,4 @@ public class LightController extends AbstractDALUnitController<LightData, LightD
         }
         return powerService.setPowerState(state);
     }
-    
-    @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("powerState", ex);
-        }
-    }
 }

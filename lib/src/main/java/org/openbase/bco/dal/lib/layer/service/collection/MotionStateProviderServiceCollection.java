@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.MotionStateType.MotionState;
@@ -40,7 +41,9 @@ public interface MotionStateProviderServiceCollection extends MotionStateProvide
      * @throws NotAvailableException
      */
     @Override
-    public MotionState getMotionState() throws NotAvailableException;
+    default MotionState getMotionState() throws NotAvailableException {
+        return MotionStateProviderService.super.getMotionState();
+    }
 
     /**
      * Computes the motion state as motion if at least one underlying services with given unitType replies with motion and else no motion.
@@ -50,5 +53,5 @@ public interface MotionStateProviderServiceCollection extends MotionStateProvide
      * @return
      * @throws NotAvailableException
      */
-    public MotionState getMotionState(final UnitType unitType) throws NotAvailableException;
+    MotionState getMotionState(final UnitType unitType) throws NotAvailableException;
 }
