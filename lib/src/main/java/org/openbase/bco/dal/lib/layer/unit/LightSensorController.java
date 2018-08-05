@@ -47,14 +47,4 @@ public class LightSensorController extends AbstractDALUnitController<LightSensor
     public LightSensorController(final UnitHost unitHost, LightSensorData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
         super(LightSensorController.class, unitHost, builder);
     }
-    
-    @Override
-    public IlluminanceState getIlluminanceState() throws NotAvailableException {
-        try {
-            return getData().getIlluminanceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("illuminanceState", ex);
-        }
-    }
-    
 }

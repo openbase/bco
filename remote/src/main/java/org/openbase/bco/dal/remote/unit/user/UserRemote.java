@@ -62,15 +62,6 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public ActivityMultiState getActivityMultiState() throws NotAvailableException {
-        try {
-            return getData().getActivityMultiState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user activity", ex);
-        }
-    }
-
-    @Override
     public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE,this));
     }

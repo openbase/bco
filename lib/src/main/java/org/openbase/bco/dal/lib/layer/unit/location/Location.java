@@ -61,15 +61,6 @@ public interface Location extends BaseUnit<LocationData>, PresenceStateProviderS
         return serviceTypeSet;
     }
 
-    @Override
-    default PresenceState getPresenceState() throws NotAvailableException {
-        try {
-            return getData().getPresenceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PresenceState", ex);
-        }
-    }
-
     @RPCMethod
     @Override
     Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
