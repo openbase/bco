@@ -53,4 +53,10 @@ public class ItemObservable extends AbstractDTOObservable<JsonObject> {
     protected Observer<JsonObject> getInternalObserver() {
         return observer;
     }
+
+    @Override
+    public boolean isDataAvailable() {
+        // this is a workaround used to trigger an initial update
+        return true;
+    }
 }

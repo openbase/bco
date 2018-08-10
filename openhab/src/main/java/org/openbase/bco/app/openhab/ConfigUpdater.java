@@ -23,7 +23,6 @@ package org.openbase.bco.app.openhab;
  */
 
 import org.openbase.bco.app.openhab.registry.synchronizer.SynchronizationHelper;
-import org.openbase.bco.app.openhab.registry.synchronizer.ThingDeviceUnitSynchronization;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.NotAvailableException;
@@ -34,6 +33,7 @@ import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
+import rst.configuration.EntryType.Entry.Builder;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
@@ -88,41 +88,24 @@ public class ConfigUpdater {
                         continue;
                     }
 
-                    Entry.Builder builder = bcoDevice.getMetaConfigBuilder().addEntryBuilder();
-                    builder.setKey(SynchronizationHelper.OPENHAB_THING_UID_KEY);
-                    builder.setValue(thingUID);
-
-                    List<UnitConfig.Builder> dalUnitList = new ArrayList<>();
-                    for (final String dalUnitId1 : bcoDevice.getDeviceConfig().getUnitIdList()) {
-                        final UnitConfig.Builder dalUnit1 = Registries.getUnitRegistry().getUnitConfigById(dalUnitId1).toBuilder();
-
-                        for (final String dalUnitId2 : openhab2Device.getDeviceConfig().getUnitIdList()) {
-                            final UnitConfig dalUnit2 = Registries.getUnitRegistry().getUnitConfigById(dalUnitId2);
-
-                            if (dalUnit1.getUnitTemplateConfigId().equals(dalUnit2.getUnitTemplateConfigId())) {
-                                for (String alias : dalUnit2.getAliasList()) {
-                                    dalUnit1.addAlias(alias);
-                                }
-                                dalUnitList.add(dalUnit1);
-                                break;
-                            }
+                    // add meta config entry to bco device
+                    for (Entry entry : openhab2Device.getMetaConfig().getEntryList()) {
+                        if (entry.getKey().equals(SynchronizationHelper.OPENHAB_THING_UID_KEY)) {
+                            Builder builder = bcoDevice.getMetaConfigBuilder().addEntryBuilder();
+                            builder.setKey(entry.getKey());
+                            builder.setValue(entry.getValue());
                         }
                     }
-
-                    // TODO: this leads to potentially many units config is that right
-                    LOGGER.info("Remove openHAB device");
-                    Registries.getUnitRegistry().removeUnitConfig(openhab2Device).get();
                     LOGGER.info("Update BCO device");
                     Registries.getUnitRegistry().updateUnitConfig(bcoDevice.build()).get();
-                    LOGGER.info("Update its dal units");
-                    for (final UnitConfig.Builder dalUnit : dalUnitList) {
-                        Registries.getUnitRegistry().updateUnitConfig(dalUnit.build()).get();
-                    }
+                    LOGGER.info("Remove openHAB device");
+                    Registries.getUnitRegistry().removeUnitConfig(openhab2Device).get();
                 }
             }
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("Could not sync config", ex, LOGGER);
         }
+
 
         System.exit(0);
     }

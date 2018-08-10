@@ -34,6 +34,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.List;
 
@@ -80,6 +81,31 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
         } catch (NotAvailableException ex) {
             // do nothing because thing is already removed
             return;
+        }
+
+        logger.info("Test if other device for thing exist");
+        // if there is another device corresponding to this thing, do not delete it because the other
+        // device has simple taken over
+        for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
+            if (unitConfig.getId().equals(deviceUnitConfig.getId())) {
+                continue;
+            }
+
+            try {
+                String thingId = SynchronizationHelper.getThingIdFromDevice(unitConfig);
+                // perform update for other device
+                if (thingId.equals(thing.UID)) {
+                    if (updateThing(unitConfig, thing)) {
+                        OpenHABRestCommunicator.getInstance().updateThing(thing);
+                        for (final String unitId : unitConfig.getDeviceConfig().getUnitIdList()) {
+                            SynchronizationHelper.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thing);
+                        }
+                    }
+                    return;
+                }
+            } catch (NotAvailableException ex) {
+                // do nothing
+            }
         }
 
         logger.info("Delete thing[" + thing.UID + "]");

@@ -156,7 +156,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             return;
         }
 
-        logger.info("Remote device [" + deviceUnitConfig.getAlias(0) + "]");
+        logger.info("Remove device [" + deviceUnitConfig.getAlias(0) + "]");
         // remove device
         try {
             Registries.getUnitRegistry().removeUnitConfig(deviceUnitConfig).get();
