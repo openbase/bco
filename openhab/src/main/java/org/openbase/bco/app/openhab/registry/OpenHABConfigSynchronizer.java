@@ -22,19 +22,15 @@ package org.openbase.bco.app.openhab.registry;
  * #L%
  */
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
-import org.openbase.bco.app.openhab.registry.synchronizer.InboxApprover;
-import org.openbase.bco.app.openhab.registry.synchronizer.ThingDeviceUnitSynchronizer;
+import org.openbase.bco.app.openhab.registry.synchronizer.*;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +38,25 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABConfigSynchronizer.class);
 
-    private final ThingDeviceUnitSynchronizer thingDeviceUnitSynchronizer;
+    private final SyncObject synchronizationLock = new SyncObject("SyncLock");
+
     private final InboxApprover inboxApprover;
+    private final ThingDeviceUnitSynchronization thingDeviceUnitSynchronization;
+    private final DeviceThingSynchronization deviceThingSynchronization;
+    private final DALUnitItemSynchronization dalUnitItemSynchronization;
+    private final ItemDalUnitSynchronization itemDalUnitSynchronization;
 
     public OpenHABConfigSynchronizer() throws InstantiationException {
-        this.thingDeviceUnitSynchronizer = new ThingDeviceUnitSynchronizer();
-        this.inboxApprover = new InboxApprover();
+        try {
+            this.inboxApprover = new InboxApprover();
+            this.thingDeviceUnitSynchronization = new ThingDeviceUnitSynchronization(synchronizationLock);
+            this.deviceThingSynchronization = new DeviceThingSynchronization(synchronizationLock);
+
+            this.dalUnitItemSynchronization = new DALUnitItemSynchronization(synchronizationLock);
+            this.itemDalUnitSynchronization = new ItemDalUnitSynchronization(synchronizationLock);
+        } catch (NotAvailableException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     public void init() {
@@ -55,18 +64,29 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
 
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
-        thingDeviceUnitSynchronizer.activate();
+        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
+        thingDeviceUnitSynchronization.activate();
+        deviceThingSynchronization.activate();
+        dalUnitItemSynchronization.activate();
+        itemDalUnitSynchronization.activate();
         inboxApprover.activate();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         inboxApprover.deactivate();
-        thingDeviceUnitSynchronizer.deactivate();
+        thingDeviceUnitSynchronization.deactivate();
+        deviceThingSynchronization.deactivate();
+        dalUnitItemSynchronization.deactivate();
+        itemDalUnitSynchronization.deactivate();
     }
 
     @Override
     public boolean isActive() {
-        return thingDeviceUnitSynchronizer.isActive() && inboxApprover.isActive();
+        return thingDeviceUnitSynchronization.isActive()
+                && deviceThingSynchronization.isActive()
+                && dalUnitItemSynchronization.isActive()
+                && itemDalUnitSynchronization.isActive()
+                && inboxApprover.isActive();
     }
 }

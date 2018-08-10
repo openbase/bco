@@ -23,24 +23,27 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
  */
 
 import com.google.gson.JsonObject;
-import org.eclipse.smarthome.core.thing.events.ThingAddedEvent;
-import org.eclipse.smarthome.core.thing.events.ThingRemovedEvent;
-import org.eclipse.smarthome.core.thing.events.ThingUpdatedEvent;
+import org.eclipse.smarthome.core.items.events.ItemAddedEvent;
+import org.eclipse.smarthome.core.items.events.ItemRemovedEvent;
+import org.eclipse.smarthome.core.items.events.ItemUpdatedEvent;
 import org.openbase.jul.pattern.Observer;
 
-public class ThingObservable extends AbstractDTOObservable<JsonObject> {
+/**
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ */
+public class ItemObservable extends AbstractDTOObservable<JsonObject> {
 
-    private static final String THING_TOPIC_FILTER = "smarthome/things/(.+)";
+    private static final String ITEM_TOPIC_FILTER = "smarthome/items/(.+)";
 
     private final Observer<JsonObject> observer;
 
-    public ThingObservable() {
-        super(THING_TOPIC_FILTER, JsonObject.class);
+    public ItemObservable() {
+        super(ITEM_TOPIC_FILTER, JsonObject.class);
 
         this.observer = (observable, jsonObject) -> {
             final String eventType = jsonObject.get("type").getAsString();
 
-            if (eventType.equals(ThingUpdatedEvent.TYPE) || eventType.equals(ThingAddedEvent.TYPE) || eventType.equals(ThingRemovedEvent.TYPE)) {
+            if (eventType.equals(ItemAddedEvent.TYPE) || eventType.equals(ItemRemovedEvent.TYPE) || eventType.equals(ItemUpdatedEvent.TYPE)) {
                 getObservable().notifyObservers(jsonObject);
             }
         };
@@ -49,11 +52,5 @@ public class ThingObservable extends AbstractDTOObservable<JsonObject> {
     @Override
     protected Observer<JsonObject> getInternalObserver() {
         return observer;
-    }
-
-    @Override
-    public boolean isDataAvailable() {
-        // this is a workaround used to trigger an initial update
-        return true;
     }
 }

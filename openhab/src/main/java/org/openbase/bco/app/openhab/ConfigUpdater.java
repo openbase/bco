@@ -22,7 +22,8 @@ package org.openbase.bco.app.openhab;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.registry.synchronizer.ThingDeviceUnitSynchronizer;
+import org.openbase.bco.app.openhab.registry.synchronizer.SynchronizationHelper;
+import org.openbase.bco.app.openhab.registry.synchronizer.ThingDeviceUnitSynchronization;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.NotAvailableException;
@@ -72,7 +73,7 @@ public class ConfigUpdater {
                     UnitConfig openhab2Device;
                     UnitConfig.Builder bcoDevice;
                     try {
-                        thingUID = metaConfigPool.getValue(ThingDeviceUnitSynchronizer.OPENHAB_THING_UID_KEY);
+                        thingUID = metaConfigPool.getValue(SynchronizationHelper.OPENHAB_THING_UID_KEY);
                         openhab2Device = unitConfig;
                         LOGGER.info("Found openhab device[" + openhab2Device.getAlias(0) + "]");
                     } catch (NotAvailableException ex) {
@@ -88,7 +89,7 @@ public class ConfigUpdater {
                     }
 
                     Entry.Builder builder = bcoDevice.getMetaConfigBuilder().addEntryBuilder();
-                    builder.setKey(ThingDeviceUnitSynchronizer.OPENHAB_THING_UID_KEY);
+                    builder.setKey(SynchronizationHelper.OPENHAB_THING_UID_KEY);
                     builder.setValue(thingUID);
 
                     List<UnitConfig.Builder> dalUnitList = new ArrayList<>();

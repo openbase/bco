@@ -137,6 +137,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
     public void addSSEObserver(Observer<JsonObject> observer, final String topicRegex) {
         synchronized (topicObservableMapLock) {
+            LOGGER.info("Add sse observer on topic[" + topicRegex + "]");
             if (topicObservableMap.containsKey(topicRegex)) {
                 topicObservableMap.get(topicRegex).addObserver(observer);
                 return;
@@ -144,6 +145,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             if (sseEventSource == null) {
                 final WebTarget webTarget = baseWebTarget.path("events");
+                LOGGER.info("Create event source on[" + webTarget.getUri() + "]");
                 sseEventSource = SseEventSource.target(webTarget).build();
                 sseEventSource.open();
             }
@@ -194,6 +196,14 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
     public EnrichedThingDTO deleteThing(final String thingUID) throws CouldNotPerformException {
         return jsonToClass(jsonParser.parse(delete(THINGS_TARGET + SEPARATOR + thingUID)), EnrichedThingDTO.class);
+    }
+
+    public EnrichedThingDTO getThing(final String thingUID) throws NotAvailableException {
+        try {
+            return jsonToClass(jsonParser.parse(get(THINGS_TARGET + SEPARATOR + thingUID)), EnrichedThingDTO.class);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Thing[" + thingUID + "]");
+        }
     }
 
     public List<EnrichedThingDTO> getThings() throws CouldNotPerformException {
