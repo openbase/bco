@@ -39,62 +39,88 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import java.util.List;
 
 /**
+ * Class managing the synchronization from BCO device units to openHAB things.
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DeviceThingSynchronization extends AbstractSynchronizer<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 
+    /**
+     * Create a new synchronization manager from BCO device units to openHAB things.
+     *
+     * @param synchronizationLock a lock used during a synchronization. This is lock should be shared with
+     *                            other synchronization managers so that they will not interfere with each other.
+     * @throws InstantiationException if instantiation fails
+     * @throws NotAvailableException  if the unit registry is not available
+     */
     public DeviceThingSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
         super(Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), synchronizationLock);
     }
 
+    /**
+     * Update the label and location of a thing belonging to the device unit.
+     *
+     * @param identifiableMessage the device unit updated
+     * @throws CouldNotPerformException if the thing could not be updated
+     */
     @Override
     public void update(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        logger.info("Update device[" + identifiableMessage.getMessage().getAlias(0) + "]");
+        // update thing label and location if needed
         final UnitConfig deviceUnitConfig = identifiableMessage.getMessage();
         final EnrichedThingDTO thing = SynchronizationHelper.getThingForDevice(deviceUnitConfig);
 
         if (updateThing(deviceUnitConfig, thing)) {
-            logger.info("Update thing[" + thing.UID + "]");
             OpenHABRestCommunicator.getInstance().updateThing(thing);
         }
     }
 
+    /**
+     * Only perform an initial sync between a device unit and it thing by calling {@link #update(IdentifiableMessage)}
+     * if its the initial sync.
+     *
+     * @param identifiableMessage the device unit initially registered
+     * @throws CouldNotPerformException if the initial update could not be performed.
+     */
     @Override
     public void register(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        logger.info("Update device[" + identifiableMessage.getMessage().getAlias(0) + "]");
         // if this is the initial sync make sure that things and devices are synced
         if (isInitialSync()) {
             update(identifiableMessage);
         }
 
-        // devices for openHAB will currently only registered via openHAB itself
+        // devices for openHAB are only registered via openHAB itself
     }
 
+    /**
+     * Remove the thing belonging to a device unit. This is skipped if the thing is not available, e.g. because
+     * it has already been removed, or if another device still manages the thing.
+     * If another device manages the thing, the thing and its items will be updated. This is necessary for a
+     * synchronization with an old BCO registry.
+     *
+     * @param identifiableMessage the removed device unit
+     * @throws CouldNotPerformException if the thing could not be removed or updated
+     */
     @Override
     public void remove(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        logger.info("Remove device[" + identifiableMessage.getMessage().getAlias(0) + "]");
+        // remove thing belonging to the device
         final UnitConfig deviceUnitConfig = identifiableMessage.getMessage();
 
+        // retrieve thing
         EnrichedThingDTO thing;
         try {
             thing = SynchronizationHelper.getThingForDevice(deviceUnitConfig);
         } catch (NotAvailableException ex) {
-            // do nothing because thing is already removed
+            // do nothing because thing is already removed or never existed
             return;
         }
 
-        logger.info("Test if other device for thing exist");
-        // if there is another device corresponding to this thing, do not delete it because the other
-        // device has simple taken over
+        // if there is another device corresponding to this thing, do not delete it because the other device has taken over
         for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
-            if (unitConfig.getId().equals(deviceUnitConfig.getId())) {
-                continue;
-            }
-
             try {
+                // check if another device has the same thing id
                 String thingId = SynchronizationHelper.getThingIdFromDevice(unitConfig);
-                // perform update for other device
                 if (thingId.equals(thing.UID)) {
+                    // perform update for other device
                     if (updateThing(unitConfig, thing)) {
                         OpenHABRestCommunicator.getInstance().updateThing(thing);
                         for (final String unitId : unitConfig.getDeviceConfig().getUnitIdList()) {
@@ -104,19 +130,31 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
                     return;
                 }
             } catch (NotAvailableException ex) {
-                // do nothing
+                // device is not an openHAB device so do nothing
             }
         }
 
-        logger.info("Delete thing[" + thing.UID + "]");
+        // delete thing
         OpenHABRestCommunicator.getInstance().deleteThing(thing);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return a list of device units managed by the unit registry
+     * @throws CouldNotPerformException it the device units are not available
+     */
     @Override
     public List<IdentifiableMessage<String, UnitConfig, Builder>> getEntries() throws CouldNotPerformException {
         return Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry().getEntries();
     }
 
+    /**
+     * Verify that the device is managed by openHAB.
+     *
+     * @param identifiableMessage the device unit checked
+     * @return if the device managed by openHAB
+     */
     @Override
     public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
         // validate that the device is configured via openHAB
@@ -128,6 +166,14 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
         }
     }
 
+    /**
+     * Update the thing label and location of a thing according to a device.
+     *
+     * @param deviceUnitConfig the device from which the label and location is taken
+     * @param thing            the thing which is updated
+     * @return if the thing has been updated meaning that the label or location changed
+     * @throws CouldNotPerformException if the update could not be performed
+     */
     private boolean updateThing(final UnitConfig deviceUnitConfig, final EnrichedThingDTO thing) throws CouldNotPerformException {
         boolean modification = false;
         final String label = LabelProcessor.getBestMatch(deviceUnitConfig.getLabel());

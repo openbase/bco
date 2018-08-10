@@ -51,26 +51,22 @@ public class ItemDalUnitSynchronization extends AbstractSynchronizer<String, Ide
 
     @Override
     public void update(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
-        logger.info("Update item[" + identifiableEnrichedItemDTO.getId() + "]");
         validateAndUpdateItem(identifiableEnrichedItemDTO.getDTO());
     }
 
     @Override
     public void register(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
-        logger.info("Register item[" + identifiableEnrichedItemDTO.getId() + "]");
         // do nothing because items are registers by the thing synchronization
         validateAndUpdateItem(identifiableEnrichedItemDTO.getDTO());
     }
 
     @Override
     public void remove(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
-        logger.info("Remove item[" + identifiableEnrichedItemDTO.getId() + "]");
         final String alias = new OpenHABItemNameMetaData(identifiableEnrichedItemDTO.getId()).getAlias();
 
         try {
             // unit exists for item so sync and register it again
             final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigByAlias(alias);
-            logger.info("Re-register item");
             updateItem(unitConfig, identifiableEnrichedItemDTO.getDTO());
             OpenHABRestCommunicator.getInstance().registerItem(identifiableEnrichedItemDTO.getDTO());
         } catch (NotAvailableException ex) {
@@ -109,13 +105,11 @@ public class ItemDalUnitSynchronization extends AbstractSynchronizer<String, Ide
         try {
             // unit exists for item so sync label from dal unit back to item if necessary
             final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigByAlias(alias);
-            logger.info("Found unit config for item [" + item.name + "]");
             if (updateItem(unitConfig, item)) {
                 OpenHABRestCommunicator.getInstance().updateItem(item);
             }
         } catch (NotAvailableException ex) {
             // unit does not exist for item so remove it
-            logger.info("Delete item[" + item.name + "]");
             try {
                 OpenHABRestCommunicator.getInstance().deleteItem(item);
             } catch (CouldNotPerformException exx) {

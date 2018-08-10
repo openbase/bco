@@ -52,7 +52,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     @Override
     public void update(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
-        logger.info("Update for thing[" + identifiableEnrichedThingDTO.getId() + "]");
         final EnrichedThingDTO updatedThing = identifiableEnrichedThingDTO.getDTO();
 
         // get device unit config for the thing
@@ -69,7 +68,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         }
 
         try {
-            logger.info("Update device [" + deviceUnitConfig.getAlias(0) + "]");
             Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
@@ -78,7 +76,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     @Override
     public void register(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
-        logger.info("Register thing[" + identifiableEnrichedThingDTO.getId() + "]");
         final ThingDTO thingDTO = identifiableEnrichedThingDTO.getDTO();
 
         // handle initial sync
@@ -91,7 +88,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
                 }
                 return;
             } catch (NotAvailableException ex) {
-                logger.info("Could not find device for thing[" + thingDTO.UID + "]");
                 // go on to register a device for thing
             }
         }
@@ -130,7 +126,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationHelper.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
 
         try {
-            logger.info("Register device for thing");
             final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
 
             // create items for dal units of the device
@@ -144,7 +139,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     @Override
     public void remove(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
-        logger.info("Remove thing[" + identifiableEnrichedThingDTO.getId() + "]");
         final EnrichedThingDTO enrichedThingDTO = identifiableEnrichedThingDTO.getDTO();
 
         // get device unit config for thing
@@ -156,7 +150,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             return;
         }
 
-        logger.info("Remove device [" + deviceUnitConfig.getAlias(0) + "]");
         // remove device
         try {
             Registries.getUnitRegistry().removeUnitConfig(deviceUnitConfig).get();
@@ -167,7 +160,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     @Override
     public List<IdentifiableEnrichedThingDTO> getEntries() throws CouldNotPerformException {
-        logger.info("Retrieve entries");
         final List<IdentifiableEnrichedThingDTO> identifiableEnrichedThingDTOList = new ArrayList<>();
         for (final EnrichedThingDTO enrichedThingDTO : OpenHABRestCommunicator.getInstance().getThings()) {
             identifiableEnrichedThingDTOList.add(new IdentifiableEnrichedThingDTO(enrichedThingDTO));

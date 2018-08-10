@@ -64,9 +64,12 @@ public class SynchronizationHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(SynchronizationHelper.class);
 
     /**
-     * @param thingDTO
-     * @return
-     * @throws NotAvailableException
+     * Retrieve a device unit config for a thing. This is done by looking for a meta config entry in the device unit
+     * config where the id of the thing is referenced.
+     *
+     * @param thingDTO the thing for which a device should be retrieved
+     * @return a device unit config for the thing as described above
+     * @throws NotAvailableException if no device could be found
      */
     public static UnitConfig getDeviceForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
         // iterate over all devices

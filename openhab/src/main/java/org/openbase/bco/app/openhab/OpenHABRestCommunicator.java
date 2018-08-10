@@ -137,7 +137,6 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
     public void addSSEObserver(Observer<JsonObject> observer, final String topicRegex) {
         synchronized (topicObservableMapLock) {
-            LOGGER.info("Add sse observer on topic[" + topicRegex + "]");
             if (topicObservableMap.containsKey(topicRegex)) {
                 topicObservableMap.get(topicRegex).addObserver(observer);
                 return;
@@ -145,7 +144,6 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             if (sseEventSource == null) {
                 final WebTarget webTarget = baseWebTarget.path("events");
-                LOGGER.info("Create event source on[" + webTarget.getUri() + "]");
                 sseEventSource = SseEventSource.target(webTarget).build();
                 sseEventSource.open();
             }

@@ -28,27 +28,23 @@ import org.eclipse.smarthome.core.thing.events.ThingRemovedEvent;
 import org.eclipse.smarthome.core.thing.events.ThingUpdatedEvent;
 import org.openbase.jul.pattern.Observer;
 
-public class ThingObservable extends AbstractDTOObservable<JsonObject> {
+public class ThingObservable extends AbstractSSEObservable<JsonObject> {
 
     private static final String THING_TOPIC_FILTER = "smarthome/things/(.+)";
 
-    private final Observer<JsonObject> observer;
-
     public ThingObservable() {
         super(THING_TOPIC_FILTER, JsonObject.class);
-
-        this.observer = (observable, jsonObject) -> {
-            final String eventType = jsonObject.get("type").getAsString();
-
-            if (eventType.equals(ThingUpdatedEvent.TYPE) || eventType.equals(ThingAddedEvent.TYPE) || eventType.equals(ThingRemovedEvent.TYPE)) {
-                getObservable().notifyObservers(jsonObject);
-            }
-        };
     }
 
     @Override
-    protected Observer<JsonObject> getInternalObserver() {
-        return observer;
+    protected boolean filter(JsonObject jsonObject) {
+        final String eventType = jsonObject.get("type").getAsString();
+        return !(eventType.equals(ThingUpdatedEvent.TYPE) || eventType.equals(ThingAddedEvent.TYPE) || eventType.equals(ThingRemovedEvent.TYPE));
+    }
+
+    @Override
+    protected JsonObject convert(JsonObject jsonObject) {
+        return jsonObject;
     }
 
     @Override

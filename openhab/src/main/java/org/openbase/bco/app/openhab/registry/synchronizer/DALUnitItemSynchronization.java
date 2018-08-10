@@ -45,17 +45,33 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Class managing the synchronization from BCO DAL units to openHAB items.
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DALUnitItemSynchronization extends AbstractSynchronizer<String, IdentifiableMessage<String, UnitConfig, Builder>> {
 
+    /**
+     * Create a new synchronization manager BCO DAL units to openHAB items.
+     *
+     * @param synchronizationLock a lock used during a synchronization. This is lock should be shared with
+     *                            other synchronization managers so that they will not interfere with each other.
+     * @throws InstantiationException if instantiation fails
+     * @throws NotAvailableException  if the unit registry is not available
+     */
     public DALUnitItemSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
         super(Registries.getUnitRegistry().getDalUnitConfigRemoteRegistry(), synchronizationLock);
     }
 
+    /**
+     * Validate that all items for a dal unit exist and update them. If they do not exist they will be registered.
+     *
+     * @param identifiableMessage the dal unit updated
+     * @throws CouldNotPerformException if the items could not be updated or registered
+     */
     @Override
     public void update(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        logger.info("Update dal unit[" + identifiableMessage.getMessage().getAlias(0) + "]");
+        // validate that all items for a dal unit exist
         final UnitConfig unitConfig = identifiableMessage.getMessage();
         final Set<ServiceType> serviceTypeSet = new HashSet<>();
         for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
@@ -67,29 +83,42 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
 
             final String itemName = OpenHABItemHelper.generateItemName(identifiableMessage.getMessage(), serviceType);
             try {
+                // item exists, update if necessary
                 final EnrichedItemDTO item = OpenHABRestCommunicator.getInstance().getItem(itemName);
                 if (updateItem(unitConfig, item)) {
-                    logger.info("Update item [" + itemName + "]");
                     OpenHABRestCommunicator.getInstance().updateItem(item);
                 }
             } catch (NotAvailableException ex) {
+                // item does not exist so register them
                 SynchronizationHelper.registerAndValidateItems(unitConfig);
             }
         }
     }
 
+    /**
+     * Only perform an initial sync between a dal unit and its items by calling {@link #update(IdentifiableMessage)}
+     * if its the initial sync.
+     *
+     * @param identifiableMessage the dal unit initially registered
+     * @throws CouldNotPerformException if the initial update could not be performed.
+     */
     @Override
     public void register(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        logger.info("Register dal unit[" + identifiableMessage.getMessage().getAlias(0) + "]");
+        // make sure that after startup an initial synchronization is performed
         if (isInitialSync()) {
             update(identifiableMessage);
         }
         // do nothing, should be handled when device is added via openHAB
     }
 
+    /**
+     * Remove items and their channel links belonging to the removed dal unit.
+     *
+     * @param identifiableMessage the removed dal unit
+     * @throws CouldNotPerformException if the items and channel links could not be removed
+     */
     @Override
     public void remove(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        logger.info("Remove dal unit[" + identifiableMessage.getMessage().getAlias(0) + "]");
         // remove items and channel links
         final UnitConfig unitConfig = identifiableMessage.getMessage();
         final Set<ServiceType> serviceTypeSet = new HashSet<>();
@@ -108,7 +137,6 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
                 continue;
             }
 
-            logger.info("Delete item[" + itemName + "] and its channel links");
             // remove item
             OpenHABRestCommunicator.getInstance().deleteItem(itemName);
             // remove links
@@ -120,11 +148,24 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return a list of dal units managed by the unit registry
+     * @throws CouldNotPerformException it the dal units are not available
+     */
     @Override
     public List<IdentifiableMessage<String, UnitConfig, Builder>> getEntries() throws CouldNotPerformException {
         return Registries.getUnitRegistry().getDalUnitConfigRemoteRegistry().getEntries();
     }
 
+    /**
+     * Verify that the dal unit is hosted by a device which is managed by openHAB.
+     *
+     * @param identifiableMessage the dal unit checked
+     * @return if the unit is hosted by a device managed by openHAB
+     * @throws VerificationFailedException if he verification failed
+     */
     @Override
     public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws VerificationFailedException {
         // retrieve host unit
@@ -152,6 +193,14 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
         }
     }
 
+    /**
+     * Update the item label to a dal unit.
+     *
+     * @param unitConfig the dal unit from which the label
+     * @param item       the item which is updated
+     * @return if the item has been updated meaning that the label changed
+     * @throws NotAvailableException if no label is available for the dal unit
+     */
     private boolean updateItem(final UnitConfig unitConfig, final EnrichedItemDTO item) throws NotAvailableException {
         boolean modification = false;
         final String label = LabelProcessor.getBestMatch(unitConfig.getLabel());
