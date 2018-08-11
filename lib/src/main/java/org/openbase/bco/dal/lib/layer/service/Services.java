@@ -378,10 +378,14 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static void verifyServiceState(final Message serviceState) throws VerificationFailedException {
+    public static Message verifyServiceState(final Message serviceState) throws VerificationFailedException {
         try {
             try {
-                detectServiceStateVerificationMethod(serviceState).invoke(null, serviceState);
+                final Object verifiedState = detectServiceStateVerificationMethod(serviceState).invoke(null, serviceState);
+                if (verifiedState != null && verifiedState instanceof Message) {
+                    return (Message) verifiedState;
+                }
+                return serviceState;
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory("Verification of ServiceState[ " + serviceState.getClass().getSimpleName() + "] skipped because verification method not supported yet.!", ex, LOGGER, LogLevel.DEBUG);
             } catch (InvocationTargetException ex) {
@@ -396,6 +400,7 @@ public class Services extends ServiceStateProcessor {
         } catch (NullPointerException | IllegalAccessException | ExceptionInInitializerError | CouldNotPerformException | InvocationTargetException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException("Verification of service state could no be performed!", Services.class, ex), LOGGER, LogLevel.WARN);
         }
+        return serviceState;
     }
 
     public static Method detectServiceStateVerificationMethod(final Message serviceState) throws CouldNotPerformException, NotAvailableException {

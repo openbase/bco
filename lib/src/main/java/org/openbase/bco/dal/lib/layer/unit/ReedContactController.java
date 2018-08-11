@@ -40,7 +40,7 @@ public class ReedContactController extends AbstractDALUnitController<ReedContact
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
     }
     
-    public ReedContactController(final UnitHost unitHost, ReedContactData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public ReedContactController(final UnitHost unitHost, ReedContactData.Builder builder) throws InstantiationException {
         super(ReedContactController.class, unitHost, builder);
     }
 }

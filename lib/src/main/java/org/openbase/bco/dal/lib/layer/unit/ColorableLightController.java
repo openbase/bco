@@ -58,9 +58,7 @@ import java.util.concurrent.Future;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
 
 /**
  * * @author Tamino Huxohl
@@ -78,12 +76,9 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
     }
 
-    private ColorStateOperationService colorService;
-    private BrightnessStateOperationService brightnessService;
-    private PowerStateOperationService powerService;
     private Color neutralWhite;
 
-    public ColorableLightController(final UnitHost unitHost, final ColorableLightData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public ColorableLightController(final UnitHost unitHost, final ColorableLightData.Builder builder) throws InstantiationException {
         super(ColorableLightController.class, unitHost, builder);
         this.neutralWhite = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;
     }
@@ -188,13 +183,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 //    }
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
-        logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to PowerState [" + state + "]");
-        try {
-            Services.verifyOperationServiceState(state);
-        } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
-        }
-        return powerService.setPowerState(state);
+        return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
     }
 
     //    public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
@@ -213,16 +202,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 //    }
     @Override
     public Future<ActionFuture> setColorState(final ColorState state) throws CouldNotPerformException {
-        try {
-            Services.verifyOperationServiceState(state);
-        } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
-        }
-        if (state.getColor().getType() == Color.Type.RGB) {
-            return colorService.setColor(HSBColorToRGBColorTransformer.transform(state.getColor().getRgbColor()));
-        } else {
-            return colorService.setColorState(state);
-        }
+        return applyUnauthorizedAction(state, COLOR_STATE_SERVICE);
     }
 
     //    public void updateBrightnessStateProvider(BrightnessState brightnessState) throws CouldNotPerformException {
@@ -247,13 +227,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 //    }
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState state) throws CouldNotPerformException {
-        logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to BrightnessState[" + state + "]");
-        try {
-            Services.verifyOperationServiceState(state);
-        } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
-        }
-        return brightnessService.setBrightnessState(state);
+        return applyUnauthorizedAction(state, BRIGHTNESS_STATE_SERVICE);
     }
 
     @Override

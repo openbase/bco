@@ -24,7 +24,6 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_STATE_SERVICE;

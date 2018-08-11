@@ -39,6 +39,10 @@ import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.dal.MonitorDataType.MonitorData;
 import rst.domotic.unit.UnitConfigType;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
+
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -54,29 +58,17 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     private PowerStateOperationService powerStateService;
     private StandbyStateOperationService standbyStateService;
     
-    public MonitorController(final UnitHost unitHost, final MonitorData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public MonitorController(final UnitHost unitHost, final MonitorData.Builder builder) throws InstantiationException {
         super(MonitorController.class, unitHost, builder);
     }
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
-        try {
-            Services.verifyOperationServiceState(state);
-        } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
-        }
-        return powerStateService.setPowerState(state);
+        return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
     }
     
     @Override
     public Future<ActionFuture> setStandbyState(final StandbyState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to StandbyState [" + state + "]");
-        try {
-            Services.verifyOperationServiceState(state);
-        } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
-        }
-        return standbyStateService.setStandbyState(state);
+        return applyUnauthorizedAction(state, STANDBY_STATE_SERVICE);
     }
 }

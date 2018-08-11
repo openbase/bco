@@ -24,11 +24,9 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 
-import java.util.List;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVATION_STATE_SERVICE;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVITY_MULTI_STATE_SERVICE;
 
 /**
@@ -40,5 +38,11 @@ public interface ActivityMultiStateProviderService extends ProviderService{
     @RPCMethod
     default ActivityMultiState getActivityMultiState() throws NotAvailableException {
         return (ActivityMultiState) getServiceProvider().getServiceState(ACTIVITY_MULTI_STATE_SERVICE);
+    }
+
+    static void verifyActivityMultiState(final ActivityMultiState activityMultiState) throws VerificationFailedException {
+        if (activityMultiState == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceState"));
+        }
     }
 }

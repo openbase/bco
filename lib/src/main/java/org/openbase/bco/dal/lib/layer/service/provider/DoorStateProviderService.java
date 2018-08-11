@@ -21,8 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.DoorStateType.DoorState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.DOOR_STATE_SERVICE;
@@ -36,5 +38,9 @@ public interface DoorStateProviderService extends ProviderService {
     @RPCMethod
     default DoorState getDoorState() throws NotAvailableException {
         return (DoorState) getServiceProvider().getServiceState(DOOR_STATE_SERVICE);
+    }
+
+    static void verifyDoorState(final DoorState doorState) throws VerificationFailedException {
+            Services.verifyOperationServiceState(doorState);
     }
 }

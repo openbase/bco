@@ -68,7 +68,7 @@ public class StandbyController<C extends StandbyStateOperationService & Snapshot
     private Logger logger;
 
     @Override
-    public void init(final C controller) throws InitializationException, InterruptedException {
+    public void init(final C controller) {
         this.controller = controller;
         this.logger = LoggerFactory.getLogger(controller.getClass());
     }

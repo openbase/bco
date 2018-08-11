@@ -65,7 +65,7 @@ public class ActionImpl implements Action {
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
     private final ServiceJSonProcessor serviceJSonProcessor;
     protected ActionDescription.Builder actionDescriptionBuilder;
-    private Message serviceAttribute;
+    private Message serviceState;
     private ServiceDescription serviceDescription;
 
     public ActionImpl(final AbstractUnitController unit) {
@@ -81,10 +81,10 @@ public class ActionImpl implements Action {
 
             // prepare
             this.actionDescriptionBuilder = actionDescription.toBuilder();
-            this.serviceAttribute = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
+            this.serviceState = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
 
             // verify service attribute
-            Services.verifyServiceState(serviceAttribute);
+            serviceState = Services.verifyServiceState(serviceState);
 
             // since its an action it has to be an operation service pattern
             this.serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
@@ -162,7 +162,7 @@ public class ActionImpl implements Action {
                             updateActionState(ActionState.State.EXECUTING);
 
                             try {
-                                waitForExecution(unit.performOperationService(serviceAttribute, serviceDescription.getServiceType()));
+                                waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
 //                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
@@ -217,7 +217,7 @@ public class ActionImpl implements Action {
                     try {
 
                         // Verify service state
-                        Services.verifyOperationServiceState(serviceAttribute);
+                        Services.verifyOperationServiceState(serviceState);
 
                         // Verify authority
                         final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
@@ -243,7 +243,7 @@ public class ActionImpl implements Action {
                             updateActionState(ActionState.State.EXECUTING);
 
                             try {
-                                waitForExecution(unit.performOperationService(serviceAttribute, serviceDescription.getServiceType()));
+                                waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
 //                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
@@ -281,7 +281,7 @@ public class ActionImpl implements Action {
         try (ClosableDataBuilder dataBuilder = unit.getDataBuilder(this)) {
 
             // set the responsible action for the service attribute
-            Message.Builder serviceStateBuilder = serviceAttribute.toBuilder();
+            Message.Builder serviceStateBuilder = serviceState.toBuilder();
             Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             serviceStateBuilder.setField(fieldDescriptor, actionDescriptionBuilder.build());
 

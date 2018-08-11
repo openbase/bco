@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -41,7 +42,7 @@ public class SmokeDetectorController extends AbstractDALUnitController<SmokeDete
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
     }
 
-    public SmokeDetectorController(final UnitHost unitHost, SmokeDetectorData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
+    public SmokeDetectorController(final UnitHost unitHost, SmokeDetectorData.Builder builder) throws InstantiationException {
         super(SmokeDetectorController.class, unitHost, builder);
     }
 }

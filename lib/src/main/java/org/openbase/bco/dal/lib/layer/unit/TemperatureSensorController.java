@@ -42,7 +42,7 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
     }
     
-    public TemperatureSensorController(final UnitHost unitHost, final TemperatureSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public TemperatureSensorController(final UnitHost unitHost, final TemperatureSensorData.Builder builder) throws InstantiationException {
         super(TemperatureSensorController.class, unitHost, builder);
     }
 }

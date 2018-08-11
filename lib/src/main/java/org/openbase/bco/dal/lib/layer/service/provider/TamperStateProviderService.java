@@ -21,9 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.TamperStateType.TamperState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_STATE_SERVICE;
@@ -37,5 +38,9 @@ public interface TamperStateProviderService extends ProviderService {
     @RPCMethod
     default TamperState getTamperState() throws NotAvailableException {
         return (TamperState) getServiceProvider().getServiceState(TAMPER_STATE_SERVICE);
+    }
+
+    static void verifyTamperState(final TamperState tamperState) throws VerificationFailedException {
+        Services.verifyOperationServiceState(tamperState);
     }
 }

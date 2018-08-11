@@ -23,8 +23,13 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
+import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivationStateProviderService;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -34,6 +39,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.ActivationStateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -41,9 +47,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVATION_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
+
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable, ActivationStateProviderService {
@@ -52,12 +62,17 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     public static final String FIELD_AUTOSTART = "autostart";
 
     private final SyncObject enablingLock = new SyncObject(AbstractExecutableBaseUnitController.class);
-    private Future<ActionFuture> executionFuture;
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
+    private Future<ActionFuture> executionFuture;
     private boolean enabled;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
         super(unitClass, builder);
+        try {
+            registerOperationService(ServiceType.ACTIVATION_STATE_SERVICE, new ActivationStateOperationServiceImpl(this));
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
@@ -65,53 +80,8 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         super.init(config);
     }
 
-    public Future<ActionFuture> setActivationState(final ActivationState activation) throws CouldNotPerformException {
-        if (activation == null || activation.getValue().equals(ActivationState.State.UNKNOWN)) {
-            throw new InvalidStateException("Unknown is not a valid state!");
-        }
-
-        synchronized (executionLock) {
-            // filter events that do not change anything
-            if (activation.getValue() == getActivationState().getValue()) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            if (activation.getValue() == ActivationState.State.ACTIVE) {
-
-                // filter duplicated execution
-                if (isExecuting()) {
-                    return CompletableFuture.completedFuture(null);
-                }
-
-                executionFuture = GlobalCachedExecutorService.submit(() -> {
-                    try {
-                        execute();
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
-                    }
-                    return null;
-                });
-            } else {
-                if (isExecuting()) {
-                    cancelExecution();
-                }
-                // call stop even if execution has already finished
-                // many components just register observer etc. in execute and this it is done quickly
-                try {
-                    stop();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-
-            try {
-                applyDataUpdate(activation.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activation.getValue().name()) + " " + this, ex);
-            }
-        }
-
-        return CompletableFuture.completedFuture(null);
+    public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+        return applyUnauthorizedAction(activationState, ACTIVATION_STATE_SERVICE);
     }
 
     public boolean isExecuting() {
@@ -185,4 +155,64 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     protected abstract void execute() throws CouldNotPerformException, InterruptedException;
 
     protected abstract void stop() throws CouldNotPerformException, InterruptedException;
+
+    private class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
+
+        private final ServiceProvider serviceProvider;
+
+        public ActivationStateOperationServiceImpl(ServiceProvider serviceProvider) {
+            this.serviceProvider = serviceProvider;
+        }
+
+        @Override
+        public Future<ActionFuture> setActivationState(ActivationStateType.ActivationState activationState) throws CouldNotPerformException {
+            synchronized (executionLock) {
+                // filter events that do not change anything
+                if (activationState.getValue() == getActivationState().getValue()) {
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                if (activationState.getValue() == ActivationStateType.ActivationState.State.ACTIVE) {
+
+                    // filter duplicated execution
+                    if (isExecuting()) {
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    executionFuture = GlobalCachedExecutorService.submit(() -> {
+                        try {
+                            execute();
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
+                        }
+                        return null;
+                    });
+                } else {
+                    if (isExecuting()) {
+                        cancelExecution();
+                    }
+                    // call stop even if execution has already finished
+                    // many components just register observer etc. in execute and this it is done quickly
+                    try {
+                        stop();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+
+                try {
+                    applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activationState.getValue().name()) + " " + this, ex);
+                }
+            }
+
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return serviceProvider;
+        }
+    }
 }

@@ -21,9 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.StandbyStateType.StandbyState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
@@ -37,5 +38,9 @@ public interface StandbyStateProviderService extends ProviderService {
     @RPCMethod
     default StandbyState getStandbyState() throws NotAvailableException {
         return (StandbyState) getServiceProvider().getServiceState(STANDBY_STATE_SERVICE);
+    }
+
+    static void verifyStandbyState(final StandbyState standbyState) throws VerificationFailedException {
+        Services.verifyOperationServiceState(standbyState);
     }
 }

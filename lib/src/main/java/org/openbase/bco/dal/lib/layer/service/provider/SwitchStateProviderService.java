@@ -21,9 +21,11 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.VerificationFailedException;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.SwitchStateType.SwitchState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SWITCH_STATE_SERVICE;
@@ -37,5 +39,9 @@ public interface SwitchStateProviderService extends ProviderService {
     @RPCMethod
     default SwitchState getSwitchState() throws NotAvailableException {
         return (SwitchState) getServiceProvider().getServiceState(SWITCH_STATE_SERVICE);
+    }
+
+    static void verifyActivationState(final ActivationState activationState) throws VerificationFailedException {
+        Services.verifyOperationServiceState(activationState);
     }
 }

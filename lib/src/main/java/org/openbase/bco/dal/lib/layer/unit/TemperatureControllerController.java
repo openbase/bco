@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -32,6 +33,9 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE;
 
 /**
  *
@@ -46,13 +50,12 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
     
     private TargetTemperatureStateOperationService targetTemperatureStateService;
     
-    public TemperatureControllerController(final UnitHost unitHost, final TemperatureControllerData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public TemperatureControllerController(final UnitHost unitHost, final TemperatureControllerData.Builder builder) throws InstantiationException {
         super(TemperatureControllerController.class, unitHost, builder);
     }
 
     @Override
-    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState value) throws CouldNotPerformException {
-        logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to targetTemperatureState [" + value + "]");
-        return targetTemperatureStateService.setTargetTemperatureState(value);
+    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState state) throws CouldNotPerformException {
+        return applyUnauthorizedAction(state, TARGET_TEMPERATURE_STATE_SERVICE);
     }
 }

@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperation
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.schedule.FutureProcessor;
@@ -38,6 +39,9 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmableLightDataType.DimmableLightData;
 import rst.domotic.unit.UnitConfigType;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  *
@@ -54,24 +58,18 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
     private PowerStateOperationService powerService;
     private BrightnessStateOperationService brightnessService;
 
-    public DimmableLightController(final UnitHost unitHost, DimmableLightData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
+    public DimmableLightController(final UnitHost unitHost, DimmableLightData.Builder builder) throws InstantiationException {
         super(DimmableLightController.class, unitHost, builder);
     }
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
-        try {
-            Services.verifyOperationServiceState(state);
-        } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
-        }
-        return powerService.setPowerState(state);
+        return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
     }
 
     @Override
-    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return brightnessService.setBrightnessState(brightnessState);
+    public Future<ActionFuture> setBrightnessState(final BrightnessState state) throws CouldNotPerformException {
+        return applyUnauthorizedAction(state, BRIGHTNESS_STATE_SERVICE);
     }
 
     @Override

@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -40,7 +41,7 @@ public class MotionDetectorController extends AbstractDALUnitController<MotionDe
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
     }
 
-    public MotionDetectorController(final UnitHost unitHost, final MotionDetectorData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
+    public MotionDetectorController(final UnitHost unitHost, final MotionDetectorData.Builder builder) throws InstantiationException {
         super(MotionDetectorController.class, unitHost, builder);
     }
 }

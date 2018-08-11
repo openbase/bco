@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -32,11 +33,10 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import java.util.concurrent.Future;
 
 /**
- *11111
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
- * @param <D> the data type of this unit used for the state synchronization.
+ * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends Unit<D>, MessageController<D, DB> {
 
@@ -44,8 +44,9 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
      * Method initialize this controller with the given unit configuration.
      *
      * @param config the unit configuration
+     *
      * @throws InitializationException is throw if any error occurs during the initialization phase.
-     * @throws InterruptedException is thrown if the current thread was externally interrupted.
+     * @throws InterruptedException    is thrown if the current thread was externally interrupted.
      */
     void init(final UnitConfig config) throws InitializationException, InterruptedException;
 
@@ -54,9 +55,18 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
      *
      * @param serviceType
      * @param serviceArgument
+     *
      * @throws CouldNotPerformException
      */
     void applyDataUpdate(final Message serviceArgument, final ServiceType serviceType) throws CouldNotPerformException;
 
+    /**
+     * This method is called if an authorized and scheduled action causes a new service state.
+     *
+     * @param serviceState the new service state to apply.
+     * @param serviceType  The type of the modified service.
+     *
+     * @return a future object representing the progress of the service state transition.
+     */
     Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType);
 }

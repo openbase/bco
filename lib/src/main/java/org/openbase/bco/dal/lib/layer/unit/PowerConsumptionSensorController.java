@@ -40,7 +40,7 @@ public class PowerConsumptionSensorController extends AbstractDALUnitController<
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
     }
     
-    public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensorData.Builder builder) throws InstantiationException {
         super(PowerConsumptionSensorController.class, unitHost, builder);
     }
 }

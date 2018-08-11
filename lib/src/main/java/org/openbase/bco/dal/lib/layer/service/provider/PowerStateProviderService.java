@@ -21,11 +21,12 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.PowerStateType.PowerState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
@@ -37,5 +38,9 @@ public interface PowerStateProviderService extends ProviderService {
     @RPCMethod
     default PowerState getPowerState() throws NotAvailableException {
         return (PowerState) getServiceProvider().getServiceState(POWER_STATE_SERVICE);
+    }
+
+    static void verifyPowerState(final PowerState powerState) throws VerificationFailedException {
+        Services.verifyOperationServiceState(powerState);
     }
 }

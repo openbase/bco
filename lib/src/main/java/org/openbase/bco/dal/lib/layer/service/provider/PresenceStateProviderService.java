@@ -21,9 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.PresenceStateType.PresenceState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE;
@@ -37,5 +38,9 @@ public interface PresenceStateProviderService extends ProviderService {
     @RPCMethod
     default PresenceState getPresenceState() throws NotAvailableException {
         return (PresenceState) getServiceProvider().getServiceState(PRESENCE_STATE_SERVICE);
+    }
+
+    static void verifyPresenceState(final PresenceState presenceState) throws VerificationFailedException {
+        Services.verifyOperationServiceState(presenceState);
     }
 }

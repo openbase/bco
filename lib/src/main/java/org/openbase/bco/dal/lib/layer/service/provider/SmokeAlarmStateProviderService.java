@@ -21,9 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.AlarmStateType.AlarmState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_SERVICE;
@@ -37,5 +38,9 @@ public interface SmokeAlarmStateProviderService extends ProviderService {
     @RPCMethod
     default AlarmState getSmokeAlarmState() throws NotAvailableException {
         return (AlarmState) getServiceProvider().getServiceState(SMOKE_ALARM_STATE_SERVICE);
+    }
+
+    static void verifySmokeAlarmState(final AlarmState smokeAlarmState) throws VerificationFailedException {
+        Services.verifyOperationServiceState(smokeAlarmState);
     }
 }

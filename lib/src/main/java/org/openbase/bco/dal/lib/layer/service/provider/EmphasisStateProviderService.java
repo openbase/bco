@@ -21,28 +21,41 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE;
 
 /**
- *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public interface EmphasisStateProviderService extends ProviderService {
 
+    static void verifyEmphasisState(final EmphasisState emphasisState) throws VerificationFailedException {
+
+        if (emphasisState == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceState"));
+        }
+
+        if (emphasisState.hasComfort()) {
+            OperationService.verifyValueRange("comfort", emphasisState.getComfort(), 0, 100);
+            return;
+        } else if (emphasisState.hasEnergy()) {
+            OperationService.verifyValueRange("energy saving", emphasisState.getEnergy(), 0, 100);
+            return;
+        } else if (emphasisState.hasSecurity()) {
+            OperationService.verifyValueRange("security", emphasisState.getSecurity(), 0, 100);
+            return;
+        }
+        throw new VerificationFailedException("EmphasisState does not contain emphasis!");
+    }
+
     @RPCMethod
     default EmphasisState getEmphasisState() throws NotAvailableException {
         return (EmphasisState) getServiceProvider().getServiceState(EMPHASIS_STATE_SERVICE);
-    }
-
-    static void verifyEmphasisState(final EmphasisState emphasisState) throws VerificationFailedException {
-        if (!emphasisState.hasComfort() && !emphasisState.hasSecurity() && !emphasisState.hasEnergy()) {
-            throw new VerificationFailedException("EmphasisState does not contain emphasis!");
-        }
     }
 }

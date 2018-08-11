@@ -41,6 +41,14 @@ import java.util.concurrent.Future;
  */
 public interface BaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends UnitController<D, DB>, BaseUnit<D> {
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceState {@inheritDoc}
+     * @param serviceType  {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     default Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
         try {

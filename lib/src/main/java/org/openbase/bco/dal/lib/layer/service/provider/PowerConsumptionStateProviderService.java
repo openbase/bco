@@ -21,14 +21,13 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE_VALUE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  *
@@ -39,5 +38,28 @@ public interface PowerConsumptionStateProviderService extends ProviderService {
     @RPCMethod
     default PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
         return (PowerConsumptionState) getServiceProvider().getServiceState(POWER_CONSUMPTION_STATE_SERVICE);
+    }
+
+    static void verifyPowerConsumptionState(final PowerConsumptionState powerConsumptionState) throws VerificationFailedException {
+        if (powerConsumptionState == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceState"));
+        }
+
+        if (!powerConsumptionState.hasConsumption() && !powerConsumptionState.hasVoltage() && !powerConsumptionState.hasCurrent()) {
+            throw new VerificationFailedException("PowerConsumptionState does not contain any values!");
+        }
+
+        // range check
+        if (powerConsumptionState.hasConsumption()) {
+            OperationService.verifyValueRange("Consumption", powerConsumptionState.getConsumption(), 0, Double.MAX_VALUE);
+        }
+
+        if (powerConsumptionState.hasVoltage()) {
+            OperationService.verifyValueRange("Voltage", powerConsumptionState.getVoltage(), 0, Double.MAX_VALUE);
+        }
+
+        if (powerConsumptionState.hasCurrent()) {
+            OperationService.verifyValueRange("Current", powerConsumptionState.getCurrent(), 0, Double.MAX_VALUE);
+        }
     }
 }

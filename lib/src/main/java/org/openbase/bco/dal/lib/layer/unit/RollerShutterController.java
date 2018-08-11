@@ -38,9 +38,13 @@ import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  *
@@ -53,38 +57,35 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BlindState.getDefaultInstance()));
     }
 
-    private BlindStateOperationService blindStateService;
-
-    public RollerShutterController(final UnitHost unitHost, final RollerShutterData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public RollerShutterController(final UnitHost unitHost, final RollerShutterData.Builder builder) throws InstantiationException {
         super(RollerShutterController.class, unitHost, builder);
     }
 
     @Override
     public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to BlindState [" + state + "]");
-
-        // todo: merge new state with latest state to support sparse state updates (e.g. openhab handles for items which are all projected onto our BlindState)
-
-        try {
-            Services.verifyOperationServiceState(state);
-        } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
-        }
-
-        // stop before moving in any direction.
-        switch (state.getValue()) {
-            case DOWN:
-            case UP:
-                try {
-                    blindStateService.setBlindState(state.toBuilder().setValue(BlindState.State.STOP).build()).get(1000, TimeUnit.MILLISECONDS);
-                } catch (ExecutionException | TimeoutException | InterruptedException ex) {
-                    if (ex instanceof InterruptedException) {
-                        Thread.currentThread().interrupt();
-                    }
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not stop before inverse blind movement.", ex), logger, LogLevel.WARN);
-                    // continue without stop
-                }
-        }
-        return blindStateService.setBlindState(state);
+//        logger.debug("Setting [" + getLabel() + "] to BlindState [" + state + "]");
+//
+//        try {
+//            Services.verifyOperationServiceState(state);
+//        } catch (VerificationFailedException ex) {
+//            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
+//        }
+//
+//        // stop before moving in any direction.
+//        switch (state.getValue()) {
+//            case DOWN:
+//            case UP:
+//                try {
+//                    blindStateService.setBlindState(state.toBuilder().setValue(BlindState.State.STOP).build()).get(1000, TimeUnit.MILLISECONDS);
+//                } catch (ExecutionException | TimeoutException | InterruptedException ex) {
+//                    if (ex instanceof InterruptedException) {
+//                        Thread.currentThread().interrupt();
+//                    }
+//                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not stop before inverse blind movement.", ex), logger, LogLevel.WARN);
+//                    // continue without stop
+//                }
+//        }
+//        return blindStateService.setBlindState(state);
+        return applyUnauthorizedAction(state, BLIND_STATE_SERVICE);
     }
 }

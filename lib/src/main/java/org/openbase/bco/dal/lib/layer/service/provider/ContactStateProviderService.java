@@ -22,8 +22,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.ContactStateType.ContactState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE;
@@ -36,5 +38,9 @@ public interface ContactStateProviderService extends ProviderService {
     @RPCMethod
     default ContactState getContactState() throws NotAvailableException {
         return (ContactState) getServiceProvider().getServiceState(CONTACT_STATE_SERVICE);
+    }
+
+    static void verifyContactState(final ContactState contactState) throws VerificationFailedException {
+        Services.verifyOperationServiceState(contactState);
     }
 }

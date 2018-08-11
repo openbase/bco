@@ -26,9 +26,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ILLUMINANCE_STATE_SERVICE;
@@ -42,5 +43,16 @@ public interface IlluminanceStateProviderService extends ProviderService {
     @RPCMethod
     default IlluminanceState getIlluminanceState() throws NotAvailableException {
         return (IlluminanceState) getServiceProvider().getServiceState(ILLUMINANCE_STATE_SERVICE);
+    }
+
+    static void verifyIlluminanceState(final IlluminanceState illuminanceState) throws VerificationFailedException {
+        if (illuminanceState == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceState"));
+        }
+
+        if (!illuminanceState.hasIlluminance()) {
+            throw new VerificationFailedException("IlluminanceState does not contain illuminance!");
+        }
+        OperationService.verifyValueRange("illuminance", illuminanceState.getIlluminance(), 0, Double.MAX_VALUE);
     }
 }

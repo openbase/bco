@@ -21,8 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVATION_STATE_SERVICE;
@@ -36,5 +38,9 @@ public interface ActivationStateProviderService extends ProviderService {
     @RPCMethod
     default ActivationState getActivationState() throws NotAvailableException {
         return (ActivationState) getServiceProvider().getServiceState(ACTIVATION_STATE_SERVICE);
+    }
+
+    static void verifyActivationState(final ActivationState activationState) throws VerificationFailedException {
+        Services.verifyOperationServiceState(activationState);
     }
 }

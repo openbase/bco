@@ -63,6 +63,7 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
@@ -95,6 +96,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -106,10 +108,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     private final Observer<UnitRegistryData> unitRegistryObserver;
-
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
-
+    private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
 
@@ -118,6 +119,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
         this.unitDataObservableMap = new HashMap<>();
+        this.operationServiceMap = new TreeMap<>();
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             unitDataObservableMap.put(serviceTempus, new UnitDataFilteredObservable<>(this, serviceTempus));
@@ -246,6 +248,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
+     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -428,9 +431,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    public Future<ActionFuture> applyUnauthorizedAction(final ActionDescription actionDescription) throws CouldNotPerformException {
-        // todo pleminoq: please perform action with other rights only.
-        return applyAction(actionDescription);
+    public Future<ActionFuture> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+        // todo pleminoq: please authenticate action with rsb user token.
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(serviceAttribute, serviceType, this, false).build());
     }
 
     @Override
@@ -797,6 +800,58 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not filter data by user permissions!", ex);
+        }
+    }
+
+    /**
+     * Method can be used to register a new operation service for this controller.
+     *
+     * @param serviceType      the type of the new service.
+     * @param operationService the service which performes the operation.
+     *
+     * @throws CouldNotPerformException is thrown if the type of the service is already registered.
+     */
+    protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
+
+        if (operationServiceMap.containsKey(serviceType)) {
+            throw new VerificationFailedException("OperationService for Type[" + serviceType.name() + "] already registered!");
+        }
+        operationServiceMap.put(serviceType, operationService);
+    }
+
+    /**
+     * Method can be used to remove a previously registered operation service for this controller.
+     *
+     * @param serviceType the type of the service to remove.
+     */
+    protected void removeOperationService(final ServiceType serviceType) {
+        operationServiceMap.remove(serviceType);
+    }
+
+    /**
+     * Method returns a map of all registered operation services.
+     *
+     * @return an unmodifiable map of operation services where the service type is used as key.
+     */
+    public Map<ServiceType, OperationService> getOperationServiceMap() {
+        return Collections.unmodifiableMap(operationServiceMap);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceState {@inheritDoc}
+     * @param serviceType  {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
+        //logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to PowerState [" + serviceState + "]");
+        try {
+            return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
         }
     }
 }

@@ -51,7 +51,7 @@ import java.util.concurrent.Future;
  */
 public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitController<M, MB> implements OperationServiceFactoryProvider {
 
-    private Map<ServiceType, OperationService> operationServiceMap;
+
 
     private final UnitHost unitHost;
     private final OperationServiceFactory operationServiceFactory;
@@ -62,7 +62,6 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
             if (unitHost.getOperationServiceFactory() == null) {
                 throw new NotAvailableException("service factory");
             }
-            this.operationServiceMap = new TreeMap<>();
             this.unitHost = unitHost;
             this.operationServiceFactory = unitHost.getOperationServiceFactory();
         } catch (CouldNotPerformException ex) {
@@ -74,7 +73,7 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
 
-        final Set<ServiceType> registeredServiceTypes = new HashSet<>(operationServiceMap.keySet());
+        final Set<ServiceType> registeredServiceTypes = new HashSet<>(getOperationServiceMap().keySet());
         try {
             for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 
@@ -89,12 +88,12 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
                     continue;
                 }
 
-                operationServiceMap.put(serviceDescription.getServiceType(), getOperationServiceFactory().newInstance(serviceDescription.getServiceType(), this));
+                registerOperationService(serviceDescription.getServiceType(), getOperationServiceFactory().newInstance(serviceDescription.getServiceType(), this));
             }
 
             // remove deleted services
             for (final ServiceType outdatedServiceType : registeredServiceTypes) {
-                operationServiceMap.remove(outdatedServiceType);
+                removeOperationService(outdatedServiceType);
             }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -108,16 +107,5 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
 
     public UnitHost getUnitHost() {
         return unitHost;
-    }
-
-    @Override
-    public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
-        //logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to PowerState [" + serviceState + "]");
-        try {
-            Services.verifyOperationServiceState(serviceState);
-            return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(Void.class, ex);
-        }
     }
 }

@@ -42,29 +42,9 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryState.getDefaultInstance()));
     }
 
-    public BatteryController(final UnitHost unitHost, BatteryData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public BatteryController(final UnitHost unitHost, BatteryData.Builder builder) throws InstantiationException {
         super(BatteryController.class, unitHost, builder);
     }
-
-//    public void updateBatteryStateProvider(final BatteryState batteryState) throws CouldNotPerformException {
-//        logger.debug("Apply batteryState Update[" + batteryState + "] for " + this + ".");
-//
-//        try (ClosableDataBuilder<BatteryData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getBatteryState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setBatteryState(batteryState.toBuilder().setTransactionId(transactionId));
-//            if (!batteryState.hasValue() || batteryState.getValue() == BatteryState.State.UNKNOWN) {
-//                if (batteryState.getLevel() <= 5) {
-//                    dataBuilder.getInternalBuilder().getBatteryStateBuilder().setValue(BatteryState.State.INSUFFICIENT);
-//                } else if (batteryState.getLevel() <= 15) {
-//                    dataBuilder.getInternalBuilder().getBatteryStateBuilder().setValue(BatteryState.State.CRITICAL);
-//                } else {
-//                    dataBuilder.getInternalBuilder().getBatteryStateBuilder().setValue(BatteryState.State.OK);
-//                }
-//            }
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply batteryState Update[" + batteryState + "] for " + this + "!", ex);
-//        }
-//    }
 
     @Override
     protected void applyCustomDataUpdate(BatteryData.Builder internalBuilder, ServiceType serviceType) {

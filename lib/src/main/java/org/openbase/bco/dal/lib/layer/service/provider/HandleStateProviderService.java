@@ -21,18 +21,30 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.NotAvailableException;
+
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.HandleStateType.HandleState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_STATE_SERVICE;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface HandleStateProviderService extends ProviderService {
+
+    static void verifyHandleState(final HandleState handleState) throws VerificationFailedException {
+        if (handleState == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceState"));
+        }
+
+        if (!handleState.hasPosition()) {
+            throw new VerificationFailedException("HandleState does not contain position!");
+        }
+        OperationService.verifyValueRange("position", handleState.getPosition(), 0, 360);
+    }
 
     @RPCMethod
     default HandleState getHandleState() throws NotAvailableException {

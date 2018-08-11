@@ -27,13 +27,14 @@ import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 import rst.vision.ColorType.Color;
+import rst.vision.ColorType.Color.Type;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
 import rst.domotic.state.ColorStateType.ColorState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  *
@@ -81,14 +82,25 @@ public interface ColorStateProviderService extends ProviderService {
         verifyColor(colorState.getColor());
     }
 
-    static void verifyColor(final Color color) throws VerificationFailedException {
+    static Color verifyColor(final Color color) throws VerificationFailedException {
         if (color.hasHsbColor()) {
             verifyHsbColor(color.getHsbColor());
+            if (!color.hasType()) {
+                return color.toBuilder().setType(Type.HSB).build();
+            }
         } else if (color.hasRgbColor()) {
             verifyRgbColor(color.getRgbColor());
+            if (color.getType() == Color.Type.RGB) {
+                try {
+                    return color.toBuilder().setHsbColor(HSBColorToRGBColorTransformer.transform(color.getRgbColor())).setType(Type.HSB).build();
+                } catch (CouldNotTransformException ex) {
+                    throw new VerificationFailedException("Could not transform RGB to HSV color!", ex);
+                }
+            }
         } else {
             throw new VerificationFailedException("Could not detect color type!");
         }
+        return color;
     }
 
     static void verifyHsbColor(final HSBColor hsbColor) throws VerificationFailedException {

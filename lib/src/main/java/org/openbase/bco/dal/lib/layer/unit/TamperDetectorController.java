@@ -40,7 +40,7 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
     }
 
-    public TamperDetectorController(final UnitHost unitHost, final TamperDetectorData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public TamperDetectorController(final UnitHost unitHost, final TamperDetectorData.Builder builder) throws InstantiationException {
         super(TamperDetectorController.class, unitHost, builder);
     }
 }

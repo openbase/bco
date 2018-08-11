@@ -341,17 +341,18 @@ public class ActionDescriptionProcessor {
      *
      * @param serviceAttribute the service attribute that will be applied by this action
      * @param serviceType      the service type according to the service attribute
+     * @param authorized       flag to define if this action should be authorized by the currently authenticated user or should be performed with OTHER rights.
      *
      * @return the generated action description
      *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
-    public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+    public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceAttribute, final ServiceType serviceType, final boolean authorized) throws CouldNotPerformException {
         final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), detectInitiator());
         final Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
 
-        if (SessionManager.getInstance().isLoggedIn()) {
+        if (authorized && SessionManager.getInstance().isLoggedIn()) {
             if (SessionManager.getInstance().getUserId() != null) {
                 actionAuthorityBuilder.setUserId(SessionManager.getInstance().getUserId());
             } else {
@@ -363,6 +364,50 @@ public class ActionDescriptionProcessor {
 
         actionAuthorityBuilder.setAuthority(detectAuthority());
         return updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
+    }
+
+    /**
+     * Generates an action description according to the configuration of this unit remote.
+     * The action description is generated using the ActionDescriptionProcessor.
+     * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
+     *
+     * @param serviceAttribute the service attribute that will be applied by this action
+     * @param serviceType      the service type according to the service attribute
+     *
+     * @return the generated action description
+     *
+     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
+     *                                  verified or serialized
+     */
+    public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+        return generateActionDescriptionBuilder(serviceAttribute, serviceType, true);
+    }
+
+    /**
+     * Generates an action description according to the given attributes.
+     * The action description is generated using the ActionDescriptionProcessor.
+     * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
+     *
+     * @param serviceAttribute the service attribute that will be applied by this action
+     * @param serviceType      the service type according to the service attribute
+     * @param unitType         the service type according to the service attribute
+     * @param authorized       flag to define if this action should be authorized by the currently authenticated user or should be performed with OTHER rights.
+     *
+     * @return the generated action description
+     *
+     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
+     *                                  verified or serialized
+     */
+    public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceAttribute, ServiceType serviceType, final UnitType unitType, final boolean authorized) throws CouldNotPerformException {
+
+        // generate default description
+        final ActionDescription.Builder actionDescriptionBuilder = generateActionDescriptionBuilder(serviceAttribute, serviceType, authorized);
+
+        // update unit type
+        actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitType(unitType);
+
+        // return
+        return actionDescriptionBuilder;
     }
 
     /**
@@ -380,15 +425,28 @@ public class ActionDescriptionProcessor {
      *                                  verified or serialized
      */
     public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceAttribute, ServiceType serviceType, final UnitType unitType) throws CouldNotPerformException {
+        return generateActionDescriptionBuilder(serviceAttribute, serviceType, unitType, true);
+    }
 
-        // generate default description
-        final ActionDescription.Builder actionDescriptionBuilder = generateActionDescriptionBuilder(serviceAttribute, serviceType);
-
-        // update unit type
-        actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitType(unitType);
-
-        // return
-        return actionDescriptionBuilder;
+    /**
+     * Generates an action description according to the configuration of the given unit.
+     * The action description is generated using the ActionDescriptionProcessor.
+     * This method will set the service state description according to the service attribute and service type
+     * and replace several keys in the description to make it human readable.
+     * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
+     *
+     * @param serviceAttribute the service attribute that will be applied by this action
+     * @param serviceType      the service type according to the service attribute
+     * @param unit             the unit to control.
+     * @param authorized       flag to define if this action should be authrorized by the currently authenticated user.
+     *
+     * @return the generated action description
+     *
+     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
+     *                                  verified or serialized
+     */
+    public static ActionDescription.Builder generateActionDescriptionBuilderAndUpdate(final Message serviceAttribute, final ServiceType serviceType, final Unit<?> unit, final boolean authorized) throws CouldNotPerformException {
+        return updateActionDescription(generateActionDescriptionBuilder(serviceAttribute, serviceType, authorized), serviceAttribute, serviceType, unit);
     }
 
     /**
@@ -408,7 +466,7 @@ public class ActionDescriptionProcessor {
      *                                  verified or serialized
      */
     public static ActionDescription.Builder generateActionDescriptionBuilderAndUpdate(final Message serviceAttribute, final ServiceType serviceType, final Unit<?> unit) throws CouldNotPerformException {
-        return updateActionDescription(generateActionDescriptionBuilder(serviceAttribute, serviceType), serviceAttribute, serviceType, unit);
+        return generateActionDescriptionBuilderAndUpdate(serviceAttribute, serviceType, unit,true);
     }
 
     /**
@@ -420,7 +478,7 @@ public class ActionDescriptionProcessor {
      * @param actionDescription the action description which will be updated
      * @param serviceAttribute  the service attribute that will be applied by this action
      * @param serviceType       the service type according to the service attribute
-     * @param unit             the unit to control.
+     * @param unit              the unit to control.
      *
      * @return the updated action description
      *
@@ -440,21 +498,6 @@ public class ActionDescriptionProcessor {
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unit.getScope()));
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unit.getLabel()));
-
-//        String username = "";
-//        if (SessionManager.getInstance().getUserId() != null) {
-//            username += Registries.getUnitRegistry().getUnitConfigById(SessionManager.getInstance().getUserId()).getUserConfig().getUserName();
-//        }
-//        if (SessionManager.getInstance().getClientId() != null) {
-//            if (!username.isEmpty()) {
-//                username += "@";
-//            }
-//            username += Registries.getUnitRegistry().getUnitConfigById(SessionManager.getInstance().getClientId()).getUserConfig().getUserName();
-//        }
-//        if (username.isEmpty()) {
-//            username = "Other";
-//        }
-//        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
 
         //TODO: provide label in different languages for LabelProcessor and replace according to user logged in
         if (actionDescription.hasLabel() && !LabelProcessor.isEmpty(actionDescription.getLabel())) {
