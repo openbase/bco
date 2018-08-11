@@ -53,6 +53,9 @@ import rst.domotic.unit.agent.AgentDataType.AgentData;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
@@ -77,17 +80,8 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
     }
 
     @Override
-    public Future<ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
-        logger.debug("Apply emphasisState Update[" + emphasisState + "] for " + this + ".");
-
-        try (ClosableDataBuilder<AgentData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setEmphasisState(emphasisState);
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply emphasisState Update[" + emphasisState + "] for " + this + "!", ex);
-        }
-        CompletableFuture<ActionFuture> completableFuture = new CompletableFuture<>();
-        completableFuture.complete(ActionFuture.getDefaultInstance());
-        return completableFuture;
+    public Future<ActionFuture> setEmphasisState(EmphasisState state) throws CouldNotPerformException {
+        return applyUnauthorizedAction(state, EMPHASIS_STATE_SERVICE);
     }
 
     protected ActionDescription.Builder getNewActionDescription(ActionAuthorityType.ActionAuthority actionAuthority,

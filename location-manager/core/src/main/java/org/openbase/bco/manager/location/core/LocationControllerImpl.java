@@ -23,7 +23,9 @@ package org.openbase.bco.manager.location.core;
  */
 
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
+import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.processing.StandbyController;
@@ -43,6 +45,8 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
@@ -58,6 +62,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
+import rst.domotic.unit.location.LocationDataType.LocationData.Builder;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType;
 import rst.vision.RGBColorType;
@@ -69,6 +74,7 @@ import java.util.concurrent.Future;
 
 import static org.openbase.bco.dal.remote.unit.Units.LOCATION;
 import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
 
 /**
  * UnitConfig
@@ -100,46 +106,52 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     private final ServiceRemoteManager serviceRemoteManager;
     private final RecurrenceEventFilter unitEventFilter;
 
-    private StandbyController standbyController;
-
     public LocationControllerImpl() throws InstantiationException {
         super(LocationControllerImpl.class, LocationData.newBuilder());
-        // update location data on updates from internal units at most every 100ms
-        unitEventFilter = new RecurrenceEventFilter(10) {
-            @Override
-            public void relay() throws Exception {
-                updateUnitData();
-            }
-        };
-        this.serviceRemoteManager = new ServiceRemoteManager(this) {
-            @Override
-            protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
-                return LocationControllerImpl.this.getSupportedServiceTypes();
-            }
 
-            @Override
-            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException {
-                try {
-                    unitEventFilter.trigger();
-                } catch (final CouldNotPerformException ex) {
-                    logger.error("Could not trigger recurrence event filter for location[" + getLabel() + "]");
+        try {
+            // update location data on updates from internal units at most every 100ms
+            unitEventFilter = new RecurrenceEventFilter(10) {
+                @Override
+                public void relay() throws Exception {
+                    updateUnitData();
                 }
-            }
-        };
-        this.presenceDetector = new PresenceDetector();
-        this.presenceDetector.addDataObserver(new Observer<PresenceState>() {
-            @Override
-            public void update(Observable<PresenceState> source, PresenceState data) throws Exception {
-                try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                    LOGGER.debug("Set " + this + " presence to [" + data.getValue() + "]");
-                    dataBuilder.getInternalBuilder().setPresenceState(data);
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not apply presense state change!", ex);
+            };
+            this.serviceRemoteManager = new ServiceRemoteManager(this) {
+                @Override
+                protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
+                    return LocationControllerImpl.this.getSupportedServiceTypes();
                 }
-            }
-        });
 
-        this.standbyController = new StandbyController();
+                @Override
+                protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException {
+                    try {
+                        unitEventFilter.trigger();
+                    } catch (final CouldNotPerformException ex) {
+                        logger.error("Could not trigger recurrence event filter for location[" + getLabel() + "]");
+                    }
+                }
+            };
+
+            registerOperationService(ServiceType.STANDBY_STATE_SERVICE, new StandbyStateOperationServiceImpl(this));
+
+            this.presenceDetector = new PresenceDetector();
+            this.presenceDetector.addDataObserver(new Observer<PresenceState>() {
+                @Override
+                public void update(Observable<PresenceState> source, PresenceState data) throws Exception {
+                    try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+                        LOGGER.debug("Set " + this + " presence to [" + data.getValue() + "]");
+                        dataBuilder.getInternalBuilder().setPresenceState(data);
+                    } catch (CouldNotPerformException ex) {
+                        throw new CouldNotPerformException("Could not apply presense state change!", ex);
+                    }
+                }
+            });
+
+
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
@@ -159,7 +171,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         }
 
         presenceDetector.init(this);
-        standbyController.init(this);
+
     }
 
     @Override
@@ -238,50 +250,8 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) {
-        logger.info("Standby[" + standbyState.getValue() + "]" + this);
-        return GlobalScheduledExecutorService.submit(() -> {
-            try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                switch (getStandbyState().getValue()) {
-                    case UNKNOWN:
-                    case RUNNING:
-                        switch (standbyState.getValue()) {
-                            case STANDBY:
-                                for(LocationRemote childLocation : getChildLocationList(false)) {
-                                    childLocation.waitForMiddleware();
-                                    childLocation.setStandbyState(State.STANDBY).get();
-                                }
-                                standbyController.standby();
-                                dataBuilder.getInternalBuilder().setStandbyState(standbyState);
-                        }
-                        break;
-                    case STANDBY:
-                        switch (standbyState.getValue()) {
-                            case RUNNING:
-                                standbyController.wakeup();
-                                for(LocationRemote childLocation : getChildLocationList(false)) {
-                                    childLocation.waitForMiddleware();
-                                    childLocation.setStandbyState(State.RUNNING).get();
-                                }
-                                dataBuilder.getInternalBuilder().setStandbyState(standbyState);
-                            case STANDBY:
-                                // already in standby but the command is send again
-                                // make sure that all children are in standby
-                                for(LocationRemote childLocation : getChildLocationList(false)) {
-                                    childLocation.waitForMiddleware();
-                                    childLocation.setStandbyState(State.STANDBY).get();
-                                }
-                        }
-                }
-
-                //TODO generate proper action future
-                return null;
-            } catch (Exception ex) {
-                throw new CouldNotPerformException("Could not apply data change!", ex);
-            }
-        });
-
-
+    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
+        return applyUnauthorizedAction(standbyState, STANDBY_STATE_SERVICE);
     }
 
     public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
@@ -294,5 +264,65 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
             }
         }
         return childList;
+    }
+
+    private class StandbyStateOperationServiceImpl implements StandbyStateOperationService {
+
+        private LocationController locationController;
+        private StandbyController<LocationController> standbyController;
+
+        public StandbyStateOperationServiceImpl(final LocationController locationController) {
+            this.locationController = locationController;
+            this.standbyController = new StandbyController();
+            standbyController.init(locationController);
+        }
+
+        @Override
+        public Future<ActionFuture> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
+            LOGGER.info("Standby[" + standbyState.getValue() + "]" + this);
+            return GlobalScheduledExecutorService.submit(() -> {
+                try (ClosableDataBuilder<Builder> dataBuilder = locationController.getDataBuilder(this)) {
+                    switch (getStandbyState().getValue()) {
+                        case UNKNOWN:
+                        case RUNNING:
+                            switch (standbyState.getValue()) {
+                                case STANDBY:
+                                    for (LocationRemote childLocation : getChildLocationList(false)) {
+                                        childLocation.waitForMiddleware();
+                                        childLocation.setStandbyState(State.STANDBY).get();
+                                    }
+                                    standbyController.standby();
+                                    dataBuilder.getInternalBuilder().setStandbyState(standbyState);
+                            }
+                            break;
+                        case STANDBY:
+                            switch (standbyState.getValue()) {
+                                case RUNNING:
+                                    standbyController.wakeup();
+                                    for (LocationRemote childLocation : getChildLocationList(false)) {
+                                        childLocation.waitForMiddleware();
+                                        childLocation.setStandbyState(State.RUNNING).get();
+                                    }
+                                    dataBuilder.getInternalBuilder().setStandbyState(standbyState);
+                                case STANDBY:
+                                    // already in standby but the command is send again
+                                    // make sure that all children are in standby
+                                    for (LocationRemote childLocation : getChildLocationList(false)) {
+                                        childLocation.waitForMiddleware();
+                                        childLocation.setStandbyState(State.STANDBY).get();
+                                    }
+                            }
+                    }
+                    return null;
+                } catch (Exception ex) {
+                    throw new CouldNotPerformException("Could not apply data change!", ex);
+                }
+            });
+        }
+
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return null;
+        }
     }
 }

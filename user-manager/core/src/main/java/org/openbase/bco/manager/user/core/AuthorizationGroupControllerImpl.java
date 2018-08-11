@@ -40,6 +40,9 @@ import rst.domotic.unit.user.UserDataType.UserData;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.USER_TRANSIT_STATE_SERVICE;
+
 public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController<AuthorizationGroupData, AuthorizationGroupData.Builder> implements AuthorizationGroupController {
 
     static {
@@ -52,11 +55,6 @@ public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController
 
     @Override
     public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
-        try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPresenceState(presenceState);
-        } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set presence to [" + presenceState + "] for " + this + "!", ex);
-        }
-        return CompletableFuture.completedFuture(null);
+        return applyUnauthorizedAction(presenceState, PRESENCE_STATE_SERVICE);
     }
 }

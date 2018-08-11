@@ -186,7 +186,7 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
     }
 
     @Override
-    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
+    public ServiceRemote getServiceRemote(final ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
 }

@@ -167,18 +167,17 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     @Override
     public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ACTIVITY_MULTI_STATE_SERVICE,this).build());
+        return applyUnauthorizedAction(activityMultiState, ACTIVITY_MULTI_STATE_SERVICE);
     }
 
     @Override
     public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(presenceState, PRESENCE_STATE_SERVICE,this).build());
+        return applyUnauthorizedAction(presenceState, PRESENCE_STATE_SERVICE);
     }
 
     @Override
     public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
-        applyDataUpdate(userTransitState, USER_TRANSIT_STATE_SERVICE);
-        return CompletableFuture.completedFuture(null);
+        return applyUnauthorizedAction(userTransitState, USER_TRANSIT_STATE_SERVICE);
     }
 
     @Override
