@@ -66,6 +66,7 @@ public class Services extends ServiceStateProcessor {
      * e.g. the base name of service PowerStateService is PowerState.
      *
      * @param serviceType the service type to extract the base name.
+     *
      * @return the service base name.
      */
     public static String getServiceBaseName(ServiceType serviceType) {
@@ -89,7 +90,9 @@ public class Services extends ServiceStateProcessor {
      * Method returns the state name of the appurtenant service.
      *
      * @param serviceType the service type which is used to generate the service name.
+     *
      * @return The state type name as string.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given serviceType is null.
      */
     public static String getServiceStateName(final ServiceType serviceType) throws NotAvailableException {
@@ -108,7 +111,9 @@ public class Services extends ServiceStateProcessor {
      * Method returns the state name of the appurtenant service.
      *
      * @param template The service template.
+     *
      * @return The state type name as string.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
      *                                                          //
      */
@@ -128,7 +133,9 @@ public class Services extends ServiceStateProcessor {
      * Method returns a collection of service state values.
      *
      * @param serviceType the service type to identify the service state class.
+     *
      * @return a collection of enum values of the service state.
+     *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
     public static Collection<? extends ProtocolMessageEnum> getServiceStateValues(final ServiceType serviceType) throws NotAvailableException {
@@ -145,6 +152,7 @@ public class Services extends ServiceStateProcessor {
      * Method generates a new service state builder related to the given {@code serviceType}.
      *
      * @param serviceType the service type of the service state.
+     *
      * @throws CouldNotPerformException is thrown if something went wrong during the generation.
      */
     public static GeneratedMessage.Builder generateServiceStateBuilder(final ServiceType serviceType) throws CouldNotPerformException {
@@ -163,7 +171,9 @@ public class Services extends ServiceStateProcessor {
      * @param <SV>        the state enum of the service.
      * @param serviceType the service type of the service state.
      * @param stateValue  a compatible state value related to the given service state.
+     *
      * @return a new service state initialized with the state value.
+     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends GeneratedMessage.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
@@ -188,7 +198,9 @@ public class Services extends ServiceStateProcessor {
      * @param <SV>        the state enum of the service.
      * @param serviceType the service type of the service state.
      * @param stateValue  a compatible state value related to the given service state.
+     *
      * @return a new service state initialized with the state value.
+     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends GeneratedMessage, SV extends ProtocolMessageEnum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
@@ -212,7 +224,9 @@ public class Services extends ServiceStateProcessor {
      * Method detects and returns the service state class.
      *
      * @param serviceType the given service type to resolve the class.
+     *
      * @return the service state class.
+     *
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
@@ -364,8 +378,6 @@ public class Services extends ServiceStateProcessor {
         } catch (NoSuchMethodException ex) {
             // service state does contain any value so verification is not needed.
         }
-
-        verifyServiceState(serviceState);
     }
 
     public static void verifyOperationServiceStateValue(final Enum value) throws VerificationFailedException {
@@ -431,7 +443,9 @@ public class Services extends ServiceStateProcessor {
      * Method returns the action which is responsible for the given state.
      *
      * @param serviceState the state used to resolve the responsible action.
+     *
      * @return the responsible action.
+     *
      * @throws NotAvailableException is thrown if the related action can not be determine.
      */
     public static ActionDescription getResponsibleAction(final MessageOrBuilder serviceState) throws NotAvailableException {
@@ -449,6 +463,7 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleAction the action to setup.
      * @param serviceState      the message which is updated with the given responsible action.
      * @param <M>               the type of the service state message.
+     *
      * @return the modified message instance.
      */
     public static <M extends Message> M setResponsibleAction(final ActionDescription responsibleAction, final M serviceState) {
@@ -461,6 +476,7 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleAction   the action to setup.
      * @param serviceStateBuilder the builder which is updated with the given responsible action.
      * @param <B>                 the type of the service state builder.
+     *
      * @return the modified builder instance.
      */
     public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) {

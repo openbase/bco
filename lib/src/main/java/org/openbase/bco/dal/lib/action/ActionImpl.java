@@ -217,7 +217,7 @@ public class ActionImpl implements Action {
                     try {
 
                         // Verify service state
-                        Services.verifyOperationServiceState(serviceState);
+                        Services.verifyServiceState(serviceState);
 
                         // Verify authority
                         final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
