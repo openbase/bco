@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -33,6 +33,7 @@ import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -65,6 +66,8 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.Timeout;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -115,6 +118,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private boolean initialized = false;
 
     private String classDescription = "";
+    private ArrayList<Action> scheduledActionList = new ArrayList<>();
+    private Timeout scheduleTimeout;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
@@ -143,6 +148,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
+            }
+        };
+
+        this.scheduleTimeout = new Timeout(1000) {
+            @Override
+            public void expired() {
+                reschedule();
             }
         };
     }
@@ -432,7 +444,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     public Future<ActionFuture> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-        // todo pleminoq: please authenticate action with rsb user token.
+        // todo pleminoq: please authenticate action with middleware user token.
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(serviceAttribute, serviceType, this, false).build());
     }
 
@@ -440,7 +452,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         try {
             if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
-                // Fallback print in case the description is not available. 
+                // Fallback print in case the description is not available.
                 // Please make sure all action descriptions provide a description.
                 logger.info("Action[" + actionDescription.getServiceStateDescription().getServiceType() + "] for unit[" + ScopeGenerator.generateStringRep(getScope()) + "] is without a description");
             } else {
@@ -450,9 +462,44 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
             final ActionImpl action = new ActionImpl(this);
             action.init(actionDescription);
+            scheduleAction(action);
             return action.execute();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
+        }
+    }
+
+    private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
+
+    private Future<ActionFuture> scheduleAction(final Action action) {
+        synchronized (scheduledActionListLock) {
+            scheduledActionList.add(action);
+            reschedule();
+        }
+    }
+
+    private void reschedule() {
+        synchronized (scheduledActionListLock) {
+            // remove outdated actions
+            for (Action action : new ArrayList<>(scheduledActionList)) {
+                if (!action.isValid()) {
+                    scheduledActionList.remove(action);
+                }
+            }
+
+            // sort valid actions by priority
+            Collections.sort(scheduledActionList, Comparator.comparingInt(Action::getPriority));
+
+            // execute prioritized action
+            final Action scheduledAction = scheduledActionList.get(0);
+
+            switch (scheduledAction.getActionDescription().getActionState().getValue()) {
+                case INITIALIZED:
+                    scheduledAction.execute();
+            }
+
+            // setup next schedule trigger
+            scheduledAction
         }
     }
 

@@ -40,4 +40,21 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the action description is not available yet which means the Action was never initialized.
      */
     ActionDescription getActionDescription() throws NotAvailableException;
+
+    default int getPriority() {
+        getActionDescription().getResourceAllocation().
+    }
+
+    default long getExecutionDuration() {
+        return 0;
+    }
+
+    default long getExecutionTime() {
+        return 0;
+    }
+
+    default boolean isValid() {
+        return true;
+    }
+
 }
