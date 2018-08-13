@@ -156,7 +156,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     protected abstract void stop() throws CouldNotPerformException, InterruptedException;
 
-    private class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
+    public class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
 
         private final ServiceProvider serviceProvider;
 
