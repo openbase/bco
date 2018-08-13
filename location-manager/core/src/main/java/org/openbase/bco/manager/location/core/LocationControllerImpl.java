@@ -266,7 +266,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         return childList;
     }
 
-    private class StandbyStateOperationServiceImpl implements StandbyStateOperationService {
+    public class StandbyStateOperationServiceImpl implements StandbyStateOperationService {
 
         private LocationController locationController;
         private StandbyController<LocationController> standbyController;
