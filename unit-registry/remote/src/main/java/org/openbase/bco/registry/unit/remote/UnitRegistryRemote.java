@@ -148,18 +148,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         }
     }
 
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-
-        this.getIntenalPriorizedDataObservable().addObserver(new Observer<UnitRegistryData>() {
-            @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                logger.warn("UnitRegistryRemote internal sync should now be finished");
-            }
-        });
-    }
-
     /**
      * {@inheritDoc}
      *

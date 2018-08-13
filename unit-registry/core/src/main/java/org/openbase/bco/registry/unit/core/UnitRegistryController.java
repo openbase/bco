@@ -908,8 +908,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     protected UnitRegistryData filterDataForUser(final UnitRegistryData.Builder dataBuilder, final String userId) throws CouldNotPerformException {
-        Stopwatch stopwatch = new Stopwatch();
-        stopwatch.start();
+//        Stopwatch stopwatch = new Stopwatch();
+//        stopwatch.start();
         // Create a filter which removes all unit configs from a list without read permissions to its location by the user
         final ListFilter<UnitConfig> readFilter = unitConfig -> AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
         // Create a filter which removes unit ids if the user does not have access permissions for them
@@ -950,7 +950,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             connectionConfig.addAllUnitId(filteredUnitIdList);
         }
 
-        logger.warn("Filtering data for user[" + userId + "] took: " + stopwatch.stop());
+//        logger.warn("Filtering data for user[" + userId + "] took: " + stopwatch.stop());
         return dataBuilder.build();
     }
 
