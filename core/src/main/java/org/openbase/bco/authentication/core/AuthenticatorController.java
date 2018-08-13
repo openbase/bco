@@ -310,8 +310,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 String newId = loginCredentialsChange.getId();
 
                 // check if performing user is admin
-                if (!store.isAdmin(authenticatorUserId)) {
-                    throw new PermissionDeniedException("You are not permitted to perform this action.");
+                if (!store.isAdmin(authenticatorUserId) && loginCredentialsChange.getAdmin()) {
+                    throw new PermissionDeniedException("You are not permitted to register an admin.");
                 }
 
                 // don't allow administrators to overwrite themselves
