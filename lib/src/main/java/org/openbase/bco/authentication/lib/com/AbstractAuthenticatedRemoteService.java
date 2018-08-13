@@ -75,23 +75,7 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
     protected Future<Event> internalRequestStatus() throws CouldNotPerformException {
         if (SessionManager.getInstance().isLoggedIn()) {
             Event event = new Event(TicketAuthenticatorWrapper.class, SessionManager.getInstance().initializeServiceServerRequest());
-            if (AbstractAuthenticatedRemoteService.this.getClass().getSimpleName().equals("UnitRegistryRemote")) {
-                logger.warn("UnitRegistryRemote call authenticated request ...");
-            }
-//            return getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event);
-            final Future<Event> eventFuture = getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event);
-            if (AbstractAuthenticatedRemoteService.this.getClass().getSimpleName().equals("UnitRegistryRemote")) {
-                GlobalCachedExecutorService.submit(() -> {
-                    try {
-                        eventFuture.get();
-                        logger.warn("UnitRegistryRemote authenticatedRequest returned");
-                    } catch (CancellationException | InterruptedException ex) {
-                        logger.warn("UnitRegistryRemote authenticatedRequest failed: " + ex.getMessage());
-                    }
-                    return null;
-                });
-            }
-            return eventFuture;
+            return getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event);
         } else {
             return super.internalRequestStatus();
         }
@@ -116,27 +100,15 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
             try {
                 logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
                 if (event.getData() != null) {
-                    if (AbstractAuthenticatedRemoteService.this.getClass().getSimpleName().equals("UnitRegistryRemote")) {
-                        logger.warn("UnitRegistryRemote received filtered data from controller");
-                    }
                     otherData = (M) event.getData();
                     if (SessionManager.getInstance().isLoggedIn()) {
                         // received a new data event from the controller which is filtered for other permissions, so trigger an authenticated request
-                        if (AbstractAuthenticatedRemoteService.this.getClass().getSimpleName().equals("UnitRegistryRemote")) {
-                            logger.warn("UnitRegistryRemote start new request");
-                        }
                         GlobalCachedExecutorService.submit((Callable<Void>) () -> {
                             if (isSyncRunning()) {
-                                if (AbstractAuthenticatedRemoteService.this.getClass().getSimpleName().equals("UnitRegistryRemote")) {
-                                    logger.warn("UnitRegistryRemote Sync is still running");
-                                }
                                 // a sync task is currently running so wait for it to finish and trigger a new one
                                 // to make sure that the latest data update is received
                                 try {
                                     requestData().get(10, TimeUnit.SECONDS);
-                                    if (AbstractAuthenticatedRemoteService.this.getClass().getSimpleName().equals("UnitRegistryRemote")) {
-                                        logger.warn("UnitRegistryRemote old sync finished");
-                                    }
                                 } catch (InterruptedException ex) {
                                     Thread.currentThread().interrupt();
                                     return null;
@@ -147,9 +119,6 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
                                     // request data was cancelled and is most likely done again by the login observer
                                     return null;
                                 }
-                            }
-                            if (AbstractAuthenticatedRemoteService.this.getClass().getSimpleName().equals("UnitRegistryRemote")) {
-                                logger.warn("UnitRegistryRemote perform new request");
                             }
                             requestData();
                             return null;
