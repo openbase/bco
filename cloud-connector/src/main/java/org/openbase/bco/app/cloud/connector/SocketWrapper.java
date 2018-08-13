@@ -31,7 +31,9 @@ import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.authentication.lib.TokenStore;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -52,12 +54,18 @@ import org.slf4j.LoggerFactory;
 import rst.configuration.LabelType.Label;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig.Builder;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 /**
@@ -68,8 +76,12 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private static final String LOGIN_EVENT = "login";
     private static final String REGISTER_EVENT = "register";
     private static final String REQUEST_SYNC_EVENT = "requestSync";
-    private static final String USER_TRANSIT_EVENT = "userTransit";
 
+    private static final String INTENT_REGISTER_SCENE = "register_scene";
+    private static final String INTENT_USER_ACTIVITY = "user_activity";
+    private static final String INTENT_USER_TRANSIT = "user_transit";
+
+    private static final String ID_KEY = "id";
     private static final String TOKEN_KEY = "accessToken";
     private static final String SUCCESS_KEY = "success";
     private static final String ERROR_KEY = "error";
@@ -78,10 +90,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private final String userId;
     private final TokenStore tokenStore;
+
     private JsonObject loginData;
     private Socket socket;
-    private boolean active = false;
-    private boolean loggedIn = false;
+    private boolean active, loggedIn;
     private String agentUserId;
 
     private final UnitRegistryObserver unitRegistryObserver;
@@ -99,6 +111,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         this.tokenStore = tokenStore;
         this.loginData = loginData;
         this.unitRegistryObserver = new UnitRegistryObserver();
+        this.active = false;
     }
 
     @Override
@@ -136,7 +149,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                         @SuppressWarnings("unchecked")
                         Map<String, List<String>> headers = (Map<String, List<String>>) args1[0];
                         // combination of bco and user id to header
-                        headers.put("id", Collections.singletonList(agentUserId));
+                        headers.put(ID_KEY, Collections.singletonList(agentUserId));
                     } catch (Exception ex) {
                         ExceptionPrinter.printHistory(ex, LOGGER);
                     }
@@ -155,11 +168,15 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }).on(Socket.EVENT_DISCONNECT, objects -> {
                 // reconnection is automatically done by the socket API, just print that disconnected
                 LOGGER.info("Socket of user[" + userId + "] disconnected");
-            }).on(USER_TRANSIT_EVENT, objects -> {
+            }).on(INTENT_USER_TRANSIT, objects -> {
                 LOGGER.info("Socket of user[" + userId + "] received transit state request");
                 handleUserTransitUpdate(objects[0], (Ack) objects[objects.length - 1]);
-            }).on("activity", objects -> {
+            }).on(INTENT_USER_ACTIVITY, objects -> {
+                LOGGER.info("Socket of user[" + userId + "] received activity request");
                 handleActivity(objects[0], (Ack) objects[objects.length - 1]);
+            }).on(INTENT_REGISTER_SCENE, objects -> {
+                LOGGER.info("Socket of user[" + userId + "] received register scene request");
+                handleSceneRegistration(objects[0], (Ack) objects[objects.length - 1]);
             });
 
             // add observer to registry that triggers sync requests on changes
@@ -250,6 +267,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 try {
                     final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
                     if (response.get(SUCCESS_KEY).getAsBoolean()) {
+                        loggedIn = true;
                         LOGGER.info("Logged in [" + userId + "] successfully");
                         loginFuture.complete(null);
                         // trigger initial database sync
@@ -270,31 +288,24 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         final String transit = (String) object;
         LOGGER.info("Received user transit " + transit);
         try {
-            UserTransitState.State state = Enum.valueOf(UserTransitState.State.class, transit);
+            final UserTransitState.State state = Enum.valueOf(UserTransitState.State.class, transit);
             final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
             userRemote.setUserTransitState(UserTransitState.newBuilder().setValue(state).build()).get(3, TimeUnit.SECONDS);
-            acknowledgement.call("SUCCESS");
+            acknowledgement.call("Alles klar");
         } catch (InterruptedException ex) {
-            acknowledgement.call("FAILED");
+            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            ExceptionPrinter.printHistory(ex, LOGGER);
             Thread.currentThread().interrupt();
-            ExceptionPrinter.printHistory(ex, LOGGER);
             // this should not happen since wait for data is not called
-        } catch (CouldNotPerformException | ExecutionException ex) {
-            acknowledgement.call("FAILED");
+        } catch (CouldNotPerformException | ExecutionException | TimeoutException | IllegalArgumentException ex) {
+            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
             ExceptionPrinter.printHistory(ex, LOGGER);
-        } catch (TimeoutException ex) {
-            acknowledgement.call("TIMEOUT");
-            ExceptionPrinter.printHistory(ex, LOGGER);
-        } catch (IllegalArgumentException ex) {
-            LOGGER.error("Could not resolve transit as enum value");
-            acknowledgement.call("FAILED");
         }
     }
 
     private void handleActivity(final Object object, final Ack acknowledgement) {
         final String activityRepresentation = (String) object;
         LOGGER.info("Received activity representation: " + activityRepresentation);
-        final JsonObject response = new JsonObject();
         ActivityConfig activity = null;
         try {
             outer:
@@ -310,9 +321,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             if (activity == null) {
-                response.addProperty("state", "error");
-                response.addProperty("error", "activity not available");
-                acknowledgement.call(gson.toJson(response));
+                acknowledgement.call("Ich kann die von die ausgeführte Aktivität " + activityRepresentation + " nicht finden");
                 return;
             }
 
@@ -321,25 +330,55 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             //TODO: when to add and when to replace
             ActivityMultiState.Builder activityMultiState = ActivityMultiState.newBuilder().addActivityId(activity.getId());
             userRemote.setActivityMultiState(activityMultiState.build()).get(3, TimeUnit.SECONDS);
-            response.addProperty("state", "success");
-            response.addProperty("activity", LabelProcessor.getBestMatch(activity.getLabel()));
-        } catch (CouldNotPerformException ex) {
-            response.addProperty("state", "error");
-            response.addProperty("error", "unexpected");
+            acknowledgement.call("Deine Aktivität wurde auf " + LabelProcessor.getBestMatch(activity.getLabel()) + " gesetzt.");
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
             ExceptionPrinter.printHistory(ex, LOGGER);
-        } catch (InterruptedException ex) {
-            response.addProperty("state", "error");
-            response.addProperty("error", "interrupted");
-            ExceptionPrinter.printHistory(ex, LOGGER);
-        } catch (ExecutionException ex) {
-            response.addProperty("state", "error");
-            response.addProperty("error", "execution");
-            ExceptionPrinter.printHistory(ex, LOGGER);
-        } catch (TimeoutException e) {
-            response.addProperty("state", "pending");
+            if (ex instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        } catch (TimeoutException ex) {
+            acknowledgement.call("Deine Aktivität wird auf " + activityRepresentation + " gesetzt");
         }
+    }
 
-        acknowledgement.call(gson.toJson(response));
+    private void handleSceneRegistration(final Object object, final Ack acknowledgement) {
+//        final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
+//        LOGGER.info("Received scene registration data:\n" + gson.toJson(data));
+//        try {
+//            final UnitConfig.Builder sceneConfig = UnitConfig.newBuilder().setUnitType(UnitType.SCENE);
+//            if (data.has("label")) {
+//                final Label.MapFieldEntry.Builder entry = sceneConfig.getLabelBuilder().addEntryBuilder();
+//                entry.setKey(Locale.GERMAN.getLanguage());
+//                entry.addValue(data.get("label").getAsString());
+//            }
+//
+//            UnitConfig location = Registries.getUnitRegistry().getRootLocationConfig();
+//            if (data.has("location")) {
+//                final String locationLabel = data.get("location").getAsString();
+//                List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(UnitType.LOCATION, locationLabel);
+//                if (locations.size() == 0) {
+//                    //TODO: error response
+//                } else if (locations.size() == 2) {
+//                    //TODO: query for more info
+//                } else {
+//                    location = locations.get(0);
+//                }
+//            }
+//
+//            Builder sceneConfigBuilder = sceneConfig.getSceneConfigBuilder();
+//            ServiceStateDescription.Builder builder = sceneConfigBuilder.addRequiredServiceStateDescriptionBuilder();
+//            builder.setUnitId()
+//            LocationRemote locationRemote = Units.getUnit(location, false, LocationRemote.class);
+//            for (Entry<UnitType, List<UnitRemote>> entry : locationRemote.getUnitMap().entrySet()) {
+//                switch (entry.getKey()) {
+//                    case POWER_SWITCH:
+//                    case LIGHT:
+//                    case DIMMABLE_LIGHT:
+//                    case COLORABLE_LIGHT:
+//                }
+//            }
+//        }
     }
 
     @Override
@@ -389,7 +428,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             // trigger sync if socket is connected and logged in
             // if the user is not logged the login process will trigger an update anyway
             if (isLoggedIn()) {
-                //TODO: parse response for an error an write a warning
+                //TODO: parse response for an error and write a warning
                 socket.emit(REQUEST_SYNC_EVENT, (Ack) objects1 -> LOGGER.info("Received response: " + objects1.getClass().getName()));
 
                 // debug print

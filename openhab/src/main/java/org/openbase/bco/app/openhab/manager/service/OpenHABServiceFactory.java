@@ -22,47 +22,32 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.processing.StringProcessor;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
-public class OpenHABServiceFactory implements ServiceFactory {
+import java.lang.reflect.InvocationTargetException;
 
-    private final static ServiceFactory instance = new OpenHABServiceFactory();
+public class OpenHABServiceFactory implements OperationServiceFactory {
 
-    public static ServiceFactory getInstance() {
+    private final static OperationServiceFactory instance = new OpenHABServiceFactory();
+
+    public static OperationServiceFactory getInstance() {
         return instance;
     }
 
     @Override
-    public <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(UNIT unit) throws InstantiationException {
-        return new BrightnessStateServiceImpl<>(unit);
-    }
-
-    @Override
-    public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) throws InstantiationException {
-        return new ColorStateServiceImpl(unit);
-    }
-
-    @Override
-    public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) throws InstantiationException {
-        return new PowerStateServiceImpl(unit);
-    }
-
-    @Override
-    public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) throws InstantiationException {
-        return new BlindStateServiceImpl<>(unit);
-    }
-
-    @Override
-    public <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(final UNIT unit) throws InstantiationException {
-        return new StandbyStateServiceImpl<>(unit);
-    }
-
-    @Override
-    public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) throws InstantiationException {
-        return new TargetTemperatureStateServiceImpl<>(unit);
+    public <UNIT extends Unit> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
+        String serviceImplClassName = OpenHABService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(operationServiceType.name()) + "Impl";
+        try {
+            final Class<?> serviceImplClass = Class.forName(serviceImplClassName);
+            return (OperationService) serviceImplClass.getConstructor(unit.getClass()).newInstance(unit);
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | java.lang.InstantiationException | InvocationTargetException ex) {
+            throw new InstantiationException(OpenHABService.class, ex);
+        }
     }
 
 }
