@@ -99,11 +99,6 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         return unit;
     }
 
-    @Override
-    public ServiceProvider getServiceProvider() {
-        return unit;
-    }
-
     public String getItemID() {
         return itemName;
     }
