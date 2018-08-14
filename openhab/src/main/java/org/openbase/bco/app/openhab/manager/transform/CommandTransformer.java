@@ -41,7 +41,9 @@ public class CommandTransformer {
         Message serviceData;
 
         if (state.equalsIgnoreCase("null")) {
-            throw new CouldNotPerformException("State for serviceType[" + serviceType.name() + "] not available");
+            LOGGER.warn("Ignore state update [" + state + "] for service[" + serviceType + "]");
+            return null;
+//            throw new CouldNotPerformException("State for serviceType[" + serviceType.name() + "] not available");
         }
 
         try {

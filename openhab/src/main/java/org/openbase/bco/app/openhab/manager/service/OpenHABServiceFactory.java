@@ -23,7 +23,8 @@ package org.openbase.bco.app.openhab.manager.service;
  */
 
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.*;
+import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.processing.StringProcessor;
@@ -44,7 +45,7 @@ public class OpenHABServiceFactory implements OperationServiceFactory {
         String serviceImplClassName = OpenHABService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(operationServiceType.name()) + "Impl";
         try {
             final Class<?> serviceImplClass = Class.forName(serviceImplClassName);
-            return (OperationService) serviceImplClass.getConstructor(unit.getClass()).newInstance(unit);
+            return (OperationService) serviceImplClass.getConstructor(Services.loadOperationServiceClass(operationServiceType)).newInstance(unit);
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | java.lang.InstantiationException | InvocationTargetException ex) {
             throw new InstantiationException(OpenHABService.class, ex);
         }

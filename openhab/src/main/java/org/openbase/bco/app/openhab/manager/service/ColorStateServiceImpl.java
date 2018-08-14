@@ -37,13 +37,8 @@ import java.util.concurrent.Future;
 
 public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<?>> extends OpenHABService<ST> implements ColorStateOperationService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ColorStateServiceImpl.class);
-
-//    private final boolean autoRepeat;
-
-    ColorStateServiceImpl(final ST unit) throws InstantiationException {
+    public ColorStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
-//        this.autoRepeat = ServiceFactoryTools.detectAutoRepeat(unit);
     }
 
     @Override

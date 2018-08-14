@@ -35,7 +35,7 @@ import java.util.concurrent.Future;
 
 public class StandbyStateServiceImpl<ST extends StandbyStateOperationService & Unit<?>> extends OpenHABService<ST> implements StandbyStateOperationService {
 
-    StandbyStateServiceImpl(ST unit) throws InstantiationException {
+    public StandbyStateServiceImpl(ST unit) throws InstantiationException {
         super(unit);
     }
 

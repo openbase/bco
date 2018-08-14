@@ -55,7 +55,7 @@ import java.util.Map.Entry;
  */
 public class SynchronizationHelper {
 
-    public static final String ZWAVE_DEVICE_ID_KEY = "zwave_deviceid";
+    public static final String ZWAVE_DEVICE_TYPE_KEY = "zwave_devicetype";
 
     public static final String OPENHAB_THING_UID_KEY = "OPENHAB_THING_UID";
     public static final String OPENHAB_THING_CLASS_KEY = "OPENHAB_THING_CLASS";
@@ -123,7 +123,7 @@ public class SynchronizationHelper {
     public static DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException {
         String classIdentifier = thingDTO.thingTypeUID;
         if (thingDTO.thingTypeUID.startsWith("zwave")) {
-            classIdentifier = ZWAVE_DEVICE_ID_KEY + ":" + thingDTO.properties.get("zwave_deviceid");
+            classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + thingDTO.properties.get(ZWAVE_DEVICE_TYPE_KEY);
         }
         return getDeviceClassByThing(classIdentifier);
     }

@@ -24,6 +24,7 @@ package org.openbase.bco.app.openhab.manager.transform;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import rst.domotic.state.BatteryStateType.BatteryState;
+import rst.domotic.state.BatteryStateType.BatteryState.State;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -43,6 +44,13 @@ public class BatteryStateTransformer {
     public static BatteryState transform(final DecimalType decimalType) {
         BatteryState.Builder state = BatteryState.newBuilder();
         state.setLevel(decimalType.doubleValue());
+        if (state.getLevel() > 30) {
+            state.setValue(State.OK);
+        } else if (state.getLevel() > 15) {
+            state.setValue(State.INSUFFICIENT);
+        } else {
+            state.setValue(State.CRITICAL);
+        }
         return state.build();
     }
 

@@ -33,6 +33,8 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitializable {
 
@@ -64,6 +66,14 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
 
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
+        Registries.getUnitRegistry().waitForData();
+        while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
+            Thread.sleep(100);
+        }
+        LOGGER.info("Users: " + Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size());
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
+            LOGGER.info(unitConfig.getUserConfig().getUserName());
+        }
         SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
         thingDeviceUnitSynchronization.activate();
         deviceThingSynchronization.activate();

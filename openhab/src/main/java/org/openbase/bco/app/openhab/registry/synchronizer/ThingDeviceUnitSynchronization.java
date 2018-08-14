@@ -59,7 +59,9 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
         // TODO: only adding the label, or remove the old one, or at least move new one to higher priority?
         // update label and location
-        LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, updatedThing.label);
+        if (!LabelProcessor.contains(deviceUnitConfig.getLabel(), updatedThing.label)) {
+            LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, updatedThing.label);
+        }
         if (updatedThing.location != null) {
             final String locationId = SynchronizationHelper.getLocationForThing(updatedThing).getId();
 

@@ -35,7 +35,7 @@ import java.util.concurrent.Future;
 
 public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureStateOperationService & Unit<?>> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
 
-    TargetTemperatureStateServiceImpl(ST unit) throws InstantiationException {
+    public TargetTemperatureStateServiceImpl(ST unit) throws InstantiationException {
         super(unit);
     }
 

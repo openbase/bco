@@ -38,6 +38,7 @@ import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.Map;
@@ -85,6 +86,9 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
+            Thread.sleep(100);
+        }
         deviceManagerController.getUnitControllerRegistry().addObserver(synchronizationObserver);
         deviceManagerController.activate();
         OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
