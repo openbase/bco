@@ -23,6 +23,7 @@ package org.openbase.bco.app.cloud.connector;
  */
 
 import com.google.gson.*;
+import com.google.protobuf.Message;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Manager;
@@ -31,6 +32,7 @@ import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.authentication.lib.TokenStore;
+import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
@@ -55,17 +57,14 @@ import rst.configuration.LabelType.Label;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.scene.SceneConfigType.SceneConfig.Builder;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -96,6 +95,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private boolean active, loggedIn;
     private String agentUserId;
 
+    private final ServiceJSonProcessor serviceJSonProcessor;
     private final UnitRegistryObserver unitRegistryObserver;
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -112,6 +112,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         this.loginData = loginData;
         this.unitRegistryObserver = new UnitRegistryObserver();
         this.active = false;
+        this.serviceJSonProcessor = new ServiceJSonProcessor();
     }
 
     @Override
@@ -271,7 +272,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                         LOGGER.info("Logged in [" + userId + "] successfully");
                         loginFuture.complete(null);
                         // trigger initial database sync
-                        socket.emit("requestSync", (Ack) objects1 -> LOGGER.info("Received response: " + objects1.getClass().getName()));
+                        requestSync();
                     } else {
                         LOGGER.info("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY));
                         loginFuture.completeExceptionally(new CouldNotPerformException("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY)));
@@ -343,42 +344,85 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     }
 
     private void handleSceneRegistration(final Object object, final Ack acknowledgement) {
-//        final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-//        LOGGER.info("Received scene registration data:\n" + gson.toJson(data));
-//        try {
-//            final UnitConfig.Builder sceneConfig = UnitConfig.newBuilder().setUnitType(UnitType.SCENE);
-//            if (data.has("label")) {
-//                final Label.MapFieldEntry.Builder entry = sceneConfig.getLabelBuilder().addEntryBuilder();
-//                entry.setKey(Locale.GERMAN.getLanguage());
-//                entry.addValue(data.get("label").getAsString());
-//            }
-//
-//            UnitConfig location = Registries.getUnitRegistry().getRootLocationConfig();
-//            if (data.has("location")) {
-//                final String locationLabel = data.get("location").getAsString();
-//                List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(UnitType.LOCATION, locationLabel);
-//                if (locations.size() == 0) {
-//                    //TODO: error response
-//                } else if (locations.size() == 2) {
-//                    //TODO: query for more info
-//                } else {
-//                    location = locations.get(0);
-//                }
-//            }
-//
-//            Builder sceneConfigBuilder = sceneConfig.getSceneConfigBuilder();
-//            ServiceStateDescription.Builder builder = sceneConfigBuilder.addRequiredServiceStateDescriptionBuilder();
-//            builder.setUnitId()
-//            LocationRemote locationRemote = Units.getUnit(location, false, LocationRemote.class);
-//            for (Entry<UnitType, List<UnitRemote>> entry : locationRemote.getUnitMap().entrySet()) {
-//                switch (entry.getKey()) {
-//                    case POWER_SWITCH:
-//                    case LIGHT:
-//                    case DIMMABLE_LIGHT:
-//                    case COLORABLE_LIGHT:
-//                }
-//            }
-//        }
+        //TODO: if taking to long give feedback that process is still running?
+//        final long MAX_WAIING_TIME = 5000;
+//        long startingTime = System.currentTimeMillis();
+
+        final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
+        LOGGER.info("Received scene registration data:\n" + gson.toJson(data));
+        final UnitConfig.Builder sceneUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.SCENE);
+
+        try {
+            UnitConfig location = Registries.getUnitRegistry().getRootLocationConfig();
+            if (data.has("location")) {
+                final String locationLabel = data.get("location").getAsString();
+                List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(locationLabel, UnitType.LOCATION);
+                if (locations.size() == 0) {
+                    //TODO: error response
+                } else if (locations.size() == 2) {
+                    //TODO: query for more info
+                } else {
+                    location = locations.get(0);
+                }
+            }
+
+            if (data.has("label")) {
+                final String label = data.get("label").getAsString();
+                final Label.MapFieldEntry.Builder entry = sceneUnitConfig.getLabelBuilder().addEntryBuilder();
+                entry.setKey(Locale.GERMAN.getLanguage());
+                entry.addValue(label);
+
+                // make sure label is available for this location
+                for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(label, location.getId())) {
+                    if (unitConfig.getUnitType() == UnitType.SCENE) {
+                        acknowledgement.call("");
+                    }
+                }
+            }
+
+            final List<ServiceType> serviceTypes = Arrays.asList(ServiceType.ACTIVATION_STATE_SERVICE,
+                    ServiceType.BRIGHTNESS_STATE_SERVICE, ServiceType.COLOR_STATE_SERVICE, ServiceType.POWER_STATE_SERVICE);
+
+            SceneConfig.Builder sceneConfig = sceneUnitConfig.getSceneConfigBuilder();
+            LocationRemote locationRemote = Units.getUnit(location, false, LocationRemote.class);
+            for (ServiceType serviceType : serviceTypes) {
+                for (Object internalUnit : locationRemote.getServiceRemote(serviceType).getInternalUnits()) {
+                    final UnitRemote<?> unitRemote = (UnitRemote) internalUnit;
+                    if (!unitRemote.isDataAvailable()) {
+                        try {
+                            unitRemote.waitForData(50, TimeUnit.MILLISECONDS);
+                        } catch (CouldNotPerformException ex) {
+                            LOGGER.warn("Skip unit[" + unitRemote.getLabel() + "] for scene creation because data not available");
+                            continue;
+                        }
+                    }
+                    final ServiceStateDescription.Builder serviceStateDescription = sceneConfig.addRequiredServiceStateDescriptionBuilder();
+                    serviceStateDescription.setUnitId(unitRemote.getId());
+                    serviceStateDescription.setServiceType(serviceType);
+                    serviceStateDescription.setUnitType(unitRemote.getUnitType());
+                    Message serviceState = unitRemote.getServiceState(serviceType);
+                    serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(serviceState));
+                    serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceState));
+                }
+            }
+
+            try {
+                UnitConfig unitConfig = Registries.getUnitRegistry().registerUnitConfig(sceneUnitConfig.build()).get(1, TimeUnit.SECONDS);
+                acknowledgement.call("Die Szene " + LabelProcessor.getLabelByLanguage(Locale.GERMAN, unitConfig.getLabel()) + " wurde erfolgreich registriert.");
+            } catch (ExecutionException ex) {
+                acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
+                ExceptionPrinter.printHistory(ex, LOGGER);
+            } catch (TimeoutException e) {
+                acknowledgement.call("Die Szene wird gerade registriert");
+            }
+        } catch (InterruptedException ex) {
+            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
+            Thread.currentThread().interrupt();
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } catch (CouldNotPerformException ex) {
+            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        }
     }
 
     @Override
@@ -428,8 +472,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             // trigger sync if socket is connected and logged in
             // if the user is not logged the login process will trigger an update anyway
             if (isLoggedIn()) {
-                //TODO: parse response for an error and write a warning
-                socket.emit(REQUEST_SYNC_EVENT, (Ack) objects1 -> LOGGER.info("Received response: " + objects1.getClass().getName()));
+                requestSync();
 
                 // debug print
                 JsonObject test = new JsonObject();
@@ -438,6 +481,20 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 LOGGER.info("new sync[" + isLoggedIn() + "]:\n" + gson.toJson(test));
             }
         }
+    }
+
+    private void requestSync() {
+        socket.emit(REQUEST_SYNC_EVENT, (Ack) objects -> {
+            final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
+            if (response.has(SUCCESS_KEY)) {
+                final boolean success = response.get(SUCCESS_KEY).getAsBoolean();
+                if (success) {
+                    LOGGER.info("Successfully performed sync request for user[" + userId + "]");
+                } else {
+                    LOGGER.warn("Could not perform sync for user[" + userId + "]: " + response.get(ERROR_KEY));
+                }
+            }
+        });
     }
 
     public Future<Void> getLoginFuture() {
