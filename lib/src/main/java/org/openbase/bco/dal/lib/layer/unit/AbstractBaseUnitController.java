@@ -21,19 +21,32 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+
+import java.util.concurrent.Future;
 
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * 
- * @param <D> the data type of this unit used for the state synchronization.
+ * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractUnitController<D, DB> implements BaseUnitController<D, DB> {
 
     public AbstractBaseUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(unitClass, builder);
+    }
+
+    @Override
+    public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
+        return GlobalCachedExecutorService.submit(() -> {
+            super.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
+            return null;
+        });
     }
 }
