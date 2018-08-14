@@ -23,6 +23,7 @@ package org.openbase.bco.app.openhab.manager;
  */
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.protobuf.Message;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.manager.transform.CommandTransformer;
@@ -45,9 +46,11 @@ public class CommandExecutor implements Observer<JsonObject> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutor.class);
 
     private final UnitControllerRegistry<?, ?> unitControllerRegistry;
+    private final JsonParser jsonParser;
 
     public CommandExecutor(final UnitControllerRegistry unitControllerRegistry) {
         this.unitControllerRegistry = unitControllerRegistry;
+        this.jsonParser = new JsonParser();
     }
 
     @Override
@@ -58,7 +61,7 @@ public class CommandExecutor implements Observer<JsonObject> {
         final String itemName = topic.split(OpenHABRestCommunicator.TOPIC_SEPARATOR)[2];
 
         // extract payload
-        final String state = payload.get(PAYLOAD_KEY).getAsString();
+        final String state = jsonParser.parse(payload.get(PAYLOAD_KEY).getAsString()).getAsJsonObject().get("value").getAsString();
 
         try {
             applyStateUpdate(itemName, state);

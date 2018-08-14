@@ -7,7 +7,7 @@
     <name>BCO Openhab App</name>
     <description>BCO app used to communicate with openhab.</description>
     
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     
     <parent>
         <groupId>org.openbase</groupId>
@@ -51,6 +51,20 @@
                         <program>
                             <mainClass>org.openbase.bco.app.openhab.OpenHABApp</mainClass>
                             <id>bco-openhab-app</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.app.openhab.registry.OpenHABConfigSynchronizerLauncher</mainClass>
+                            <id>bco-openhab-app-config-synchronizer</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.app.openhab.manager.OpenHABDeviceManagerLauncher</mainClass>
+                            <id>bco-openhab-app-device-manager</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

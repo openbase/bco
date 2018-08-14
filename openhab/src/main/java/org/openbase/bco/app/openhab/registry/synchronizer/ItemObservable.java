@@ -23,33 +23,35 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
  */
 
 import com.google.gson.JsonObject;
-import org.eclipse.smarthome.core.thing.events.ThingAddedEvent;
-import org.eclipse.smarthome.core.thing.events.ThingRemovedEvent;
-import org.eclipse.smarthome.core.thing.events.ThingUpdatedEvent;
-import org.openbase.jul.pattern.Observer;
+import org.eclipse.smarthome.core.items.events.ItemAddedEvent;
+import org.eclipse.smarthome.core.items.events.ItemRemovedEvent;
+import org.eclipse.smarthome.core.items.events.ItemUpdatedEvent;
 
-public class ThingObservable extends AbstractSSEObservable<JsonObject> {
+/**
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ */
+public class ItemObservable extends AbstractSSEObservable<JsonObject> {
 
-    private static final String THING_TOPIC_FILTER = "smarthome/things/(.+)";
+    private static final String ITEM_TOPIC_FILTER = "smarthome/items/(.+)";
 
-    public ThingObservable() {
-        super(THING_TOPIC_FILTER, JsonObject.class);
-    }
-
-    @Override
-    protected boolean filter(JsonObject jsonObject) {
-        final String eventType = jsonObject.get("type").getAsString();
-        return !(eventType.equals(ThingUpdatedEvent.TYPE) || eventType.equals(ThingAddedEvent.TYPE) || eventType.equals(ThingRemovedEvent.TYPE));
-    }
-
-    @Override
-    protected JsonObject convert(JsonObject jsonObject) {
-        return jsonObject;
+    public ItemObservable() {
+        super(ITEM_TOPIC_FILTER, JsonObject.class);
     }
 
     @Override
     public boolean isDataAvailable() {
         // this is a workaround used to trigger an initial update
         return true;
+    }
+
+    @Override
+    protected boolean filter(JsonObject jsonObject) {
+        final String eventType = jsonObject.get("type").getAsString();
+        return !(eventType.equals(ItemAddedEvent.TYPE) || eventType.equals(ItemRemovedEvent.TYPE) || eventType.equals(ItemUpdatedEvent.TYPE));
+    }
+
+    @Override
+    protected JsonObject convert(JsonObject jsonObject) {
+        return jsonObject;
     }
 }

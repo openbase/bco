@@ -40,6 +40,12 @@ public class CommandTransformer {
     public static Message getServiceData(final String state, ServiceType serviceType) throws CouldNotPerformException {
         Message serviceData;
 
+        if (state.equalsIgnoreCase("null")) {
+            LOGGER.warn("Ignore state update [" + state + "] for service[" + serviceType + "]");
+            return null;
+//            throw new CouldNotPerformException("State for serviceType[" + serviceType.name() + "] not available");
+        }
+
         try {
             switch (serviceType) {
                 case COLOR_STATE_SERVICE:

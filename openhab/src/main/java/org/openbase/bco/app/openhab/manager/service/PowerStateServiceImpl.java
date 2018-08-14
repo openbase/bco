@@ -35,7 +35,7 @@ import java.util.concurrent.Future;
 
 public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<?>> extends OpenHABService<ST> implements PowerStateOperationService {
 
-    PowerStateServiceImpl(final ST unit) throws InstantiationException {
+    public PowerStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 

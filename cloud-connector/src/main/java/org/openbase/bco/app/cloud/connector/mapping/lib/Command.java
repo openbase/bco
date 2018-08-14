@@ -41,6 +41,7 @@ public enum Command {
     ON_OFF,
     SET_MODES,
     SET_TOGGLES,
+    THERMOSTAT_SET_MODE,
     THERMOSTAT_TEMPERATURE_SETPOINT;
 
     /**

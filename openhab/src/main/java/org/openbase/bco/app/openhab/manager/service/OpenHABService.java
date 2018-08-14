@@ -117,6 +117,11 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         return CompletableFuture.completedFuture(null);
     }
 
+    @Override
+    public ServiceProvider getServiceProvider() {
+        return unit;
+    }
+
     /**
      * Method repeats the given command in 5 seconds.
      * Make sure the last command is always stored into the {@code lastCommand} variable.

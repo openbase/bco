@@ -22,45 +22,81 @@ package org.openbase.bco.app.openhab.registry;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.registry.synchronizer.ThingDeviceUnitSynchronizer;
+import org.openbase.bco.app.openhab.registry.synchronizer.*;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitializable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABConfigSynchronizer.class);
 
-    public static String OPENHAB_THING_TYPE_UID_KEY = "OPENHAB_THING_TYPE_UID";
+    private final SyncObject synchronizationLock = new SyncObject("SyncLock");
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private final ThingDeviceUnitSynchronizer thingDeviceUnitSynchronizer;
-
+    private final InboxApprover inboxApprover;
+    private final ThingDeviceUnitSynchronization thingDeviceUnitSynchronization;
+    private final DeviceThingSynchronization deviceThingSynchronization;
+    private final DALUnitItemSynchronization dalUnitItemSynchronization;
+    private final ItemDalUnitSynchronization itemDalUnitSynchronization;
 
     public OpenHABConfigSynchronizer() throws InstantiationException {
-        thingDeviceUnitSynchronizer = new ThingDeviceUnitSynchronizer();
-    }
+        try {
+            this.inboxApprover = new InboxApprover();
+            this.thingDeviceUnitSynchronization = new ThingDeviceUnitSynchronization(synchronizationLock);
+            this.deviceThingSynchronization = new DeviceThingSynchronization(synchronizationLock);
 
+            this.dalUnitItemSynchronization = new DALUnitItemSynchronization(synchronizationLock);
+            this.itemDalUnitSynchronization = new ItemDalUnitSynchronization(synchronizationLock);
+        } catch (NotAvailableException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
 
     public void init() {
     }
 
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
-        thingDeviceUnitSynchronizer.activate();
+        Registries.getUnitRegistry().waitForData();
+        while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
+            Thread.sleep(100);
+        }
+        LOGGER.info("Users: " + Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size());
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
+            LOGGER.info(unitConfig.getUserConfig().getUserName());
+        }
+        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
+        thingDeviceUnitSynchronization.activate();
+        deviceThingSynchronization.activate();
+        dalUnitItemSynchronization.activate();
+        itemDalUnitSynchronization.activate();
+        inboxApprover.activate();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        thingDeviceUnitSynchronizer.deactivate();
+        inboxApprover.deactivate();
+        thingDeviceUnitSynchronization.deactivate();
+        deviceThingSynchronization.deactivate();
+        dalUnitItemSynchronization.deactivate();
+        itemDalUnitSynchronization.deactivate();
     }
 
     @Override
     public boolean isActive() {
-        return thingDeviceUnitSynchronizer.isActive();
+        return thingDeviceUnitSynchronization.isActive()
+                && deviceThingSynchronization.isActive()
+                && dalUnitItemSynchronization.isActive()
+                && itemDalUnitSynchronization.isActive()
+                && inboxApprover.isActive();
     }
 }

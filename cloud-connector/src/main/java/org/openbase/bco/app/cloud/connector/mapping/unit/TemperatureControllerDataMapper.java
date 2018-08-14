@@ -36,7 +36,18 @@ public class TemperatureControllerDataMapper implements UnitDataMapper<Temperatu
 
     @Override
     public void map(final TemperatureControllerRemote unitRemote, final JsonObject jsonObject) throws CouldNotPerformException {
-        jsonObject.addProperty(TemperatureStateTemperatureSettingMapper.TEMPERATURE_SETPOINT_KEY, unitRemote.getTargetTemperatureState().getTemperature());
-        jsonObject.addProperty(TEMPERATURE_AMBIENT_KEY, unitRemote.getTemperatureState().getTemperature());
+        final double targetTemperature = unitRemote.getTargetTemperatureState().getTemperature();
+        final double temperature = unitRemote.getTemperatureState().getTemperature();
+
+        //TODO: this is just a hack and should be changed when we introduce a temperature mode
+        if (targetTemperature > 20.5) {
+            jsonObject.addProperty(TemperatureStateTemperatureSettingMapper.TEMPERATURE_SETTING_MODE_KEY, "heating");
+        } else if (targetTemperature > 0.0) {
+            jsonObject.addProperty(TemperatureStateTemperatureSettingMapper.TEMPERATURE_SETTING_MODE_KEY, "cooling");
+        } else {
+            jsonObject.addProperty(TemperatureStateTemperatureSettingMapper.TEMPERATURE_SETTING_MODE_KEY, "off");
+        }
+        jsonObject.addProperty(TemperatureStateTemperatureSettingMapper.TEMPERATURE_SETPOINT_KEY, targetTemperature);
+        jsonObject.addProperty(TEMPERATURE_AMBIENT_KEY, temperature);
     }
 }

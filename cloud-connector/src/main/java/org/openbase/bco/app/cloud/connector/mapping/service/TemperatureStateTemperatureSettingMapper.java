@@ -28,6 +28,7 @@ import org.openbase.bco.app.cloud.connector.mapping.unit.TemperatureControllerDa
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.state.TemperatureStateType.TemperatureState.DataUnit;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -36,6 +37,11 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 public class TemperatureStateTemperatureSettingMapper extends AbstractServiceStateTraitMapper<TemperatureState> {
 
     public static final String TEMPERATURE_SETPOINT_KEY = "thermostatTemperatureSetpoint";
+    public static final String TEMPERATURE_SETTING_MODE_KEY = "thermostatMode";
+
+    public static final String MODE_OFF = "off";
+    public static final String MODE_COOLING = "cooling";
+    public static final String MODE_HEATING = "heating";
 
     public static final String THERMOSTAT_MODES_KEY = "availableThermostatModes";
     public static final String TEMPERATURE_UNIT_KEY = "thermostatTemperatureUnit";
@@ -61,6 +67,30 @@ public class TemperatureStateTemperatureSettingMapper extends AbstractServiceSta
                     throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to ["
                             + TemperatureState.class.getSimpleName() + "]. Attribute[" + TEMPERATURE_SETPOINT_KEY + "] is not a float");
                 }
+            case THERMOSTAT_SET_MODE:
+                if (!jsonObject.has(TEMPERATURE_SETTING_MODE_KEY)) {
+                    throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to ["
+                            + TemperatureState.class.getSimpleName() + "]. Attribute[" + TEMPERATURE_SETTING_MODE_KEY + "] is missing");
+                }
+
+                try {
+                    //TODO: this is just a hack and should be changed when we introduce a temperature mode
+                    final String mode = jsonObject.get(TEMPERATURE_SETTING_MODE_KEY).getAsString();
+                    switch (mode) {
+                        case MODE_OFF:
+                            return TemperatureState.newBuilder().setTemperature(0.0).setTemperatureDataUnit(DataUnit.CELSIUS).build();
+                        case MODE_COOLING:
+                            return TemperatureState.newBuilder().setTemperature(18.0).setTemperatureDataUnit(DataUnit.CELSIUS).build();
+                        case MODE_HEATING:
+                            return TemperatureState.newBuilder().setTemperature(23.0).setTemperatureDataUnit(DataUnit.CELSIUS).build();
+                        default:
+                            throw new CouldNotPerformException("Mode[" + mode + "] is not supported by " + getClass().getSimpleName());
+                    }
+                } catch (ClassCastException | IllegalStateException ex) {
+                    // thrown if it is not a boolean
+                    throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to ["
+                            + TemperatureState.class.getSimpleName() + "]. Attribute[" + TEMPERATURE_SETTING_MODE_KEY + "] is not a string");
+                }
             default:
                 throw new CouldNotPerformException("Command[" + command.name() + "] not yet supported by " + getClass().getSimpleName());
         }
@@ -80,7 +110,7 @@ public class TemperatureStateTemperatureSettingMapper extends AbstractServiceSta
     @Override
     public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) {
         // currently modes not yet supported
-        jsonObject.addProperty(THERMOSTAT_MODES_KEY, "off");
+        jsonObject.addProperty(THERMOSTAT_MODES_KEY, MODE_OFF + "," + MODE_COOLING + "," + MODE_HEATING);
         // C for Celsius, F for Fahrenheit
         jsonObject.addProperty(TEMPERATURE_UNIT_KEY, "C");
     }

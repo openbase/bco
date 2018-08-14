@@ -1,8 +1,8 @@
-package org.openbase.bco.app.cloud.connector.jp;
+package org.openbase.bco.app.openhab.jp;
 
 /*-
  * #%L
- * BCO Cloud Connector
+ * BCO Openhab App
  * %%
  * Copyright (C) 2018 openbase.org
  * %%
@@ -30,14 +30,14 @@ import java.util.List;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class JPCloudServerURI extends AbstractJavaProperty<URI> {
+public class JPOpenHABURI extends AbstractJavaProperty<URI> {
 
     private static final String[] ARGUMENT_IDENTIFIERS = {"URI"};
-    private static final String[] COMMAND_IDENTIFIERS = {"--cloud"};
+    private static final String[] COMMAND_IDENTIFIERS = {"--uri"};
 
-    private static final String DEFAULT_URI = "https://bco-cloud.herokuapp.com/";
+    private static final String DEFAULT_URI = "http://localhost:8080";
 
-    public JPCloudServerURI() {
+    public JPOpenHABURI() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -48,20 +48,23 @@ public class JPCloudServerURI extends AbstractJavaProperty<URI> {
 
     @Override
     protected URI getPropertyDefaultValue() {
+        // URI.create does not throw an exception which is fine for the default value
         return URI.create(DEFAULT_URI);
     }
 
     @Override
-    protected URI parse(List<String> list) throws Exception {
+    protected URI parse(final List<String> list) throws Exception {
         String uri = getOneArgumentResult();
+        // make sure that the uri always starts with http ot https
         if (!uri.startsWith("http")) {
             uri = "http://" + uri;
         }
+        // create a new uri, this will throw an exception if the uri is not valid
         return new URI(uri);
     }
 
     @Override
     public String getDescription() {
-        return "Define the URI of the BCO Cloud to which the connector should connect.";
+        return "Define the URI of the OpenHAB 2 instance this app should connect to.";
     }
 }

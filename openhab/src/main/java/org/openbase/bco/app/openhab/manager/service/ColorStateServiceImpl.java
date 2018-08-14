@@ -39,7 +39,7 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ColorStateServiceImpl.class);
 
-    ColorStateServiceImpl(final ST unit) throws InstantiationException {
+    public ColorStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 

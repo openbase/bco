@@ -22,46 +22,27 @@ package org.openbase.bco.app.cloud.connector.jp;
  * #L%
  */
 
-import org.openbase.jps.core.AbstractJavaProperty;
-
-import java.net.URI;
-import java.util.List;
+import org.openbase.jul.extension.rsb.scope.jp.JPScope;
+import rsb.Scope;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class JPCloudServerURI extends AbstractJavaProperty<URI> {
+public class JPCloudConnectorScope extends JPScope {
 
-    private static final String[] ARGUMENT_IDENTIFIERS = {"URI"};
-    private static final String[] COMMAND_IDENTIFIERS = {"--cloud"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--cloud-connector-scope"};
 
-    private static final String DEFAULT_URI = "https://bco-cloud.herokuapp.com/";
-
-    public JPCloudServerURI() {
+    public JPCloudConnectorScope() {
         super(COMMAND_IDENTIFIERS);
     }
 
     @Override
-    protected String[] generateArgumentIdentifiers() {
-        return ARGUMENT_IDENTIFIERS;
-    }
-
-    @Override
-    protected URI getPropertyDefaultValue() {
-        return URI.create(DEFAULT_URI);
-    }
-
-    @Override
-    protected URI parse(List<String> list) throws Exception {
-        String uri = getOneArgumentResult();
-        if (!uri.startsWith("http")) {
-            uri = "http://" + uri;
-        }
-        return new URI(uri);
+    protected Scope getPropertyDefaultValue() {
+        return super.getPropertyDefaultValue().concat(new Scope("/bco/cloud_connector"));
     }
 
     @Override
     public String getDescription() {
-        return "Define the URI of the BCO Cloud to which the connector should connect.";
+        return "Setup the cloud connector scope which is used for the rsb communication.";
     }
 }

@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
 
 public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<?>> extends OpenHABService<ST> implements BlindStateOperationService {
 
-    BlindStateServiceImpl(ST unit) throws InstantiationException {
+    public BlindStateServiceImpl(ST unit) throws InstantiationException {
         super(unit);
     }
 
