@@ -26,6 +26,7 @@ import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -95,6 +96,11 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
     }
 
     public ST getUnit() {
+        return unit;
+    }
+
+    @Override
+    public ServiceProvider getServiceProvider() {
         return unit;
     }
 

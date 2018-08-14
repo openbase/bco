@@ -39,11 +39,8 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ColorStateServiceImpl.class);
 
-//    private final boolean autoRepeat;
-
     ColorStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
-//        this.autoRepeat = ServiceFactoryTools.detectAutoRepeat(unit);
     }
 
     @Override

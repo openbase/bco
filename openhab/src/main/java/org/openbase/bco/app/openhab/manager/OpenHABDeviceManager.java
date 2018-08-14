@@ -23,7 +23,7 @@ package org.openbase.bco.app.openhab.manager;
  */
 
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
-import org.openbase.bco.app.openhab.manager.service.OpenHABServiceFactory;
+import org.openbase.bco.app.openhab.manager.service.OpenHABOperationServiceFactory;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.registry.remote.Registries;
@@ -52,7 +52,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
     private final Observer<Map<String, DeviceController>> synchronizationObserver;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
-        this.deviceManagerController = new DeviceManagerController(new OpenHABServiceFactory()) {
+        this.deviceManagerController = new DeviceManagerController(new OpenHABOperationServiceFactory()) {
 
             @Override
             public boolean isSupported(UnitConfig config) throws CouldNotPerformException {

@@ -278,7 +278,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
                 // create and register item
                 ItemDTO itemDTO = new ItemDTO();
-                itemDTO.label = LabelProcessor.getFirstLabel(dalUnitConfig.getLabel());
+                itemDTO.label = LabelProcessor.getBestMatch(dalUnitConfig.getLabel());
                 itemDTO.name = OpenHABItemHelper.generateItemName(dalUnitConfig, serviceType);
                 itemDTO.type = OpenHABItemHelper.getItemType(serviceType, servicePattern);
                 itemDTO = OpenHABRestCommunicator.getInstance().registerItem(itemDTO);

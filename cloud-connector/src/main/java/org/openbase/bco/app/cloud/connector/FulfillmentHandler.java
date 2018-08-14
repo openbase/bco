@@ -291,7 +291,7 @@ public class FulfillmentHandler {
 
         device.addProperty(ID_KEY, host.getId());
         device.addProperty("willReportState", false); // This could be activated in the future
-        device.addProperty("roomHint", LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(host.getPlacementConfig().getLocationId()).getLabel()));
+        device.addProperty("roomHint", LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(host.getPlacementConfig().getLocationId()).getLabel()));
 
         final JsonObject name = new JsonObject();
         final String mainName = StringProcessor.insertSpaceBetweenCamelCase(LabelProcessor.getBestMatch(host.getLabel()));
