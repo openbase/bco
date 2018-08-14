@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -40,6 +41,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * This plugin creates a user for every agent and app.
@@ -66,12 +69,15 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
         try {
             for (final UnitConfig unitConfig : registry.getMessages()) {
                 try {
-                    findUser(unitConfig);
+                    final UnitConfig userUnitConfig = findUser(unitConfig);
+                    if (!CachedAuthenticationRemote.getRemote().hasUser(userUnitConfig.getId()).get()) {
+                        registerUserAtAuthenticator(userUnitConfig.getId());
+                    }
                 } catch (NotAvailableException ex) {
                     registerUser(unitConfig);
                 }
             }
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | ExecutionException ex) {
             throw new InitializationException(this, ex);
         }
     }
@@ -134,6 +140,10 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
         final UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
         userConfig.setIsSystemUser(true);
         userConfig.setUserName(getUsername(unitConfig));
+        registerUserAtAuthenticator(userRegistry.register(userUnitConfig.build()).getId());
+    }
+
+    private void registerUserAtAuthenticator(final String id) throws CouldNotPerformException {
         if (!SessionManager.getInstance().isLoggedIn()) {
             String bcoUserId = "";
             for (UnitConfig message : userRegistry.getMessages()) {
@@ -147,6 +157,6 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
             }
             SessionManager.getInstance().login(bcoUserId);
         }
-        SessionManager.getInstance().registerClient(userRegistry.register(userUnitConfig.build()).getId());
+        SessionManager.getInstance().registerClient(id);
     }
 }
