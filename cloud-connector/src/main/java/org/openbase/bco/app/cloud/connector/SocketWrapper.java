@@ -95,7 +95,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private boolean active, loggedIn;
     private String agentUserId;
 
-    private final ServiceJSonProcessor serviceJSonProcessor;
     private final UnitRegistryObserver unitRegistryObserver;
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -112,7 +111,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         this.loginData = loginData;
         this.unitRegistryObserver = new UnitRegistryObserver();
         this.active = false;
-        this.serviceJSonProcessor = new ServiceJSonProcessor();
     }
 
     @Override
