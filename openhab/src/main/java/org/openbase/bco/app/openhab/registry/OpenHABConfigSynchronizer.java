@@ -66,7 +66,7 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
 
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
-        Registries.getUnitRegistry().waitForData();
+        // TODO: this is a hack implemented because waitForData did not work correctly last time tested
         while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
             Thread.sleep(100);
         }
