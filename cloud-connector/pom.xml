@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openbase</groupId>
@@ -9,12 +10,12 @@
     <name>BCO Cloud Connector</name>
     <description>Component connecting local BCO instances to the cloud</description>
 
-   <parent>
+    <parent>
         <groupId>org.openbase</groupId>
         <artifactId>bco.app</artifactId>
         <version>2.0-SNAPSHOT</version>
     </parent>
- 
+
     <url>https://github.com/openbase/bco.cloud/wiki</url>
 
     <licenses>
@@ -25,8 +26,8 @@
     </licenses>
 
     <build>
-		<plugins>
-			<plugin>
+        <plugins>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
@@ -84,7 +85,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.dal.remote</artifactId>
+            <artifactId>bco.manager.app.core</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
 

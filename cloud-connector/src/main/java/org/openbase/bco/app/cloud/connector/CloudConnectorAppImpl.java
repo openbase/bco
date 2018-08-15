@@ -24,38 +24,35 @@ package org.openbase.bco.app.cloud.connector;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.openbase.bco.app.cloud.connector.jp.JPCloudConnectorScope;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.TokenStore;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.manager.app.core.AbstractAppController;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.iface.Launchable;
-import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.jul.extension.rst.processing.MetaConfigPool;
+import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.WatchDog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +61,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class CloudConnectorAppImpl implements Launchable<Void>, VoidInitializable, CloudConnectorApp {
+public class CloudConnectorAppImpl extends AbstractAppController implements CloudConnectorApp {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorAppImpl.class);
 
@@ -72,41 +69,79 @@ public class CloudConnectorAppImpl implements Launchable<Void>, VoidInitializabl
     private final JsonParser jsonParser;
     private final Map<String, SocketWrapper> userIdSocketMap;
 
-    private WatchDog serverWatchDog;
-
-    public CloudConnectorAppImpl() {
+    public CloudConnectorAppImpl() throws InstantiationException {
+        super(CloudConnectorAppImpl.class);
         this.userIdSocketMap = new HashMap<>();
         this.tokenStore = new TokenStore("cloud_connector_token_store.json");
         this.jsonParser = new JsonParser();
     }
 
     @Override
-    public void init() throws InitializationException {
+    protected void postInit() throws InitializationException, InterruptedException {
+        super.postInit();
+
+        tokenStore.init();
+    }
+
+    @Override
+    public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
+
+        // additionally register method for connecting to cloud
+        RPCHelper.registerInterface(CloudConnectorApp.class, this, server);
+    }
+
+    private void createAuthenticationToken() throws CouldNotPerformException, InterruptedException {
         try {
-            tokenStore.init();
+            UnitConfig cloudConnectorUser = null;
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
+                MetaConfigPool metaConfigPool = new MetaConfigPool();
+                metaConfigPool.register(new MetaConfigVariableProvider(unitConfig.getAlias(0), unitConfig.getMetaConfig()));
+                try {
+                    String unitId = metaConfigPool.getValue("UNIT_ID");
+                    if (unitId.equalsIgnoreCase(getId())) {
+                        cloudConnectorUser = unitConfig;
+                        break;
+                    }
+                } catch (NotAvailableException ex) {
+                    // do nothing
+                }
+            }
 
-            final Scope scope = JPService.getProperty(JPCloudConnectorScope.class).getValue();
-            final RSBLocalServer server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(scope, RSBSharedConnectionConfig.getParticipantConfig());
+            if (cloudConnectorUser == null) {
+                throw new NotAvailableException("Cloud Connector App User");
+            }
 
-            // register rpc methods.
-            RPCHelper.registerInterface(CloudConnectorApp.class, this, server);
-
-            serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
-        } catch (CouldNotPerformException | JPNotAvailableException ex) {
-            throw new InitializationException(this, ex);
+            final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(cloudConnectorUser.getId()).build();
+            final SessionManager sessionManager = new SessionManager();
+            sessionManager.login(cloudConnectorUser.getId());
+            final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null, null);
+            final String token = new AuthenticatedValueFuture<>(
+                    Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
+                    String.class,
+                    authenticatedValue.getTicketAuthenticatorWrapper(),
+                    sessionManager).get();
+            tokenStore.addToken(getId(), token);
+        } catch (CouldNotPerformException | ExecutionException ex) {
+            throw new CouldNotPerformException("Could not create authentication token for cloud connector", ex);
         }
     }
 
     @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        login();
-        //TODO: cloud connector should be an app and thus logged in by an app manager, if the token store
-        // does not contain an authentication token for the cloud it should be generated here
-        serverWatchDog.activate();
+    protected void execute() throws CouldNotPerformException, InterruptedException {
+        logger.info("Execute Cloud Connector");
+        if (!tokenStore.contains(getId())) {
+            createAuthenticationToken();
+        }
 
         // start socket connection for all users which are already registered
         final Set<String> userIds = new HashSet<>();
         for (final Entry<String, String> entry : tokenStore.getEntryMap().entrySet()) {
+            // ignore authentication token
+            if (entry.getKey().equals(getId())) {
+                continue;
+            }
+
             final String userId = entry.getKey().split("@")[0];
             if (userIds.contains(userId)) {
                 continue;
@@ -119,58 +154,13 @@ public class CloudConnectorAppImpl implements Launchable<Void>, VoidInitializabl
         }
     }
 
-    public static final String CLOUD_CONNECTOR_APP_CLASS_LABEL = "Cloud Connector";
-
-    private void login() throws CouldNotPerformException, InterruptedException {
-        try {
-            Registries.waitForData();
-            String appClassId = "";
-            for (AppClass appClass : Registries.getClassRegistry().getAppClasses()) {
-                if (LabelProcessor.getLabelListByLanguage(Locale.ENGLISH, appClass.getLabel()).contains(CLOUD_CONNECTOR_APP_CLASS_LABEL)) {
-                    appClassId = appClass.getId();
-                    break;
-                }
-            }
-
-            if (appClassId.isEmpty()) {
-                throw new NotAvailableException("Cloud Connector App Class");
-            }
-
-            String appConfigId = "";
-            for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.APP)) {
-                if (unitConfig.getAppConfig().getAppClassId().equals(appClassId)) {
-                    appConfigId = unitConfig.getId();
-                    break;
-                }
-            }
-
-            if (appConfigId.isEmpty()) {
-                throw new NotAvailableException("Cloud Connector App Config");
-            }
-
-            SessionManager.getInstance().login(UnitUserCreationPlugin.findUser(appConfigId, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry()).getId());
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not login Cloud Connector", ex);
-        }
-    }
-
     @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        if (serverWatchDog != null) {
-            serverWatchDog.deactivate();
-        }
+    protected void stop() throws CouldNotPerformException, InterruptedException {
+        logger.info("Stop Cloud Connector");
         for (SocketWrapper socketWrapper : userIdSocketMap.values()) {
             socketWrapper.deactivate();
         }
         tokenStore.shutdown();
-    }
-
-    @Override
-    public boolean isActive() {
-        if (serverWatchDog != null) {
-            return serverWatchDog.isActive();
-        }
-        return false;
     }
 
     private String connect(final String jsonObject, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
@@ -251,9 +241,8 @@ public class CloudConnectorAppImpl implements Launchable<Void>, VoidInitializabl
         }
     }
 
-
     @Override
-    public Future<AuthenticatedValue> connect(AuthenticatedValue authenticatedValue) {
+    public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) {
         return GlobalCachedExecutorService.submit(() ->
                 AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, this::connect));
     }

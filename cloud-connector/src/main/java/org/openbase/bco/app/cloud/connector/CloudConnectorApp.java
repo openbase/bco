@@ -22,6 +22,7 @@ package org.openbase.bco.app.cloud.connector;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -31,7 +32,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface CloudConnectorApp {
+public interface CloudConnectorApp extends App {
 
     /**
      * Create a connection for a user to the BCO Cloud or stop it. This enables usage of the Google Assistant with BCO.

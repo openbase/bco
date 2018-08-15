@@ -27,6 +27,7 @@ import org.openbase.bco.app.cloud.connector.jp.JPCloudConnectorScope;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.remote.unit.app.AppRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -57,54 +58,9 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class CloudConnectorRemote implements CloudConnectorApp, Manageable<Void>, VoidInitializable {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
-    }
+public class CloudConnectorRemote extends AppRemote implements CloudConnectorApp {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorRemote.class);
-
-    private RSBRemoteServer remoteServer;
-    private WatchDog serverWatchDog;
-
-    public CloudConnectorRemote() {
-        this.remoteServer = new NotInitializedRSBRemoteServer();
-    }
-
-    @Override
-    public void init() throws InitializationException {
-        try {
-            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(JPService.getProperty(JPCloudConnectorScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
-
-            serverWatchDog = new WatchDog(remoteServer, "AuthenticatorWatchDog");
-        } catch (JPNotAvailableException | CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        serverWatchDog.activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        serverWatchDog.deactivate();
-    }
-
-    @Override
-    public boolean isActive() {
-        return remoteServer.isActive();
-    }
-
-    public void waitForActivation() throws CouldNotPerformException, InterruptedException {
-        try {
-            serverWatchDog.waitForServiceActivation();
-        } catch (final CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not wait for activation!", ex);
-        }
-    }
 
     /**
      * This method can be used to tell the cloud connector to connect or disconnect for a user that has already been
@@ -192,7 +148,7 @@ public class CloudConnectorRemote implements CloudConnectorApp, Manageable<Void>
      */
     @Override
     public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        return RPCHelper.callRemoteServerMethod(authenticatedValue, remoteServer, AuthenticatedValue.class);
+        return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
     }
 
     /**

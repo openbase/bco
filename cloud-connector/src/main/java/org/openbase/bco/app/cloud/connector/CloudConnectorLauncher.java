@@ -25,24 +25,26 @@ package org.openbase.bco.app.cloud.connector;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.launch.AbstractLauncher;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.app.AppClassType.AppClass;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @deprecated this is just a workaround which should not be used anymore if the cloud connector is started by the app manager
  */
-public class CloudConnectorLauncher extends AbstractLauncher<CloudConnectorAppImpl> {
+@Deprecated
+public class CloudConnectorLauncher {
 
-    public CloudConnectorLauncher() throws InstantiationException {
-        super(CloudConnectorLauncher.class, CloudConnectorAppImpl.class);
-    }
-
-    @Override
-    protected void loadProperties() {
-        JPService.registerProperty(JPCloudServerURI.class);
-        JPService.registerProperty(JPAuthentication.class);
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorLauncher.class);
 
     /**
      * Main method which starts the cloud connector.
@@ -51,6 +53,49 @@ public class CloudConnectorLauncher extends AbstractLauncher<CloudConnectorAppIm
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(args, CloudConnectorLauncher.class, CloudConnectorLauncher.class);
+
+        //TODO: where should the cloud server uri property be registered? or should this be part of the config?
+        JPService.registerProperty(JPCloudServerURI.class);
+        JPService.registerProperty(JPAuthentication.class);
+
+        try {
+            Registries.waitForData();
+
+            CloudConnectorAppImpl cloudConnectorApp = new CloudConnectorAppImpl();
+            cloudConnectorApp.init(getCloudConnectorUnitConfig());
+            cloudConnectorApp.enable();
+        } catch (InterruptedException | CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not launch cloud connector", ex, LOGGER);
+        }
+
+        LOGGER.info(CloudConnectorLauncher.class.getSimpleName() + " successfully started!");
+    }
+
+    public static UnitConfig getCloudConnectorUnitConfig() throws CouldNotPerformException {
+        String appClassId = "";
+        for (final AppClass appClass : Registries.getClassRegistry().getAppClasses()) {
+            if (LabelProcessor.contains(appClass.getLabel(), "Cloud Connector")) {
+                appClassId = appClass.getId();
+                break;
+            }
+        }
+
+        if (appClassId.isEmpty()) {
+            throw new NotAvailableException("Cloud Connector App Class");
+        }
+
+        UnitConfig cloudConnectorConfig = null;
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.APP)) {
+            if (unitConfig.getAppConfig().getAppClassId().equals(appClassId)) {
+                cloudConnectorConfig = unitConfig;
+                break;
+            }
+        }
+
+        if (cloudConnectorConfig == null) {
+            throw new NotAvailableException("Cloud Connector Unit Config");
+        }
+
+        return cloudConnectorConfig;
     }
 }

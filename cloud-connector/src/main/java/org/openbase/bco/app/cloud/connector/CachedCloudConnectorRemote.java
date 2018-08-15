@@ -63,9 +63,8 @@ public class CachedCloudConnectorRemote {
             if (cloudConnectorRemote == null) {
                 try {
                     cloudConnectorRemote = new CloudConnectorRemote();
-                    cloudConnectorRemote.init();
+                    cloudConnectorRemote.init(CloudConnectorLauncher.getCloudConnectorUnitConfig());
                     cloudConnectorRemote.activate();
-                    cloudConnectorRemote.waitForActivation();
                 } catch (Exception ex) {
                     if (cloudConnectorRemote != null) {
                         cloudConnectorRemote.shutdown();
@@ -82,7 +81,7 @@ public class CachedCloudConnectorRemote {
 
     public static void shutdown() {
         // check if externally called.
-        if (shutdown == false && !JPService.testMode()) {
+        if (!shutdown && !JPService.testMode()) {
             LOGGER.warn("This manual cloud connector remote shutdown is only available during unit tests and not allowed during normal operation!");
             return;
         }
