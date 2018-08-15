@@ -285,6 +285,93 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         });
     }
 
+    private static final String CURRENT_LABEL_KEY = "currentLabel";
+    private static final String NEW_LABEL_KEY = "newLabel";
+    private final String CURRENT_LOCATION_KEY = "currentLocation";
+    private final String NEW_LOCATION_KEY = "newLocation";
+
+    private void handleConfigUpdate(final Object object, final Ack ack) {
+        final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
+        LOGGER.info("Received config update data:\n" + gson.toJson(data));
+
+        String response = "";
+        try {
+            String currentLocationLabel = "";
+            UnitConfig currentLocation = null;
+            if (data.has(CURRENT_LOCATION_KEY)) {
+                currentLocationLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+                final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(currentLocationLabel, UnitType.LOCATION);
+
+                // if more than one location just take the first
+                if (locations.size() >= 1) {
+                    currentLocation = locations.get(0);
+                }
+            }
+
+            UnitConfig.Builder currentUnit;
+            final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+            if (currentLocation == null) {
+                final List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigsByLabel(currentLabel);
+
+                if (unitConfigs.size() == 0) {
+                    ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
+                    return;
+                } else {
+                    currentUnit = unitConfigs.get(0).toBuilder();
+                }
+            } else {
+                final List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(currentLabel, currentLocation.getId());
+
+                if (unitConfigs.size() == 0) {
+                    ack.call("Ich kann die Unit " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden.");
+                    return;
+                } else {
+                    currentUnit = unitConfigs.get(0).toBuilder();
+                }
+            }
+
+
+            if (data.has(NEW_LABEL_KEY)) {
+                final String newLabel = data.get(NEW_LABEL_KEY).getAsString();
+                LabelProcessor.replace(currentUnit.getLabelBuilder(), currentLabel, newLabel);
+                response += "Die Unit wurde zu " + newLabel + " umbennant";
+            }
+
+            if (data.has(NEW_LOCATION_KEY)) {
+                final String newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString();
+                final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(newLocationLabel, UnitType.LOCATION);
+
+                if (locations.size() >= 1) {
+                    currentUnit.getPlacementConfigBuilder().setLocationId(locations.get(0).getId());
+                    if (response.isEmpty()) {
+                        response += "Die Unit " + currentLabel + " wurde in die Location " + newLocationLabel + " verschoben";
+                    } else {
+                        response += " und nach " + newLocationLabel + " verschoben";
+                    }
+                } else {
+                    if (response.isEmpty()) {
+                        ack.call("Ich kann die location " + newLocationLabel + " nicht finden.");
+                        return;
+                    }
+                }
+            }
+            response += ".";
+
+            Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
+            ack.call(response);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } catch (ExecutionException | CouldNotPerformException ex) {
+            ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } catch (TimeoutException ex) {
+            ack.call(response.replace("wurde", "wird"));
+        }
+
+    }
+
     private void handleUserTransitUpdate(final Object object, final Ack acknowledgement) {
         final String transit = (String) object;
         LOGGER.info("Received user transit " + transit);
@@ -322,7 +409,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             if (activity == null) {
-                acknowledgement.call("Ich kann die von die ausgeführte Aktivität " + activityRepresentation + " nicht finden");
+                acknowledgement.call("Ich kann die von dir ausgeführte Aktivität " + activityRepresentation + " nicht finden");
                 return;
             }
 
