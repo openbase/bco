@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -147,7 +147,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
                 continue;
             }
             userIds.add(userId);
-            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
+            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, tokenStore.getToken(getId()));
             userIdSocketMap.put(userId, socketWrapper);
             socketWrapper.init();
             socketWrapper.activate();
@@ -193,7 +193,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
             }
 
             if (tokenStore.contains(userId + "@BCO")) {
-                final SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
+                final SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, tokenStore.getToken(getId()));
                 userIdSocketMap.put(userId, socketWrapper);
                 socketWrapper.init();
                 socketWrapper.activate();
@@ -227,7 +227,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
             params.addProperty("username", userConfig.getUserName());
             params.addProperty(RegistrationHelper.EMAIL_HASH_KEY, RegistrationHelper.hash(userConfig.getEmail()));
 
-            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, params);
+            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, tokenStore.getToken(getId()), params);
             userIdSocketMap.put(userId, socketWrapper);
             socketWrapper.init();
             socketWrapper.activate();

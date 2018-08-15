@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -119,7 +119,7 @@ public class FulfillmentHandler {
      * @param request the request from Google parsed into a JsonObject.
      * @return a JsonObject which is the answer for the request
      */
-    public static JsonObject handleRequest(final JsonObject request, final String agentUserId, final String authorizationToken) {
+    public static JsonObject handleRequest(final JsonObject request, final String agentUserId, final String authenticationToken, final String authorizationToken) {
         // build basic response type and add payload
         final JsonObject response = new JsonObject();
         final JsonObject payload = new JsonObject();
@@ -149,7 +149,7 @@ public class FulfillmentHandler {
                 case EXECUTE_INTENT:
                     LOGGER.info("Handle EXECUTE");
                     // method will handle an execute intent and fill the payload of the response accordingly
-                    handleExecute(payload, input, authorizationToken);
+                    handleExecute(payload, input, authenticationToken, authorizationToken);
                     break;
                 default:
                     setError(payload, "Intent[" + intent + "] is not supported", ErrorCode.NOT_SUPPORTED);
@@ -496,7 +496,7 @@ public class FulfillmentHandler {
      * @param payload the payload of the response send to Google.
      * @param input   the input object as send by Google
      */
-    private static void handleExecute(final JsonObject payload, final JsonObject input, final String authenticationToken) {
+    private static void handleExecute(final JsonObject payload, final JsonObject input, final String authenticationToken, final String authorizationToken) {
         // create a map which has the unit id as key and a list of commands to execute as value
         final Map<String, List<JsonObject>> idCommandMap = new HashMap<>();
         // iterate over all commands
@@ -551,7 +551,7 @@ public class FulfillmentHandler {
                                     // add a completed future, this will make google respond with a success message
                                     internalFutureSet.add(CompletableFuture.completedFuture(null));
                                 } else {
-                                    internalFutureSet.add(createExecutionTask(Units.getUnit(hostedUnitConfig, false), idCommand.getValue(), authenticationToken));
+                                    internalFutureSet.add(createExecutionTask(Units.getUnit(hostedUnitConfig, false), idCommand.getValue(), authenticationToken, authorizationToken));
                                 }
                             }
 
@@ -592,7 +592,7 @@ public class FulfillmentHandler {
                         future = CompletableFuture.completedFuture(null);
                     } else {
                         // dal unit so create a normal execution task
-                        future = createExecutionTask(Units.getUnit(unitConfig, false), idCommand.getValue(), authenticationToken);
+                        future = createExecutionTask(Units.getUnit(unitConfig, false), idCommand.getValue(), authenticationToken, authorizationToken);
                     }
                 }
 
@@ -662,7 +662,7 @@ public class FulfillmentHandler {
      * @param executionList a list of json objects defining the actions to be executed
      * @return a future of the task created that will execute all actions for the given unit remote
      */
-    private static Future createExecutionTask(final UnitRemote<?> unitRemote, final List<JsonObject> executionList, final String authorizationToken) {
+    private static Future createExecutionTask(final UnitRemote<?> unitRemote, final List<JsonObject> executionList, final String authenticationToken, final String authorizationToken) {
         return GlobalCachedExecutorService.submit((Callable<Void>) () -> {
             try {
                 // wait for data
@@ -704,8 +704,7 @@ public class FulfillmentHandler {
                 final Message serviceState = serviceStateTraitMapper.map(params, commandType);
 
                 final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(serviceState, serviceType, unitRemote).build();
-                //TODO: authentication token also needs to be set
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, null, authorizationToken);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, authenticationToken, authorizationToken);
 
                 final AuthenticatedValueFuture<ActionFuture> actionFutureAuthenticatedValueFuture = new AuthenticatedValueFuture<>(unitRemote.applyActionAuthenticated(authenticatedValue), ActionFuture.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
 
