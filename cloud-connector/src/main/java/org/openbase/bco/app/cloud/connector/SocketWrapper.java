@@ -23,7 +23,6 @@ package org.openbase.bco.app.cloud.connector;
  */
 
 import com.google.gson.*;
-import com.google.protobuf.Message;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Manager;
@@ -33,7 +32,6 @@ import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.authentication.lib.TokenStore;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
@@ -57,14 +55,16 @@ import rst.configuration.LabelType.Label;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -445,9 +445,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 final String locationLabel = data.get("location").getAsString();
                 List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(locationLabel, UnitType.LOCATION);
                 if (locations.size() == 0) {
-                    //TODO: error response
-                } else if (locations.size() == 2) {
-                    //TODO: query for more info
+                    acknowledgement.call("Ich kann die location " + locationLabel + " nicht finden");
                 } else {
                     location = locations.get(0);
                 }
@@ -467,30 +465,17 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
 
-            final List<ServiceType> serviceTypes = Arrays.asList(ServiceType.ACTIVATION_STATE_SERVICE,
-                    ServiceType.BRIGHTNESS_STATE_SERVICE, ServiceType.COLOR_STATE_SERVICE, ServiceType.POWER_STATE_SERVICE);
-
-            SceneConfig.Builder sceneConfig = sceneUnitConfig.getSceneConfigBuilder();
-            LocationRemote locationRemote = Units.getUnit(location, false, LocationRemote.class);
-            for (ServiceType serviceType : serviceTypes) {
-                for (Object internalUnit : locationRemote.getServiceRemote(serviceType).getInternalUnits()) {
-                    final UnitRemote<?> unitRemote = (UnitRemote) internalUnit;
-                    if (!unitRemote.isDataAvailable()) {
-                        try {
-                            unitRemote.waitForData(50, TimeUnit.MILLISECONDS);
-                        } catch (CouldNotPerformException ex) {
-                            LOGGER.warn("Skip unit[" + unitRemote.getLabel() + "] for scene creation because data not available");
-                            continue;
-                        }
-                    }
-                    final ServiceStateDescription.Builder serviceStateDescription = sceneConfig.addRequiredServiceStateDescriptionBuilder();
-                    serviceStateDescription.setUnitId(unitRemote.getId());
-                    serviceStateDescription.setServiceType(serviceType);
-                    serviceStateDescription.setUnitType(unitRemote.getUnitType());
-                    Message serviceState = unitRemote.getServiceState(serviceType);
-                    serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(serviceState));
-                    serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceState));
+            final SceneConfig.Builder sceneConfig = sceneUnitConfig.getSceneConfigBuilder();
+            final LocationRemote locationRemote = Units.getUnit(location, false, LocationRemote.class);
+            locationRemote.waitForData(5, TimeUnit.SECONDS);
+            try {
+                for (final ServiceStateDescription serviceStateDescription : locationRemote.recordSnapshot().get(5, TimeUnit.SECONDS).getServiceStateDescriptionList()) {
+                    sceneConfig.addRequiredServiceStateDescription(serviceStateDescription);
                 }
+            } catch (ExecutionException | TimeoutException ex) {
+                acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
+                ExceptionPrinter.printHistory(ex, LOGGER);
+                return;
             }
 
             try {
