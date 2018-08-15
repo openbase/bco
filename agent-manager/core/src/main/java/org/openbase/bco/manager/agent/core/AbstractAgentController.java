@@ -10,17 +10,18 @@ package org.openbase.bco.manager.agent.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
@@ -28,10 +29,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -50,15 +48,12 @@ import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
  */
 public abstract class AbstractAgentController extends AbstractExecutableBaseUnitController<AgentData, AgentData.Builder> implements AgentController {
 
@@ -112,7 +107,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
         serviceStateDescription.setUnitId(unitRemote.getId().toString());
         serviceStateDescription.setUnitType(unitType);
         actionDescriptionBuilder.setDescription(actionDescriptionBuilder.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
-        actionDescriptionBuilder.setLabel(LabelProcessor.replace(actionDescriptionBuilder.getLabel(), ActionDescriptionProcessor.LABEL_KEY, unitRemote.getConfig().getLabel()));
+//        actionDescriptionBuilder.setLabel(LabelProcessor.replace(actionDescriptionBuilder.getLabel(), ActionDescriptionProcessor.LABEL_KEY, unitRemote.getConfig().getLabel()));
 
         ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
         ActionDescriptionProcessor.updateResourceAllocationId(actionDescriptionBuilder);
