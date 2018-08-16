@@ -27,7 +27,6 @@ import com.google.gson.JsonParser;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.TokenStore;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.manager.app.core.AbstractAppController;
 import org.openbase.bco.registry.remote.Registries;
@@ -65,14 +64,14 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorAppImpl.class);
 
-    private final TokenStore tokenStore;
+    private final CloudConnectorTokenStore tokenStore;
     private final JsonParser jsonParser;
     private final Map<String, SocketWrapper> userIdSocketMap;
 
     public CloudConnectorAppImpl() throws InstantiationException {
         super(CloudConnectorAppImpl.class);
         this.userIdSocketMap = new HashMap<>();
-        this.tokenStore = new TokenStore("cloud_connector_token_store.json");
+        this.tokenStore = new CloudConnectorTokenStore();
         this.jsonParser = new JsonParser();
     }
 
@@ -80,7 +79,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
 
-        tokenStore.init();
+        tokenStore.init(CloudConnectorTokenStore.DEFAULT_TOKEN_STORE_FILENAME);
     }
 
     @Override
@@ -130,7 +129,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Execute Cloud Connector");
-        if (!tokenStore.contains(getId())) {
+        if (!tokenStore.hasEntry(getId())) {
             createAuthenticationToken();
         }
 
@@ -155,7 +154,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
     }
 
     @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
+    protected void stop() throws CouldNotPerformException {
         logger.info("Stop Cloud Connector");
         for (SocketWrapper socketWrapper : userIdSocketMap.values()) {
             socketWrapper.deactivate();
@@ -163,47 +162,84 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
         tokenStore.shutdown();
     }
 
-    private String connect(final String jsonObject, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
-        LOGGER.info("User[" + authenticationBaseData.getUserId() + "] connects..");
-
-        final String userId;
+    private String retrieveAuthenticatedUserId(final AuthenticationBaseData authenticationBaseData) {
         if (authenticationBaseData.getAuthenticationToken() != null) {
-            userId = authenticationBaseData.getAuthenticationToken().getUserId();
+            return authenticationBaseData.getAuthenticationToken().getUserId();
         } else {
-            userId = authenticationBaseData.getUserId().split("@")[0];
+            return authenticationBaseData.getUserId().split("@")[0];
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, Boolean.class, this::connect));
+    }
+
+    private Boolean connect(final Boolean connect, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
+        final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
+        LOGGER.info("User[" + authenticationBaseData.getUserId() + "] connects[" + connect + "]...");
+
+        if (connect) {
+            try {
+                final SocketWrapper socketWrapper;
+                if (userIdSocketMap.containsKey(userId)) {
+                    // get existing socket
+                    socketWrapper = userIdSocketMap.get(userId);
+                } else {
+                    // only create new socket if user is already registered
+                    if (!tokenStore.hasBCOToken(userId) || !tokenStore.hasCloudToken(userId)) {
+                        throw new CouldNotPerformException("User[" + userId + "] is not yet registered");
+                    }
+                    // create new socket
+                    socketWrapper = new SocketWrapper(userId, tokenStore, tokenStore.getToken(getId()));
+                }
+
+                // if socket is not yet active activate and wait for login
+                if (!socketWrapper.isActive()) {
+                    socketWrapper.activate();
+                    socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
+                }
+            } catch (CouldNotPerformException | ExecutionException | InterruptedException | TimeoutException ex) {
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                throw new CouldNotPerformException("Could not connect socket for user[" + userId + "]", ex);
+            }
+        } else {
+            // only disconnected if socket exists and is active
+            if (userIdSocketMap.containsKey(userId) && userIdSocketMap.get(userId).isActive()) {
+                try {
+                    userIdSocketMap.get(userId).deactivate();
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not disconnect socket for user[" + userId + "]", ex);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public Future<AuthenticatedValue> register(AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, this::register));
+    }
+
+    private String register(final String jsonString, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
+        final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
+        LOGGER.info("Register user[" + userId + "]...");
+
+        if (tokenStore.hasCloudToken(userId)) {
+            throw new CouldNotPerformException("User[" + userId + "] is already registered");
         }
 
         try {
-            final JsonObject params = jsonParser.parse(jsonObject).getAsJsonObject();
-
-            if (userIdSocketMap.containsKey(userId)) {
-                if (!params.has("connect")) {
-                    throw new NotAvailableException("connect parameter for registered user[" + userId + "]");
-                }
-
-                final boolean connect = params.get("connect").getAsBoolean();
-                final SocketWrapper socketWrapper = userIdSocketMap.get(userId);
-                if (connect && !socketWrapper.isActive()) {
-                    socketWrapper.activate();
-                    socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
-                } else if (!connect && socketWrapper.isActive()) {
-                    socketWrapper.deactivate();
-                }
-                return "Success";
-            }
-
-            if (tokenStore.contains(userId + "@BCO")) {
-                final SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, tokenStore.getToken(getId()));
-                userIdSocketMap.put(userId, socketWrapper);
-                socketWrapper.init();
-                socketWrapper.activate();
-                socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
-                return "Success";
-            }
-
-            if (!params.has(RegistrationHelper.AUTHORIZATION_TOKEN_KEY)) {
-                throw new NotAvailableException(RegistrationHelper.AUTHORIZATION_TOKEN_KEY);
-            }
+            final JsonObject params = jsonParser.parse(jsonString).getAsJsonObject();
 
             if (!params.has(RegistrationHelper.PASSWORD_HASH_KEY)) {
                 throw new NotAvailableException(RegistrationHelper.PASSWORD_HASH_KEY);
@@ -213,8 +249,14 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
                 throw new NotAvailableException(RegistrationHelper.PASSWORD_SALT_KEY);
             }
 
-            tokenStore.addToken(userId + "@BCO", params.get(RegistrationHelper.AUTHORIZATION_TOKEN_KEY).getAsString());
-            params.remove(RegistrationHelper.AUTHORIZATION_TOKEN_KEY);
+            if (params.has(RegistrationHelper.AUTHORIZATION_TOKEN_KEY)) {
+                tokenStore.addBCOToken(userId, params.get(RegistrationHelper.AUTHORIZATION_TOKEN_KEY).getAsString());
+                params.remove(RegistrationHelper.AUTHORIZATION_TOKEN_KEY);
+            } else {
+                if (!tokenStore.hasBCOToken(userId)) {
+                    throw new NotAvailableException(RegistrationHelper.AUTHORIZATION_TOKEN_KEY);
+                }
+            }
 
             //TODO where to store this ?
             boolean autostart = true;
@@ -232,7 +274,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
             socketWrapper.init();
             socketWrapper.activate();
             socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
-            return "Success";
+            return null;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not connect to BCO Cloud for user[" + userId + "]", ex);
@@ -242,8 +284,25 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
     }
 
     @Override
-    public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() ->
-                AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, this::connect));
+    public Future<AuthenticatedValue> remove(AuthenticatedValue authenticatedValue) {
+        return null;
+    }
+
+    @Override
+    public Future<AuthenticatedValue> setAuthorizationToken(AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, this::setAuthorizationToken));
+    }
+
+    private String setAuthorizationToken(final String authorizationToken, final AuthenticationBaseData authenticationBaseData) {
+        final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
+        LOGGER.info("Set authorization token for user[" + userId + "]...");
+
+        tokenStore.addBCOToken(userId, authorizationToken);
+        return null;
+    }
+
+    @Override
+    public Future<AuthenticatedValue> setAutoStart(AuthenticatedValue authenticatedValue) {
+        return null;
     }
 }

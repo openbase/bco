@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -23,32 +23,22 @@ package org.openbase.bco.app.cloud.connector;
  */
 
 import com.google.gson.JsonObject;
-import org.openbase.bco.app.cloud.connector.jp.JPCloudConnectorScope;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
-import org.openbase.bco.dal.remote.unit.app.AppRemote;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.rsb.com.NotInitializedRSBRemoteServer;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
-import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.schedule.WatchDog;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.app.AppClassType.AppClass;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -58,9 +48,41 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class CloudConnectorRemote extends AppRemote implements CloudConnectorApp {
+public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudConnectorApp {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorRemote.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorAppRemote.class);
+
+    public static UnitConfig getCloudConnectorUnitConfig() throws CouldNotPerformException {
+        String appClassId = "";
+        for (final AppClass appClass : Registries.getClassRegistry().getAppClasses()) {
+            if (LabelProcessor.contains(appClass.getLabel(), "Cloud Connector")) {
+                appClassId = appClass.getId();
+                break;
+            }
+        }
+
+        if (appClassId.isEmpty()) {
+            throw new NotAvailableException("Cloud Connector App Class");
+        }
+
+        UnitConfig cloudConnectorConfig = null;
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.APP)) {
+            if (unitConfig.getAppConfig().getAppClassId().equals(appClassId)) {
+                cloudConnectorConfig = unitConfig;
+                break;
+            }
+        }
+
+        if (cloudConnectorConfig == null) {
+            throw new NotAvailableException("Cloud Connector Unit Config");
+        }
+
+        return cloudConnectorConfig;
+    }
+
+    public CloudConnectorAppRemote() throws CouldNotPerformException, InterruptedException {
+        super(getCloudConnectorUnitConfig());
+    }
 
     /**
      * This method can be used to tell the cloud connector to connect or disconnect for a user that has already been
@@ -148,7 +170,27 @@ public class CloudConnectorRemote extends AppRemote implements CloudConnectorApp
      */
     @Override
     public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> register(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> remove(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> setAuthorizationToken(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> setAutoStart(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
     /**

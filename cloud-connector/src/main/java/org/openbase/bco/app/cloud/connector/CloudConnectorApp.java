@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -30,6 +30,12 @@ import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import java.util.concurrent.Future;
 
 /**
+ * connect
+ * register
+ * remove
+ * setAuthToken
+ * setAutoStart
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface CloudConnectorApp extends App {
@@ -65,4 +71,16 @@ public interface CloudConnectorApp extends App {
      */
     @RPCMethod
     Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
+    @RPCMethod
+    Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
+    @RPCMethod
+    Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
+    @RPCMethod
+    Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
+    @RPCMethod
+    Future<AuthenticatedValue> setAutoStart(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 }

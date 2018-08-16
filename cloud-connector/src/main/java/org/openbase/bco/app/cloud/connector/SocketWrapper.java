@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -120,7 +120,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     public void init() throws InitializationException {
         try {
             // validate that the token store contains an authorization token for the given user
-            if (!tokenStore.contains(userId + "@BCO")) {
+            if (!tokenStore.hasEntry(userId + "@BCO")) {
                 try {
                     throw new NotAvailableException("Token for user[" + userId + "] for BCO");
                 } catch (NotAvailableException ex) {
@@ -129,7 +129,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             // validate that either login data is set or the token store contains a token for the cloud
-            if (loginData == null && !tokenStore.contains(userId + "@Cloud")) {
+            if (loginData == null && !tokenStore.hasEntry(userId + "@Cloud")) {
                 try {
                     throw new NotAvailableException("Login data for user[" + userId + "] for cloud");
                 } catch (NotAvailableException ex) {
@@ -288,8 +288,8 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private static final String CURRENT_LABEL_KEY = "currentLabel";
     private static final String NEW_LABEL_KEY = "newLabel";
-    private final String CURRENT_LOCATION_KEY = "currentLocation";
-    private final String NEW_LOCATION_KEY = "newLocation";
+    private static final String CURRENT_LOCATION_KEY = "currentLocation";
+    private static final String NEW_LOCATION_KEY = "newLocation";
 
     private void handleConfigUpdate(final Object object, final Ack ack) {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
