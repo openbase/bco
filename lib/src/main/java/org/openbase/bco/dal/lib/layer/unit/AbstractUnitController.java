@@ -96,7 +96,6 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -248,7 +247,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
-     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -554,7 +552,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // choose with which value to update
                 if (equalFields) {
 
-                    // use the requested state but update the timestamp if available
+                    // use the requested state but update the timestamp if not available
                     if (TimestampProcessor.hasTimestamp(serviceState)) {
                         Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTEMP_FIELD_NAME);
                         newState = requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
@@ -808,7 +806,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
-     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -842,12 +839,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
     public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
         //logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to PowerState [" + serviceState + "]");
+        if (!operationServiceMap.containsKey(serviceType)) {
+            return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
+        }
         try {
             return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
         } catch (CouldNotPerformException ex) {

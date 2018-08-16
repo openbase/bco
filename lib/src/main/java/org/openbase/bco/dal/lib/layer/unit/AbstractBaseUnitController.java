@@ -24,11 +24,13 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.FutureProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
@@ -44,9 +46,14 @@ public abstract class AbstractBaseUnitController<D extends GeneratedMessage, DB 
 
     @Override
     public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
-        return GlobalCachedExecutorService.submit(() -> {
+        if (getOperationServiceMap().containsKey(serviceType)) {
+            return super.performOperationService(serviceState, serviceType);
+        }
+        try {
             super.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
-            return null;
-        });
+            return CompletableFuture.completedFuture(null);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
+        }
     }
 }
