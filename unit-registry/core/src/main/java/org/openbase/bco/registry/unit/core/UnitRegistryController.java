@@ -70,7 +70,6 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rst.storage.registry.consistency.TransformationFrameConsistencyHandler;
 import org.openbase.jul.pattern.ListFilter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.Stopwatch;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -1025,10 +1024,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<ByteString> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
+    public Future<String> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             // encrypt the authentication token
-            return EncryptionHelper.encryptSymmetric(authenticationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
+            final ByteString encrypted = EncryptionHelper.encryptSymmetric(authenticationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
+            // encode using base 64
+            return Base64.getEncoder().encodeToString(encrypted.toByteArray());
         });
     }
 
@@ -1041,7 +1042,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 }
 
                 final AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
-                Future<ByteString> internalFuture = null;
+                Future<String> internalFuture = null;
                 try {
                     // evaluate the users ticket
                     final AuthenticationBaseData authenticationBaseData = AuthenticatedServerManager.getInstance().verifyClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
@@ -1063,7 +1064,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                     internalFuture = requestAuthenticationToken(authenticationToken.build());
 
                     response.setTicketAuthenticatorWrapper(authenticationBaseData.getTicketAuthenticatorWrapper());
-                    response.setValue(EncryptionHelper.encryptSymmetric(Base64.getEncoder().encodeToString(internalFuture.get().toByteArray()), authenticationBaseData.getSessionKey()));
+                    response.setValue(EncryptionHelper.encryptSymmetric(internalFuture.get(), authenticationBaseData.getSessionKey()));
                     return response.build();
                 } catch (InterruptedException ex) {
                     if (internalFuture != null && !internalFuture.isDone()) {

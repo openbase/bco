@@ -789,22 +789,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public Future<ByteString> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> {
-            AuthenticatedValueFuture<String> internalFuture = null;
-            try {
-                internalFuture = AuthenticatedServiceProcessor.requestAuthenticatedAction(authenticationToken, String.class, SessionManager.getInstance(), this::requestAuthenticationTokenAuthenticated);
-                return ByteString.copyFrom(Base64.getDecoder().decode(internalFuture.get()));
-            } catch (CouldNotPerformException | ExecutionException ex) {
-                throw new CouldNotPerformException("Could not request authentication token", ex);
-            } catch (InterruptedException ex) {
-                if (!internalFuture.isDone()) {
-                    internalFuture.cancel(true);
-                }
-                Thread.currentThread().interrupt();
-                throw new CouldNotPerformException("Could not request authentication token", ex);
-            }
-        });
+    public Future<String> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(
+                authenticationToken,
+                String.class,
+                SessionManager.getInstance(),
+                this::requestAuthenticationTokenAuthenticated
+        );
     }
 
     @Override

@@ -1283,7 +1283,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     @RPCMethod
     Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
-    Future<ByteString> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException;
+    Future<String> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException;
 
     @RPCMethod
     Future<AuthenticatedValue> requestAuthenticationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
