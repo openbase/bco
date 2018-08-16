@@ -43,15 +43,12 @@ public class MockClientStore extends CredentialStore {
     public static final String CLIENT_ID = "client";
 
     public MockClientStore() throws InitializationException {
-        super("mock_client_store.json");
-    }
-
-    public MockClientStore(String filename) throws InitializationException {
-        super(filename);
+        super();
     }
 
     @Override
-    public void init() throws InitializationException {
+    public void init(String filename) throws InitializationException {
+        super.init(filename);
         this.setCredentials(ADMIN_ID, ADMIN_PASSWORD_HASH);
         this.setCredentials(USER_ID, USER_PASSWORD_HASH);
         try {
@@ -59,9 +56,5 @@ public class MockClientStore extends CredentialStore {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-    }
-
-    @Override
-    protected void saveStore() {
     }
 }

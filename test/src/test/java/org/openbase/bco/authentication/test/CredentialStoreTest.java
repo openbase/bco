@@ -36,7 +36,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class CredentialStoreTest {
@@ -66,18 +65,17 @@ public class CredentialStoreTest {
     }
 
     /**
-     * 
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     public void testSavingAndLoading() throws Exception {
         System.out.println("testSavingAndLoading");
-        
+
         String storeFileName = "credential_store.json";
 
         // create initial instance which has to create a new file
-        CredentialStore registry = new CredentialStore(storeFileName);
-        registry.init();
+        CredentialStore registry = new CredentialStore();
+        registry.init(storeFileName);
 
         // add a client to this registry
         String clientId = "tamino";
@@ -85,8 +83,8 @@ public class CredentialStoreTest {
         registry.setCredentials(clientId, EncryptionHelper.hash(password));
 
         // start a second registry which loads the file from the first one
-        CredentialStore loadingRegistry = new CredentialStore(storeFileName);
-        loadingRegistry.init();
+        CredentialStore loadingRegistry = new CredentialStore();
+        loadingRegistry.init(storeFileName);
 
         // test if they produce the same result
         try {
@@ -103,7 +101,7 @@ public class CredentialStoreTest {
             return;
         }
         fail("NotAvailableException not thrown even though there is no user[" + clientId + "]");
-        
+
         registry.shutdown();
         loadingRegistry.shutdown();
     }

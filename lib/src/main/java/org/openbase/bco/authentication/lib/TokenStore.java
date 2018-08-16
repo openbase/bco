@@ -22,111 +22,79 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
-import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.processing.FileProcessor;
 import org.openbase.jul.processing.JSonObjectFileProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 /**
+ * Class for a protected token store.
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class TokenStore {
+public class TokenStore extends AbstractProtectedStore<String, Map> {
 
-    public static Logger LOGGER = LoggerFactory.getLogger(TokenStore.class);
-
-    private final Map<String, String> userIdTokenMap;
-    private final String filename;
-    private final FileProcessor<Map> fileProcessor;
-
-    private File tokenStoreFile;
-
-    public TokenStore(final String filename) {
-        this.filename = filename;
-        this.userIdTokenMap = new HashMap<>();
-        this.fileProcessor = new JSonObjectFileProcessor<>(Map.class);
-    }
-
-    public void init() throws InitializationException {
-        try {
-            this.tokenStoreFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
-            this.loadStore();
-            CredentialStore.protectFile(tokenStoreFile);
-        } catch (CouldNotPerformException | JPNotAvailableException ex) {
-            throw new InitializationException(CredentialStore.class, ex);
-        }
+    /**
+     * Create a new token store.
+     */
+    public TokenStore() {
+        super(new JSonObjectFileProcessor<>(Map.class));
     }
 
     /**
-     * Loads the credentials from a protobuf JSON file.
+     * Get a token for a given identifier.
      *
-     * @throws CouldNotPerformException If the deserialization fails.
+     * @param id the identifier of the token
+     * @return the token belonging to the identifier
+     * @throws NotAvailableException if no token for the identifier is available
      */
-    private void loadStore() throws CouldNotPerformException {
-        // create empty store if not available
-        if (!tokenStoreFile.exists()) {
-            saveStore();
-        }
+    public String getToken(final String id) throws NotAvailableException {
+        return getEntry(id);
+    }
 
-        // clear existing entries.
-        userIdTokenMap.clear();
+    /**
+     * Add or replace a token in the store for a given id.
+     *
+     * @param id    the id for which the token is added or replaced
+     * @param token the token
+     */
+    public void addToken(final String id, final String token) {
+        addEntry(id, token);
+    }
 
-        try {
-            // load new ones out of the credential store.
-            for (Object entry : fileProcessor.deserialize(tokenStoreFile).entrySet()) {
-                final Entry<String, String> entryCasted = (Entry<String, String>) entry;
-                userIdTokenMap.put(entryCasted.getKey(), entryCasted.getValue());
-            }
-        } catch (ClassCastException ex) {
-            throw new CouldNotPerformException("Could not load token store from file[" + tokenStoreFile.getAbsolutePath() + "]");
+    /**
+     * Remove a token from the store.
+     *
+     * @param id the identifier for the token
+     */
+    public void removeToken(final String id) {
+        removeEntry(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param dataCollection {@inheritDoc}
+     * @param map            {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void load(final Map dataCollection, final Map<String, String> map) {
+        for (Object object : dataCollection.entrySet()) {
+            final Entry<String, String> entry = (Entry<String, String>) object;
+            map.put(entry.getKey(), entry.getValue());
         }
     }
 
     /**
-     * Stores the credentials in a protobuf JSON file.
+     * {@inheritDoc}
+     *
+     * @param map {@inheritDoc}
+     * @return {@inheritDoc}
      */
-    private void saveStore() {
-        try {
-            // save into store
-            fileProcessor.serialize(userIdTokenMap, tokenStoreFile);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-        }
-    }
-
-    public String getToken(final String id) throws NotAvailableException {
-        if (userIdTokenMap.containsKey(id)) {
-            return userIdTokenMap.get(id);
-        }
-        throw new NotAvailableException("token for id[" + id + "]");
-    }
-
-    public String addToken(final String id, final String token) {
-        return userIdTokenMap.put(id, token);
-    }
-
-    public Map<String, String> getEntryMap() {
-        return Collections.unmodifiableMap(userIdTokenMap);
-    }
-
-    public boolean contains(final String id) {
-        return userIdTokenMap.containsKey(id);
-    }
-
-    public void shutdown() {
-        saveStore();
+    @Override
+    protected Map save(final Map<String, String> map) {
+        return map;
     }
 }

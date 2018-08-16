@@ -47,7 +47,6 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 
 import java.io.Serializable;
 import java.security.KeyPair;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -112,7 +111,7 @@ public class SessionManager implements Shutdownable {
      * Create a session manager with the default credential store.
      */
     public SessionManager() {
-        this(new CredentialStore(STORE_FILENAME));
+        this(new CredentialStore());
     }
 
     /**
@@ -134,7 +133,7 @@ public class SessionManager implements Shutdownable {
         // save and init credential store
         this.credentialStore = credentialStore;
         try {
-            this.credentialStore.init();
+            this.credentialStore.init(STORE_FILENAME);
         } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not init credential store for session manager", ex);
         }

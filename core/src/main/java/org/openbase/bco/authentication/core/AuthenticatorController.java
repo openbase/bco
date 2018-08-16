@@ -86,7 +86,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private final long ticketValidityTime;
 
     public AuthenticatorController() throws InitializationException {
-        this(new CredentialStore(STORE_FILENAME), EncryptionHelper.generateKey());
+        this(new CredentialStore(), EncryptionHelper.generateKey());
     }
 
     public AuthenticatorController(CredentialStore store) throws InitializationException {
@@ -94,7 +94,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     public AuthenticatorController(byte[] serviceServerPrivateKey) throws InitializationException {
-        this(new CredentialStore(STORE_FILENAME), serviceServerPrivateKey);
+        this(new CredentialStore(), serviceServerPrivateKey);
     }
 
     public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) throws InitializationException {
@@ -125,14 +125,14 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             throw new InitializationException(this, ex);
         }
 
-        store.init();
+        store.init(STORE_FILENAME);
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         if (store.isEmpty() || JPService.testMode()) {
             // Generate private/public key pair for service servers.
-            KeyPair keyPair = EncryptionHelper.generateKeyPair();
+            final KeyPair keyPair = EncryptionHelper.generateKeyPair();
             store.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false);
             try {
                 File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), AuthenticatedServerManager.SERVICE_SERVER_PRIVATE_KEY_FILENAME);
@@ -140,7 +140,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     outputStream.write(keyPair.getPrivate().getEncoded());
                     outputStream.flush();
                 }
-                CredentialStore.protectFile(privateKeyFile);
+                AbstractProtectedStore.protectFile(privateKeyFile);
             } catch (JPNotAvailableException ex) {
                 throw new CouldNotPerformException("Could not load property.", ex);
             } catch (IOException ex) {

@@ -21,15 +21,15 @@ package org.openbase.bco.authentication.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.security.KeyPair;
-import java.util.HashMap;
+
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 
+import java.security.KeyPair;
+
 /**
- *
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
 public class MockCredentialStore extends CredentialStore {
@@ -47,11 +47,13 @@ public class MockCredentialStore extends CredentialStore {
     public static final KeyPair SERVICE_SERVER_KEY_PAIR = EncryptionHelper.generateKeyPair();
 
     public MockCredentialStore() throws InitializationException {
-        super("mock_server_store.json");
+        super();
     }
-    
+
     @Override
-    public void init() throws InitializationException {
+    public void init(String filename) throws InitializationException {
+        super.init(filename);
+
         this.setCredentials(ADMIN_ID, ADMIN_PASSWORD_HASH);
         this.setCredentials(USER_ID, USER_PASSWORD_HASH);
         this.setCredentials(SERVICE_SERVER_ID, SERVICE_SERVER_KEY_PAIR.getPublic().getEncoded());
@@ -60,9 +62,5 @@ public class MockCredentialStore extends CredentialStore {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-    }
-
-    @Override
-    protected void saveStore() {
     }
 }
