@@ -96,14 +96,19 @@ public class AuthenticatedServiceProcessor {
                 // verify ticket in encrypt tokens if they were send
                 final AuthenticationBaseData authenticationBaseData = AuthenticatedServerManager.getInstance().verifyClientServerTicket(authenticatedValue);
 
+                RECEIVE decrypted = null;
                 // decrypt the send type from the AuthenticatedValue
-                RECEIVE decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), authenticationBaseData.getSessionKey(), internalClass);
+                if (authenticatedValue.hasValue()) {
+                    decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), authenticationBaseData.getSessionKey(), internalClass);
+                }
 
                 // execute the action of the server
                 RETURN result = executable.process(decrypted, authenticationBaseData);
 
-                // encrypt the result and add it to the response
-                response.setValue(EncryptionHelper.encryptSymmetric(result, authenticationBaseData.getSessionKey()));
+                if (result != null) {
+                    // encrypt the result and add it to the response
+                    response.setValue(EncryptionHelper.encryptSymmetric(result, authenticationBaseData.getSessionKey()));
+                }
                 // add updated ticket to response
                 response.setTicketAuthenticatorWrapper(authenticationBaseData.getTicketAuthenticatorWrapper());
             } else {
@@ -168,8 +173,10 @@ public class AuthenticatedServiceProcessor {
                 // add the ticket to the authenticated value which is send
                 authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
 
-                // encrypt the message which is send with the session key
-                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(message, sessionManager.getSessionKey()));
+                if (message != null) {
+                    // encrypt the message which is send with the session key
+                    authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(message, sessionManager.getSessionKey()));
+                }
                 // perform the internal request
                 Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
                 // wrap the response in an authenticated synchronization future

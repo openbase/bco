@@ -70,19 +70,20 @@ public class AuthenticatedValueFuture<RETURN> extends AbstractAuthenticationFutu
     @Override
     protected RETURN convertFromInternal(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
+            if (!authenticatedValue.hasValue()) {
+                return null;
+            }
+
             if (getSessionManager().isLoggedIn()) {
                 return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), getSessionManager().getSessionKey(), getReturnClass());
             } else {
                 try {
-                    if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
-                        if (!GeneratedMessage.class.isAssignableFrom(getReturnClass())) {
-                            throw new CouldNotPerformException("AuthenticatedValue has a value but the client method did not expect one");
-                        }
-
-                        Method parseFrom = getReturnClass().getMethod("parseFrom", ByteString.class);
-                        return (RETURN) parseFrom.invoke(null, authenticatedValue.getValue());
+                    if (!GeneratedMessage.class.isAssignableFrom(getReturnClass())) {
+                        throw new CouldNotPerformException("AuthenticatedValue has a value but the client method did not expect one");
                     }
-                    return null;
+
+                    Method parseFrom = getReturnClass().getMethod("parseFrom", ByteString.class);
+                    return (RETURN) parseFrom.invoke(null, authenticatedValue.getValue());
                 } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     throw new CouldNotPerformException("Could not invoke parseFrom method on [" + getReturnClass().getSimpleName() + "]", ex);
                 }
