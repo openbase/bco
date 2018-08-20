@@ -46,6 +46,10 @@ public class TestMain {
             Registries.waitForData();
             SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("CSRAUser"), "admin");
             CloudConnectorAppRemote cloudConnectorAppRemote = new CloudConnectorAppRemote();
+            String token = cloudConnectorAppRemote.generateDefaultAuthorizationToken();
+            LOGGER.info("Generated token [" + token + "]");
+            cloudConnectorAppRemote.setAuthorizationToken(token).get();
+//            LOGGER.info(cloudConnectorAppRemote.generateDefaultAuthorizationToken());
 //            cloudConnectorAppRemote.remove().get();
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);

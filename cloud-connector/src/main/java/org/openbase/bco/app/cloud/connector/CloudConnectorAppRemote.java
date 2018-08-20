@@ -24,6 +24,7 @@ package org.openbase.bco.app.cloud.connector;
 
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -189,12 +190,12 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
 
     /**
      * Generate a default authorization token for the cloud connector from the currently logged in user.
-     * This token will grant all access permission of the currently logged in user.
+     * This token will grant the same permissions as the currently logged in user.
      *
      * @return an authorization token as described above
      * @throws CouldNotPerformException if the token could not be generated
      */
-    private String generateDefaultAuthorizationToken() throws CouldNotPerformException {
+    public String generateDefaultAuthorizationToken() throws CouldNotPerformException {
         try {
             // retrieve the current user id
             final String userId = SessionManager.getInstance().getUserId();
@@ -202,13 +203,27 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
             final AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder().setUserId(userId);
             // generate a minimal set of units ids needed for the same access permissions as the user
             final Set<String> accessPermissionSet = new HashSet<>();
-            getUnitsWithAccessPermissions(accessPermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId);
-            // add permissions rules for all resolved unit ids with access permissions
-            for (final String unitId : accessPermissionSet) {
+            final Set<String> readPermissionSet = new HashSet<>();
+            final Set<String> writePermissionSet = new HashSet<>();
+            getUnitsWithAccessPermissions(accessPermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.ACCESS);
+            getUnitsWithAccessPermissions(readPermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.READ);
+            getUnitsWithAccessPermissions(writePermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.WRITE);
+
+            final Set<String> unitIds = new HashSet<>();
+            unitIds.addAll(accessPermissionSet);
+            unitIds.addAll(readPermissionSet);
+            unitIds.addAll(writePermissionSet);
+
+            for (final String unitId : unitIds) {
                 PermissionRule.Builder builder = authorizationToken.addPermissionRuleBuilder();
                 builder.setUnitId(unitId);
-                builder.getPermissionBuilder().setAccess(true).setRead(false).setWrite(false);
+                builder.getPermissionBuilder().
+                        setAccess(accessPermissionSet.contains(unitId)).
+                        setRead(readPermissionSet.contains(unitId)).
+                        setWrite(writePermissionSet.contains(unitId));
             }
+
+            System.out.println(authorizationToken.build());
             // request such a token from the unit registry
             return Registries.getUnitRegistry().requestAuthorizationToken(authorizationToken.build()).get();
         } catch (InterruptedException ex) {
@@ -220,25 +235,26 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
     }
 
     /**
-     * This method is a helper method for generating an authorization token with the same access permissions
+     * This method is a helper method for generating an authorization token with the same permissions of a certain type
      * as a user.
      * <p>
      * Traverse the location hierarchy recursively and add all ids of units the currently logged in user has
-     * access permissions for to a set.
-     * The method will only add the topmost locations to the set. This means that if the user has access permissions
+     * permissions for to a set.
+     * The method will only add the topmost locations to the set. This means that if the user has permissions
      * for a location its id will be added and its children will be ignored. However, if the user does not have
-     * access permission for a locations its children are checked recursively.
+     * permission for a locations its children are checked recursively.
      *
-     * @param unitIdSet an empty set which will be filled with unit ids by this method
-     * @param location  the location where the recursive traversal is started
-     * @param userId    the id of the user for whom access permissions are checked
+     * @param unitIdSet      an empty set which will be filled with unit ids by this method
+     * @param location       the location where the recursive traversal is started
+     * @param userId         the id of the user for whom permissions are checked
+     * @param permissionType the permission type checked
      * @throws CouldNotPerformException if the process fails
      */
-    private void getUnitsWithAccessPermissions(final Set<String> unitIdSet, final UnitConfig location, final String userId) throws CouldNotPerformException {
+    public void getUnitsWithAccessPermissions(final Set<String> unitIdSet, final UnitConfig location, final String userId, final PermissionType permissionType) throws CouldNotPerformException {
         try {
-            if (AuthorizationHelper.canAccess(location, userId,
+            if (AuthorizationHelper.canDo(location, userId,
                     Registries.getUnitRegistry().getAuthorizationGroupMap(),
-                    Registries.getUnitRegistry().getLocationMap())) {
+                    Registries.getUnitRegistry().getLocationMap(), permissionType)) {
                 // if the user has access permissions for the given location just add it and do nothing more
                 unitIdSet.add(location.getId());
             } else {
@@ -248,7 +264,7 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
                 // recursively add ids for child locations
                 for (final String childId : location.getLocationConfig().getChildIdList()) {
                     final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
-                    getUnitsWithAccessPermissions(unitIdSet, Registries.getUnitRegistry().getUnitConfigById(childId), userId);
+                    getUnitsWithAccessPermissions(unitIdSet, Registries.getUnitRegistry().getUnitConfigById(childId), userId, permissionType);
                     for (String unitId : locationUnitConfig.getLocationConfig().getUnitIdList()) {
                         internalUnitIdSet.remove(unitId);
                     }
@@ -258,16 +274,16 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
                 for (final String unitId : internalUnitIdSet) {
                     if (!unitIdSet.contains(unitId)) {
                         final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
-                        if (AuthorizationHelper.canAccess(unitConfig, userId,
+                        if (AuthorizationHelper.canDo(unitConfig, userId,
                                 Registries.getUnitRegistry().getAuthorizationGroupMap(),
-                                Registries.getUnitRegistry().getLocationMap())) {
+                                Registries.getUnitRegistry().getLocationMap(), permissionType)) {
                             unitIdSet.add(unitId);
                         }
                     }
                 }
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate minimal set of units ids with access permissions", ex);
+            throw new CouldNotPerformException("Could not generate minimal set of units ids with [" + permissionType.name() + "] permissions", ex);
         }
     }
 }
