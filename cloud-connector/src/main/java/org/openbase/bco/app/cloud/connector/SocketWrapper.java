@@ -278,7 +278,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     public Future<Void> remove() {
         final CompletableFuture<Void> future = new CompletableFuture<>();
-        socket.emit(REMOVE_EVENT, "", (Ack) objects -> {
+        socket.emit(REMOVE_EVENT, (Ack) objects -> {
             try {
                 final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
                 if (response.get(SUCCESS_KEY).getAsBoolean()) {
