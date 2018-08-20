@@ -293,7 +293,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
 
                         // add username and email for the authenticated user
                         final UserConfig userConfig = Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig();
-                        params.addProperty("username", userConfig.getUserName());
+                        params.addProperty(USERNAME_KEY, userConfig.getUserName());
                         params.addProperty(EMAIL_HASH_KEY, CloudConnectorApp.hash(userConfig.getEmail()));
 
                         // create a socket wrapper for the user with the given params
@@ -328,9 +328,9 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
                 (value, authenticationBaseData) -> {
                     final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
 
-                    // validate that not already registered
-                    if (tokenStore.hasCloudToken(userId)) {
-                        throw new CouldNotPerformException("User[" + userId + "] is already registered");
+                    // do nothing if not registered
+                    if (!tokenStore.hasCloudToken(userId)) {
+                        return null;
                     }
 
                     try {

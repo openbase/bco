@@ -54,6 +54,8 @@ public class CloudConnectorLauncher {
         JPService.registerProperty(JPCloudServerURI.class);
         JPService.registerProperty(JPAuthentication.class);
 
+        JPService.parseAndExitOnError(args);
+
         try {
             Registries.waitForData();
 

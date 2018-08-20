@@ -90,7 +90,7 @@ public class CloudConnectorTokenStore extends TokenStore {
         for (final Entry<String, String> entry : getEntryMap().entrySet()) {
             final String[] split = entry.getKey().split(SEPARATOR);
             if (split.length == 2 && split[1].equals(CLOUD_POSTFIX)) {
-                map.put(entry.getKey(), entry.getValue());
+                map.put(split[0], entry.getValue());
             }
         }
         return map;
