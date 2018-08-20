@@ -10,29 +10,26 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import com.google.gson.JsonObject;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
@@ -50,9 +47,7 @@ import java.util.concurrent.Future;
  */
 public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudConnectorApp {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorAppRemote.class);
-
-    public static UnitConfig getCloudConnectorUnitConfig() throws CouldNotPerformException {
+    static UnitConfig getCloudConnectorUnitConfig() throws CouldNotPerformException {
         String appClassId = "";
         for (final AppClass appClass : Registries.getClassRegistry().getAppClasses()) {
             if (LabelProcessor.contains(appClass.getLabel(), "Cloud Connector")) {
@@ -85,80 +80,15 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
     }
 
     /**
-     * This method can be used to tell the cloud connector to connect or disconnect for a user that has already been
-     * registered. For registration have a look at one of the other connect methods of this class.
+     * Call to {@link #connect(AuthenticatedValue)} by using the default session manager.
      *
-     * @param connect flag telling the cloud connector to connect or disconnect from the cloud
-     * @return a future of the task
+     * @param connect flag determining if the socket connection for the user currently logged in at the default session
+     *                manager should be established or stopped.
+     * @return a future of the task created
      * @throws CouldNotPerformException if the task could not be created
      */
-    public Future<String> connect(final boolean connect) throws CouldNotPerformException {
-        final JsonObject params = new JsonObject();
-        params.addProperty("connect", connect);
-        final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(params.toString(), null, null);
-        final Future<AuthenticatedValue> internalFuture = connect(authenticatedValue);
-        return new AuthenticatedValueFuture<>(internalFuture, String.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
-    }
-
-    /**
-     * Create a connection from the cloud connector to the BCO Cloud for the currently logger in user.
-     * This method will set the auto start flag to true per default and will automatically generate an authorization
-     * token for the user granting the cloud connector the same access permissions he has.
-     *
-     * @param password a password for the account of the user at the BCO Cloud
-     * @return a future of the task
-     * @throws CouldNotPerformException if the task could not be created
-     */
-    public Future<String> connect(final String password) throws CouldNotPerformException {
-        return connect(password, true);
-    }
-
-    /**
-     * Create a connection from the cloud connector to the BCO Cloud for the currently logger in user.
-     * This method will set the auto start flag to true per default.
-     *
-     * @param password           a password for the account of the user at the BCO Cloud
-     * @param authorizationToken an authorization token which will be used by the cloud connector to apply actions in the
-     *                           users name.
-     * @return a future of the task
-     * @throws CouldNotPerformException if the task could not be created
-     */
-    public Future<String> connect(final String password, final String authorizationToken) throws CouldNotPerformException {
-        return connect(password, authorizationToken, true);
-    }
-
-    /**
-     * Create a connection from the cloud connector to the BCO Cloud for the currently logger in user.
-     * This method will automatically generate an authorization token for the user granting the cloud connector
-     * the same access permissions he has.
-     *
-     * @param password  a password for the account of the user at the BCO Cloud
-     * @param autoStart flag determining if the cloud connector should automatically create a socket connection
-     *                  for the user when started
-     * @return a future of the task
-     * @throws CouldNotPerformException if the task could not be created
-     */
-    public Future<String> connect(final String password, final boolean autoStart) throws CouldNotPerformException {
-        return connect(password, generateDefaultAuthorizationToken(), autoStart);
-    }
-
-    /**
-     * Create a connection from the cloud connector to the BCO Cloud for the currently logger in user.
-     *
-     * @param password           a password for the account of the user at the BCO Cloud
-     * @param authorizationToken an authorization token which will be used by the cloud connector to apply actions in the
-     *                           users name.
-     * @param autoStart          flag determining if the cloud connector should automatically create a socket connection
-     *                           for the user when started
-     * @return a future of the task
-     * @throws CouldNotPerformException if the task could not be created
-     */
-    public Future<String> connect(final String password, final String authorizationToken, final boolean autoStart) throws CouldNotPerformException {
-        final String params = RegistrationHelper.createRegistrationData(password, authorizationToken, autoStart);
-        LOGGER.info("Send params [" + params + "]");
-        final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(params, null, null);
-        final Future<AuthenticatedValue> internalFuture = connect(authenticatedValue);
-        return new AuthenticatedValueFuture<>(internalFuture, String.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+    public Future<Void> connect(final Boolean connect) throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(connect, Void.class, SessionManager.getInstance(), this::connect);
     }
 
     /**
@@ -173,23 +103,87 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
         return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
+    /**
+     * Register the user logged in at the default session manager at the cloud connector.
+     * This method will generate an authorization token for the user with the same permissions he posseses.
+     *
+     * @param password a password for the account of the user at the BCO Cloud
+     * @return a future of the task
+     * @throws CouldNotPerformException if the task could not be created
+     */
+    public Future<Void> register(final String password) throws CouldNotPerformException {
+        return register(password, generateDefaultAuthorizationToken());
+    }
+
+    /**
+     * Register the user logged in at the default session manager at the cloud connector.
+     *
+     * @param password           a password for the account of the user at the BCO Cloud
+     * @param authorizationToken an authorization token which will be used by the cloud connector to apply actions in the
+     *                           users name.
+     * @return a future of the task
+     * @throws CouldNotPerformException if the task could not be created
+     */
+    public Future<Void> register(final String password, final String authorizationToken) throws CouldNotPerformException {
+        final String params = CloudConnectorApp.createRegistrationData(password, authorizationToken);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(params, Void.class, SessionManager.getInstance(), this::register);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Future<AuthenticatedValue> register(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
+    /**
+     * Call {@link #remove(AuthenticatedValue)} for the user logged in at the default session manager.
+     *
+     * @return a future of the task
+     * @throws CouldNotPerformException if the task could not be created
+     */
+    public Future<Void> remove() throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(null, Void.class, SessionManager.getInstance(), this::remove);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Future<AuthenticatedValue> remove(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
-    @Override
-    public Future<AuthenticatedValue> setAuthorizationToken(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+    /**
+     * Call {@link #setAuthorizationToken(AuthenticatedValue)} for the user logged in at the default session manager.
+     *
+     * @param authorizationToken the new authorization token for the user logged in at the default session manager.
+     * @return a future of the task
+     * @throws CouldNotPerformException if the task could not be created
+     */
+    public Future<Void> setAuthorizationToken(final String authorizationToken) throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(authorizationToken, Void.class, SessionManager.getInstance(), this::setAuthorizationToken);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Future<AuthenticatedValue> setAutoStart(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 

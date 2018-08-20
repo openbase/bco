@@ -39,6 +39,7 @@ public class CloudConnectorTokenStore extends TokenStore {
     private static final String SEPARATOR = "@";
     private static final String CLOUD_POSTFIX = "Cloud";
     private static final String BCO_POSTFIX = "BCO";
+    private static final String CLOUD_CONNECTOR_TOKEN_KEY = "CLOUD_CONNECTOR_TOKEN";
 
     public String getCloudToken(final String userId) throws NotAvailableException {
         return getToken(userId + SEPARATOR + CLOUD_POSTFIX);
@@ -46,6 +47,10 @@ public class CloudConnectorTokenStore extends TokenStore {
 
     public String getBCOToken(final String userId) throws NotAvailableException {
         return getToken(userId + SEPARATOR + BCO_POSTFIX);
+    }
+
+    public String getCloudConnectorToken() throws NotAvailableException {
+        return getToken(CLOUD_CONNECTOR_TOKEN_KEY);
     }
 
     public void addCloudToken(final String userId, final String token) {
@@ -56,6 +61,10 @@ public class CloudConnectorTokenStore extends TokenStore {
         addToken(userId + SEPARATOR + BCO_POSTFIX, token);
     }
 
+    public void addCloudConenctorToken(final String token) {
+        addToken(CLOUD_CONNECTOR_TOKEN_KEY, token);
+    }
+
     public boolean hasCloudToken(final String userId) {
         return hasEntry(userId + SEPARATOR + CLOUD_POSTFIX);
     }
@@ -64,11 +73,23 @@ public class CloudConnectorTokenStore extends TokenStore {
         return hasEntry(userId + SEPARATOR + BCO_POSTFIX);
     }
 
-    public Map<String, String> getBCOTokenEntries() {
+    public boolean hasCloudConnectorToken() {
+        return hasEntry(CLOUD_CONNECTOR_TOKEN_KEY);
+    }
+
+    public void removeCloudToken(final String userId) {
+        removeToken(userId + SEPARATOR + CLOUD_POSTFIX);
+    }
+
+    public void removeBCOToken(final String userId) {
+        removeToken(userId + SEPARATOR + BCO_POSTFIX);
+    }
+
+    public Map<String, String> getCloudEntries() {
         final Map<String, String> map = new HashMap<>();
         for (final Entry<String, String> entry : getEntryMap().entrySet()) {
             final String[] split = entry.getKey().split(SEPARATOR);
-            if (split.length == 2 && split[1].equals(BCO_POSTFIX)) {
+            if (split.length == 2 && split[1].equals(CLOUD_POSTFIX)) {
                 map.put(entry.getKey(), entry.getValue());
             }
         }

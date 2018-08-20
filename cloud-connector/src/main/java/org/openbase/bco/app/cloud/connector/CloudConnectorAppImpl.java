@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -48,10 +48,8 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -82,6 +80,12 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
         tokenStore.init(CloudConnectorTokenStore.DEFAULT_TOKEN_STORE_FILENAME);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param server {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
         super.registerMethods(server);
@@ -120,52 +124,73 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
                     String.class,
                     authenticatedValue.getTicketAuthenticatorWrapper(),
                     sessionManager).get();
-            tokenStore.addToken(getId(), token);
+            tokenStore.addCloudConenctorToken(token);
         } catch (CouldNotPerformException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not create authentication token for cloud connector", ex);
         }
     }
 
+    /**
+     * Execute the cloud connector app by activating socket connections for all registered users.
+     * Additionally the cloud connector creates an authentication token for itself when first executed.
+     *
+     * @throws CouldNotPerformException if a socket connection could not be established
+     * @throws InterruptedException     if the activation is interrupted
+     */
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Execute Cloud Connector");
-        if (!tokenStore.hasEntry(getId())) {
+        if (!tokenStore.hasCloudConnectorToken()) {
             createAuthenticationToken();
         }
 
         // start socket connection for all users which are already registered
-        final Set<String> userIds = new HashSet<>();
-        for (final Entry<String, String> entry : tokenStore.getEntryMap().entrySet()) {
-            // ignore authentication token
-            if (entry.getKey().equals(getId())) {
-                continue;
-            }
-
-            final String userId = entry.getKey().split("@")[0];
-            if (userIds.contains(userId)) {
-                continue;
-            }
-            userIds.add(userId);
-            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, tokenStore.getToken(getId()));
-            userIdSocketMap.put(userId, socketWrapper);
+        for (final Entry<String, String> entry : tokenStore.getCloudEntries().entrySet()) {
+            final String userId = entry.getKey();
+            final SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore);
             socketWrapper.init();
             socketWrapper.activate();
+            userIdSocketMap.put(userId, socketWrapper);
         }
     }
 
+    /**
+     * Stop the cloud connector by deactivating all socket connections.
+     *
+     * @throws CouldNotPerformException if a socket connections could not be deactivated
+     */
     @Override
     protected void stop() throws CouldNotPerformException {
         logger.info("Stop Cloud Connector");
         for (SocketWrapper socketWrapper : userIdSocketMap.values()) {
             socketWrapper.deactivate();
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void shutdown() {
+        super.shutdown();
         tokenStore.shutdown();
     }
 
-    private String retrieveAuthenticatedUserId(final AuthenticationBaseData authenticationBaseData) {
+    /**
+     * Retrieve the id of the authenticated user from authentication base data. If an authentication token is available
+     * the user id it contains is returned. Else the client part of the authenticated user id is removed.
+     *
+     * @param authenticationBaseData the data from which the user id is retrieved
+     * @return the id of the authenticated user
+     * @throws CouldNotPerformException if only a client is logged in but no user
+     */
+    private String retrieveAuthenticatedUserId(final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
         if (authenticationBaseData.getAuthenticationToken() != null) {
             return authenticationBaseData.getAuthenticationToken().getUserId();
         } else {
+            if (authenticationBaseData.getUserId().startsWith("@")) {
+                throw new CouldNotPerformException("Could not retrieve authenticated user because only client[" + authenticationBaseData.getUserId() + "] is logged in");
+            }
             return authenticationBaseData.getUserId().split("@")[0];
         }
     }
@@ -178,131 +203,191 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
      */
     @Override
     public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, Boolean.class, this::connect));
-    }
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, Boolean.class,
+                (connect, authenticationBaseData) -> {
+                    final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
+                    LOGGER.info("User[" + authenticationBaseData.getUserId() + "] connects[" + connect + "]...");
 
-    private Boolean connect(final Boolean connect, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
-        final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
-        LOGGER.info("User[" + authenticationBaseData.getUserId() + "] connects[" + connect + "]...");
+                    if (connect) {
+                        try {
+                            final SocketWrapper socketWrapper;
+                            if (userIdSocketMap.containsKey(userId)) {
+                                // get existing socket
+                                socketWrapper = userIdSocketMap.get(userId);
+                            } else {
+                                // only create new socket if user is already registered
+                                if (!tokenStore.hasBCOToken(userId) || !tokenStore.hasCloudToken(userId)) {
+                                    throw new CouldNotPerformException("User[" + userId + "] is not yet registered");
+                                }
+                                // create new socket
+                                socketWrapper = new SocketWrapper(userId, tokenStore);
+                            }
 
-        if (connect) {
-            try {
-                final SocketWrapper socketWrapper;
-                if (userIdSocketMap.containsKey(userId)) {
-                    // get existing socket
-                    socketWrapper = userIdSocketMap.get(userId);
-                } else {
-                    // only create new socket if user is already registered
-                    if (!tokenStore.hasBCOToken(userId) || !tokenStore.hasCloudToken(userId)) {
-                        throw new CouldNotPerformException("User[" + userId + "] is not yet registered");
+                            // if socket is not yet active activate and wait for login
+                            if (!socketWrapper.isActive()) {
+                                socketWrapper.activate();
+                                socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
+                            }
+                        } catch (CouldNotPerformException | ExecutionException | InterruptedException | TimeoutException ex) {
+                            if (ex instanceof InterruptedException) {
+                                Thread.currentThread().interrupt();
+                            }
+                            throw new CouldNotPerformException("Could not connect socket for user[" + userId + "]", ex);
+                        }
+                    } else {
+                        // only disconnected if socket exists and is active
+                        if (userIdSocketMap.containsKey(userId) && userIdSocketMap.get(userId).isActive()) {
+                            try {
+                                userIdSocketMap.get(userId).deactivate();
+                            } catch (CouldNotPerformException ex) {
+                                throw new CouldNotPerformException("Could not disconnect socket for user[" + userId + "]", ex);
+                            }
+                        }
                     }
-                    // create new socket
-                    socketWrapper = new SocketWrapper(userId, tokenStore, tokenStore.getToken(getId()));
-                }
 
-                // if socket is not yet active activate and wait for login
-                if (!socketWrapper.isActive()) {
-                    socketWrapper.activate();
-                    socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
-                }
-            } catch (CouldNotPerformException | ExecutionException | InterruptedException | TimeoutException ex) {
-                if (ex instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
-                }
-                throw new CouldNotPerformException("Could not connect socket for user[" + userId + "]", ex);
-            }
-        } else {
-            // only disconnected if socket exists and is active
-            if (userIdSocketMap.containsKey(userId) && userIdSocketMap.get(userId).isActive()) {
-                try {
-                    userIdSocketMap.get(userId).deactivate();
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not disconnect socket for user[" + userId + "]", ex);
-                }
-            }
-        }
-
-        return null;
+                    // return null because internal value in the authenticated value send back is irrelevant for the user
+                    return null;
+                })
+        );
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public Future<AuthenticatedValue> register(AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, this::register));
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class,
+                (jsonString, authenticationBaseData) -> {
+                    final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
+
+                    // validate that not already registered
+                    if (tokenStore.hasCloudToken(userId)) {
+                        throw new CouldNotPerformException("User[" + userId + "] is already registered");
+                    }
+
+                    try {
+                        // parse string as json
+                        final JsonObject params = jsonParser.parse(jsonString).getAsJsonObject();
+
+                        // validate that password hash is available
+                        if (!params.has(PASSWORD_HASH_KEY)) {
+                            throw new NotAvailableException(PASSWORD_HASH_KEY);
+                        }
+
+                        // validate that password salt is available
+                        if (!params.has(PASSWORD_SALT_KEY)) {
+                            throw new NotAvailableException(PASSWORD_SALT_KEY);
+                        }
+
+                        // validate that authorization token is available
+                        if (!params.has(AUTHORIZATION_TOKEN_KEY)) {
+                            throw new NotAvailableException(AUTHORIZATION_TOKEN_KEY);
+                        }
+
+                        // save authorization token and remove it because the json object will be used to register at the cloud
+                        tokenStore.addBCOToken(userId, params.get(AUTHORIZATION_TOKEN_KEY).getAsString());
+                        params.remove(AUTHORIZATION_TOKEN_KEY);
+
+                        // add username and email for the authenticated user
+                        final UserConfig userConfig = Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig();
+                        params.addProperty("username", userConfig.getUserName());
+                        params.addProperty(EMAIL_HASH_KEY, CloudConnectorApp.hash(userConfig.getEmail()));
+
+                        // create a socket wrapper for the user with the given params
+                        // this will automatically register and login the user
+                        SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, params);
+                        userIdSocketMap.put(userId, socketWrapper);
+                        socketWrapper.init();
+                        socketWrapper.activate();
+                        // wait for the socket wrapper to login to inform the user of possible problems
+                        socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
+                        // return null because internal value in the authenticated value send back is irrelevant for the user
+                        return null;
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        throw new CouldNotPerformException("Could not connect to BCO Cloud for user[" + userId + "]", ex);
+                    } catch (ExecutionException | TimeoutException ex) {
+                        throw new CouldNotPerformException("Could not connect to BCO Cloud for user[" + userId + "]", ex);
+                    }
+                })
+        );
     }
 
-    private String register(final String jsonString, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
-        final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
-        LOGGER.info("Register user[" + userId + "]...");
-
-        if (tokenStore.hasCloudToken(userId)) {
-            throw new CouldNotPerformException("User[" + userId + "] is already registered");
-        }
-
-        try {
-            final JsonObject params = jsonParser.parse(jsonString).getAsJsonObject();
-
-            if (!params.has(RegistrationHelper.PASSWORD_HASH_KEY)) {
-                throw new NotAvailableException(RegistrationHelper.PASSWORD_HASH_KEY);
-            }
-
-            if (!params.has(RegistrationHelper.PASSWORD_SALT_KEY)) {
-                throw new NotAvailableException(RegistrationHelper.PASSWORD_SALT_KEY);
-            }
-
-            if (params.has(RegistrationHelper.AUTHORIZATION_TOKEN_KEY)) {
-                tokenStore.addBCOToken(userId, params.get(RegistrationHelper.AUTHORIZATION_TOKEN_KEY).getAsString());
-                params.remove(RegistrationHelper.AUTHORIZATION_TOKEN_KEY);
-            } else {
-                if (!tokenStore.hasBCOToken(userId)) {
-                    throw new NotAvailableException(RegistrationHelper.AUTHORIZATION_TOKEN_KEY);
-                }
-            }
-
-            //TODO where to store this ?
-            boolean autostart = true;
-            if (params.has("auto_start")) {
-                autostart = params.get("auto_start").getAsBoolean();
-                params.remove("auto_start");
-            }
-
-            final UserConfig userConfig = Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig();
-            params.addProperty("username", userConfig.getUserName());
-            params.addProperty(RegistrationHelper.EMAIL_HASH_KEY, RegistrationHelper.hash(userConfig.getEmail()));
-
-            SocketWrapper socketWrapper = new SocketWrapper(userId, tokenStore, tokenStore.getToken(getId()), params);
-            userIdSocketMap.put(userId, socketWrapper);
-            socketWrapper.init();
-            socketWrapper.activate();
-            socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
-            return null;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not connect to BCO Cloud for user[" + userId + "]", ex);
-        } catch (ExecutionException | TimeoutException ex) {
-            throw new CouldNotPerformException("Could not connect to BCO Cloud for user[" + userId + "]", ex);
-        }
-    }
-
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<AuthenticatedValue> remove(AuthenticatedValue authenticatedValue) {
-        return null;
+    public Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class,
+                (value, authenticationBaseData) -> {
+                    final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
+
+                    // validate that not already registered
+                    if (tokenStore.hasCloudToken(userId)) {
+                        throw new CouldNotPerformException("User[" + userId + "] is already registered");
+                    }
+
+                    try {
+                        // retrieve socket wrapper or create one
+                        SocketWrapper socketWrapper;
+                        if (userIdSocketMap.containsKey(userId)) {
+                            socketWrapper = userIdSocketMap.get(userId);
+                        } else {
+                            socketWrapper = new SocketWrapper(userId, tokenStore);
+                            socketWrapper.init();
+                        }
+
+                        // make sure socket connection is established and logged in
+                        if (!socketWrapper.isActive()) {
+                            socketWrapper.activate();
+                        }
+                        socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
+
+                        // remove Cloud account for user
+                        socketWrapper.remove().get(10, TimeUnit.SECONDS);
+                        // deactivate socket connection
+                        socketWrapper.deactivate();
+                    } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
+                        throw new CouldNotPerformException("Could not remove user[" + userId + "]", ex);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        throw new CouldNotPerformException("Could not remove user[" + userId + "]", ex);
+                    }
+                    // remove socket wrapper and tokens from store
+                    userIdSocketMap.remove(userId);
+                    tokenStore.removeBCOToken(userId);
+                    tokenStore.removeCloudToken(userId);
+
+                    // return null because internal value in the authenticated value send back is irrelevant for the user
+                    return null;
+                })
+        );
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<AuthenticatedValue> setAuthorizationToken(AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, this::setAuthorizationToken));
-    }
+    public Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class,
+                (authorizationToken, authenticationBaseData) -> {
+                    final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
 
-    private String setAuthorizationToken(final String authorizationToken, final AuthenticationBaseData authenticationBaseData) {
-        final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
-        LOGGER.info("Set authorization token for user[" + userId + "]...");
+                    // set authorization token in store for user
+                    tokenStore.addBCOToken(userId, authorizationToken);
 
-        tokenStore.addBCOToken(userId, authorizationToken);
-        return null;
-    }
-
-    @Override
-    public Future<AuthenticatedValue> setAutoStart(AuthenticatedValue authenticatedValue) {
-        return null;
+                    // return null because internal value in the authenticated value send back is irrelevant for the user
+                    return null;
+                })
+        );
     }
 }

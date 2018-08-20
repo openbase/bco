@@ -30,7 +30,6 @@ import io.socket.client.Socket;
 import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
-import org.openbase.bco.authentication.lib.TokenStore;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
@@ -73,6 +72,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private static final String LOGIN_EVENT = "login";
     private static final String REGISTER_EVENT = "register";
+    private static final String REMOVE_EVENT = "remove";
     private static final String REQUEST_SYNC_EVENT = "requestSync";
 
     private static final String INTENT_REGISTER_SCENE = "register_scene";
@@ -87,7 +87,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketWrapper.class);
 
     private final String userId;
-    private final TokenStore tokenStore;
+    private final CloudConnectorTokenStore tokenStore;
 
     private JsonObject loginData;
     private Socket socket;
@@ -96,21 +96,17 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private final UnitRegistryObserver unitRegistryObserver;
 
-    private final String authenticationToken;
-
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final JsonParser jsonParser = new JsonParser();
     private CompletableFuture<Void> loginFuture;
 
-    //TODO: maybe a socket should not have access to the whole store but only the tokens of the specific user?
-    public SocketWrapper(final String userId, final TokenStore tokenStore, final String authenticationToken) {
-        this(userId, tokenStore, authenticationToken, null);
+    public SocketWrapper(final String userId, final CloudConnectorTokenStore tokenStore) {
+        this(userId, tokenStore, null);
     }
 
-    public SocketWrapper(final String userId, final TokenStore tokenStore, final String authenticationToken, final JsonObject loginData) {
+    public SocketWrapper(final String userId, final CloudConnectorTokenStore tokenStore, final JsonObject loginData) {
         this.userId = userId;
         this.tokenStore = tokenStore;
-        this.authenticationToken = authenticationToken;
         this.loginData = loginData;
         this.unitRegistryObserver = new UnitRegistryObserver();
         this.active = false;
@@ -120,16 +116,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     public void init() throws InitializationException {
         try {
             // validate that the token store contains an authorization token for the given user
-            if (!tokenStore.hasEntry(userId + "@BCO")) {
-                try {
-                    throw new NotAvailableException("Token for user[" + userId + "] for BCO");
-                } catch (NotAvailableException ex) {
-                    throw new InitializationException(this, ex);
-                }
-            }
+            tokenStore.getBCOToken(userId);
 
             // validate that either login data is set or the token store contains a token for the cloud
-            if (loginData == null && !tokenStore.hasEntry(userId + "@Cloud")) {
+            if (loginData == null && !tokenStore.hasCloudToken(userId)) {
                 try {
                     throw new NotAvailableException("Login data for user[" + userId + "] for cloud");
                 } catch (NotAvailableException ex) {
@@ -197,7 +187,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             //TODO: fulfillment handlers also need authorization token...
             // handle request and create response
             LOGGER.info("Call handler");
-            final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), agentUserId, authenticationToken, tokenStore.getToken(userId + "@BCO"));
+            final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), agentUserId, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
             final String response = gson.toJson(jsonObject);
             LOGGER.info("Handler produced response: " + response);
             // send back response
@@ -221,7 +211,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     // clear login data
                     loginData = null;
                     // save received token
-                    tokenStore.addToken(userId + "@Cloud", response.get(TOKEN_KEY).getAsString());
+                    tokenStore.addCloudToken(userId, response.get(TOKEN_KEY).getAsString());
                     // complete registration future, so that waiting tasks know that is is finished
                     registrationFuture.complete(null);
                 } else {
@@ -258,7 +248,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             final JsonObject loginInfo = new JsonObject();
             try {
-                loginInfo.addProperty(TOKEN_KEY, tokenStore.getToken(userId + "@Cloud"));
+                loginInfo.addProperty(TOKEN_KEY, tokenStore.getCloudToken(userId));
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory("Could not login user[" + userId + "] at BCO Cloud", ex, LOGGER);
                 return;
@@ -284,6 +274,25 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             });
         });
+    }
+
+    public Future<Void> remove() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        socket.emit(REMOVE_EVENT, "", (Ack) objects -> {
+            try {
+                final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
+                if (response.get(SUCCESS_KEY).getAsBoolean()) {
+                    future.complete(null);
+                } else {
+                    future.completeExceptionally(new CouldNotPerformException("Could not remove user account: " + response.get(ERROR_KEY)));
+                }
+            } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
+                final CouldNotPerformException couldNotPerformException = new CouldNotPerformException("Unexpected response for remove request", ex);
+                ExceptionPrinter.printHistory(couldNotPerformException, LOGGER);
+                future.completeExceptionally(couldNotPerformException);
+            }
+        });
+        return future;
     }
 
     private static final String CURRENT_LABEL_KEY = "currentLabel";
