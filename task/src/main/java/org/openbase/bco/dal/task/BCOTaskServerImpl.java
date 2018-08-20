@@ -34,6 +34,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.com.exception.RSBResolvedException;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class BCOTaskServerImpl implements BCOTaskServer {
             this.taskFactory = new BCOTaskFactory();
             this.taskServer = new TaskServer(TASK_HANDLER_SCOPE, new BCOTaskHandler());
         } catch (RSBException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
+            throw new org.openbase.jul.exception.InstantiationException(this, new RSBResolvedException(ex));
         }
     }
 
@@ -85,7 +86,7 @@ public class BCOTaskServerImpl implements BCOTaskServer {
                 }
             });
         } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not activate " + this);
+            throw new CouldNotPerformException("Could not activate " + this, new RSBResolvedException(ex));
         }
     }
 
@@ -102,8 +103,10 @@ public class BCOTaskServerImpl implements BCOTaskServer {
                 listenerTask = null;
                 taskServer.deactivate();
             }
-        } catch (RSBException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not deative " + this, ex);
+        } catch (NullPointerException ex) {
+            throw new CouldNotPerformException("Could not deactivate " + this, ex);
+        } catch (RSBException ex) {
+            throw new CouldNotPerformException("Could not deactivate " + this, new RSBResolvedException(ex));
         }
     }
 
