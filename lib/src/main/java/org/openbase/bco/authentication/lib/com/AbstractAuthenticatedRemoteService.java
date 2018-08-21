@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.lib.com;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -74,8 +75,8 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
     @Override
     protected Future<Event> internalRequestStatus() throws CouldNotPerformException {
         if (SessionManager.getInstance().isLoggedIn()) {
-            Event event = new Event(TicketAuthenticatorWrapper.class, SessionManager.getInstance().initializeServiceServerRequest());
-            return getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event);
+            final Event event = new Event(TicketAuthenticatorWrapper.class, SessionManager.getInstance().initializeServiceServerRequest());
+            return new ReLoginFuture<>(getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event), SessionManager.getInstance());
         } else {
             return super.internalRequestStatus();
         }
@@ -126,6 +127,8 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
                     } else {
                         applyEventUpdate(event);
                     }
+                } else {
+                    applyEventUpdate(event);
                 }
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);

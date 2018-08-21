@@ -107,6 +107,8 @@ public class SessionManager implements Shutdownable {
      */
     private ScheduledFuture ticketRenewalTask;
 
+    private boolean skipNotification = false;
+
     /**
      * Create a session manager with the default credential store.
      */
@@ -362,11 +364,7 @@ public class SessionManager implements Shutdownable {
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
-            try {
-                loginObservable.notifyObservers(getUserAtClientId());
-            } catch (CouldNotPerformException ex) {
-                LOGGER.warn("Could not notify login to observer", ex);
-            }
+            notifyLoginObserver();
 
             // user wants to stay logged or is a client so trigger a ticket renewal task
             if (stayLoggedIn || !isUser) {
@@ -462,6 +460,10 @@ public class SessionManager implements Shutdownable {
      * Method notifies login observer with the current user at client id.
      */
     private void notifyLoginObserver() {
+        if (skipNotification) {
+            return;
+        }
+
         try {
             loginObservable.notifyObservers(getUserAtClientId());
         } catch (CouldNotPerformException ex) {
@@ -551,6 +553,42 @@ public class SessionManager implements Shutdownable {
             ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Internal server error.", cause);
         }
+    }
+
+    /**
+     * Logout and re-login what is possible while skipping notifications.
+     *
+     * @throws CouldNotPerformException if logging in again fails
+     */
+    public synchronized void reLogin() throws CouldNotPerformException {
+        // skip notifications
+        skipNotification = true;
+        try {
+            // save if user stayed logged in
+            final boolean stayLoggedIn = ticketRenewalTask != null && !ticketRenewalTask.isDone();
+            // save user and client id
+            final String userId = getUserId();
+            final String clientId = getClientId();
+            // logout
+            logout();
+            if (userId != null && !userId.isEmpty() && credentialStore.hasEntry(userId)) {
+                // if user was save in store log him in again, this is valid because logout will login a client
+                // if a user was logged in at a client
+                login(userId, stayLoggedIn);
+            } else {
+                // user was not logged in so login the client again if possible
+                if (clientId != null && !clientId.isEmpty() && credentialStore.hasEntry("@" + clientId)) {
+                    login(clientId, stayLoggedIn);
+                }
+            }
+        } catch (CouldNotPerformException ex) {
+            throw ex;
+        } finally {
+            // enable notifications again
+            skipNotification = false;
+        }
+
+        notifyLoginObserver();
     }
 
     /**

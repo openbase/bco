@@ -24,16 +24,22 @@ package org.openbase.bco.authentication.lib.com;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
+import org.openbase.jul.extension.rsb.com.exception.RSBResolvedException;
+import org.openbase.jul.extension.rsb.iface.RSBFuture;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
 import rsb.Handler;
+import rsb.RSBException;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
+import javax.crypto.BadPaddingException;
 import java.util.concurrent.*;
 
 public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage, CONFIG extends GeneratedMessage> extends AbstractConfigurableRemote<M, CONFIG> {
@@ -83,8 +89,8 @@ public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage,
     @Override
     protected Future<Event> internalRequestStatus() throws CouldNotPerformException {
         if (SessionManager.getInstance().isLoggedIn()) {
-            Event event = new Event(TicketAuthenticatorWrapper.class, SessionManager.getInstance().initializeServiceServerRequest());
-            return getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event);
+            final Event event = new Event(TicketAuthenticatorWrapper.class, SessionManager.getInstance().initializeServiceServerRequest());
+            return new ReLoginFuture<>(getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event), SessionManager.getInstance());
         } else {
             return super.internalRequestStatus();
         }
@@ -123,6 +129,8 @@ public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage,
                     } else {
                         applyEventUpdate(event);
                     }
+                } else {
+                    applyEventUpdate(event);
                 }
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);

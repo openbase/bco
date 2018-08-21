@@ -66,7 +66,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * @param sessionManager The session manager that is used for the verification.
      */
     public AbstractAuthenticationFuture(final Future<INTERNAL> internalFuture, final Class<RETURN> returnClass, final TicketAuthenticatorWrapper wrapper, final SessionManager sessionManager) {
-        this.internalFuture = internalFuture;
+        this.internalFuture = new ReLoginFuture<>(internalFuture, sessionManager);
         this.returnClass = returnClass;
         this.sessionManager = sessionManager;
         this.wrapper = wrapper;
