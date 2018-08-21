@@ -50,19 +50,18 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.configuration.LabelType.Label;
+import rst.configuration.LabelType.Label.MapFieldEntry;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
+import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -77,6 +76,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private static final String INTENT_REGISTER_SCENE = "register_scene";
     private static final String INTENT_USER_ACTIVITY = "user_activity";
+    private static final String INTENT_USER_ACTIVITY_CANCELLATION = "user_activity_cancellation";
     private static final String INTENT_USER_TRANSIT = "user_transit";
 
     private static final String ID_KEY = "id";
@@ -169,6 +169,9 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }).on(INTENT_REGISTER_SCENE, objects -> {
                 LOGGER.info("Socket of user[" + userId + "] received register scene request");
                 handleSceneRegistration(objects[0], (Ack) objects[objects.length - 1]);
+            }).on(INTENT_USER_ACTIVITY_CANCELLATION, objects -> {
+                LOGGER.info("Socket of user[" + userId + "] received activity cancellation request");
+                handleActivityCancellation(objects[0], (Ack) objects[objects.length - 1]);
             });
 
             // add observer to registry that triggers sync requests on changes
@@ -402,33 +405,105 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     }
 
     private void handleActivity(final Object object, final Ack acknowledgement) {
-        final String activityRepresentation = (String) object;
-        LOGGER.info("Received activity representation: " + activityRepresentation);
-        ActivityConfig activity = null;
+        final JsonObject params = jsonParser.parse(object.toString()).getAsJsonObject();
+        LOGGER.info("Set activities: " + gson.toJson(params));
         try {
-            outer:
-            for (final ActivityConfig activityConfig : Registries.getActivityRegistry().getActivityConfigs()) {
-                for (Label.MapFieldEntry entry : activityConfig.getLabel().getEntryList()) {
-                    for (String label : entry.getValueList()) {
-                        if (label.toLowerCase().contains(activityRepresentation)) {
-                            activity = activityConfig;
-                            break outer;
+            String errorResponse = "";
+            final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
+            if (params.has("location")) {
+                final String locationLabel = params.get("location").getAsString();
+                LOGGER.info("Found location " + locationLabel);
+                UnitConfig location = null;
+
+                for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
+                    for (MapFieldEntry entry : unitConfig.getLabel().getEntryList()) {
+                        for (String label : entry.getValueList()) {
+                            if (locationLabel.equalsIgnoreCase(label)) {
+                                location = unitConfig;
+                            }
                         }
                     }
                 }
+
+                if (location == null) {
+                    errorResponse += "Die Location " + locationLabel + " ist nicht verfügbar.";
+                } else {
+                    userRemote.setLocalPositionState(LocalPositionState.newBuilder().addLocationId(location.getId()).build()).get(3, TimeUnit.SECONDS);
+                }
             }
 
-            if (activity == null) {
-                acknowledgement.call("Ich kann die von dir ausgeführte Aktivität " + activityRepresentation + " nicht finden");
-                return;
+            if (!userRemote.isDataAvailable()) {
+                userRemote.waitForData(3, TimeUnit.SECONDS);
             }
 
-            final UserRemote userRemote;
-            userRemote = Units.getUnit(userId, true, UserRemote.class);
-            //TODO: when to add and when to replace
-            ActivityMultiState.Builder activityMultiState = ActivityMultiState.newBuilder().addActivityId(activity.getId());
-            userRemote.setActivityMultiState(activityMultiState.build()).get(3, TimeUnit.SECONDS);
-            acknowledgement.call("Deine Aktivität wurde auf " + LabelProcessor.getBestMatch(activity.getLabel()) + " gesetzt.");
+            final JsonArray activities = params.get("activity").getAsJsonArray();
+            final ActivityMultiState.Builder builder = userRemote.getActivityMultiState().toBuilder().clearActivityId();
+
+            if (activities.size() == 0) {
+                throw new NotAvailableException("activities");
+            } else {
+                final List<ActivityConfig> activityList = new ArrayList<>();
+                final List<String> unavailableActivities = new ArrayList<>();
+                for (final JsonElement activityElem : activities) {
+                    boolean found = false;
+                    final String activityRepresentation = activityElem.getAsString();
+                    configLoop:
+                    for (final ActivityConfig activityConfig : Registries.getActivityRegistry().getActivityConfigs()) {
+                        for (Label.MapFieldEntry entry : activityConfig.getLabel().getEntryList()) {
+                            for (String label : entry.getValueList()) {
+                                if (label.toLowerCase().contains(activityRepresentation)) {
+                                    activityList.add(activityConfig);
+                                    builder.addActivityId(activityConfig.getId());
+                                    found = true;
+                                    break configLoop;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!found) {
+                        unavailableActivities.add(activityRepresentation);
+                    }
+                }
+//                    response += "Deine ";
+//                    if (activityList.size() == 1) {
+//                        response += "Aktivität ist jetzt " + LabelProcessor.getBestMatch(activityList.get(0).getLabel()) + ".";
+//                    } else {
+//                        response += "Aktivitäten sind jetzt ";
+//                        for (int i = 0; i < activityList.size(); i++) {
+//                            final String label = LabelProcessor.getBestMatch(activityList.get(i).getLabel());
+//                            if (i == activityList.size() - 1) {
+//                                response += "und " + label;
+//                            } else if (i == activityList.size() - 2) {
+//                                response += label + " ";
+//                            } else {
+//                                response += label + ", ";
+//                            }
+//                        }
+//                        response += ".";
+//                    }
+//                }
+
+                final String unavailable = buildUnavailableActivityResponse(errorResponse, unavailableActivities);
+                if (!unavailable.isEmpty()) {
+                    if (!errorResponse.isEmpty()) {
+                        errorResponse += " Außerdem kann ich die ";
+                    } else {
+                        errorResponse += "Ich kann die ";
+                    }
+                    errorResponse += unavailable;
+                }
+            }
+
+            if (builder.getActivityIdCount() > 0) {
+                userRemote.setActivityMultiState(builder.build()).get(3, TimeUnit.SECONDS);
+            }
+
+            if (!errorResponse.isEmpty()) {
+                acknowledgement.call(errorResponse);
+            } else {
+                acknowledgement.call("Okay");
+            }
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
             ExceptionPrinter.printHistory(ex, LOGGER);
@@ -436,8 +511,126 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 Thread.currentThread().interrupt();
             }
         } catch (TimeoutException ex) {
-            acknowledgement.call("Deine Aktivität wird auf " + activityRepresentation + " gesetzt");
+            acknowledgement.call("Deine Anfrage wird bearbeitet.");
         }
+    }
+
+    private void handleActivityCancellation(final Object object, final Ack acknowledgement) {
+        final JsonObject params = jsonParser.parse(object.toString()).getAsJsonObject();
+        LOGGER.info("Cancel activities: " + gson.toJson(params));
+        try {
+            final JsonArray activities = params.get("activity").getAsJsonArray();
+
+            final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
+            userRemote.waitForData(3, TimeUnit.SECONDS);
+            final ActivityMultiState.Builder builder = userRemote.getActivityMultiState().toBuilder();
+            int initialCount = builder.getActivityIdCount();
+
+            String errorResponse = "";
+            if (activities.size() == 0) {
+                builder.clearActivityId();
+            } else {
+                final List<ActivityConfig> activityList = new ArrayList<>();
+                final List<String> unavailableActivities = new ArrayList<>();
+                for (final JsonElement activityElem : activities) {
+                    boolean found = false;
+                    final String activityRepresentation = activityElem.getAsString();
+                    configLoop:
+                    for (final ActivityConfig activityConfig : Registries.getActivityRegistry().getActivityConfigs()) {
+                        for (Label.MapFieldEntry entry : activityConfig.getLabel().getEntryList()) {
+                            for (String label : entry.getValueList()) {
+                                if (label.toLowerCase().contains(activityRepresentation)) {
+                                    activityList.add(activityConfig);
+                                    found = true;
+                                    break configLoop;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!found) {
+                        unavailableActivities.add(activityRepresentation);
+                    }
+                }
+
+//                if (activityList.size() > 0) {
+//                    response += "Deine ";
+//                    if (activityList.size() == 1) {
+//                        response += "Aktivität " + LabelProcessor.getBestMatch(activityList.get(0).getLabel()) + " wurde beendet.";
+//                    } else {
+//                        response += "Aktivitäten ";
+//                        for (int i = 0; i < activityList.size(); i++) {
+//                            final String label = LabelProcessor.getBestMatch(activityList.get(i).getLabel());
+//                            if (i == activityList.size() - 1) {
+//                                response += "und " + label;
+//                            } else if (i == activityList.size() - 2) {
+//                                response += label + " ";
+//                            } else {
+//                                response += label + ", ";
+//                            }
+//                        }
+//                        response += " wurden beendet.";
+//                    }
+//                }
+                final ArrayList<String> idList = new ArrayList<>(builder.getActivityIdList());
+                builder.clearActivityId();
+                outer:
+                for (String id : idList) {
+                    for (ActivityConfig activityConfig : activityList) {
+                        if (activityConfig.getId().equals(id)) {
+                            continue outer;
+                        }
+                    }
+                    builder.addActivityId(id);
+                }
+
+
+                final String unavailable = buildUnavailableActivityResponse(errorResponse, unavailableActivities);
+                if (!unavailable.isEmpty()) {
+                    errorResponse += "Ich kann die " + unavailable;
+                }
+            }
+
+            if (builder.getActivityIdCount() != initialCount) {
+                userRemote.setActivityMultiState(builder.build()).get(3, TimeUnit.SECONDS);
+            }
+
+            if (!errorResponse.isEmpty()) {
+                acknowledgement.call(errorResponse);
+            } else {
+                acknowledgement.call("Okay");
+            }
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+            if (ex instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        } catch (TimeoutException ex) {
+            acknowledgement.call("Deine Anfrage wird bearbeitet.");
+        }
+    }
+
+    private String buildUnavailableActivityResponse(String response, final List<String> unavailableActivities) {
+        String res = "";
+        if (unavailableActivities.size() > 0) {
+            if (unavailableActivities.size() == 1) {
+                res += "Aktivität " + unavailableActivities.get(0) + " nicht finden";
+            } else {
+                res += "Aktivitäten ";
+                for (int i = 0; i < unavailableActivities.size(); i++) {
+                    if (i == unavailableActivities.size() - 1) {
+                        res += "und " + unavailableActivities.get(i);
+                    } else if (i == unavailableActivities.size() - 2) {
+                        res += unavailableActivities.get(i) + " ";
+                    } else {
+                        res += unavailableActivities + ", ";
+                    }
+                }
+                res += " nicht finden.";
+            }
+        }
+        return res;
     }
 
     private void handleSceneRegistration(final Object object, final Ack acknowledgement) {
@@ -490,7 +683,13 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             try {
                 UnitConfig unitConfig = Registries.getUnitRegistry().registerUnitConfig(sceneUnitConfig.build()).get(1, TimeUnit.SECONDS);
-                acknowledgement.call("Die Szene " + LabelProcessor.getLabelByLanguage(Locale.GERMAN, unitConfig.getLabel()) + " wurde erfolgreich registriert.");
+                String label;
+                try {
+                    label = LabelProcessor.getLabelByLanguage(Locale.GERMAN, unitConfig.getLabel());
+                } catch (NotAvailableException ex) {
+                    label = LabelProcessor.getBestMatch(unitConfig.getLabel());
+                }
+                acknowledgement.call("Die Szene " + label + " wurde erfolgreich registriert.");
             } catch (ExecutionException ex) {
                 acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
                 ExceptionPrinter.printHistory(ex, LOGGER);
