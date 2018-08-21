@@ -42,15 +42,18 @@ public interface ActivityMultiStateProviderService extends ProviderService {
         return (ActivityMultiState) getServiceProvider().getServiceState(ACTIVITY_MULTI_STATE_SERVICE);
     }
 
-    static void verifyActivityMultiState(final ActivityMultiState activityMultiState) throws VerificationFailedException {
+    static ActivityMultiState verifyActivityMultiState(final ActivityMultiState activityMultiState) throws VerificationFailedException {
         if (activityMultiState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));
         }
 
+        ActivityMultiState.Builder builder = activityMultiState.toBuilder();
         final Set<String> activityIdSet = new HashSet<>(activityMultiState.getActivityIdList());
         if (activityIdSet.size() != activityMultiState.getActivityIdCount()) {
-            throw new VerificationFailedException("activity multi state contains duplicated activity ids");
+            builder.clearActivityId();
+            builder.addAllActivityId(activityIdSet);
         }
+        return builder.build();
 
         //TODO validate that an activity config exists for every id
     }

@@ -29,6 +29,11 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.LocalPositionStateType.LocalPositionState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.geometry.TranslationType.Translation;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -40,23 +45,46 @@ public interface LocalPositionStateProviderService extends ProviderService {
         return (LocalPositionState) getServiceProvider().getServiceState(ServiceType.LOCAL_POSITION_STATE_SERVICE);
     }
 
-    static void verifyLocalPositionState(final LocalPositionState localPositionState) throws VerificationFailedException {
+    static LocalPositionState verifyLocalPositionState(final LocalPositionState localPositionState) throws VerificationFailedException {
         if (localPositionState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));
         }
 
-        // if the local position state has a position it should also have at least the id of the root location
-        // because if the location id is not set it is seen is not at home
-        if (!localPositionState.hasLocationId() && localPositionState.hasPosition()) {
-            throw new VerificationFailedException(new NotAvailableException("location id"));
-        }
-
-        if (localPositionState.hasLocationId()) {
+        // if the state has a position with a translation fill the location ids accordingly
+        LocalPositionState.Builder builder = localPositionState.toBuilder();
+        if (localPositionState.hasPosition() && localPositionState.getPosition().hasTranslation()) {
+            builder.clearLocationId();
+            // convert the translation to a vector
+            final Translation translation = localPositionState.getPosition().getTranslation();
+            final Vec3DDouble vec3DDouble = Vec3DDouble.newBuilder().setX(translation.getX()).setY(translation.getY()).setZ(translation.getZ()).build();
             try {
-                Registries.getUnitRegistry().getUnitConfigById(localPositionState.getLocationId());
+                // retrieve location list sorted by location type
+                List<UnitConfig> locationUnitConfigsByCoordinate = Registries.getUnitRegistry().getLocationUnitConfigsByCoordinate(vec3DDouble);
+                // if the list is empty the position is invalid so trigger a verification fail
+                if (locationUnitConfigsByCoordinate.isEmpty()) {
+                    throw new NotAvailableException("Locations for position[" + vec3DDouble + "]");
+                }
+                // copy ids from locations in list into the builder
+                for (final UnitConfig locationUnitConfig : locationUnitConfigsByCoordinate) {
+                    builder.addLocationId(locationUnitConfig.getId());
+                }
             } catch (CouldNotPerformException ex) {
-                throw new VerificationFailedException("Invalid location id", ex);
+                throw new VerificationFailedException("Could not find location ids for position", ex);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new VerificationFailedException("Building location id list for position interrupted", ex);
             }
         }
+
+        // validate all location ids in the builder
+        for (final String locationId : localPositionState.getLocationIdList()) {
+            try {
+                Registries.getUnitRegistry().getUnitConfigById(locationId);
+            } catch (CouldNotPerformException ex) {
+                throw new VerificationFailedException("Invalid location id[" + locationId + "]", ex);
+            }
+        }
+
+        return builder.build();
     }
 }
