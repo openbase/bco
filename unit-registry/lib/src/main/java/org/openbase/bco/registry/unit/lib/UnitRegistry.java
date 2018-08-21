@@ -24,7 +24,6 @@ package org.openbase.bco.registry.unit.lib;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 
-import com.google.protobuf.ByteString;
 import org.apache.commons.math3.geometry.euclidean.twod.PolygonsSet;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
@@ -793,58 +792,98 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     }
 
     /**
-     * Method returns all the locations which contain the given coordinate.
+     * Call to {@link #getLocationUnitConfigsByCoordinate(Vec3DDouble, LocationType)} with location type unknown.
      *
-     * @param coordinate
-     * @return a list of the requested unit configs.
-     * @throws CouldNotPerformException                is thrown if the request fails.
-     * @throws java.lang.InterruptedException
-     * @throws java.util.concurrent.ExecutionException
+     * @param coordinate the coordinate for which it is checked if it is inside a location.
+     * @return a list of the requested unit configs sorted by location type.
+     * @throws CouldNotPerformException       is thrown if the request fails.
+     * @throws java.lang.InterruptedException is thrown if the process is interrupted
      */
-    default List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException, InterruptedException, ExecutionException {
+    default List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException, InterruptedException {
         return getLocationUnitConfigsByCoordinate(coordinate, LocationType.UNKNOWN);
     }
 
     /**
      * Method returns all the locations which contain the given coordinate and
      * belong to the given location type.
+     * In case the location type is unknown all locations are considered and the resulting
+     * list is sorted so that regions are in the front followed by a tile and zones.
      *
-     * @param coordinate
-     * @param locationType
-     * @return a list of the requested unit configs.
-     * @throws CouldNotPerformException                is thrown if the request fails.
-     * @throws java.lang.InterruptedException
-     * @throws java.util.concurrent.ExecutionException
+     * @param coordinate   the coordinate for which it is checked if it is inside a location
+     * @param locationType the type of locations checked, unknown means all locations
+     * @return a list of the requested unit configs sorted by location type
+     * @throws CouldNotPerformException       is thrown if the request fails.
+     * @throws java.lang.InterruptedException is thrown if the process is interrupted
      */
-    default List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate, LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
+    default List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate, final LocationType locationType) throws CouldNotPerformException, InterruptedException {
         validateData();
         List<UnitConfig> result = new ArrayList<>();
 
-        for (UnitConfig locationUnitConfig : getUnitConfigs(UnitType.LOCATION)) {
-            // Check if the unit meets the requirements of the filter
-            if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(locationUnitConfig.getLocationConfig().getType())) {
-                continue;
+        try {
+            for (UnitConfig locationUnitConfig : getUnitConfigs(UnitType.LOCATION)) {
+                // Check if the unit meets the requirements of the filter
+                if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(locationUnitConfig.getLocationConfig().getType())) {
+                    continue;
+                }
+
+                // Get the shape of the floor
+                List<Vec3DDoubleType.Vec3DDouble> floorList = locationUnitConfig.getPlacementConfig().getShape().getFloorList();
+
+                // Convert the shape into a PolygonsSet
+                List<Vector2D> vertices = floorList.stream()
+                        .map(vec3DDouble -> new Vector2D(vec3DDouble.getX(), vec3DDouble.getY()))
+                        .collect(Collectors.toList());
+                PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
+
+                // Transform the given coordinate
+                Transform3D unitTransform = getRootToUnitTransformationFuture(locationUnitConfig).get().getTransform();
+                Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+                unitTransform.transform(transformedCoordinate);
+
+                // NOTE: Hence apache-math builds its polygons counter clockwise unlike bco, the resulting polygon is inverted.
+                // Therefore we check whether the point lies on the outside of the polygon.
+                if (polygonsSet.checkPoint(new Vector2D(transformedCoordinate.x, transformedCoordinate.y)) == Location.OUTSIDE) {
+                    result.add(locationUnitConfig);
+                }
             }
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not resolve location configs by coordinate", ex);
+        }
 
-            // Get the shape of the floor
-            List<Vec3DDoubleType.Vec3DDouble> floorList = locationUnitConfig.getPlacementConfig().getShape().getFloorList();
-
-            // Convert the shape into a PolygonsSet
-            List<Vector2D> vertices = floorList.stream()
-                    .map(vec3DDouble -> new Vector2D(vec3DDouble.getX(), vec3DDouble.getY()))
-                    .collect(Collectors.toList());
-            PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
-
-            // Transform the given coordinate
-            Transform3D unitTransform = getRootToUnitTransformationFuture(locationUnitConfig).get().getTransform();
-            Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
-            unitTransform.transform(transformedCoordinate);
-
-            // NOTE: Hence apache-math builds its polygons counter clockwise unlike bco, the resulting polygon is inverted.
-            // Therefore we check whether the point lies on the outside of the polygon.
-            if (polygonsSet.checkPoint(new Vector2D(transformedCoordinate.x, transformedCoordinate.y)) == Location.OUTSIDE) {
-                result.add(locationUnitConfig);
-            }
+        if (locationType == LocationType.UNKNOWN) {
+            result.sort((o1, o2) -> {
+                switch (o1.getLocationConfig().getType()) {
+                    case REGION:
+                        switch (o2.getLocationConfig().getType()) {
+                            case REGION:
+                                return 0;
+                            default:
+                                // o1 is smaller than o2
+                                return -1;
+                        }
+                    case TILE:
+                        switch (o2.getLocationConfig().getType()) {
+                            case REGION:
+                                // o1 is bigger than o2
+                                return 1;
+                            case TILE:
+                                return 0;
+                            case ZONE:
+                                // o1 is smaller than o2
+                                return -1;
+                        }
+                    case ZONE:
+                        switch (o2.getLocationConfig().getType()) {
+                            case REGION:
+                            case TILE:
+                                return 1;
+                            case ZONE:
+                                return 0;
+                        }
+                }
+                // location type is unknown so move to the end
+                return 1;
+            });
         }
 
         return result;
@@ -1144,45 +1183,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         }
 
         return new ArrayList<>(neighborMap.values());
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     */
-    default List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate, final LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
-        validateData();
-        List<UnitConfig> result = new ArrayList<>();
-
-        for (UnitConfig unitConfig : getUnitConfigs(UnitType.LOCATION)) {
-            // Check if the unit meets the requirements of the filter
-            if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(unitConfig.getLocationConfig().getType())) {
-                continue;
-            }
-
-            // Get the shape of the floor
-            List<Vec3DDoubleType.Vec3DDouble> floorList = unitConfig.getPlacementConfig().getShape().getFloorList();
-
-            // Convert the shape into a PolygonsSet
-            List<Vector2D> vertices = floorList.stream()
-                    .map(vec3DDouble -> new Vector2D(vec3DDouble.getX(), vec3DDouble.getY()))
-                    .collect(Collectors.toList());
-            PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
-
-            // Transform the given coordinate
-            Transform3D unitTransform = getRootToUnitTransformationFuture(unitConfig).get().getTransform();
-            Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
-            unitTransform.transform(transformedCoordinate);
-
-            // NOTE: Hence apache-math builds its polygons counter clockwise unlike bco, the resulting polygon is inverted.
-            // Therefore we check whether the point lies on the outside of the polygon.
-            if (polygonsSet.checkPoint(new Vector2D(transformedCoordinate.x, transformedCoordinate.y)) == Location.OUTSIDE) {
-                result.add(unitConfig);
-            }
-        }
-
-        return result;
     }
 
     /**
