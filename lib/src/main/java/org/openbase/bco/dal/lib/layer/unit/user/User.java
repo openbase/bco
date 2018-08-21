@@ -22,9 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.user;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.ActivityMultiStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PresenceStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.UserTransitStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -35,11 +33,11 @@ import rst.domotic.unit.user.UserDataType.UserData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface User extends BaseUnit<UserData>, ActivityMultiStateOperationService, UserTransitStateOperationService, PresenceStateOperationService {
+public interface User extends BaseUnit<UserData>, ActivityMultiStateOperationService, UserTransitStateOperationService, PresenceStateOperationService, LocalPositionStateOperationService, GlobalPositionStateOperationService {
 
-    public final static String TYPE_FIELD_USER_NAME = "user_name";
+    String TYPE_FIELD_USER_NAME = "user_name";
 
-    default public String getUserName() throws NotAvailableException {
+    default String getUserName() throws NotAvailableException {
         try {
             return getConfig().getUserConfig().getUserName();
         } catch (CouldNotPerformException ex) {
@@ -47,39 +45,11 @@ public interface User extends BaseUnit<UserData>, ActivityMultiStateOperationSer
         }
     }
 
-    default public String getName() throws NotAvailableException {
+    default String getName() throws NotAvailableException {
         try {
             return getConfig().getUserConfig().getFirstName() + " " + getConfig().getUserConfig().getLastName();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Name", ex);
-        }
-    }
-
-    /**
-     *
-     * @return
-     * @throws NotAvailableException
-     * @deprecated Please use getPresenceState() instead.
-     */
-    @Deprecated
-    default Boolean isAtHome() throws NotAvailableException {
-        try {
-            switch (getData().getUserTransitState().getValue()) {
-                case LONG_TERM_PRESENT:
-                case SHORT_TERM_PRESENT:
-                case SOON_ABSENT:
-                    return true;
-                case LONG_TERM_ABSENT:
-                case SHORT_TERM_ABSENT:
-                case SOON_PRESENT:
-                    return false;
-                case UNKNOWN:
-                    throw new InvalidStateException("UserTransitState unknown!");
-                default:
-                    throw new AssertionError("Type " + getData().getUserTransitState().getValue() + " not supported!");
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AtHomeState");
         }
     }
 }

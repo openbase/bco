@@ -27,14 +27,16 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVITY_MULTI_STATE_SERVICE;
 
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface ActivityMultiStateProviderService extends ProviderService{
-    
+public interface ActivityMultiStateProviderService extends ProviderService {
+
     @RPCMethod
     default ActivityMultiState getActivityMultiState() throws NotAvailableException {
         return (ActivityMultiState) getServiceProvider().getServiceState(ACTIVITY_MULTI_STATE_SERVICE);
@@ -44,5 +46,12 @@ public interface ActivityMultiStateProviderService extends ProviderService{
         if (activityMultiState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));
         }
+
+        final Set<String> activityIdSet = new HashSet<>(activityMultiState.getActivityIdList());
+        if (activityIdSet.size() != activityMultiState.getActivityIdCount()) {
+            throw new VerificationFailedException("activity multi state contains duplicated activity ids");
+        }
+
+        //TODO validate that an activity config exists for every id
     }
 }

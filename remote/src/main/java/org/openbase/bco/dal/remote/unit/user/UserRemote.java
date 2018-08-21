@@ -22,28 +22,22 @@ package org.openbase.bco.dal.remote.unit.user;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
-
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
-import rst.domotic.state.ActivityStateType.ActivityState;
+import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
+import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.domotic.unit.user.UserDataType.UserData;
+
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -63,7 +57,7 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
 
     @Override
     public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE,this));
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE, this));
     }
 
     @Override
@@ -74,5 +68,15 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     @Override
     public Future<ActionFuture> setPresenceState(final PresenceState presenceState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
+    }
+
+    @Override
+    public Future<ActionFuture> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(globalPositionState, ServiceType.GLOBAL_POSITION_STATE_SERVICE, this));
+    }
+
+    @Override
+    public Future<ActionFuture> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, this));
     }
 }

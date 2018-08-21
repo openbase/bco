@@ -27,13 +27,11 @@ import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
-import rst.domotic.state.ActivityStateType.ActivityState;
 
 import java.util.ArrayList;
 import java.util.concurrent.Future;
 
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ActivityMultiStateOperationService extends OperationService, ActivityMultiStateProviderService {
@@ -54,11 +52,12 @@ public interface ActivityMultiStateOperationService extends OperationService, Ac
     @RPCMethod
     default Future<ActionFuture> addActivityState(final String activityId) throws CouldNotPerformException {
         final ActivityMultiState.Builder activityMultiStateBuilder = getActivityMultiState().toBuilder();
-        final ArrayList<String> activityIdList = new ArrayList<>(activityMultiStateBuilder.getActivityIdList());
-        activityIdList.add(activityId);
-        activityMultiStateBuilder.clearActivityId();
-        activityMultiStateBuilder.addAllActivityId(activityIdList);
-        System.out.println();
+        if (!getActivityMultiState().getActivityIdList().contains(activityId)) {
+            final ArrayList<String> activityIdList = new ArrayList<>(activityMultiStateBuilder.getActivityIdList());
+            activityIdList.add(activityId);
+            activityMultiStateBuilder.clearActivityId();
+            activityMultiStateBuilder.addAllActivityId(activityIdList);
+        }
         return setActivityMultiState(activityMultiStateBuilder.build());
     }
 }
