@@ -21,37 +21,34 @@ package org.openbase.bco.manager.user.test.remote.user;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.ActivityStateType.ActivityState;
-import rst.domotic.state.PresenceStateType.PresenceState;
+import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
+import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 import rst.domotic.state.PresenceStateType.PresenceState.State;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import static org.junit.Assert.*;
 
 /**
+ * Integration test of controlling a user controller using a user remote.
  *
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UserRemoteTest extends AbstractBCOUserManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserRemoteTest.class);
 
     private static UserRemote userRemote;
-
-    public UserRemoteTest() {
-
-    }
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
@@ -62,16 +59,6 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
         } catch (CouldNotPerformException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-    }
-
-    @Before
-    public void setUp() throws InitializationException, InvalidStateException {
-
-    }
-
-    @After
-    public void tearDown() throws CouldNotPerformException {
-
     }
 
     /**
@@ -86,22 +73,97 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
         assertEquals("The user created in the manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getUserName());
     }
 
+    /**
+     * Test setting the presence state of a user and validate that depending states are updated accordingly.
+     *
+     * @throws Exception if an error occurs
+     */
     @Test(timeout = 10000)
-    public void testSetUserValues() throws Exception {
-        System.out.println("testSetUserValues");
+    public void testSetPresenceState() throws Exception {
+        System.out.println("testSetPresenceState");
+
+        userRemote.setPresenceState(State.PRESENT).get();
+        assertEquals("User presence state has not updated as expected", State.PRESENT, userRemote.getPresenceState().getValue());
+        assertEquals("Local position state has not updated as expected",
+                Registries.getUnitRegistry().getRootLocationConfig().getId(),
+                userRemote.getLocalPositionState().getLocationId());
+
+        userRemote.setPresenceState(State.ABSENT).get();
+        assertEquals("User presence state has not updated as expected", State.ABSENT, userRemote.getPresenceState().getValue());
+        assertFalse("Local position state has not updated as expected", userRemote.getLocalPositionState().hasLocationId());
+    }
+
+    /**
+     * Test setting the multi activity state of a user.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test(timeout = 10000)
+    public void testSetMultiActivityState() throws Exception {
+        System.out.println("testSetMultiActivityState");
 
         //TODO: this has to be changed to use real ids
-        String activityId = "cooking";
-        ActivityState activity = ActivityState.newBuilder().setActivityId(activityId).build();
-        PresenceState presenceState = PresenceState.newBuilder().setValue(State.PRESENT).build();
+        final String activityId = "cookingId";
+        final ActivityMultiState activityMultiState = ActivityMultiState.newBuilder().addActivityId(activityId).build();
 
-        //TODO: reactivate again or adapt when multi service support is there
-//        userRemote.setActivityState(activity).get();
-        userRemote.setPresenceState(presenceState).get();
+        // test setting an activity
+        userRemote.setActivityMultiState(activityMultiState).get();
+        assertTrue("Activity multi state does not contain the expected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
+        assertEquals("User performs an unexpected number of activities", 1, userRemote.getActivityMultiState().getActivityIdCount());
 
-        userRemote.requestData().get();
+        // test if duplicates will be removed, so nothing should change doing this
+        userRemote.addActivityState(activityId).get();
+        assertTrue("Activity multi state does not contain the expected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
+        assertEquals("User performs an unexpected number of activities", 1, userRemote.getActivityMultiState().getActivityIdCount());
 
-//        assertEquals("ActivityState has not been set!", activityId, userRemote.getActivityState().getActivityId());
-        assertEquals("UserTransitState has not been set!", presenceState.getValue(), userRemote.getPresenceState().getValue());
+        // test removing the activity
+        userRemote.removeActivityState(activityId).get();
+        assertFalse("Activity multi state does contains an unexpected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
+        assertEquals("User performs more activities than expected", 0, userRemote.getActivityMultiState().getActivityIdCount());
+    }
+
+    /**
+     * Test setting the user transit state and validate that depending states are updated accordingly.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test(timeout = 10000)
+    public void testUserTransitState() throws Exception {
+        System.out.println("testUserTransitState");
+
+        userRemote.setUserTransitState(UserTransitState.State.LONG_TERM_ABSENT).get();
+        assertEquals("User transit state has not updated as expected", UserTransitState.State.LONG_TERM_ABSENT, userRemote.getUserTransitState().getValue());
+        assertEquals("User presence state has not updated as expected", State.ABSENT, userRemote.getPresenceState().getValue());
+        assertFalse("Local position state has not updated as expected", userRemote.getLocalPositionState().hasLocationId());
+
+        userRemote.setUserTransitState(UserTransitState.State.SOON_ABSENT).get();
+        assertEquals("User transit state has not updated as expected", UserTransitState.State.SOON_ABSENT, userRemote.getUserTransitState().getValue());
+        assertEquals("User presence state has not updated as expected", State.PRESENT, userRemote.getPresenceState().getValue());
+        assertEquals("Local position state has not updated as expected",
+                Registries.getUnitRegistry().getRootLocationConfig().getId(),
+                userRemote.getLocalPositionState().getLocationId());
+    }
+
+    /**
+     * Test setting the local position state and validate that depending states are updated accordingly.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test(timeout = 10000)
+    public void testLocalPositionState() throws Exception {
+        System.out.println("testLocalPositionState");
+
+        LocalPositionState localPositionState;
+        // create state with random location
+        localPositionState = LocalPositionState.newBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION).get(0).getId()).build();
+        userRemote.setLocalPositionState(localPositionState).get();
+        assertEquals("Local position state has not updated as expected", localPositionState.getLocationId(), userRemote.getLocalPositionState().getLocationId());
+        assertEquals("User presence state has not updated as expected", State.PRESENT, userRemote.getPresenceState().getValue());
+
+        // create state without location
+        localPositionState = localPositionState.toBuilder().clearLocationId().build();
+        userRemote.setLocalPositionState(localPositionState).get();
+        assertFalse("Local position state has not updated as expected", userRemote.getLocalPositionState().hasLocationId());
+        assertEquals("User presence state has not updated as expected", State.ABSENT, userRemote.getPresenceState().getValue());
     }
 }

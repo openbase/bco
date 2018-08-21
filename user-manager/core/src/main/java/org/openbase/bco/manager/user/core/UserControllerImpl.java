@@ -22,9 +22,9 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.manager.user.lib.UserController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -42,6 +42,8 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
+import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
+import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.PresenceStateType.PresenceState.State;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
@@ -52,7 +54,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -201,9 +202,54 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                 }
 
                 copyResponsibleAction(USER_TRANSIT_STATE_SERVICE, PRESENCE_STATE_SERVICE, internalBuilder);
+                updateLocalPosition(internalBuilder);
+                break;
+            case PRESENCE_STATE_SERVICE:
+                updateLocalPosition(internalBuilder);
+                break;
+            case LOCAL_POSITION_STATE_SERVICE:
+                updateLastWithCurrentState(PRESENCE_STATE_SERVICE, internalBuilder);
 
+                if (internalBuilder.getLocalPositionState().hasLocationId()) {
+                    internalBuilder.getPresenceStateBuilder().setValue(State.PRESENT);
+                } else {
+                    internalBuilder.getPresenceStateBuilder().setValue(State.ABSENT);
+                }
+
+                copyResponsibleAction(USER_TRANSIT_STATE_SERVICE, PRESENCE_STATE_SERVICE, internalBuilder);
                 break;
         }
+    }
+
+    private void updateLocalPosition(final UserData.Builder internalBuilder) {
+        switch (internalBuilder.getPresenceState().getValue()) {
+            case ABSENT:
+                internalBuilder.getPresenceStateBuilder().setValue(State.ABSENT);
+                updateLastWithCurrentState(LOCAL_POSITION_STATE_SERVICE, internalBuilder);
+                internalBuilder.getLocalPositionStateBuilder().clearLocationId().clearPosition();
+                break;
+            case PRESENT:
+                if (!internalBuilder.getLocalPositionState().hasLocationId()) {
+                    try {
+                        internalBuilder.getLocalPositionStateBuilder().setLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId());
+                        updateLastWithCurrentState(LOCAL_POSITION_STATE_SERVICE, internalBuilder);
+                        copyResponsibleAction(USER_TRANSIT_STATE_SERVICE, LOCAL_POSITION_STATE_SERVICE, internalBuilder);
+                    } catch (CouldNotPerformException ex) {
+                        logger.warn("Could not update local position state location id because of user transit update", ex);
+                    }
+                }
+                break;
+        }
+    }
+
+    @Override
+    public Future<ActionFuture> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
+        return applyUnauthorizedAction(globalPositionState, GLOBAL_POSITION_STATE_SERVICE);
+    }
+
+    @Override
+    public Future<ActionFuture> setLocalPositionState(LocalPositionState localPositionState) throws CouldNotPerformException {
+        return applyUnauthorizedAction(localPositionState, LOCAL_POSITION_STATE_SERVICE);
     }
 
     private class NetDeviceDetector extends ObservableImpl<Boolean> implements Manageable<String> {
