@@ -210,10 +210,10 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
             case LOCAL_POSITION_STATE_SERVICE:
                 updateLastWithCurrentState(PRESENCE_STATE_SERVICE, internalBuilder);
 
-                if (internalBuilder.getLocalPositionState().hasLocationId()) {
-                    internalBuilder.getPresenceStateBuilder().setValue(State.PRESENT);
-                } else {
+                if (internalBuilder.getLocalPositionState().getLocationIdCount() == 0) {
                     internalBuilder.getPresenceStateBuilder().setValue(State.ABSENT);
+                } else {
+                    internalBuilder.getPresenceStateBuilder().setValue(State.PRESENT);
                 }
 
                 copyResponsibleAction(USER_TRANSIT_STATE_SERVICE, PRESENCE_STATE_SERVICE, internalBuilder);
@@ -224,16 +224,16 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     private void updateLocalPosition(final UserData.Builder internalBuilder) {
         switch (internalBuilder.getPresenceState().getValue()) {
             case ABSENT:
-                internalBuilder.getPresenceStateBuilder().setValue(State.ABSENT);
                 updateLastWithCurrentState(LOCAL_POSITION_STATE_SERVICE, internalBuilder);
                 internalBuilder.getLocalPositionStateBuilder().clearLocationId().clearPosition();
+                copyResponsibleAction(PRESENCE_STATE_SERVICE, LOCAL_POSITION_STATE_SERVICE, internalBuilder);
                 break;
             case PRESENT:
-                if (!internalBuilder.getLocalPositionState().hasLocationId()) {
+                if (internalBuilder.getLocalPositionState().getLocationIdCount() == 0) {
                     try {
-                        internalBuilder.getLocalPositionStateBuilder().setLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId());
                         updateLastWithCurrentState(LOCAL_POSITION_STATE_SERVICE, internalBuilder);
-                        copyResponsibleAction(USER_TRANSIT_STATE_SERVICE, LOCAL_POSITION_STATE_SERVICE, internalBuilder);
+                        internalBuilder.getLocalPositionStateBuilder().addLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId());
+                        copyResponsibleAction(PRESENCE_STATE_SERVICE, LOCAL_POSITION_STATE_SERVICE, internalBuilder);
                     } catch (CouldNotPerformException ex) {
                         logger.warn("Could not update local position state location id because of user transit update", ex);
                     }
