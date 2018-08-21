@@ -212,7 +212,9 @@ public class MockRegistry {
         ILLUMINANCE_STATE_SERVICE(ServiceType.ILLUMINANCE_STATE_SERVICE, CommunicationType.ILLUMINANCE_STATE),
         USER_TRANSIT_STATE_SERVICE(ServiceType.USER_TRANSIT_STATE_SERVICE, CommunicationType.USER_TRANSIT_STATE),
         ACTIVITY_MULTI_STATE_SERVICE(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, CommunicationType.ACTIVITY_MULTI_STATE),
-        EMPHASIS_STATE_SERVICE(ServiceType.EMPHASIS_STATE_SERVICE, CommunicationType.EMPHASIS_STATE);
+        EMPHASIS_STATE_SERVICE(ServiceType.EMPHASIS_STATE_SERVICE, CommunicationType.EMPHASIS_STATE),
+        LOCAL_POSITION_STATE_SERVICE(ServiceType.LOCAL_POSITION_STATE_SERVICE, CommunicationType.LOCAL_POSITION_STATE),
+        GLOBAL_POSITION_STATE_SERVICE(ServiceType.GLOBAL_POSITION_STATE_SERVICE, CommunicationType.GLOBAL_POSITION_STATE);
 
 
         private final ServiceTemplate serviceTemplate;
@@ -255,7 +257,17 @@ public class MockRegistry {
         TAMPER_SPS(ServiceType.TAMPER_STATE_SERVICE, ServicePattern.PROVIDER),
         TARGET_TEMPERATURE_SOS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.OPERATION),
         TARGET_TEMPERATURE_SPS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
-        TEMPERATURE_SPS(ServiceType.TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER);
+        TEMPERATURE_SPS(ServiceType.TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
+        LOCAL_POSITION_SOS(ServiceType.LOCAL_POSITION_STATE_SERVICE, ServicePattern.OPERATION),
+        LOCAL_POSITION_SPS(ServiceType.LOCAL_POSITION_STATE_SERVICE, ServicePattern.PROVIDER),
+        GLOBAL_POSITION_SOS(ServiceType.GLOBAL_POSITION_STATE_SERVICE, ServicePattern.OPERATION),
+        GLOBAL_POSITION_SPS(ServiceType.GLOBAL_POSITION_STATE_SERVICE, ServicePattern.PROVIDER),
+        PRESENCE_SOS(ServiceType.PRESENCE_STATE_SERVICE, ServicePattern.OPERATION),
+        PRESENCE_SPS(ServiceType.PRESENCE_STATE_SERVICE, ServicePattern.PROVIDER),
+        ACTIVITY_MULTI_SOS(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, ServicePattern.OPERATION),
+        ACTIVITY_MULTI_SPS(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, ServicePattern.PROVIDER),
+        USER_TRANSIT_SOS(ServiceType.USER_TRANSIT_STATE_SERVICE, ServicePattern.OPERATION),
+        USER_TRANSIT_SPS(ServiceType.USER_TRANSIT_STATE_SERVICE, ServicePattern.PROVIDER);
 
         private final ServiceDescription description;
 
@@ -296,7 +308,9 @@ public class MockRegistry {
         SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
         AGENT(UnitType.AGENT, ACTIVATION_SPS, ACTIVATION_SOS),
         APP(UnitType.APP, ACTIVATION_SPS, ACTIVATION_SOS),
-        UNIT_GROUP(UnitType.UNIT_GROUP, COLOR_SPS, COLOR_SOS, POWER_SPS, POWER_SOS);
+        UNIT_GROUP(UnitType.UNIT_GROUP, COLOR_SPS, COLOR_SOS, POWER_SPS, POWER_SOS),
+        USER(UnitType.USER, LOCAL_POSITION_SOS, LOCAL_POSITION_SPS, GLOBAL_POSITION_SOS, GLOBAL_POSITION_SPS, PRESENCE_SOS, PRESENCE_SPS,
+                USER_TRANSIT_SOS, USER_TRANSIT_SPS, ACTIVITY_MULTI_SOS, ACTIVITY_MULTI_SPS);
 
         private final UnitTemplate template;
 
@@ -745,7 +759,6 @@ public class MockRegistry {
      * Registers the given unit.
      *
      * @param unitConfig
-     *
      * @throws CouldNotPerformException
      * @throws InterruptedException
      * @throws ExecutionException
