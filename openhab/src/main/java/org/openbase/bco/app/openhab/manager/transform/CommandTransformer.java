@@ -128,6 +128,7 @@ public class CommandTransformer {
                     break;
                 case STANDBY_STATE_SERVICE:
                     serviceData = StandbyStateTransformer.transform(OnOffType.valueOf(state));
+                    break;
                 default:
                     throw new CouldNotTransformException("Unknown how to transform[" + state + "] into serviceType[" + serviceType + "].");
             }
