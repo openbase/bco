@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <groupId>org.openbase</groupId>
     <artifactId>bco.app.openhab</artifactId>
     <name>BCO Openhab App</name>
     <description>BCO app used to communicate with openhab.</description>
-    
+
     <packaging>jar</packaging>
-    
+
     <parent>
         <groupId>org.openbase</groupId>
         <artifactId>bco.app</artifactId>
@@ -49,6 +50,7 @@
                 <configuration>
                     <programs>
                         <program>
+                            <!-- deprecated -->
                             <mainClass>org.openbase.bco.app.openhab.OpenHABApp</mainClass>
                             <id>bco-openhab-app</id>
                             <platforms>
@@ -56,15 +58,47 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.app.openhab.registry.OpenHABConfigSynchronizerLauncher</mainClass>
+                            <!-- deprecated -->
+                            <mainClass>org.openbase.bco.app.openhab.registry.OpenHABConfigSynchronizerLauncher
+                            </mainClass>
                             <id>bco-openhab-app-config-synchronizer</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
+                            <!-- deprecated -->
                             <mainClass>org.openbase.bco.app.openhab.manager.OpenHABDeviceManagerLauncher</mainClass>
                             <id>bco-openhab-app-device-manager</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.app.openhab.OpenHABApp</mainClass>
+                            <id>bco-app-openhab-app</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.app.openhab.registry.OpenHABConfigSynchronizerLauncher
+                            </mainClass>
+                            <id>bco-app-openhab-config-synchronizer</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.app.openhab.manager.OpenHABDeviceManagerLauncher</mainClass>
+                            <id>bco-app-openhab-device-manager</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.app.openhab.sitemap.OpenHABSitemapSynchronizerLauncher</mainClass>
+                            <id>bco-app-openhab-sitemap-synchronizer</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
