@@ -44,6 +44,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Synchronization for things not managed by the bco binding.
+ *
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ */
 public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String, IdentifiableEnrichedThingDTO> {
 
     public ThingDeviceUnitSynchronization(final SyncObject synchronizationLock) throws InstantiationException {
@@ -55,24 +60,14 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         final EnrichedThingDTO updatedThing = identifiableEnrichedThingDTO.getDTO();
 
         // get device unit config for the thing
-        final UnitConfig.Builder deviceUnitConfig = SynchronizationHelper.getDeviceForThing(updatedThing).toBuilder();
+        final UnitConfig.Builder deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(updatedThing).toBuilder();
 
-        // TODO: only adding the label, or remove the old one, or at least move new one to higher priority?
-        // update label and location
-        if (!LabelProcessor.contains(deviceUnitConfig.getLabel(), updatedThing.label)) {
-            LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, updatedThing.label);
-        }
-        if (updatedThing.location != null) {
-            final String locationId = SynchronizationHelper.getLocationForThing(updatedThing).getId();
-
-            deviceUnitConfig.getPlacementConfigBuilder().setLocationId(locationId);
-            deviceUnitConfig.getDeviceConfigBuilder().getInventoryStateBuilder().setLocationId(locationId).setTimestamp(TimestampProcessor.getCurrentTimestamp());
-        }
-
-        try {
-            Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+        if (SynchronizationProcessor.updateUnitToThing(updatedThing, deviceUnitConfig)) {
+            try {
+                Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+            }
         }
     }
 
@@ -83,10 +78,10 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         // handle initial sync
         if (isInitialSync()) {
             try {
-                final UnitConfig deviceUnitConfig = SynchronizationHelper.getDeviceForThing(thingDTO);
+                final UnitConfig deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(thingDTO);
                 // create items for dal units of the device
                 for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
-                    SynchronizationHelper.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thingDTO);
+                    SynchronizationProcessor.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thingDTO);
                 }
                 return;
             } catch (NotAvailableException ex) {
@@ -98,7 +93,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         // get device class for thing
         DeviceClass deviceClass;
         try {
-            deviceClass = SynchronizationHelper.getDeviceClassByThing(thingDTO);
+            deviceClass = SynchronizationProcessor.getDeviceClassByThing(thingDTO);
         } catch (NotAvailableException ex) {
             logger.warn("Ignore thing[" + thingDTO.UID + "] because no matching device class found");
             return;
@@ -112,7 +107,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
         // update location according to thing
         if (thingDTO.location != null) {
-            String locationId = SynchronizationHelper.getLocationForThing(thingDTO).getId();
+            String locationId = SynchronizationProcessor.getLocationForThing(thingDTO).getId();
 
             unitConfig.getDeviceConfigBuilder().getInventoryStateBuilder().setLocationId(locationId);
             unitConfig.getPlacementConfigBuilder().setLocationId(locationId);
@@ -125,14 +120,14 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, thingDTO.label);
 
         // add thing uid to meta config to have a mapping between thing and device
-        unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationHelper.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
+        unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
 
         try {
             final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
 
             // create items for dal units of the device
             for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
-                SynchronizationHelper.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thingDTO);
+                SynchronizationProcessor.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thingDTO);
             }
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not register device for thing[" + thingDTO.thingTypeUID + "]", ex);
@@ -146,7 +141,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         // get device unit config for thing
         UnitConfig deviceUnitConfig;
         try {
-            deviceUnitConfig = SynchronizationHelper.getDeviceForThing(enrichedThingDTO);
+            deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(enrichedThingDTO);
         } catch (NotAvailableException ex) {
             // do nothing if no device exists
             return;
@@ -171,6 +166,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     @Override
     public boolean verifyEntry(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) {
-        return true;
+        // only handle things not managed by the bco binding
+        return !identifiableEnrichedThingDTO.getId().startsWith(ThingBCOUnitSynchronization.BCO_BINDING_ID);
     }
 }

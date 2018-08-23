@@ -22,7 +22,7 @@ package org.openbase.bco.app.openhab;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.registry.synchronizer.SynchronizationHelper;
+import org.openbase.bco.app.openhab.registry.synchronizer.SynchronizationProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.NotAvailableException;
@@ -73,7 +73,7 @@ public class ConfigUpdater {
                     UnitConfig openhab2Device;
                     UnitConfig.Builder bcoDevice;
                     try {
-                        thingUID = metaConfigPool.getValue(SynchronizationHelper.OPENHAB_THING_UID_KEY);
+                        thingUID = metaConfigPool.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY);
                         openhab2Device = unitConfig;
                         LOGGER.info("Found openhab device[" + openhab2Device.getAlias(0) + "]");
                     } catch (NotAvailableException ex) {
@@ -90,7 +90,7 @@ public class ConfigUpdater {
 
                     // add meta config entry to bco device
                     for (Entry entry : openhab2Device.getMetaConfig().getEntryList()) {
-                        if (entry.getKey().equals(SynchronizationHelper.OPENHAB_THING_UID_KEY)) {
+                        if (entry.getKey().equals(SynchronizationProcessor.OPENHAB_THING_UID_KEY)) {
                             Builder builder = bcoDevice.getMetaConfigBuilder().addEntryBuilder();
                             builder.setKey(entry.getKey());
                             builder.setValue(entry.getValue());

@@ -49,7 +49,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DALUnitItemSynchronization extends AbstractSynchronizer<String, IdentifiableMessage<String, UnitConfig, Builder>> {
+public class UnitItemSynchronization extends AbstractSynchronizer<String, IdentifiableMessage<String, UnitConfig, Builder>> {
 
     /**
      * Create a new synchronization manager BCO DAL units to openHAB items.
@@ -59,8 +59,8 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
      * @throws InstantiationException if instantiation fails
      * @throws NotAvailableException  if the unit registry is not available
      */
-    public DALUnitItemSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
-        super(Registries.getUnitRegistry().getDalUnitConfigRemoteRegistry(), synchronizationLock);
+    public UnitItemSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
+        super(Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), synchronizationLock);
     }
 
     /**
@@ -81,7 +81,7 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
             }
             serviceTypeSet.add(serviceType);
 
-            final String itemName = OpenHABItemHelper.generateItemName(identifiableMessage.getMessage(), serviceType);
+            final String itemName = OpenHABItemProcessor.generateItemName(identifiableMessage.getMessage(), serviceType);
             try {
                 // item exists, update if necessary
                 final EnrichedItemDTO item = OpenHABRestCommunicator.getInstance().getItem(itemName);
@@ -90,7 +90,7 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
                 }
             } catch (NotAvailableException ex) {
                 // item does not exist so register them
-                SynchronizationHelper.registerAndValidateItems(unitConfig);
+                SynchronizationProcessor.registerAndValidateItems(unitConfig);
             }
         }
     }
@@ -129,7 +129,7 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
             }
             serviceTypeSet.add(serviceType);
 
-            final String itemName = OpenHABItemHelper.generateItemName(identifiableMessage.getMessage(), serviceType);
+            final String itemName = OpenHABItemProcessor.generateItemName(identifiableMessage.getMessage(), serviceType);
             try {
                 OpenHABRestCommunicator.getInstance().getItem(itemName);
             } catch (NotAvailableException ex) {
@@ -156,7 +156,7 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
      */
     @Override
     public List<IdentifiableMessage<String, UnitConfig, Builder>> getEntries() throws CouldNotPerformException {
-        return Registries.getUnitRegistry().getDalUnitConfigRemoteRegistry().getEntries();
+        return Registries.getUnitRegistry().getUnitConfigRemoteRegistry().getEntries();
     }
 
     /**
@@ -168,28 +168,38 @@ public class DALUnitItemSynchronization extends AbstractSynchronizer<String, Ide
      */
     @Override
     public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws VerificationFailedException {
-        // retrieve host unit
-        final UnitConfig hostUnit;
-        if (identifiableMessage.getMessage().getUnitHostId().isEmpty()) {
-            return false;
-        }
-        try {
-            hostUnit = Registries.getUnitRegistry().getUnitConfigById(identifiableMessage.getMessage().getUnitHostId());
-        } catch (CouldNotPerformException ex) {
-            throw new VerificationFailedException("Could not verify id dal unit[" + identifiableMessage.getMessage().getAlias(0) + "] is managed by openHAB", ex);
-        }
+        switch (identifiableMessage.getMessage().getUnitType()) {
+            case DEVICE:
+                // retrieve host unit
+                final UnitConfig hostUnit;
+                if (identifiableMessage.getMessage().getUnitHostId().isEmpty()) {
+                    return false;
+                }
+                try {
+                    hostUnit = Registries.getUnitRegistry().getUnitConfigById(identifiableMessage.getMessage().getUnitHostId());
+                } catch (CouldNotPerformException ex) {
+                    throw new VerificationFailedException("Could not verify id dal unit[" + identifiableMessage.getMessage().getAlias(0) + "] is managed by openHAB", ex);
+                }
 
-        // validate that host is a device
-        if (hostUnit.getUnitType() != UnitType.DEVICE) {
-            return false;
-        }
+                // validate that host is a device
+                if (hostUnit.getUnitType() != UnitType.DEVICE) {
+                    return false;
+                }
 
-        // validate that the device is configured via openHAB
-        try {
-            SynchronizationHelper.getThingIdFromDevice(hostUnit);
-            return true;
-        } catch (NotAvailableException ex) {
-            return false;
+                // validate that the device is configured via openHAB
+                try {
+                    SynchronizationProcessor.getThingIdFromDevice(hostUnit);
+                    return true;
+                } catch (NotAvailableException ex) {
+                    return false;
+                }
+            default:
+                try {
+                    SynchronizationProcessor.getThingForUnit(identifiableMessage.getMessage());
+                    return true;
+                } catch (NotAvailableException ex) {
+                    return false;
+                }
         }
     }
 

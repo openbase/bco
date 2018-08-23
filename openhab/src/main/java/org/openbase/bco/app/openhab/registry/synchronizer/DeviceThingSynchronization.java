@@ -29,7 +29,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -67,15 +66,15 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
     public void update(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
         // update thing label and location if needed
         final UnitConfig deviceUnitConfig = identifiableMessage.getMessage();
-        final EnrichedThingDTO thing = SynchronizationHelper.getThingForDevice(deviceUnitConfig);
+        final EnrichedThingDTO thing = SynchronizationProcessor.getThingForDevice(deviceUnitConfig);
 
-        if (updateThing(deviceUnitConfig, thing)) {
+        if (SynchronizationProcessor.updateThingToUnit(deviceUnitConfig, thing)) {
             OpenHABRestCommunicator.getInstance().updateThing(thing);
         }
     }
 
     /**
-     * Only perform an initial sync between a device unit and it thing by calling {@link #update(IdentifiableMessage)}
+     * Only perform an initial sync between a device unit and its thing by calling {@link #update(IdentifiableMessage)}
      * if its the initial sync.
      *
      * @param identifiableMessage the device unit initially registered
@@ -108,7 +107,7 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
         // retrieve thing
         EnrichedThingDTO thing;
         try {
-            thing = SynchronizationHelper.getThingForDevice(deviceUnitConfig);
+            thing = SynchronizationProcessor.getThingForDevice(deviceUnitConfig);
         } catch (NotAvailableException ex) {
             // do nothing because thing is already removed or never existed
             return;
@@ -118,13 +117,13 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
         for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
             try {
                 // check if another device has the same thing id
-                String thingId = SynchronizationHelper.getThingIdFromDevice(unitConfig);
+                String thingId = SynchronizationProcessor.getThingIdFromDevice(unitConfig);
                 if (thingId.equals(thing.UID)) {
                     // perform update for other device
-                    if (updateThing(unitConfig, thing)) {
+                    if (SynchronizationProcessor.updateThingToUnit(unitConfig, thing)) {
                         OpenHABRestCommunicator.getInstance().updateThing(thing);
                         for (final String unitId : unitConfig.getDeviceConfig().getUnitIdList()) {
-                            SynchronizationHelper.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thing);
+                            SynchronizationProcessor.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thing);
                         }
                     }
                     return;
@@ -159,36 +158,10 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
     public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
         // validate that the device is configured via openHAB
         try {
-            SynchronizationHelper.getThingIdFromDevice(identifiableMessage.getMessage());
+            SynchronizationProcessor.getThingIdFromDevice(identifiableMessage.getMessage());
             return true;
         } catch (NotAvailableException ex) {
             return false;
         }
-    }
-
-    /**
-     * Update the thing label and location of a thing according to a device.
-     *
-     * @param deviceUnitConfig the device from which the label and location is taken
-     * @param thing            the thing which is updated
-     * @return if the thing has been updated meaning that the label or location changed
-     * @throws CouldNotPerformException if the update could not be performed
-     */
-    private boolean updateThing(final UnitConfig deviceUnitConfig, final EnrichedThingDTO thing) throws CouldNotPerformException {
-        boolean modification = false;
-        final String label = LabelProcessor.getBestMatch(deviceUnitConfig.getLabel());
-        if (thing.label == null || !thing.label.equals(label)) {
-            thing.label = label;
-            modification = true;
-        }
-
-        final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getPlacementConfig().getLocationId());
-        final String locationLabel = LabelProcessor.getBestMatch(locationUnitConfig.getLabel());
-        if (thing.location == null || !thing.location.equals(locationLabel)) {
-            thing.location = locationLabel;
-            modification = true;
-        }
-
-        return modification;
     }
 }

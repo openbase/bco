@@ -27,8 +27,8 @@ import com.google.gson.JsonParser;
 import com.google.protobuf.Message;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.manager.transform.CommandTransformer;
-import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper;
-import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper.OpenHABItemNameMetaData;
+import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
+import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor.OpenHABItemNameMetaData;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.registry.remote.Registries;
@@ -71,7 +71,7 @@ public class CommandExecutor implements Observer<JsonObject> {
     }
 
     public void applyStateUpdate(final String itemName, final String state) throws CouldNotPerformException {
-        final OpenHABItemNameMetaData metaData = OpenHABItemHelper.getMetaData(itemName);
+        final OpenHABItemNameMetaData metaData = OpenHABItemProcessor.getMetaData(itemName);
         try {
             final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
             final Message serviceData = CommandTransformer.getServiceData(state, metaData.getServiceType());

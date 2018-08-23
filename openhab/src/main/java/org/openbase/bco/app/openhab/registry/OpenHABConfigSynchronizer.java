@@ -45,8 +45,11 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
     private final InboxApprover inboxApprover;
     private final ThingDeviceUnitSynchronization thingDeviceUnitSynchronization;
     private final DeviceThingSynchronization deviceThingSynchronization;
-    private final DALUnitItemSynchronization dalUnitItemSynchronization;
+    private final UnitItemSynchronization unitItemSynchronization;
     private final ItemDalUnitSynchronization itemDalUnitSynchronization;
+
+    private final ThingBCOUnitSynchronization thingBCOUnitSynchronization;
+    private final UnitThingSynchronization unitThingSynchronization;
 
     public OpenHABConfigSynchronizer() throws InstantiationException {
         try {
@@ -54,8 +57,11 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
             this.thingDeviceUnitSynchronization = new ThingDeviceUnitSynchronization(synchronizationLock);
             this.deviceThingSynchronization = new DeviceThingSynchronization(synchronizationLock);
 
-            this.dalUnitItemSynchronization = new DALUnitItemSynchronization(synchronizationLock);
+            this.unitItemSynchronization = new UnitItemSynchronization(synchronizationLock);
             this.itemDalUnitSynchronization = new ItemDalUnitSynchronization(synchronizationLock);
+
+            this.thingBCOUnitSynchronization = new ThingBCOUnitSynchronization(synchronizationLock);
+            this.unitThingSynchronization = new UnitThingSynchronization(synchronizationLock);
         } catch (NotAvailableException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -74,11 +80,13 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
             LOGGER.info(unitConfig.getUserConfig().getUserName());
         }
-        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
+        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("csrauser"), "admin");
         thingDeviceUnitSynchronization.activate();
         deviceThingSynchronization.activate();
-        dalUnitItemSynchronization.activate();
+        unitItemSynchronization.activate();
         itemDalUnitSynchronization.activate();
+        thingBCOUnitSynchronization.activate();
+        unitThingSynchronization.activate();
         inboxApprover.activate();
     }
 
@@ -87,16 +95,20 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
         inboxApprover.deactivate();
         thingDeviceUnitSynchronization.deactivate();
         deviceThingSynchronization.deactivate();
-        dalUnitItemSynchronization.deactivate();
+        unitItemSynchronization.deactivate();
         itemDalUnitSynchronization.deactivate();
+        thingBCOUnitSynchronization.deactivate();
+        unitThingSynchronization.deactivate();
     }
 
     @Override
     public boolean isActive() {
         return thingDeviceUnitSynchronization.isActive()
                 && deviceThingSynchronization.isActive()
-                && dalUnitItemSynchronization.isActive()
+                && unitItemSynchronization.isActive()
                 && itemDalUnitSynchronization.isActive()
-                && inboxApprover.isActive();
+                && inboxApprover.isActive()
+                && thingBCOUnitSynchronization.isActive()
+                && unitThingSynchronization.isActive();
     }
 }

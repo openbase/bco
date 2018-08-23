@@ -24,7 +24,7 @@ package org.openbase.bco.app.openhab.manager.service;
 
 import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
-import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper;
+import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -76,7 +76,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
             this.repeatCommandTasks = new Future[2];
             this.serviceType = detectServiceType();
             this.config = loadServiceConfig();
-            this.itemName = OpenHABItemHelper.generateItemName(unit.getConfig(), serviceType);
+            this.itemName = OpenHABItemProcessor.generateItemName(unit.getConfig(), serviceType);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

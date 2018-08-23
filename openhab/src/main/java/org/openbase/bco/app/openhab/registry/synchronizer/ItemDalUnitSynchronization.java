@@ -22,19 +22,18 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
  * #L%
  */
 
-import org.eclipse.smarthome.core.items.dto.ItemDTO;
 import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.registry.diff.IdentifiableEnrichedItemDTO;
-import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper.OpenHABItemNameMetaData;
+import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor.OpenHABItemNameMetaData;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.ArrayList;
@@ -62,12 +61,12 @@ public class ItemDalUnitSynchronization extends AbstractSynchronizer<String, Ide
 
     @Override
     public void remove(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
-        final String alias = new OpenHABItemNameMetaData(identifiableEnrichedItemDTO.getId()).getAlias();
+        final OpenHABItemNameMetaData metaData = new OpenHABItemNameMetaData(identifiableEnrichedItemDTO.getId());
 
         try {
             // unit exists for item so sync and register it again
-            final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigByAlias(alias);
-            updateItem(unitConfig, identifiableEnrichedItemDTO.getDTO());
+            final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias());
+            updateItem(unitConfig, metaData.getServiceType(), identifiableEnrichedItemDTO.getDTO());
             OpenHABRestCommunicator.getInstance().registerItem(identifiableEnrichedItemDTO.getDTO());
         } catch (NotAvailableException ex) {
             // unit does not exist so removal is okay
@@ -88,9 +87,9 @@ public class ItemDalUnitSynchronization extends AbstractSynchronizer<String, Ide
         return true;
     }
 
-    private boolean updateItem(final UnitConfig unitConfig, final EnrichedItemDTO item) throws NotAvailableException {
+    private boolean updateItem(final UnitConfig unitConfig, final ServiceType serviceType, final EnrichedItemDTO item) throws CouldNotPerformException {
         boolean modification = false;
-        final String label = LabelProcessor.getBestMatch(unitConfig.getLabel());
+        final String label = SynchronizationProcessor.generateItemLabel(unitConfig, serviceType);
         if (item.label == null || !item.label.equals(label)) {
             item.label = label;
             modification = true;
@@ -100,12 +99,18 @@ public class ItemDalUnitSynchronization extends AbstractSynchronizer<String, Ide
     }
 
     private void validateAndUpdateItem(final EnrichedItemDTO item) throws CouldNotPerformException {
-        final String alias = new OpenHABItemNameMetaData(item.name).getAlias();
+        OpenHABItemNameMetaData metaData;
+        try {
+            metaData = new OpenHABItemNameMetaData(item.name);
+        } catch (CouldNotPerformException ex) {
+            // ignore item because it was not configured by this app
+            return;
+        }
 
         try {
             // unit exists for item so sync label from dal unit back to item if necessary
-            final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigByAlias(alias);
-            if (updateItem(unitConfig, item)) {
+            final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias());
+            if (updateItem(unitConfig, metaData.getServiceType(), item)) {
                 OpenHABRestCommunicator.getInstance().updateItem(item);
             }
         } catch (NotAvailableException ex) {
