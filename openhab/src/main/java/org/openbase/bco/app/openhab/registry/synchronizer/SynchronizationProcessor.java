@@ -294,11 +294,11 @@ public class SynchronizationProcessor {
             if (unitConfig.getUnitType() == UnitType.LOCATION && serviceType == ServiceType.POWER_STATE_SERVICE) {
                 final String itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType) + "Light";
 
-                LOGGER.info("Generate special entry to only switch lights in a location: " + itemName);
+                LOGGER.debug("Generate special entry to only switch lights in a location: " + itemName);
                 if (!OpenHABRestCommunicator.getInstance().hasItem(itemName)) {
                     final String channelUID = getChannelUID(unitConfig, serviceType, servicePattern, thingDTO) + "_light";
 
-                    LOGGER.info("Item does not already exist: " + channelUID);
+                    LOGGER.debug("Item does not already exist: " + channelUID);
                     // create and register item
                     ItemDTO itemDTO = new ItemDTO();
                     itemDTO.label = generateItemLabel(unitConfig, serviceType) + " Light";

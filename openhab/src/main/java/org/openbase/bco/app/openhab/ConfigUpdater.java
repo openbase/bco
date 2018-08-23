@@ -78,7 +78,6 @@ public class ConfigUpdater {
                     try {
                         thingUID = metaConfigPool.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY);
                         openhab2Device = unitConfig;
-                        LOGGER.info("Found openhab device[" + openhab2Device.getAlias(0) + "]");
                     } catch (NotAvailableException ex) {
                         // continue because not an openhab2 device
                         continue;
