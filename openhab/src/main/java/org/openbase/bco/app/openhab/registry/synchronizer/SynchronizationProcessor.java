@@ -290,6 +290,34 @@ public class SynchronizationProcessor {
 
             LOGGER.debug("Register/Validate item for service[" + serviceType.name() + "] of unit[" + unitConfig.getAlias(0) + "]");
 
+            // This is kind of a hack to support switching only lights in a location
+            if (unitConfig.getUnitType() == UnitType.LOCATION && serviceType == ServiceType.POWER_STATE_SERVICE) {
+                final String itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType) + "Light";
+
+                LOGGER.debug("Generate special entry to only switch lights in a location: " + itemName);
+                if (!OpenHABRestCommunicator.getInstance().hasItem(itemName)) {
+                    final String channelUID = getChannelUID(unitConfig, serviceType, servicePattern, thingDTO) + "_light";
+
+                    LOGGER.debug("Item does not already exist: " + channelUID);
+                    // create and register item
+                    ItemDTO itemDTO = new ItemDTO();
+                    itemDTO.label = generateItemLabel(unitConfig, serviceType) + " Light";
+                    itemDTO.name = itemName;
+                    try {
+                        itemDTO.type = OpenHABItemProcessor.getItemType(serviceType, servicePattern);
+                    } catch (NotAvailableException ex) {
+                        LOGGER.warn("Skip service[" + serviceType.name() + "] of unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] because no item type available");
+                        continue;
+                    }
+                    itemDTO = OpenHABRestCommunicator.getInstance().registerItem(itemDTO);
+                    LOGGER.debug("Successfully registered item[" + itemDTO.name + "] for dal unit");
+
+                    // link item to thing channel
+                    OpenHABRestCommunicator.getInstance().registerItemChannelLink(itemDTO.name, channelUID);
+                    LOGGER.debug("Successfully created link between item[" + itemDTO.name + "] and channel[" + channelUID + "]");
+                }
+            }
+
             if (OpenHABRestCommunicator.getInstance().hasItem(OpenHABItemProcessor.generateItemName(unitConfig, serviceType))) {
                 // item is already registered
                 LOGGER.debug("Skip because already available");

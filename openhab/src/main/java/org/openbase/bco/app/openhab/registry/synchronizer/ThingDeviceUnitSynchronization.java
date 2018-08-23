@@ -60,14 +60,20 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         final EnrichedThingDTO updatedThing = identifiableEnrichedThingDTO.getDTO();
 
         // get device unit config for the thing
-        final UnitConfig.Builder deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(updatedThing).toBuilder();
+        try {
+            final UnitConfig.Builder deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(updatedThing).toBuilder();
 
-        if (SynchronizationProcessor.updateUnitToThing(updatedThing, deviceUnitConfig)) {
-            try {
-                Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
-            } catch (ExecutionException ex) {
-                throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+            if (SynchronizationProcessor.updateUnitToThing(updatedThing, deviceUnitConfig)) {
+                try {
+                    Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
+                } catch (ExecutionException ex) {
+                    throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+                }
             }
+        } catch (NotAvailableException ex) {
+            // thing is updated but not yet registered, so try to register again, this can happen e.g. for zwave devices whose
+            // properties are filled afterwards
+            registerDevice(updatedThing);
         }
     }
 
@@ -89,6 +95,10 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             }
         }
 
+        registerDevice(thingDTO);
+    }
+
+    private void registerDevice(ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
         //TODO: should this whole action be rolled back if one part fails?
         // get device class for thing
         DeviceClass deviceClass;
