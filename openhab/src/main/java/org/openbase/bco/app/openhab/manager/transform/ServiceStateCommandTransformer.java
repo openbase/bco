@@ -1,4 +1,4 @@
-package org.openbase.bco.app.openhab.sitemap.element;
+package org.openbase.bco.app.openhab.manager.transform;
 
 /*-
  * #%L
@@ -22,22 +22,16 @@ package org.openbase.bco.app.openhab.sitemap.element;
  * #L%
  */
 
-import org.openbase.jul.iface.Initializable;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import com.google.protobuf.Message;
+import org.eclipse.smarthome.core.types.Command;
+import org.openbase.jul.exception.CouldNotTransformException;
 
-public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement implements Initializable<UnitConfig> {
+/**
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ */
+public interface ServiceStateCommandTransformer<S extends Message, C extends Command> {
 
-    protected UnitConfig unitConfig;
+    S transform(final C command) throws CouldNotTransformException;
 
-    public AbstractUnitSitemapElement() {
-    }
-
-    public AbstractUnitSitemapElement(AbstractSitemapElement parentElement) {
-        super(parentElement);
-    }
-
-    @Override
-    public void init(UnitConfig unitConfig) {
-        this.unitConfig = unitConfig;
-    }
+    C transform(final S serviceState) throws CouldNotTransformException;
 }

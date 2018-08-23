@@ -71,7 +71,13 @@ public class CommandExecutor implements Observer<JsonObject> {
     }
 
     public void applyStateUpdate(final String itemName, final String state) throws CouldNotPerformException {
-        final OpenHABItemNameMetaData metaData = OpenHABItemProcessor.getMetaData(itemName);
+        OpenHABItemNameMetaData metaData;
+        try {
+            metaData = OpenHABItemProcessor.getMetaData(itemName);
+        } catch (NotAvailableException ex) {
+            // skip update for non bco handled items
+            return;
+        }
         try {
             final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
             final Message serviceData = CommandTransformer.getServiceData(state, metaData.getServiceType());
