@@ -10,12 +10,12 @@ package org.openbase.bco.app.openhab;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,7 +27,6 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.slf4j.Logger;
@@ -55,17 +54,21 @@ public class ConfigUpdater {
             Registries.waitForData();
             SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
 
-            final Map<DeviceClass, List<UnitConfig>> deviceByClassMap = new HashMap<>();
-            for (final UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
-                final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
-                if (!deviceByClassMap.containsKey(deviceClass)) {
-                    deviceByClassMap.put(deviceClass, new ArrayList<>());
+            final Map<String, List<UnitConfig>> companyDeviceClassMap = new HashMap<>();
+            for (final DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
+                if (!companyDeviceClassMap.containsKey(deviceClass.getCompany())) {
+                    companyDeviceClassMap.put(deviceClass.getCompany(), new ArrayList<>());
                 }
-                deviceByClassMap.get(deviceClass).add(deviceUnitConfig);
+
+                for (final UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
+                    if (deviceUnitConfig.getDeviceConfig().getDeviceClassId().equals(deviceClass.getId())) {
+                        companyDeviceClassMap.get(deviceClass.getCompany()).add(deviceUnitConfig);
+                    }
+                }
             }
 
-            for (final DeviceClass deviceClass : deviceByClassMap.keySet()) {
-                for (final UnitConfig unitConfig : deviceByClassMap.get(deviceClass)) {
+            for (final String company : companyDeviceClassMap.keySet()) {
+                for (final UnitConfig unitConfig : companyDeviceClassMap.get(company)) {
                     final MetaConfigPool metaConfigPool = new MetaConfigPool();
                     metaConfigPool.register(new MetaConfigVariableProvider(unitConfig.getAlias(0) + "MetaConfig", unitConfig.getMetaConfig()));
 
@@ -82,11 +85,22 @@ public class ConfigUpdater {
                     }
 
                     try {
-                        bcoDevice = getOldDevice(thingUID, deviceClass, deviceByClassMap.get(deviceClass)).toBuilder();
+                        if (getNodeId(thingUID).equals(getDeviceId(openhab2Device))) {
+                            // skip already updated devices
+                            continue;
+                        }
+                    } catch (NotAvailableException ex) {
+                        // go on because openhab device does not have a node entry in the meta config
+                    }
+
+                    try {
+                        bcoDevice = getOldDevice(thingUID, company, companyDeviceClassMap.get(company)).toBuilder();
                     } catch (NotAvailableException ex) {
                         LOGGER.warn("Could not find device corresponding to openhab2 device[" + openhab2Device.getAlias(0) + "]");
                         continue;
                     }
+
+                    LOGGER.info("Found BCODevice[" + bcoDevice.getAlias(0) + "] matching openHAB device[" + openhab2Device.getAlias(0) + "]");
 
                     // add meta config entry to bco device
                     for (Entry entry : openhab2Device.getMetaConfig().getEntryList()) {
@@ -96,7 +110,7 @@ public class ConfigUpdater {
                             builder.setValue(entry.getValue());
                         }
                     }
-                    LOGGER.info("Update BCO device");
+                    LOGGER.info("Update BCO device[" + bcoDevice.getAlias(0) + "]");
                     Registries.getUnitRegistry().updateUnitConfig(bcoDevice.build()).get();
                     LOGGER.info("Remove openHAB device");
                     Registries.getUnitRegistry().removeUnitConfig(openhab2Device).get();
@@ -110,19 +124,13 @@ public class ConfigUpdater {
         System.exit(0);
     }
 
-    private static UnitConfig getOldDevice(final String thingUID, final DeviceClass deviceClass, final List<UnitConfig> devices) throws NotAvailableException {
-        if (deviceClass.getCompany().equalsIgnoreCase("Fibaro") || deviceClass.getCompany().equalsIgnoreCase("Philips")) {
-            final String nodeId = thingUID.split(":")[3].replace("node", "");
-            LOGGER.info("Found nodeId[" + nodeId + "]");
+    private static UnitConfig getOldDevice(final String thingUID, final String company, final List<UnitConfig> devices) throws NotAvailableException {
+        if (company.equalsIgnoreCase("fibaro") || company.equalsIgnoreCase("philips")) {
+            final String nodeId = getNodeId(thingUID);
             for (final UnitConfig deviceUnitConfig : devices) {
-
-                final MetaConfigPool metaConfigPool = new MetaConfigPool();
-                metaConfigPool.register(new MetaConfigVariableProvider(deviceUnitConfig.getAlias(0) + "MetaConfig", deviceUnitConfig.getMetaConfig()));
-
                 String deviceId;
                 try {
-                    deviceId = metaConfigPool.getValue("OPENHAB_BINDING_DEVICE_ID");
-                    LOGGER.info("Parsed device id[" + deviceId + "] for device[" + deviceUnitConfig.getAlias(0) + "]");
+                    deviceId = getDeviceId(deviceUnitConfig);
                 } catch (NotAvailableException ex) {
                     // ignore because not the correct device
                     continue;
@@ -134,6 +142,16 @@ public class ConfigUpdater {
             }
         }
 
-        throw new NotAvailableException("Could not resolve device for [" + thingUID + ", " + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "]");
+        throw new NotAvailableException("Could not resolve device for [" + thingUID + "]");
+    }
+
+    private static String getDeviceId(final UnitConfig unitConfig) throws NotAvailableException {
+        final MetaConfigPool metaConfigPool = new MetaConfigPool();
+        metaConfigPool.register(new MetaConfigVariableProvider(unitConfig.getAlias(0) + "MetaConfig", unitConfig.getMetaConfig()));
+        return metaConfigPool.getValue("OPENHAB_BINDING_DEVICE_ID");
+    }
+
+    private static String getNodeId(String thingUID) {
+        return thingUID.split(":")[3].replace("node", "");
     }
 }
