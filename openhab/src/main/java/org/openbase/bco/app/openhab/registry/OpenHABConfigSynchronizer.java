@@ -80,7 +80,7 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
             LOGGER.info(unitConfig.getUserConfig().getUserName());
         }
-        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("csrauser"), "admin");
+        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
         thingDeviceUnitSynchronization.activate();
         deviceThingSynchronization.activate();
         unitItemSynchronization.activate();

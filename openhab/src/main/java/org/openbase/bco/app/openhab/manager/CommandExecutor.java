@@ -74,7 +74,7 @@ public class CommandExecutor implements Observer<JsonObject> {
         OpenHABItemNameMetaData metaData;
         try {
             metaData = OpenHABItemProcessor.getMetaData(itemName);
-        } catch (NotAvailableException ex) {
+        } catch (CouldNotPerformException ex) {
             // skip update for non bco handled items
             return;
         }
