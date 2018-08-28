@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.core;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
+
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
@@ -77,6 +78,7 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
         JPService.registerProperty(JPRSBTransport.class);
         JPService.registerProperty(JPRSBThreadPooling.class);
         JPService.registerProperty(JPRSBIntrospection.class);
+        JPService.registerProperty(JPRSBLegacyMode.class);
     }
 
     public static void main(String args[]) throws Throwable {
