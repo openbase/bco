@@ -28,9 +28,9 @@ import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-public interface AuthenticatedRequestable<T> extends Requestable<T> {
+public interface AuthenticatedRequestable {
 
-    public static final String REQUEST_DATA_AUTHENTICATED_METHOD = "requestDataAuthenticated";
+    String REQUEST_DATA_AUTHENTICATED_METHOD = "requestDataAuthenticated";
 
     @RPCMethod
     AuthenticatedValue requestDataAuthenticated(final TicketAuthenticatorWrapper ticketWrapper) throws CouldNotPerformException;
