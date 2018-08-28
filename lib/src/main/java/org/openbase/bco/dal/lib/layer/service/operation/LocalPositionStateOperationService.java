@@ -35,6 +35,6 @@ import java.util.concurrent.Future;
  */
 public interface LocalPositionStateOperationService extends OperationService, LocalPositionStateProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     Future<ActionFuture> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException;
 }

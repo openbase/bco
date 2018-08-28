@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface BatteryStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default BatteryState getBatteryState() throws NotAvailableException {
         return (BatteryState) getServiceProvider().getServiceState(BATTERY_STATE_SERVICE);
     }

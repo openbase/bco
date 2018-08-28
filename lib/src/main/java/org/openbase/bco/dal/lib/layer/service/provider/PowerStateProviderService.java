@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface PowerStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default PowerState getPowerState() throws NotAvailableException {
         return (PowerState) getServiceProvider().getServiceState(POWER_STATE_SERVICE);
     }

@@ -40,7 +40,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface IlluminanceStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default IlluminanceState getIlluminanceState() throws NotAvailableException {
         return (IlluminanceState) getServiceProvider().getServiceState(ILLUMINANCE_STATE_SERVICE);
     }

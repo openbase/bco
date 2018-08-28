@@ -42,7 +42,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface ColorStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default ColorState getColorState() throws NotAvailableException {
         return (ColorState) getServiceProvider().getServiceState(COLOR_STATE_SERVICE);
     }

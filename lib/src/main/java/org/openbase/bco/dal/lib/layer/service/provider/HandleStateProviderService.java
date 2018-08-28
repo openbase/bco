@@ -46,7 +46,7 @@ public interface HandleStateProviderService extends ProviderService {
         OperationService.verifyValueRange("position", handleState.getPosition(), 0, 360);
     }
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default HandleState getHandleState() throws NotAvailableException {
         return (HandleState) getServiceProvider().getServiceState(HANDLE_STATE_SERVICE);
     }

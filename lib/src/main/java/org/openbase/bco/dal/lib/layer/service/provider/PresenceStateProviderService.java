@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface PresenceStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default PresenceState getPresenceState() throws NotAvailableException {
         return (PresenceState) getServiceProvider().getServiceState(PRESENCE_STATE_SERVICE);
     }

@@ -40,7 +40,7 @@ public interface PresenceStateOperationService extends OperationService, Presenc
         return setPresenceState(PresenceState.newBuilder().setValue(presence).build());
     }
 
-    @RPCMethod
-    public Future<ActionFuture> setPresenceState(final PresenceState PresenceState) throws CouldNotPerformException;
+    @RPCMethod(legacy = true)
+    Future<ActionFuture> setPresenceState(final PresenceState PresenceState) throws CouldNotPerformException;
 
 }

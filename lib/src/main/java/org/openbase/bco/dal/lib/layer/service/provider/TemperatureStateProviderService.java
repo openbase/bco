@@ -34,7 +34,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface TemperatureStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default TemperatureState getTemperatureState() throws NotAvailableException {
         return (TemperatureState) getServiceProvider().getServiceState(TEMPERATURE_STATE_SERVICE);
     }

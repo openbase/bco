@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface PowerConsumptionStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
         return (PowerConsumptionState) getServiceProvider().getServiceState(POWER_CONSUMPTION_STATE_SERVICE);
     }

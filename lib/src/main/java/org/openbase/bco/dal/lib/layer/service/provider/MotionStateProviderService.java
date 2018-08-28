@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface MotionStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default MotionState getMotionState() throws NotAvailableException {
         return (MotionState) getServiceProvider().getServiceState(MOTION_STATE_SERVICE);
     }

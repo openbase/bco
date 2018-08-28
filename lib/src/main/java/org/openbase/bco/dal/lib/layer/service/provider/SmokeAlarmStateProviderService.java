@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface SmokeAlarmStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default AlarmState getSmokeAlarmState() throws NotAvailableException {
         return (AlarmState) getServiceProvider().getServiceState(SMOKE_ALARM_STATE_SERVICE);
     }

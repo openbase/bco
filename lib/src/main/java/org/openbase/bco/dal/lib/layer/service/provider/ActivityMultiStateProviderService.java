@@ -37,7 +37,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface ActivityMultiStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default ActivityMultiState getActivityMultiState() throws NotAvailableException {
         return (ActivityMultiState) getServiceProvider().getServiceState(ACTIVITY_MULTI_STATE_SERVICE);
     }

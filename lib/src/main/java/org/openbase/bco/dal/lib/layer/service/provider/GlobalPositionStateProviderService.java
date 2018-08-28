@@ -34,7 +34,7 @@ import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
  */
 public interface GlobalPositionStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default GlobalPositionState getGlobalPositionState() throws NotAvailableException {
         return (GlobalPositionState) getServiceProvider().getServiceState(ServiceType.GLOBAL_POSITION_STATE_SERVICE);
     }

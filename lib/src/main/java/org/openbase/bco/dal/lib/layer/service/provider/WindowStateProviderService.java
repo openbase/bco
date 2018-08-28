@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface WindowStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default WindowState getWindowState() throws NotAvailableException {
         return (WindowState) getServiceProvider().getServiceState(WINDOW_STATE_SERVICE);
     }

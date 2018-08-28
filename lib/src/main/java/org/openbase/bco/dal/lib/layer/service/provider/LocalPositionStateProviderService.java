@@ -40,7 +40,7 @@ import java.util.List;
  */
 public interface LocalPositionStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default LocalPositionState getLocalPositionState() throws NotAvailableException {
         return (LocalPositionState) getServiceProvider().getServiceState(ServiceType.LOCAL_POSITION_STATE_SERVICE);
     }

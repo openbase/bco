@@ -38,7 +38,7 @@ public interface ActivationStateOperationService extends OperationService, Activ
         return setActivationState(ActivationState.newBuilder().setValue(activation).build());
     }
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException;
 
 }

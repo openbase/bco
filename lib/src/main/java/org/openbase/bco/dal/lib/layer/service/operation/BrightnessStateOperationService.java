@@ -34,7 +34,7 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
  */
 public interface BrightnessStateOperationService extends OperationService, BrightnessStateProviderService {
 
-    @RPCMethod
-    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException;
+    @RPCMethod(legacy = true)
+    Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException;
     
 }

@@ -35,7 +35,7 @@ import rst.domotic.state.EmphasisStateType.EmphasisState;
  */
 public interface EmphasisStateOperationService extends OperationService, EmphasisStateProviderService {
 
-    @RPCMethod
-    public Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException;
+    @RPCMethod(legacy = true)
+    Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException;
 
 }

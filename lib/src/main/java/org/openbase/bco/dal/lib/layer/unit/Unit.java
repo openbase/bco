@@ -181,7 +181,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         }
     }
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     @Override
     default Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -236,7 +236,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         });
     }
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     @Override
     Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException;
 

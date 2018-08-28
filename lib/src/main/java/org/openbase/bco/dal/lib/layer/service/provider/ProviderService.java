@@ -33,7 +33,7 @@ public interface ProviderService extends Service {
     /**
      * The prefix of each update method.
      */
-    public static final String UPDATE_METHOD_PREFIX = "update";
+    String UPDATE_METHOD_PREFIX = "update";
 
     /**
      * Method returns the update method name of the given service provider.
@@ -43,7 +43,7 @@ public interface ProviderService extends Service {
      * @param serviceType the related service type for the update method.
      * @return the name of the update method.
      */
-    public static String getUpdateMethodName(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
+    static String getUpdateMethodName(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
         return UPDATE_METHOD_PREFIX + "StateProvider";
     }
 }

@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface ButtonStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default ButtonState getButtonState() throws NotAvailableException {
         return (ButtonState) getServiceProvider().getServiceState(BUTTON_STATE_SERVICE);
     }

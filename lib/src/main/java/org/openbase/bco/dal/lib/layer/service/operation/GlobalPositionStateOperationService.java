@@ -35,6 +35,6 @@ import java.util.concurrent.Future;
  */
 public interface GlobalPositionStateOperationService extends OperationService, GlobalPositionStateProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     Future<ActionFuture> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException;
 }

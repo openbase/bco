@@ -54,7 +54,7 @@ public interface EmphasisStateProviderService extends ProviderService {
         throw new VerificationFailedException("EmphasisState does not contain emphasis!");
     }
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default EmphasisState getEmphasisState() throws NotAvailableException {
         return (EmphasisState) getServiceProvider().getServiceState(EMPHASIS_STATE_SERVICE);
     }

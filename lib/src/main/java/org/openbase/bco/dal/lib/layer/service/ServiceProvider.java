@@ -48,7 +48,7 @@ public interface ServiceProvider {
      *
      * @throws CouldNotPerformException is thrown if the action could not be applied.
      */
-    @RPCMethod
+    @RPCMethod(legacy = true)
     Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
 
     default Future<ActionFuture> applyAction(final ActionDescription.Builder actionDescriptioBuildern) throws CouldNotPerformException {

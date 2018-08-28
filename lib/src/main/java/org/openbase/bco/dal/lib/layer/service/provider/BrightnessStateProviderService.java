@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface BrightnessStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default BrightnessState getBrightnessState() throws NotAvailableException {
         return (BrightnessState) getServiceProvider().getServiceState(BRIGHTNESS_STATE_SERVICE);
     }

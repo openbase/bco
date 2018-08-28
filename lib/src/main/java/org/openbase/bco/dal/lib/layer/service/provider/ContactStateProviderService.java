@@ -35,7 +35,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface ContactStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default ContactState getContactState() throws NotAvailableException {
         return (ContactState) getServiceProvider().getServiceState(CONTACT_STATE_SERVICE);
     }

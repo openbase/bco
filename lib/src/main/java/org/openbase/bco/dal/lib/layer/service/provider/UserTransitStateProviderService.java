@@ -36,7 +36,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface UserTransitStateProviderService extends ProviderService {
     
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default UserTransitState getUserTransitState() throws NotAvailableException {
         return (UserTransitState) getServiceProvider().getServiceState(USER_TRANSIT_STATE_SERVICE);
     }
