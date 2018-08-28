@@ -22,6 +22,9 @@ package org.openbase.bco.app.openhab.sitemap.element;
  * #L%
  */
 
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Initializable;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -29,11 +32,24 @@ public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement 
 
     protected UnitConfig unitConfig;
 
-    public AbstractUnitSitemapElement() {
+    public AbstractUnitSitemapElement() throws InstantiationException {
     }
 
-    public AbstractUnitSitemapElement(AbstractSitemapElement parentElement) {
+    public AbstractUnitSitemapElement(final String unitId) throws InstantiationException {
+        try {
+            init(Registries.getUnitRegistry().getUnitConfigById(unitId));
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
+    public AbstractUnitSitemapElement(final String unitId, AbstractSitemapElement parentElement) throws InstantiationException {
         super(parentElement);
+        try {
+            init(Registries.getUnitRegistry().getUnitConfigById(unitId));
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
