@@ -108,7 +108,14 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
             throw new NotAvailableException("itemID");
         }
 
-        OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
+        try {
+            OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
+        } catch (CouldNotPerformException ex) {
+            if (ex.getCause() instanceof NotAvailableException) {
+                throw new CouldNotPerformException("Thing may not be configured or openHAB not reachable", ex);
+            }
+            throw ex;
+        }
         return CompletableFuture.completedFuture(null);
     }
 
