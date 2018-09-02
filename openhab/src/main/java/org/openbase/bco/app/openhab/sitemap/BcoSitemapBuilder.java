@@ -1,4 +1,4 @@
-package org.openbase.bco.app.openhab.sitemap.element;
+package org.openbase.bco.app.openhab.sitemap;
 
 /*-
  * #%L
@@ -22,15 +22,24 @@ package org.openbase.bco.app.openhab.sitemap.element;
  * #L%
  */
 
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.slf4j.LoggerFactory;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import rst.configuration.LabelType.Label;
 
-public abstract class AbstractSitemapElement implements SitemapElement {
+public class BcoSitemapBuilder extends AbstractSitemapBuilder {
 
+    public static final String FILENAME = "bco";
 
-    protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractSitemapElement.class);
+    public BcoSitemapBuilder() throws InstantiationException {
+        super(FILENAME, getRootLocationLabel());
+    }
 
-
+    private static Label getRootLocationLabel() throws InstantiationException {
+        try {
+            return Registries.getUnitRegistry().getRootLocationConfig().getLabel();
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(BcoSitemapBuilder.class, ex);
+        }
+    }
 }

@@ -22,18 +22,39 @@ package org.openbase.bco.app.openhab.sitemap.element;
  * #L%
  */
 
+import org.openbase.bco.app.openhab.sitemap.SitemapBuilder;
+import org.openbase.bco.app.openhab.sitemap.SitemapBuilder.SitemapIconType;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
 
 
-    public GenericUnitSitemapElement(String unitId, AbstractSitemapElement parentElement) throws InstantiationException {
-        super(unitId, parentElement);
+    public GenericUnitSitemapElement(final String unitId) throws InstantiationException {
+        super(unitId);
     }
 
+    public GenericUnitSitemapElement(final UnitConfig unitConfig) throws InstantiationException {
+        super(unitConfig);
+    }
+
+
     @Override
-    protected String serialize(String sitemap) throws CouldNotPerformException {
-        return null;
+    public void serialize(SitemapBuilder sitemap) throws CouldNotPerformException {
+        switch (unitConfig.getUnitType()) {
+            case SCENE:
+            case APP:
+            case AGENT:
+                sitemap.addSwitchElement(getItem(ServiceType.ACTIVATION_STATE_SERVICE), getLabel(), SitemapIconType.SWITCH);
+                break;
+            case POWER_SWITCH:
+                sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), getLabel(), SitemapIconType.SWITCH);
+                break;
+            case UNKNOWN:
+            default:
+                sitemap.addTextElement("", getLabel());
+        }
     }
 }

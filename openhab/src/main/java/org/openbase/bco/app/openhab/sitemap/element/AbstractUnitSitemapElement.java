@@ -22,13 +22,18 @@ package org.openbase.bco.app.openhab.sitemap.element;
  * #L%
  */
 
+import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Initializable;
+import org.openbase.jul.iface.provider.LabelProvider;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
-public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement implements Initializable<UnitConfig> {
+public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement implements Initializable<UnitConfig>, LabelProvider {
 
     protected UnitConfig unitConfig;
 
@@ -43,17 +48,26 @@ public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement 
         }
     }
 
-    public AbstractUnitSitemapElement(final String unitId, AbstractSitemapElement parentElement) throws InstantiationException {
-        super(parentElement);
-        try {
-            init(Registries.getUnitRegistry().getUnitConfigById(unitId));
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+    public AbstractUnitSitemapElement(final UnitConfig unitConfig) throws InstantiationException {
+        init(unitConfig);
     }
+
 
     @Override
     public void init(UnitConfig unitConfig) {
         this.unitConfig = unitConfig;
+    }
+
+    @Override
+    public String getLabel() {
+        try {
+            return LabelProcessor.getBestMatch(unitConfig.getLabel());
+        } catch (NotAvailableException ex) {
+            return "?";
+        }
+    }
+
+    protected String getItem(final ServiceType serviceType) {
+        return OpenHABItemProcessor.generateItemName(unitConfig, serviceType);
     }
 }

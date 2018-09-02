@@ -22,10 +22,14 @@ package org.openbase.bco.app.openhab.sitemap.element;
  * #L%
  */
 
+import org.openbase.bco.app.openhab.sitemap.SitemapBuilder;
+import org.openbase.bco.app.openhab.sitemap.SitemapBuilder.SitemapIconType;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.iface.provider.LabelProvider;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 public class RootLocationElement extends AbstractUnitSitemapElement {
 
@@ -39,14 +43,15 @@ public class RootLocationElement extends AbstractUnitSitemapElement {
     }
 
     @Override
-    protected String serialize(String sitemap) throws CouldNotPerformException {
-        sitemap += prefix + "sitemap bco label=\"" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "\" {" + System.lineSeparator();
-        sitemap += prefix + tab() + "Frame label=\"Locations\" {" + System.lineSeparator();
+    public void serialize(final SitemapBuilder sitemap) throws CouldNotPerformException {
+        sitemap.openFrameContext("Räume");
         for (String childId : unitConfig.getLocationConfig().getChildIdList()) {
-            sitemap = new LocationElement(childId, this).appendElement(sitemap);
+            final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
+
+            sitemap.openTextContext(LabelProcessor.getBestMatch(locationUnitConfig.getLabel()), SitemapIconType.CORRIDOR);
+            sitemap.append(new LocationElement(childId));
+            sitemap.closeContext();
         }
-        sitemap += prefix + tab() + "}" + System.lineSeparator();
-        sitemap += prefix + "}" + System.lineSeparator();
-        return sitemap;
+        sitemap.closeContext();
     }
 }
