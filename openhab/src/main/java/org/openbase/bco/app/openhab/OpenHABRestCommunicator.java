@@ -70,6 +70,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
     public static final String THINGS_TARGET = "things";
     public static final String INBOX_TARGET = "inbox";
     public static final String APPROVE_TARGET = "approve";
+    public static final String EVENTS_TARGET = "events";
 
     public static final String TOPIC_KEY = "topic";
     public static final String TOPIC_SEPARATOR = SEPARATOR;
@@ -135,7 +136,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
         addSSEObserver(observer, "");
     }
 
-    public void addSSEObserver(Observer<JsonObject> observer, final String topicRegex) {
+    public void addSSEObserver(final Observer<JsonObject> observer, final String topicRegex) {
         synchronized (topicObservableMapLock) {
             if (topicObservableMap.containsKey(topicRegex)) {
                 topicObservableMap.get(topicRegex).addObserver(observer);
@@ -143,7 +144,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
             }
 
             if (sseEventSource == null) {
-                final WebTarget webTarget = baseWebTarget.path("events");
+                final WebTarget webTarget = baseWebTarget.path(EVENTS_TARGET);
                 sseEventSource = SseEventSource.target(webTarget).build();
                 sseEventSource.open();
             }
@@ -154,7 +155,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
             sseEventSource.register(inboundSseEvent -> {
                 try {
                     final JsonObject payload = jsonParser.parse(inboundSseEvent.readData()).getAsJsonObject();
-                    if (payload.get("topic").getAsString().matches(topicRegex)) {
+                    if (payload.get(TOPIC_KEY).getAsString().matches(topicRegex)) {
                         observable.notifyObservers(payload);
                     }
                 } catch (Exception ex) {
@@ -344,7 +345,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             return validateResponse(response);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not get target[" + target + "]", ex);
+            throw new CouldNotPerformException("Could not get sub-URL[" + target + "]", ex);
         }
     }
 
@@ -355,7 +356,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             return validateResponse(response);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not delete target[" + target + "]", ex);
+            throw new CouldNotPerformException("Could not delete sub-URL[" + target + "]", ex);
         }
     }
 
@@ -370,7 +371,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             return validateResponse(response);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not put value[" + value + "] on target[" + target + "]", ex);
+            throw new CouldNotPerformException("Could not put value[" + value + "] on sub-URL[" + target + "]", ex);
         }
     }
 
@@ -385,7 +386,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             return validateResponse(response);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not post value[" + value + "] on target[" + target + "]", ex);
+            throw new CouldNotPerformException("Could not post value[" + value + "] on sub-URL[" + target + "]", ex);
         }
     }
 
@@ -394,6 +395,8 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
         if (response.getStatus() == 200 || response.getStatus() == 202) {
             return result;
+        } else if (response.getStatus() == 404) {
+            throw new NotAvailableException("URL");
         } else {
             throw new CouldNotPerformException("Response returned with errorCode[" + response.getStatus() + "] and error message[" + result + "]");
         }
