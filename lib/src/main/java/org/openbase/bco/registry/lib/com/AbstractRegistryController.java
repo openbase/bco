@@ -203,6 +203,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
         RPCHelper.registerInterface(RegistryController.class, this, server);
     }
 
