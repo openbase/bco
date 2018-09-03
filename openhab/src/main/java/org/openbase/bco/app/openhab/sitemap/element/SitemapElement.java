@@ -22,15 +22,14 @@ package org.openbase.bco.app.openhab.sitemap.element;
  * #L%
  */
 
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.slf4j.LoggerFactory;
-import rst.configuration.LabelType.Label;
+import org.openbase.bco.app.openhab.sitemap.SitemapBuilder;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.iface.provider.LabelProvider;
 
-public abstract class AbstractSitemapElement implements SitemapElement {
+public interface SitemapElement extends LabelProvider {
 
+    void serialize(final SitemapBuilder sitemapBuilder) throws CouldNotPerformException;
 
-    protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractSitemapElement.class);
-
-
+    @Override
+    String getLabel();
 }

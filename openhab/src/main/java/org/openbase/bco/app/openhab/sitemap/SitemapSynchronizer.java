@@ -108,7 +108,6 @@ public class SitemapSynchronizer implements Launchable<Void>, VoidInitializable 
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            sidemapGenerator.init();
             Registries.waitForData();
 
             Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
@@ -154,6 +153,5 @@ public class SitemapSynchronizer implements Launchable<Void>, VoidInitializable 
 
     @Override
     public void shutdown() {
-        sidemapGenerator.shutdown();
     }
 }

@@ -76,7 +76,7 @@
                         </program>
                         <program>
                             <mainClass>org.openbase.bco.app.openhab.OpenHABApp</mainClass>
-                            <id>bco-app-openhab-app</id>
+                            <id>bco-app-openhab</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
