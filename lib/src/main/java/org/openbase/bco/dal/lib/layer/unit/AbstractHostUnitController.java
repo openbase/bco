@@ -21,29 +21,15 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import org.openbase.bco.dal.lib.transform.UnitConfigToUnitClassTransformer;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -51,11 +37,15 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+
 /**
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
- * @param <D> the data type of this unit used for the state synchronization.
+ * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements UnitHost<D>, OperationServiceFactoryProvider {
 

@@ -21,18 +21,15 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.CouldNotPerformException;
+
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
 import rst.domotic.state.BatteryStateType.BatteryState;
 import rst.domotic.unit.dal.BatteryDataType.BatteryData;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class BatteryController extends AbstractDALUnitController<BatteryData, BatteryData.Builder> implements Battery {

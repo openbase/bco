@@ -368,7 +368,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
+
         RPCHelper.registerInterface(Unit.class, this, server);
 
         // collect and register service interface methods via unit templates
