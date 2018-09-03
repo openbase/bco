@@ -31,19 +31,17 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import rsb.config.ParticipantConfig;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.rsb.ScopeType.Scope;
 
 public abstract class AbstractAuthenticatedConfigurableController<M extends GeneratedMessage, MB extends M.Builder<MB>, CONFIG extends GeneratedMessage> extends AbstractConfigurableController<M, MB, CONFIG> implements AuthenticatedRequestable {
 
@@ -55,15 +53,15 @@ public abstract class AbstractAuthenticatedConfigurableController<M extends Gene
         super(builder);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param server {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public void init(Scope scope, ParticipantConfig participantConfig) throws InitializationException, InterruptedException {
-        super.init(scope, participantConfig);
-
-        try {
-            RPCHelper.registerInterface(AuthenticatedRequestable.class, this, server);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        RPCHelper.registerInterface(AuthenticatedRequestable.class, this, server);
     }
 
     /**
