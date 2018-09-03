@@ -75,6 +75,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private static final String REQUEST_SYNC_EVENT = "requestSync";
 
     private static final String INTENT_REGISTER_SCENE = "register_scene";
+    private static final String INTENT_UPDATE_CONFIG = "update_config";
     private static final String INTENT_USER_ACTIVITY = "user_activity";
     private static final String INTENT_USER_ACTIVITY_CANCELLATION = "user_activity_cancellation";
     private static final String INTENT_USER_TRANSIT = "user_transit";
@@ -172,6 +173,9 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }).on(INTENT_USER_ACTIVITY_CANCELLATION, objects -> {
                 LOGGER.info("Socket of user[" + userId + "] received activity cancellation request");
                 handleActivityCancellation(objects[0], (Ack) objects[objects.length - 1]);
+            }).on(INTENT_UPDATE_CONFIG, objects -> {
+                LOGGER.info("Socket of user[" + userId + "] received update config request");
+                handleConfigUpdate(objects[0], (Ack) objects[objects.length - 1]);
             });
 
             // add observer to registry that triggers sync requests on changes
@@ -187,7 +191,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             final JsonElement parse = jsonParser.parse((String) request);
             LOGGER.info("Request: " + gson.toJson(parse));
 
-            //TODO: fulfillment handlers also need authorization token...
             // handle request and create response
             LOGGER.info("Call handler");
             final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), agentUserId, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
@@ -298,10 +301,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         return future;
     }
 
-    private static final String CURRENT_LABEL_KEY = "currentLabel";
-    private static final String NEW_LABEL_KEY = "newLabel";
-    private static final String CURRENT_LOCATION_KEY = "currentLocation";
-    private static final String NEW_LOCATION_KEY = "newLocation";
+    private static final String CURRENT_LABEL_KEY = "labelCurrent";
+    private static final String NEW_LABEL_KEY = "labelNew";
+    private static final String CURRENT_LOCATION_KEY = "locationCurrent";
+    private static final String NEW_LOCATION_KEY = "locationNew";
 
     private void handleConfigUpdate(final Object object, final Ack ack) {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
@@ -312,7 +315,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             String currentLocationLabel = "";
             UnitConfig currentLocation = null;
             if (data.has(CURRENT_LOCATION_KEY)) {
-                currentLocationLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+                currentLocationLabel = data.get(CURRENT_LABEL_KEY).getAsString().replace(" ", "");
                 final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(currentLocationLabel, UnitType.LOCATION);
 
                 // if more than one location just take the first
@@ -322,7 +325,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             UnitConfig.Builder currentUnit;
-            final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+            final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString().replace(" ", "");
             if (currentLocation == null) {
                 final List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigsByLabel(currentLabel);
 
@@ -344,14 +347,16 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
 
+            LOGGER.info("Before:\n" + currentUnit.build());
             if (data.has(NEW_LABEL_KEY)) {
-                final String newLabel = data.get(NEW_LABEL_KEY).getAsString();
+                final String newLabel = data.get(NEW_LABEL_KEY).getAsString().replace(" ", "");
                 LabelProcessor.replace(currentUnit.getLabelBuilder(), currentLabel, newLabel);
                 response += "Die Unit wurde zu " + newLabel + " umbennant";
+                LOGGER.info("After[" + newLabel + "]:\n" + currentUnit.getLabel());
             }
 
             if (data.has(NEW_LOCATION_KEY)) {
-                final String newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString();
+                final String newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().replace(" ", "");
                 final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(newLocationLabel, UnitType.LOCATION);
 
                 if (locations.size() >= 1) {
@@ -359,7 +364,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     if (response.isEmpty()) {
                         response += "Die Unit " + currentLabel + " wurde in die Location " + newLocationLabel + " verschoben";
                     } else {
-                        response += " und nach " + newLocationLabel + " verschoben";
+                        response += " und in die Location " + newLocationLabel + " verschoben";
                     }
                 } else {
                     if (response.isEmpty()) {
