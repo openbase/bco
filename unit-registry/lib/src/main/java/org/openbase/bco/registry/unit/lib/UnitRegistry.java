@@ -613,6 +613,17 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException;
 
     /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistent data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isObjectUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
@@ -719,6 +730,15 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     @RPCMethod
     Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isObjectUnitRegistryConsistent() throws CouldNotPerformException;
 
     default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException {
         return getUnitConfigsByCoordinate(coordinate, DEFAULT_RADIUS, UnitType.UNKNOWN);

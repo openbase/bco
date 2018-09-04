@@ -88,6 +88,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> appUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> objectUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> baseUnitConfigRemoteRegistry;
 
@@ -100,16 +101,17 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             this.aliasIdMap = new TreeMap<>();
             this.aliasIdMapLock = new SyncObject("AliasIdMapLock");
 
-            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
+            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
             this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
-            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, new MockUpFilter(), UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
             this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
             this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER);
-            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, new MockUpFilter(), UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
             this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
             this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
             this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
             this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
+            this.objectUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.OBJECT_UNIT_CONFIG_FIELD_NUMBER);
             this.unitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this,
                     UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
@@ -120,7 +122,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
-                    UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER
+                    UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.OBJECT_UNIT_CONFIG_FIELD_NUMBER
             );
             this.baseUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this,
                     UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
@@ -171,6 +174,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(sceneUnitConfigRemoteRegistry);
         registerRemoteRegistry(appUnitConfigRemoteRegistry);
         registerRemoteRegistry(baseUnitConfigRemoteRegistry);
+        registerRemoteRegistry(objectUnitConfigRemoteRegistry);
     }
 
     public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDalUnitConfigRemoteRegistry() {
@@ -428,96 +432,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
     }
-//
-//    @Override
-//    public List<UnitConfig> getUnitGroupConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-//        validateData();
-//        List<UnitConfig> unitConfigList = new ArrayList<>();
-//        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
-//            if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().contains(unitConfig.getId())) {
-//                unitConfigList.add(unitGroupUnitConfig);
-//            }
-//        }
-//        return unitConfigList;
-//    }
-//
-//    @Override
-//    public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitTemplate.UnitType type) throws CouldNotPerformException {
-//        validateData();
-//        List<UnitConfig> unitConfigList = new ArrayList<>();
-//        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
-//            if (unitGroupunitConfig.getUnitType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroupunitConfig.getUnitType())) {
-//                unitConfigList.add(unitGroupUnitConfig);
-//            }
-//        }
-//        return unitConfigList;
-//    }
-//
-//    @Override
-//    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
-//        validateData();
-//        List<UnitConfig> unitGroups = new ArrayList<>();
-//        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
-//            boolean skipGroup = false;
-//            for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
-//                if (!serviceTypes.contains(serviceDescription.getServiceType())) {
-//                    skipGroup = true;
-//                }
-//            }
-//            if (skipGroup) {
-//                continue;
-//            }
-//            unitGroups.add(unitGroupUnitConfig);
-//        }
-//        return unitGroups;
-//    }
-//
-//    @Override
-//    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig unitGroupUnitConfig) throws CouldNotPerformException {
-//        validateData();
-//        verifyUnitGroupUnitConfig(unitGroupUnitConfig);
-//        List<UnitConfig> unitConfigs = new ArrayList<>();
-//        for (String unitId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
-//            unitConfigs.add(getUnitConfigById(unitId));
-//        }
-//        return unitConfigs;
-//    }
-//
-//    @Override
-//    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
-//        validateData();
-//        final List<UnitConfig> unitConfigs = getUnitConfigs(type);
-//        boolean foundServiceType;
-//
-//        for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
-//            foundServiceType = false;
-//            for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : serviceTypes) {
-//                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-//                    if (serviceConfig.getServiceDescription().getServiceType() == serviceType) {
-//                        foundServiceType = true;
-//                    }
-//                }
-//                if (!foundServiceType) {
-//                    unitConfigs.remove(unitConfig);
-//                }
-//            }
-//        }
-//        return unitConfigs;
-//    }
-//
-//    @Override
-//    public UnitConfig getUnitConfigByScope(ScopeType.Scope scope) throws CouldNotPerformException {
-//        if (scope == null) {
-//            throw new NotAvailableException("scope");
-//        }
-//        validateData();
-//        for (UnitConfig unitConfig : getUnitConfigs()) {
-//            if (unitConfig.getScope().equals(scope)) {
-//                return unitConfig;
-//            }
-//        }
-//        throw new NotAvailableException("No unit config available for given Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
-//    }
 
     @Override
     public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException {
@@ -660,6 +574,20 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
+    public Boolean isObjectUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getObjectUnitConfigRegistryReadOnly();
+    }
+
+    @Override
     public Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException {
         try {
             validateData();
@@ -759,6 +687,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         }
     }
 
+    @Override
+    public Boolean isObjectUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getObjectUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -825,6 +763,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                 isSceneUnitRegistryConsistent() &&
                 isUserUnitRegistryConsistent() &&
                 isUnitConfigRegistryConsistent() &&
-                isUnitGroupConfigRegistryConsistent();
+                isUnitGroupConfigRegistryConsistent() &&
+                isObjectUnitRegistryConsistent();
     }
 }

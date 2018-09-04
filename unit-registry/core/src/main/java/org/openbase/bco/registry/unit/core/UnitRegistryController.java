@@ -139,6 +139,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentUnitConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneUnitConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appUnitConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> objectUnitConfigRegistry;
 
     private final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList, baseUnitConfigRegistryList;
 
@@ -151,8 +152,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.aliasIdMap = new TreeMap<>();
             this.aliasIdMapLock = new SyncObject("AliasIdMapLock");
 
-            this.unitConfigRegistryList = new ArrayList();
-            this.baseUnitConfigRegistryList = new ArrayList();
+            this.unitConfigRegistryList = new ArrayList<>();
+            this.baseUnitConfigRegistryList = new ArrayList<>();
 
             // verify that database exists and fail if not so no further errors are printed because they are based on this property.
             try {
@@ -171,6 +172,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.agentUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.sceneUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.appUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.objectUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData
+                    .OBJECT_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPObjectConfigDatabaseDirectory.class).getValue(),
+                    protoBufJSonFileProvider);
             this.unitConfigRegistryList.add(dalUnitConfigRegistry);
             this.unitConfigRegistryList.add(locationUnitConfigRegistry);
             this.unitConfigRegistryList.add(authorizationGroupUnitConfigRegistry);
@@ -181,6 +185,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.unitConfigRegistryList.add(sceneUnitConfigRegistry);
             this.unitConfigRegistryList.add(agentUnitConfigRegistry);
             this.unitConfigRegistryList.add(appUnitConfigRegistry);
+            this.unitConfigRegistryList.add(objectUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(userUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(authorizationGroupUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(deviceUnitConfigRegistry);
@@ -467,6 +472,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, isUnitConfigRegistryReadOnly());
         setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, isUnitConfigRegistryConsistent());
+
+        setDataField(UnitRegistryData.OBJECT_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, isObjectUnitRegistryReadOnly());
+        setDataField(UnitRegistryData.OBJECT_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, isObjectUnitRegistryConsistent());
     }
 
     @Override
@@ -501,6 +509,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 return unitGroupUnitConfigRegistry;
             case USER:
                 return userUnitConfigRegistry;
+            case OBJECT:
+                return objectUnitConfigRegistry;
             default:
                 return dalUnitConfigRegistry;
         }
@@ -840,6 +850,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
+    public Boolean isObjectUnitRegistryReadOnly() throws CouldNotPerformException {
+        return objectUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
     public Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException {
         return dalUnitConfigRegistry.isConsistent();
     }
@@ -890,6 +905,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
+    public Boolean isObjectUnitRegistryConsistent() throws CouldNotPerformException {
+        return objectUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
     }
 
@@ -912,7 +932,17 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         // Create a filter which removes all unit configs from a list without read permissions to its location by the user
         final ListFilter<UnitConfig> readFilter = unitConfig -> AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
         // Create a filter which removes unit ids if the user does not have access permissions for them
-        final ListFilter<String> readFilterByUnitId = unitId -> AuthorizationHelper.canRead(getUnitConfigById(unitId), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
+        final ListFilter<String> readFilterByUnitId = unitId -> {
+            try {
+                return AuthorizationHelper.canRead(getUnitConfigById(unitId), userId,
+                        authorizationGroupUnitConfigRegistry.getEntryMap(),
+                        locationUnitConfigRegistry.getEntryMap());
+            } catch (CouldNotPerformException ex) {
+                // this can happen if more than one unit are removed in rapid succession
+                // if getUnitConfigById fails the unit should be filtered anyway
+                return false;
+            }
+        };
         // iterate over all fields of unit registry data
         for (FieldDescriptor fieldDescriptor : dataBuilder.getAllFields().keySet()) {
             // only filter repeated fields
