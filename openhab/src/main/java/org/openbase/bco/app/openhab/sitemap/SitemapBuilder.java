@@ -87,6 +87,8 @@ public interface SitemapBuilder {
 
     SitemapBuilder addColorpickerElement(final String item, final String label, final SitemapIconType icon);
 
+    SitemapBuilder addDefaultElement(final String item, final String label);
+
     enum SitemapIconType {
         NONE,
         BATTERY,

@@ -10,12 +10,12 @@ package org.openbase.bco.app.openhab.sitemap.element;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -24,7 +24,6 @@ package org.openbase.bco.app.openhab.sitemap.element;
 
 import org.openbase.bco.app.openhab.sitemap.SitemapBuilder;
 import org.openbase.bco.app.openhab.sitemap.SitemapBuilder.SitemapIconType;
-import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -32,9 +31,14 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.List;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class LocationElement extends AbstractUnitSitemapElement {
+
+    public LocationElement() throws InstantiationException {
+        super();
+    }
 
     public LocationElement(final String unitId) throws InstantiationException {
         super(unitId);
@@ -86,10 +90,11 @@ public class LocationElement extends AbstractUnitSitemapElement {
         }
 
         // add sublocations
-        if(!unitConfig.getLocationConfig().getChildIdList().isEmpty()) {
-            sitemap.openFrameContext("Unterbereiche");
+        if (!unitConfig.getLocationConfig().getChildIdList().isEmpty()) {
+            sitemap.openFrameContext("Bereiche");
             for (String childId : unitConfig.getLocationConfig().getChildIdList()) {
-                sitemap.openTextContext(getLabel(), SitemapIconType.CORRIDOR);
+                final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
+                sitemap.openTextContext(label(locationUnitConfig.getLabel()), SitemapIconType.CORRIDOR);
                 sitemap.append(new LocationElement(childId));
                 sitemap.closeContext();
             }
@@ -111,8 +116,34 @@ public class LocationElement extends AbstractUnitSitemapElement {
             // add all other units
             if (!unitConfig.getLocationConfig().getUnitIdList().isEmpty()) {
                 sitemap.openTextContext("Geräte Übersicht", SitemapIconType.NONE);
+                final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
+
+
+                // load unit configs
                 for (String unitId : unitConfig.getLocationConfig().getUnitIdList()) {
-                    sitemap.append(new GenericUnitSitemapElement(unitId));
+                    final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+                    if (!unitTypeUnitConfigMap.containsKey(unitConfig.getUnitType())) {
+                        unitTypeUnitConfigMap.put(unitConfig.getUnitType(), new ArrayList<>());
+                    }
+                    unitTypeUnitConfigMap.get(unitConfig.getUnitType()).add(unitConfig);
+                }
+
+                for (List<UnitConfig> unitConfigListValue : unitTypeUnitConfigMap.values()) {
+                    // sort by name
+                    Collections.sort(unitConfigListValue, Comparator.comparing(o -> label(o.getLabel())));
+                }
+
+                for (UnitType unitType : unitTypeUnitConfigMap.keySet()) {
+
+                    if (unitTypeUnitConfigMap.get(unitType).isEmpty()) {
+                        continue;
+                    }
+
+                    sitemap.openFrameContext(unitType.name());
+                    for (UnitConfig unitConfig : unitTypeUnitConfigMap.get(unitType)) {
+                        sitemap.append(new GenericUnitSitemapElement(unitConfig));
+                    }
+                    sitemap.closeContext();
                 }
                 sitemap.closeContext();
             }

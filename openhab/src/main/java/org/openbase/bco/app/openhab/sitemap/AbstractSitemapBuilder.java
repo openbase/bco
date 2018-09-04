@@ -199,6 +199,8 @@ public abstract class AbstractSitemapBuilder implements SitemapBuilder {
         return addElement(COLORPICKER, item(item), label(label), icon(icon));
     }
 
-
-
+    @Override
+    public SitemapBuilder addDefaultElement(final String item, final String label) {
+        return addElement(DEFAULT, item(item), label(label));
+    }
 }

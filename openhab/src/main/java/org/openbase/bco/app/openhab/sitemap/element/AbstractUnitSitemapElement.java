@@ -30,6 +30,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.iface.provider.LabelProvider;
+import rst.configuration.LabelType.Label;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -60,8 +61,12 @@ public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement 
 
     @Override
     public String getLabel() {
+        return label(unitConfig.getLabel());
+    }
+
+    public static String label(final Label label) {
         try {
-            return LabelProcessor.getBestMatch(unitConfig.getLabel());
+            return LabelProcessor.getBestMatch(label);
         } catch (NotAvailableException ex) {
             return "?";
         }
