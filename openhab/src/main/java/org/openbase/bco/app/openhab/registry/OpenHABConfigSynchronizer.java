@@ -48,8 +48,8 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
     private final UnitItemSynchronization unitItemSynchronization;
     private final ItemDalUnitSynchronization itemDalUnitSynchronization;
 
-    private final ThingBCOUnitSynchronization thingBCOUnitSynchronization;
-    private final UnitThingSynchronization unitThingSynchronization;
+//    private final ThingBCOUnitSynchronization thingBCOUnitSynchronization;
+//    private final UnitThingSynchronization unitThingSynchronization;
 
     public OpenHABConfigSynchronizer() throws InstantiationException {
         try {
@@ -60,8 +60,8 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
             this.unitItemSynchronization = new UnitItemSynchronization(synchronizationLock);
             this.itemDalUnitSynchronization = new ItemDalUnitSynchronization(synchronizationLock);
 
-            this.thingBCOUnitSynchronization = new ThingBCOUnitSynchronization(synchronizationLock);
-            this.unitThingSynchronization = new UnitThingSynchronization(synchronizationLock);
+//            this.thingBCOUnitSynchronization = new ThingBCOUnitSynchronization(synchronizationLock);
+//            this.unitThingSynchronization = new UnitThingSynchronization(synchronizationLock);
         } catch (NotAvailableException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -85,8 +85,8 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
         deviceThingSynchronization.activate();
         unitItemSynchronization.activate();
         itemDalUnitSynchronization.activate();
-        thingBCOUnitSynchronization.activate();
-        unitThingSynchronization.activate();
+//        thingBCOUnitSynchronization.activate();
+//        unitThingSynchronization.activate();
         inboxApprover.activate();
     }
 
@@ -97,8 +97,8 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
         deviceThingSynchronization.deactivate();
         unitItemSynchronization.deactivate();
         itemDalUnitSynchronization.deactivate();
-        thingBCOUnitSynchronization.deactivate();
-        unitThingSynchronization.deactivate();
+//        thingBCOUnitSynchronization.deactivate();
+//        unitThingSynchronization.deactivate();
     }
 
     @Override
@@ -107,8 +107,8 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
                 && deviceThingSynchronization.isActive()
                 && unitItemSynchronization.isActive()
                 && itemDalUnitSynchronization.isActive()
-                && inboxApprover.isActive()
-                && thingBCOUnitSynchronization.isActive()
-                && unitThingSynchronization.isActive();
+                && inboxApprover.isActive();
+//                && thingBCOUnitSynchronization.isActive()
+//                && unitThingSynchronization.isActive();
     }
 }

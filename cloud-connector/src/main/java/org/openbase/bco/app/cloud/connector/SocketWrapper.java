@@ -324,7 +324,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
 
-            UnitConfig.Builder currentUnit;
+            UnitConfig.Builder currentUnit = null;
             final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString().replace(" ", "");
             if (currentLocation == null) {
                 final List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigsByLabel(currentLabel);
@@ -333,7 +333,17 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
                     return;
                 } else {
-                    currentUnit = unitConfigs.get(0).toBuilder();
+                    // always prefer devices if possible
+                    for (final UnitConfig unitConfig : unitConfigs) {
+                        if (unitConfig.getUnitType() == UnitType.DEVICE) {
+                            currentUnit = unitConfig.toBuilder();
+                            break;
+                        }
+                    }
+                    if (currentUnit == null) {
+                        currentUnit = unitConfigs.get(0).toBuilder();
+                    }
+
                 }
             } else {
                 final List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(currentLabel, currentLocation.getId());
@@ -342,17 +352,24 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     ack.call("Ich kann die Unit " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden.");
                     return;
                 } else {
-                    currentUnit = unitConfigs.get(0).toBuilder();
+                    // always prefer devices if possible
+                    for (final UnitConfig unitConfig : unitConfigs) {
+                        if (unitConfig.getUnitType() == UnitType.DEVICE) {
+                            currentUnit = unitConfig.toBuilder();
+                            break;
+                        }
+                    }
+                    if (currentUnit == null) {
+                        currentUnit = unitConfigs.get(0).toBuilder();
+                    }
                 }
             }
 
 
-            LOGGER.info("Before:\n" + currentUnit.build());
             if (data.has(NEW_LABEL_KEY)) {
                 final String newLabel = data.get(NEW_LABEL_KEY).getAsString().replace(" ", "");
                 LabelProcessor.replace(currentUnit.getLabelBuilder(), currentLabel, newLabel);
-                response += "Die Unit wurde zu " + newLabel + " umbennant";
-                LOGGER.info("After[" + newLabel + "]:\n" + currentUnit.getLabel());
+                response += "Die Unit wurde zu " + newLabel + " umbenannt";
             }
 
             if (data.has(NEW_LOCATION_KEY)) {
@@ -362,9 +379,9 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 if (locations.size() >= 1) {
                     currentUnit.getPlacementConfigBuilder().setLocationId(locations.get(0).getId());
                     if (response.isEmpty()) {
-                        response += "Die Unit " + currentLabel + " wurde in die Location " + newLocationLabel + " verschoben";
+                        response += "Die Unit " + currentLabel + " wurde in die Location " + LabelProcessor.getBestMatch(locations.get(0).getLabel()) + " verschoben";
                     } else {
-                        response += " und in die Location " + newLocationLabel + " verschoben";
+                        response += " und in die Location " + LabelProcessor.getBestMatch(locations.get(0).getLabel()) + " verschoben";
                     }
                 } else {
                     if (response.isEmpty()) {
@@ -761,10 +778,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 requestSync();
 
                 // debug print
-                JsonObject test = new JsonObject();
-                test.addProperty(FulfillmentHandler.REQUEST_ID_KEY, "12345678");
-                test.add(FulfillmentHandler.PAYLOAD_KEY, syncResponse);
-                LOGGER.info("new sync[" + isLoggedIn() + "]:\n" + gson.toJson(test));
+//                JsonObject test = new JsonObject();
+//                test.addProperty(FulfillmentHandler.REQUEST_ID_KEY, "12345678");
+//                test.add(FulfillmentHandler.PAYLOAD_KEY, syncResponse);
+//                LOGGER.debug("new sync[" + isLoggedIn() + "]:\n" + gson.toJson(test));
             }
         }
     }

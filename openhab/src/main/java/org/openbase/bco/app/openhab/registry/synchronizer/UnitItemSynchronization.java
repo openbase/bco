@@ -119,6 +119,7 @@ public class UnitItemSynchronization extends AbstractSynchronizer<String, Identi
      */
     @Override
     public void remove(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+        logger.info("Unit[" + identifiableMessage.getMessage().getAlias(0) + "] removed");
         // remove items and channel links
         final UnitConfig unitConfig = identifiableMessage.getMessage();
         final Set<ServiceType> serviceTypeSet = new HashSet<>();
@@ -137,11 +138,13 @@ public class UnitItemSynchronization extends AbstractSynchronizer<String, Identi
                 continue;
             }
 
+            logger.info("Remove item[" + itemName + "]");
             // remove item
             OpenHABRestCommunicator.getInstance().deleteItem(itemName);
             // remove links
             for (final ItemChannelLinkDTO itemChannelLink : OpenHABRestCommunicator.getInstance().getItemChannelLinks()) {
                 if (itemChannelLink.itemName.equals(itemName)) {
+                    logger.info("Remove link to[" + itemChannelLink.channelUID + "]");
                     OpenHABRestCommunicator.getInstance().deleteItemChannelLink(itemChannelLink);
                 }
             }
@@ -168,39 +171,37 @@ public class UnitItemSynchronization extends AbstractSynchronizer<String, Identi
      */
     @Override
     public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws VerificationFailedException {
-        switch (identifiableMessage.getMessage().getUnitType()) {
-            case DEVICE:
-                // retrieve host unit
-                final UnitConfig hostUnit;
-                if (identifiableMessage.getMessage().getUnitHostId().isEmpty()) {
-                    return false;
-                }
-                try {
-                    hostUnit = Registries.getUnitRegistry().getUnitConfigById(identifiableMessage.getMessage().getUnitHostId());
-                } catch (CouldNotPerformException ex) {
-                    throw new VerificationFailedException("Could not verify id dal unit[" + identifiableMessage.getMessage().getAlias(0) + "] is managed by openHAB", ex);
-                }
-
-                // validate that host is a device
-                if (hostUnit.getUnitType() != UnitType.DEVICE) {
-                    return false;
-                }
-
-                // validate that the device is configured via openHAB
-                try {
-                    SynchronizationProcessor.getThingIdFromDevice(hostUnit);
-                    return true;
-                } catch (NotAvailableException ex) {
-                    return false;
-                }
-            default:
-                try {
-                    SynchronizationProcessor.getThingForUnit(identifiableMessage.getMessage());
-                    return true;
-                } catch (NotAvailableException ex) {
-                    return false;
-                }
+//        switch (identifiableMessage.getMessage().getUnitType()) {
+//            case DEVICE:
+        // retrieve host unit
+        final UnitConfig hostUnit;
+        if (identifiableMessage.getMessage().getUnitHostId().isEmpty()) {
+            return false;
         }
+        try {
+            hostUnit = Registries.getUnitRegistry().getUnitConfigById(identifiableMessage.getMessage().getUnitHostId());
+        } catch (CouldNotPerformException ex) {
+            throw new VerificationFailedException("Could not verify id dal unit[" + identifiableMessage.getMessage().getAlias(0) + "] is managed by openHAB", ex);
+        }
+
+        // validate that host is a device
+        if (hostUnit.getUnitType() != UnitType.DEVICE) {
+            return false;
+        }
+
+        // validate that the device is configured via openHAB
+        try {
+            SynchronizationProcessor.getThingIdFromDevice(hostUnit);
+            return true;
+        } catch (NotAvailableException ex) {
+            return false;
+        }
+//            default:
+//                try {
+//                    SynchronizationProcessor.getThingForUnit(identifiableMessage.getMessage());
+//                    return true;
+//                } catch (NotAvailableException ex) {
+//                    return false;
     }
 
     /**

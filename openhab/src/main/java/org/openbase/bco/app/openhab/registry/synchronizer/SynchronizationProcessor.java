@@ -27,6 +27,7 @@ import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.dto.ChannelDTO;
 import org.eclipse.smarthome.core.thing.dto.ThingDTO;
+import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.registry.remote.Registries;
@@ -196,7 +197,9 @@ public class SynchronizationProcessor {
     public static void registerAndValidateItems(final UnitConfig unitConfig) throws CouldNotPerformException {
         switch (unitConfig.getUnitType()) {
             case DEVICE:
-                registerAndValidateItems(unitConfig, getThingForDevice(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId())));
+                for (final String unitId : unitConfig.getDeviceConfig().getUnitIdList()) {
+                    registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), getThingForDevice(unitConfig));
+                }
                 break;
             default:
                 registerAndValidateItems(unitConfig, getThingForUnit(unitConfig));
@@ -231,52 +234,53 @@ public class SynchronizationProcessor {
     }
 
     private static String getChannelUID(final UnitConfig unitConfig, final ServiceType serviceType, final ServicePattern servicePattern, final ThingDTO thingDTO) throws CouldNotPerformException {
-        switch (unitConfig.getUnitType()) {
-            case DEVICE:
-                String channelUID = "";
-                final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
-                final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
-                outer:
-                for (final UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
-                    if (!unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
-                        continue;
-                    }
-
-                    if (OpenHABRestCommunicator.getInstance().hasItem(OpenHABItemProcessor.generateItemName(unitConfig, serviceType))) {
-                        // item is already registered
-                        continue;
-                    }
-
-                    for (final ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
-                        if (serviceTemplateConfig.getServiceType() != serviceType) {
-                            continue;
-                        }
-
-                        final MetaConfigPool metaConfigPool = new MetaConfigPool();
-                        metaConfigPool.register(new MetaConfigVariableProvider("ServiceTemplateConfigMetaConfig", serviceTemplateConfig.getMetaConfig()));
-                        try {
-                            final String channelIdGuess = thingDTO.UID + ":" + metaConfigPool.getValue(OPENHAB_THING_CHANNEL_TYPE_UID_KEY);
-
-                            for (final ChannelDTO channelDTO : thingDTO.channels) {
-                                if (channelDTO.uid.equals(channelIdGuess)) {
-                                    channelUID = channelDTO.uid;
-                                    break outer;
-                                }
-                            }
-                            LOGGER.warn("Could not resolve channel for id [" + channelIdGuess + "]");
-                        } catch (NotAvailableException ex) {
-                            LOGGER.warn("Service[" + serviceType.name() + "] of unitTemplateConfig[" + unitTemplateConfig.getType().name() +
-                                    "] deviceClass[" + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "] handled by openHAB app does have a channel configured");
-                        }
-                    }
-                }
-
-                if (channelUID.isEmpty()) {
-                    throw new NotAvailableException("ChannelUID for service[" + serviceType.name() + "] of unit[" + unitConfig.getAlias(0) + "]");
-                }
-            default:
-                return new ChannelUID(new ThingUID(thingDTO.UID), getChannelId(serviceType, servicePattern)).toString();
+        if (thingDTO.UID.startsWith("bco")) {
+            return new ChannelUID(new ThingUID(thingDTO.UID), getChannelId(serviceType, servicePattern)).toString();
         }
+
+        String channelUID = "";
+        final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
+        final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+        outer:
+        for (final UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+            if (!unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
+                continue;
+            }
+
+            if (OpenHABRestCommunicator.getInstance().hasItem(OpenHABItemProcessor.generateItemName(unitConfig, serviceType))) {
+                // item is already registered
+                continue;
+            }
+
+            for (final ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
+                if (serviceTemplateConfig.getServiceType() != serviceType) {
+                    continue;
+                }
+
+                final MetaConfigPool metaConfigPool = new MetaConfigPool();
+                metaConfigPool.register(new MetaConfigVariableProvider("ServiceTemplateConfigMetaConfig", serviceTemplateConfig.getMetaConfig()));
+                try {
+                    final String channelIdGuess = thingDTO.UID + ":" + metaConfigPool.getValue(OPENHAB_THING_CHANNEL_TYPE_UID_KEY);
+
+                    for (final ChannelDTO channelDTO : thingDTO.channels) {
+                        if (channelDTO.uid.equals(channelIdGuess)) {
+                            channelUID = channelDTO.uid;
+                            break outer;
+                        }
+                    }
+                    LOGGER.warn("Could not resolve channel for id [" + channelIdGuess + "]");
+                } catch (NotAvailableException ex) {
+                    LOGGER.warn("Service[" + serviceType.name() + "] of unitTemplateConfig[" + unitTemplateConfig.getType().name() +
+                            "] deviceClass[" + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "] handled by openHAB app does have a channel configured");
+                }
+            }
+        }
+
+        if (channelUID.isEmpty()) {
+            throw new NotAvailableException("ChannelUID for service[" + serviceType.name() + "] of unit[" + unitConfig.getAlias(0) + "]");
+        }
+
+        return channelUID;
     }
 
     private static String getChannelId(final ServiceType serviceType, final ServicePattern servicePattern) {
@@ -284,6 +288,7 @@ public class SynchronizationProcessor {
     }
 
     public static void registerAndValidateItems(final UnitConfig unitConfig, final ThingDTO thingDTO) throws CouldNotPerformException {
+        final List<ItemChannelLinkDTO> itemChannelLinks = OpenHABRestCommunicator.getInstance().getItemChannelLinks();
         for (final Entry<ServiceType, ServicePattern> entry : generateServiceMap(unitConfig).entrySet()) {
             final ServiceType serviceType = entry.getKey();
             final ServicePattern servicePattern = entry.getValue();
@@ -291,8 +296,9 @@ public class SynchronizationProcessor {
             LOGGER.debug("Register/Validate item for service[" + serviceType.name() + "] of unit[" + unitConfig.getAlias(0) + "]");
 
             // This is kind of a hack to support switching only lights in a location
+            String itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType);
             if (unitConfig.getUnitType() == UnitType.LOCATION && serviceType == ServiceType.POWER_STATE_SERVICE) {
-                final String itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType) + "Light";
+                itemName += "Light";
 
                 LOGGER.debug("Generate special entry to only switch lights in a location: " + itemName);
                 if (!OpenHABRestCommunicator.getInstance().hasItem(itemName)) {
@@ -318,12 +324,6 @@ public class SynchronizationProcessor {
                 }
             }
 
-            if (OpenHABRestCommunicator.getInstance().hasItem(OpenHABItemProcessor.generateItemName(unitConfig, serviceType))) {
-                // item is already registered
-                LOGGER.debug("Skip because already available");
-                continue;
-            }
-
             String channelUID;
             try {
                 channelUID = getChannelUID(unitConfig, serviceType, servicePattern, thingDTO);
@@ -331,11 +331,28 @@ public class SynchronizationProcessor {
                 LOGGER.warn("Skip service[" + serviceType.name() + ", " + servicePattern.name() + "] of unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] because no channel is available ");
                 continue;
             }
+            LOGGER.debug("Found according channel uid[" + channelUID + "]");
+
+
+            if (OpenHABRestCommunicator.getInstance().hasItem(itemName)) {
+                // item is already registered so validate that link exists
+                boolean hasChannel = false;
+                for (ItemChannelLinkDTO itemChannelLink : itemChannelLinks) {
+                    if (itemChannelLink.itemName.equals(itemName) && itemChannelLink.channelUID.equals(channelUID)) {
+                        hasChannel = true;
+                        break;
+                    }
+                }
+                if (!hasChannel) {
+                    OpenHABRestCommunicator.getInstance().registerItemChannelLink(itemName, channelUID);
+                }
+                continue;
+            }
 
             // create and register item
             ItemDTO itemDTO = new ItemDTO();
             itemDTO.label = generateItemLabel(unitConfig, serviceType);
-            itemDTO.name = OpenHABItemProcessor.generateItemName(unitConfig, serviceType);
+            itemDTO.name = itemName;
             try {
                 itemDTO.type = OpenHABItemProcessor.getItemType(serviceType, servicePattern);
             } catch (NotAvailableException ex) {
