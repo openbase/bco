@@ -26,13 +26,14 @@ import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
+import org.openbase.jul.storage.registry.jp.AbstractJPLocalDatabaseDirectory;
 
 import java.io.File;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class JPObjectConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPObjectConfigDatabaseDirectory extends AbstractJPLocalDatabaseDirectory {
 
     public final static String[] COMMAND_IDENTIFIERS = {"--object-config-db"};
 
