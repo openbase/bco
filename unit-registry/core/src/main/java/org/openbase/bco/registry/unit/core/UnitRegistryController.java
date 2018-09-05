@@ -46,6 +46,7 @@ import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.deviceconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneServiceStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
@@ -310,6 +311,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         sceneUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
+        sceneUnitConfigRegistry.registerConsistencyHandler(new SceneServiceStateConsistencyHandler(unitConfigRegistryList));
 
         // add consistency handler for all unitConfig registries
         registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
