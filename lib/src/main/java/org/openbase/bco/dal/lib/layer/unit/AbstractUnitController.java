@@ -599,7 +599,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 //Set timestamp if missing
                 if (!serviceStateBuilder.hasField(serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp"))) {
-                    logger.warn("State[" + serviceStateBuilder.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestamp!");
+                    logger.warn("State[" + Services.getServiceStateName(serviceType) + "] of " + this + " does not contain any state related timestamp!");
                     TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder, logger);
                 }
 
