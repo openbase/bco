@@ -102,11 +102,11 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                             synchronized (netDeviceDetectorMapLock) {
                                 for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
                                     if (detector.isReachable()) {
-                                        setPresenceState(PresenceState.newBuilder().setValue(State.PRESENT).build());
+                                        applyDataUpdate(PresenceState.newBuilder().setValue(State.PRESENT).build(), ServiceType.PRESENCE_STATE_SERVICE);
                                         return;
                                     }
                                 }
-                                setPresenceState(PresenceState.newBuilder().setValue(State.ABSENT).build());
+                                applyDataUpdate(PresenceState.newBuilder().setValue(State.ABSENT).build(), ServiceType.PRESENCE_STATE_SERVICE);
                             }
                         });
                         if (isActive()) {
@@ -183,7 +183,6 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     @Override
     protected void applyCustomDataUpdate(UserData.Builder internalBuilder, ServiceType serviceType) {
-        logger.info("state;" + internalBuilder.build());
         switch (serviceType) {
             case USER_TRANSIT_STATE_SERVICE:
                 updateLastWithCurrentState(PRESENCE_STATE_SERVICE, internalBuilder);
