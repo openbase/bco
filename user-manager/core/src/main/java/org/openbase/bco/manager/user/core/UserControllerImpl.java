@@ -31,6 +31,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -45,6 +46,7 @@ import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
 import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 import rst.domotic.state.PresenceStateType.PresenceState;
+import rst.domotic.state.PresenceStateType.PresenceState.Builder;
 import rst.domotic.state.PresenceStateType.PresenceState.State;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -100,13 +102,14 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         netDeviceDetectorMap.put(netDevice, netDeviceDetector);
                         netDeviceDetector.addObserver((Observable<Boolean> source, Boolean reachable) -> {
                             synchronized (netDeviceDetectorMapLock) {
+                                final PresenceState.Builder presenceState = TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder(), logger);
                                 for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
                                     if (detector.isReachable()) {
-                                        applyDataUpdate(PresenceState.newBuilder().setValue(State.PRESENT).build(), ServiceType.PRESENCE_STATE_SERVICE);
+                                        applyDataUpdate(presenceState.setValue(State.PRESENT).build(), ServiceType.PRESENCE_STATE_SERVICE);
                                         return;
                                     }
                                 }
-                                applyDataUpdate(PresenceState.newBuilder().setValue(State.ABSENT).build(), ServiceType.PRESENCE_STATE_SERVICE);
+                                applyDataUpdate(presenceState.setValue(State.ABSENT).build(), ServiceType.PRESENCE_STATE_SERVICE);
                             }
                         });
                         if (isActive()) {
