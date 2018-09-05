@@ -101,7 +101,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 20000)
     public void testCommunication() throws Exception {
         UnitConfig.Builder otherAgentConfig = UnitConfig.newBuilder();
         otherAgentConfig.setId("OtherAgent");
@@ -183,11 +183,6 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
             } else {
                 return unitConfig.getPermissionConfig().getOwnerPermission().getRead() || unitConfig.getPermissionConfig().getOtherPermission().getRead();
             }
-        }
-
-        @Override
-        public void registerMethods(RSBLocalServer server) {
-            // do nothing because all methods necessary for this test should registered by the super class
         }
 
         @Override
