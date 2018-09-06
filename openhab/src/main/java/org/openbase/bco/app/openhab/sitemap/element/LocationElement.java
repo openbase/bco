@@ -120,8 +120,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
 
 
                 // load unit configs
-                for (String unitId : unitConfig.getLocationConfig().getUnitIdList()) {
-                    final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(unitConfig.getId(), false)) {
                     if (!unitTypeUnitConfigMap.containsKey(unitConfig.getUnitType())) {
                         unitTypeUnitConfigMap.put(unitConfig.getUnitType(), new ArrayList<>());
                     }
