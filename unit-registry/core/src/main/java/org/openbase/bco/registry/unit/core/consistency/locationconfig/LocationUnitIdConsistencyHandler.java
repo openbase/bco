@@ -21,11 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.locationconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -34,14 +30,15 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 
+import java.util.*;
+
 /**
- *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
@@ -55,13 +52,14 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry;
 
-    public LocationUnitIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentRegistry,
+    public LocationUnitIdConsistencyHandler(
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> connectionRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> scneRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
         this.agentRegistry = agentRegistry;
@@ -70,7 +68,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
         this.connectionRegistry = connectionRegistry;
         this.dalUnitRegistry = dalUnitRegistry;
         this.deviceRegistry = deviceRegistry;
-        this.sceneRegistry = scneRegistry;
+        this.sceneRegistry = sceneRegistry;
         this.unitGroupRegistry = unitGroupRegistry;
         this.unitRegistry = unitRegistry;
     }
@@ -102,20 +100,20 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
                 throw new NotAvailableException("location id");
             }
 
-            Set<String> unitIdList = new HashSet<>();
-            List<UnitConfig> allUnits = new ArrayList<>();
-            allUnits.addAll(agentRegistry.getMessages());
-            allUnits.addAll(appRegistry.getMessages());
-            allUnits.addAll(authorizationGroupRegistry.getMessages());
-            allUnits.addAll(connectionRegistry.getMessages());
-            allUnits.addAll(dalUnitRegistry.getMessages());
-            allUnits.addAll(deviceRegistry.getMessages());
-            allUnits.addAll(sceneRegistry.getMessages());
-            allUnits.addAll(unitGroupRegistry.getMessages());
-            allUnits.addAll(unitRegistry.getMessages());
-            for (UnitConfig unitConfig : allUnits) {
+            final Set<String> unitIdSet = new HashSet<>();
+            final List<UnitConfig> unitList = new ArrayList<>();
+            unitList.addAll(agentRegistry.getMessages());
+            unitList.addAll(appRegistry.getMessages());
+            unitList.addAll(authorizationGroupRegistry.getMessages());
+            unitList.addAll(connectionRegistry.getMessages());
+            unitList.addAll(dalUnitRegistry.getMessages());
+            unitList.addAll(deviceRegistry.getMessages());
+            unitList.addAll(sceneRegistry.getMessages());
+            unitList.addAll(unitGroupRegistry.getMessages());
+            unitList.addAll(unitRegistry.getMessages());
+            for (final UnitConfig unitConfig : unitList) {
 
-                // skip units with no placenment config
+                // skip units with no placement config
                 if (!unitConfig.hasPlacementConfig()) {
                     continue;
                 } else if (!unitConfig.getPlacementConfig().hasLocationId()) {
@@ -124,7 +122,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
                     continue;
                 }
 
-                // filter units which are currently diabled
+                // filter units which are currently disabled
                 if (!unitConfig.hasEnablingState() || !unitConfig.getEnablingState().hasValue()) {
                     continue;
                 } else if (unitConfig.getEnablingState().getValue() != EnablingStateType.EnablingState.State.ENABLED) {
@@ -133,24 +131,24 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
 
                 // add direct assigned units
                 if (unitConfig.getPlacementConfig().getLocationId().equals(locationUnitConfig.getId())) {
-                    unitIdList.add(unitConfig.getId());
+                    unitIdSet.add(unitConfig.getId());
                 }
 
             }
 
             // add child units
-            for (String childId : locationUnitConfig.getLocationConfig().getChildIdList()) {
-                unitIdList.addAll(locationRegistry.get(childId).getMessage().getLocationConfig().getUnitIdList());
+            for (final String childId : locationUnitConfig.getLocationConfig().getChildIdList()) {
+                unitIdSet.addAll(locationRegistry.get(childId).getMessage().getLocationConfig().getUnitIdList());
             }
-            return unitIdList;
+            return unitIdSet;
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Unit id loockup failed!", ex);
+            throw new CouldNotPerformException("Unit id lookup failed!", ex);
         }
     }
 
-    private int generateListHash(Collection<String> list) {
+    private int generateListHash(final Collection<String> list) {
         int hash = 0;
-        hash = list.stream().map((entry) -> entry.hashCode()).reduce(hash, Integer::sum);
+        hash = list.stream().map(String::hashCode).reduce(hash, Integer::sum);
         return hash;
     }
 }

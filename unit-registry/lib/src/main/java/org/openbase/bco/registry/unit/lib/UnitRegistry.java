@@ -44,6 +44,7 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import org.slf4j.LoggerFactory;
+import rst.configuration.LabelType.Label;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
@@ -225,17 +226,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
-        getUnitConfigs().parallelStream().filter((unitConfig) -> (LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel))).forEach((unitConfig) -> {
-            unitConfigs.add(unitConfig);
-        });
+        getUnitConfigs().parallelStream().filter((unitConfig) -> (LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel))).forEach(unitConfigs::add);
         return unitConfigs;
     }
 
     default List<UnitConfig> getUnitConfigsByLabelAndUnitType(final String unitConfigLabel, final UnitType unitType) throws CouldNotPerformException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
-        getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getUnitType().equals(unitType) && LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel))).forEach((unitConfig) -> {
-            unitConfigs.add(unitConfig);
-        });
+        getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getUnitType().equals(unitType) && LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel))).forEach(unitConfigs::add);
         return unitConfigs;
     }
 
@@ -931,7 +928,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<UnitConfig> getUnitConfigsByLocation(final String locationId, final boolean recursive) throws CouldNotPerformException {
         final List<UnitConfig> unitConfigList = new ArrayList<>();
-        for (String unitConfigId : getUnitConfigById(locationId).getLocationConfig().getUnitIdList()) {
+        for (final String unitConfigId : getUnitConfigById(locationId).getLocationConfig().getUnitIdList()) {
             final UnitConfig unitConfig = getUnitConfigById(unitConfigId);
             if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(locationId)) {
                 unitConfigList.add(unitConfig);
@@ -1023,7 +1020,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param locationAlias the alias to identify the location.
      * @return A collection of unit configs.
      * @throws CouldNotPerformException is thrown if the request fails.
-     * @throws NotAvailableException
      */
     default List<UnitConfig> getUnitConfigsByLocationAlias(final String locationAlias) throws CouldNotPerformException {
         final HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
@@ -1035,18 +1031,34 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
     /**
      * Method returns a collection of unit configs which are located within the
-     * defined location and match the given unit label. Label resolving is done
-     * case insensitive!
+     * defined location and match the given unit label.
+     * Testing the label is done using {@link LabelProcessor#contains(Label, String)}.
      *
-     * @param unitLabel
-     * @param locationId
-     * @return
+     * @param unitLabel  the label tested
+     * @param locationId the id of the location from which units are returned
+     * @return a list of unit configs containing the given label withing the given location
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
-        return getUnitConfigsByLabel(unitLabel).stream()
-                .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
-                .collect(Collectors.toCollection(ArrayList::new));
+        return getUnitConfigsByLabelAndLocation(unitLabel, locationId, true);
+    }
+
+    /**
+     * Method returns a collection of unit configs which are located within the
+     * defined location and match the given unit label.
+     * Testing the label is done using {@link LabelProcessor#contains(Label, String)}.
+     * If the recursive flag is set all units in the location are considered.
+     * Else only units directly placed in the location are considered.
+     *
+     * @param unitLabel  the label tested
+     * @param locationId the id of the location from which units are returned
+     * @param recursive  flag determining if the whole location tree should be considered
+     * @return a list of unit configs containing the given label withing the given location
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId, final boolean recursive) throws CouldNotPerformException {
+        return getUnitConfigsByLocation(locationId, recursive).stream().filter(unitConfig ->
+                LabelProcessor.contains(unitConfig.getLabel(), unitLabel)).collect(Collectors.toList());
     }
 
     /**
