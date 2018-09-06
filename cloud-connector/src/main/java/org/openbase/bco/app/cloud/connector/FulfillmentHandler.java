@@ -57,6 +57,7 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -200,6 +201,11 @@ public class FulfillmentHandler {
             // if a unit config is bound to and hosted by a device and this device hosts more than one unit
             // with the same label which are all bound to it, register them as one
             for (final UnitConfig deviceUnitConfig : unitRegistryRemote.getUnitConfigs(UnitType.DEVICE)) {
+                // ignore disabled devices
+                if (deviceUnitConfig.getEnablingState().getValue() == State.DISABLED) {
+                    continue;
+                }
+
                 if (deviceUnitConfig.getDeviceConfig().getUnitIdCount() < 2) {
                     continue;
                 }
@@ -234,8 +240,12 @@ public class FulfillmentHandler {
 
             // register unit groups separately because they depend on the unit type of their group configuration
             for (final UnitConfig unitGroup : Registries.getUnitRegistry().getUnitConfigs(UnitType.UNIT_GROUP)) {
-                final UnitType unitType = unitGroup.getUnitGroupConfig().getUnitType();
+                // ignore disabled groups
+                if (unitGroup.getEnablingState().getValue() == State.DISABLED) {
+                    continue;
+                }
 
+                final UnitType unitType = unitGroup.getUnitGroupConfig().getUnitType();
                 if (unitType == UnitType.UNKNOWN) {
                     //TODO: this could possibly be handled by a mapping of services to traits and choosing a random device
                     LOGGER.warn("Skip unit group[" + unitGroup.getAlias(0) + "] because unit type is unknown");
@@ -250,11 +260,17 @@ public class FulfillmentHandler {
             }
 
             for (final UnitConfig unitConfig : unitRegistryRemote.getUnitConfigs()) {
+                // ignore disabled units
+                if (unitConfig.getEnablingState().getValue() == State.DISABLED) {
+                    continue;
+                }
+
                 switch (unitConfig.getUnitType()) {
                     case LOCATION:
                     case DEVICE:
                     case USER:
                     case AUTHORIZATION_GROUP:
+                    case OBJECT:
                     case UNIT_GROUP:
                         // skip locations, devices, user ...
                         // skip unit groups because they are handled above

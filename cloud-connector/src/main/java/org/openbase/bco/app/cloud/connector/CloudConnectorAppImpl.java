@@ -140,9 +140,10 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Execute Cloud Connector");
-        if (!tokenStore.hasCloudConnectorToken()) {
-            createAuthenticationToken();
-        }
+        //TODO activate check again if service server key is static
+//        if (!tokenStore.hasCloudConnectorToken()) {
+        createAuthenticationToken();
+//        }
 
         // start socket connection for all users which are already registered
         for (final Entry<String, String> entry : tokenStore.getCloudEntries().entrySet()) {

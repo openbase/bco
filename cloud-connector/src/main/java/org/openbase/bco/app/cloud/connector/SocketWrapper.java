@@ -75,7 +75,8 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private static final String REQUEST_SYNC_EVENT = "requestSync";
 
     private static final String INTENT_REGISTER_SCENE = "register_scene";
-    private static final String INTENT_UPDATE_CONFIG = "update_config";
+    private static final String INTENT_RENAMING = "rename";
+    private static final String INTENT_RELOCATE = "relocate";
     private static final String INTENT_USER_ACTIVITY = "user_activity";
     private static final String INTENT_USER_ACTIVITY_CANCELLATION = "user_activity_cancellation";
     private static final String INTENT_USER_TRANSIT = "user_transit";
@@ -173,9 +174,12 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }).on(INTENT_USER_ACTIVITY_CANCELLATION, objects -> {
                 LOGGER.info("Socket of user[" + userId + "] received activity cancellation request");
                 handleActivityCancellation(objects[0], (Ack) objects[objects.length - 1]);
-            }).on(INTENT_UPDATE_CONFIG, objects -> {
-                LOGGER.info("Socket of user[" + userId + "] received update config request");
-                handleConfigUpdate(objects[0], (Ack) objects[objects.length - 1]);
+            }).on(INTENT_RELOCATE, objects -> {
+                LOGGER.info("Socket of user[" + userId + "] received relocate request");
+                handleRelocating(objects[0], (Ack) objects[objects.length - 1]);
+            }).on(INTENT_RENAMING, objects -> {
+                LOGGER.info("Socket of user[" + userId + "] received rename request");
+                handleRenaming(objects[0], (Ack) objects[objects.length - 1]);
             });
 
             // add observer to registry that triggers sync requests on changes
@@ -192,7 +196,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             LOGGER.info("Request: " + gson.toJson(parse));
 
             // handle request and create response
-            LOGGER.info("Call handler");
+            LOGGER.info("Call handler with authentication token[" + tokenStore.getCloudConnectorToken() + "]");
             final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), agentUserId, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
             final String response = gson.toJson(jsonObject);
             LOGGER.info("Handler produced response: " + response);
@@ -306,92 +310,113 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private static final String CURRENT_LOCATION_KEY = "locationCurrent";
     private static final String NEW_LOCATION_KEY = "locationNew";
 
-    private void handleConfigUpdate(final Object object, final Ack ack) {
+    private void handleRelocating(final Object object, final Ack ack) {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("Received config update data:\n" + gson.toJson(data));
+        LOGGER.info("Received relocation data:\n" + gson.toJson(data));
 
         String response = "";
         try {
-            String currentLocationLabel = "";
-            UnitConfig currentLocation = null;
+            UnitConfig.Builder currentUnit;
+            final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
             if (data.has(CURRENT_LOCATION_KEY)) {
-                currentLocationLabel = data.get(CURRENT_LABEL_KEY).getAsString().replace(" ", "");
-                final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(currentLocationLabel, UnitType.LOCATION);
-
-                // if more than one location just take the first
-                if (locations.size() >= 1) {
-                    currentLocation = locations.get(0);
-                }
-            }
-
-            UnitConfig.Builder currentUnit = null;
-            final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString().replace(" ", "");
-            if (currentLocation == null) {
-                final List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigsByLabel(currentLabel);
-
-                if (unitConfigs.size() == 0) {
-                    ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
-                    return;
-                } else {
-                    // always prefer devices if possible
-                    for (final UnitConfig unitConfig : unitConfigs) {
-                        if (unitConfig.getUnitType() == UnitType.DEVICE) {
-                            currentUnit = unitConfig.toBuilder();
-                            break;
-                        }
-                    }
-                    if (currentUnit == null) {
-                        currentUnit = unitConfigs.get(0).toBuilder();
-                    }
-
-                }
-            } else {
-                final List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(currentLabel, currentLocation.getId());
-
-                if (unitConfigs.size() == 0) {
+                final String currentLocationLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+                try {
+                    currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
+                } catch (NotAvailableException ex) {
                     ack.call("Ich kann die Unit " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden.");
                     return;
-                } else {
-                    // always prefer devices if possible
-                    for (final UnitConfig unitConfig : unitConfigs) {
-                        if (unitConfig.getUnitType() == UnitType.DEVICE) {
-                            currentUnit = unitConfig.toBuilder();
-                            break;
-                        }
-                    }
-                    if (currentUnit == null) {
-                        currentUnit = unitConfigs.get(0).toBuilder();
-                    }
+                }
+            } else {
+                try {
+                    currentUnit = getUnitByLabelE(currentLabel).toBuilder();
+                } catch (NotAvailableException ex) {
+                    ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
+                    return;
+                }
+            }
+            final String newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().replace(" ", "");
+            final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(newLocationLabel, UnitType.LOCATION);
+            if (locations.isEmpty()) {
+                ack.call("Ich kann die Location " + newLocationLabel + " nicht finden.");
+                return;
+            }
+
+            response = currentLabel + " wurde in die Location " + newLocationLabel + " verschoben.";
+            currentUnit.getPlacementConfigBuilder().setLocationId(locations.get(0).getId());
+            Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
+            ack.call(response);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } catch (ExecutionException | CouldNotPerformException ex) {
+            ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } catch (TimeoutException ex) {
+            ack.call(response.replace("wurde", "wird"));
+        }
+    }
+
+    private UnitConfig getUnitByLabelE(final String label) throws CouldNotPerformException {
+        return fromList(Registries.getUnitRegistry().getUnitConfigsByLabel(label));
+    }
+
+    private UnitConfig getUnitByLabelAndLocation(final String label, final String locationLabel) throws CouldNotPerformException {
+        final List<UnitConfig> locationList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(locationLabel, UnitType.LOCATION);
+        if (locationList.isEmpty()) {
+            return getUnitByLabelE(label);
+        }
+        return fromList(Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(label, locationList.get(0).getId()));
+    }
+
+    private UnitConfig fromList(final List<UnitConfig> unitConfigList) throws CouldNotPerformException {
+        if (unitConfigList.isEmpty()) {
+            throw new NotAvailableException("unit");
+        }
+
+        final UnitConfig unitConfig = unitConfigList.get(0);
+        if (unitConfig.getUnitHostId().isEmpty() || !unitConfig.getBoundToUnitHost()) {
+            return unitConfig;
+        }
+
+        final UnitConfig hostUnit = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
+        if (hostUnit.getUnitType() == UnitType.DEVICE && hostUnit.getLabel().equals(unitConfig.getLabel())) {
+            return hostUnit;
+        } else {
+            return unitConfig;
+        }
+    }
+
+
+    private void handleRenaming(final Object object, final Ack ack) {
+        final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
+        LOGGER.info("Received renaming data:\n" + gson.toJson(data));
+
+        String response = "";
+        try {
+            UnitConfig.Builder currentUnit;
+            final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+            if (data.has(CURRENT_LOCATION_KEY)) {
+                final String currentLocationLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+                try {
+                    currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
+                } catch (NotAvailableException ex) {
+                    ack.call("Ich kann die Unit " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden.");
+                    return;
+                }
+            } else {
+                try {
+                    currentUnit = getUnitByLabelE(currentLabel).toBuilder();
+                } catch (NotAvailableException ex) {
+                    ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
+                    return;
                 }
             }
 
+            final String newLabel = data.get(NEW_LABEL_KEY).getAsString().replace(" ", "");
+            LabelProcessor.replace(currentUnit.getLabelBuilder(), currentLabel, newLabel);
 
-            if (data.has(NEW_LABEL_KEY)) {
-                final String newLabel = data.get(NEW_LABEL_KEY).getAsString().replace(" ", "");
-                LabelProcessor.replace(currentUnit.getLabelBuilder(), currentLabel, newLabel);
-                response += "Die Unit wurde zu " + newLabel + " umbenannt";
-            }
-
-            if (data.has(NEW_LOCATION_KEY)) {
-                final String newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().replace(" ", "");
-                final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(newLocationLabel, UnitType.LOCATION);
-
-                if (locations.size() >= 1) {
-                    currentUnit.getPlacementConfigBuilder().setLocationId(locations.get(0).getId());
-                    if (response.isEmpty()) {
-                        response += "Die Unit " + currentLabel + " wurde in die Location " + LabelProcessor.getBestMatch(locations.get(0).getLabel()) + " verschoben";
-                    } else {
-                        response += " und in die Location " + LabelProcessor.getBestMatch(locations.get(0).getLabel()) + " verschoben";
-                    }
-                } else {
-                    if (response.isEmpty()) {
-                        ack.call("Ich kann die location " + newLocationLabel + " nicht finden.");
-                        return;
-                    }
-                }
-            }
-            response += ".";
-
+            response = currentLabel + " wurde zu " + newLabel + " umbenannt.";
             Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
             ack.call(response);
         } catch (InterruptedException ex) {
