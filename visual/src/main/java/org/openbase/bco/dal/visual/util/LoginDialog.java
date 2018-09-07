@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
@@ -246,9 +246,9 @@ public class LoginDialog extends javax.swing.JFrame {
             statusLabel.setForeground(Color.BLACK);
             statusLabel.setText("Processing...");
             final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(userTextField.getText());
-            SessionManager.getInstance().login(userId, new String(passwordField.getPassword()), savePasswordCheckBox.isSelected());
+            SessionManager.getInstance().login(userId, new String(passwordField.getPassword()), savePasswordCheckBox.isSelected(), savePasswordCheckBox.isSelected());
             if (savePasswordCheckBox.isSelected()) {
-                SystemLogin.setLocalAutoLoginUser(userId);
+                BCOLogin.setLocalAutoLoginUser(userId);
             }
             statusLabel.setForeground(Color.GREEN.darker().darker().darker());
             statusLabel.setText("Login Successful");

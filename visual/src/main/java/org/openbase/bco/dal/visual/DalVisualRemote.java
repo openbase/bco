@@ -23,14 +23,12 @@ package org.openbase.bco.dal.visual;
  */
 import org.openbase.bco.dal.visual.util.LoginDialog;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.CancellationException;
-import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
-import org.openbase.bco.registry.jp.JPBCOAutoLoginUser;
+import org.openbase.bco.registry.lib.jp.JPBCOAutoLoginUser;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -259,7 +257,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         JPService.registerProperty(JPBCOAutoLoginUser.class);
         JPService.parseAndExitOnError(args);
 
-        SystemLogin.autoLogin();
+        BCOLogin.autoLogin(true);
 
         /* Create and display the form */
         java.awt.EventQueue.invokeAndWait(() -> {
