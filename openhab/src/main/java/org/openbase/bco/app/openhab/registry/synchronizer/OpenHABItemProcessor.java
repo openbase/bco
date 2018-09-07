@@ -60,7 +60,7 @@ public class OpenHABItemProcessor {
         return new OpenHABItemNameMetaData(itemName);
     }
 
-    public static String getItemType(final ServiceType serviceType, final ServicePattern servicePattern) throws NotAvailableException {
+    public static String getItemType(final ServiceType serviceType) throws NotAvailableException {
         switch (serviceType) {
             case COLOR_STATE_SERVICE:
                 return OPENHAB_COLOR_TYPE;
@@ -87,7 +87,7 @@ public class OpenHABItemProcessor {
             case BRIGHTNESS_STATE_SERVICE:
                 return OPENHAB_DIMMER_TYPE;
             default:
-                throw new NotAvailableException("OpenHAB item type for service[" + serviceType.name() + ", " + servicePattern.name() + "]");
+                throw new NotAvailableException("OpenHAB item type for service[" + serviceType.name() + "]");
         }
     }
 

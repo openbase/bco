@@ -129,7 +129,7 @@ public class CommandExecutor implements Observer<JsonObject> {
                 throw new CouldNotPerformException("Could not transform [" + commandString + "] into a state for service type[" + serviceType.name() + "]");
             }
 
-            Message serviceData = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceType, command).transform(command);
+            Message serviceData = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceType, command.getClass()).transform(command);
             return TimestampProcessor.updateTimestamp(System.currentTimeMillis(), serviceData, TimeUnit.MICROSECONDS);
         } catch (NotAvailableException ex) {
             throw new CouldNotPerformException("Could not transform [" + commandString + "] into a state for service type[" + serviceType.name() + "]", ex);

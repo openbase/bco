@@ -57,30 +57,35 @@ public class ServiceStateCommandTransformerPool {
     }
 
     @SuppressWarnings("unchecked")
+    public <TRANSFORMER extends ServiceStateCommandTransformer> TRANSFORMER getTransformer(final Class<TRANSFORMER> transformerClass) throws NotAvailableException {
+        return (TRANSFORMER) getTransformer(transformerClass.getSimpleName());
+    }
+
+    @SuppressWarnings("unchecked")
     public <S extends Message, C extends Command> ServiceStateCommandTransformer getTransformer(final Class<S> serviceStateClass, final Class<C> commandClass) throws NotAvailableException {
         return getTransformer(serviceStateClass.getSimpleName(), commandClass);
     }
 
     @SuppressWarnings("unchecked")
-    public <S extends Message, C extends Command> ServiceStateCommandTransformer<S, C> getTransformer(final ServiceType serviceType, final C command) throws CouldNotPerformException {
-        return (ServiceStateCommandTransformer<S, C>) getTransformer(serviceType, command.getClass());
-    }
-
-    @SuppressWarnings("unchecked")
-    public <S extends Message, C extends Command> ServiceStateCommandTransformer<S, C> getTransformer(final ServiceType serviceType, final Class<C> commandClass) throws CouldNotPerformException {
+    public <C extends Command> ServiceStateCommandTransformer getTransformer(final ServiceType serviceType, final Class<C> commandClass) throws CouldNotPerformException {
         final String serviceStateName = StringProcessor.transformToCamelCase(
                 Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType().name());
-        return (ServiceStateCommandTransformer<S, C>) getTransformer(serviceStateName, commandClass);
+        return getTransformer(serviceStateName, commandClass);
     }
 
     @SuppressWarnings("unchecked")
-    private <S extends Message, C extends Command> ServiceStateCommandTransformer<S, C> getTransformer(final String serviceStateName, final Class<C> commandClass) throws NotAvailableException {
+    private <C extends Command> ServiceStateCommandTransformer getTransformer(final String serviceStateName, final Class<C> commandClass) throws NotAvailableException {
         final String simpleClassName = serviceStateName + commandClass.getSimpleName() + TRANSFORMER_CLASSNAME_POSTFIX;
+        return getTransformer(simpleClassName);
+    }
+
+    @SuppressWarnings("unchecked")
+    private ServiceStateCommandTransformer getTransformer(final String simpleClassName) throws NotAvailableException {
         if (!pool.containsKey(simpleClassName)) {
             pool.put(simpleClassName, loadTransformer(simpleClassName));
         }
 
-        return (ServiceStateCommandTransformer<S, C>) pool.get(simpleClassName);
+        return pool.get(simpleClassName);
     }
 
     private ServiceStateCommandTransformer loadTransformer(final String simpleClassName) throws NotAvailableException {

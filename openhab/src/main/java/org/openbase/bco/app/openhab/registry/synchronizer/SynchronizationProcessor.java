@@ -310,7 +310,7 @@ public class SynchronizationProcessor {
                     itemDTO.label = generateItemLabel(unitConfig, serviceType) + " Light";
                     itemDTO.name = itemName;
                     try {
-                        itemDTO.type = OpenHABItemProcessor.getItemType(serviceType, servicePattern);
+                        itemDTO.type = OpenHABItemProcessor.getItemType(serviceType);
                     } catch (NotAvailableException ex) {
                         LOGGER.warn("Skip service[" + serviceType.name() + "] of unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] because no item type available");
                         continue;
@@ -354,7 +354,7 @@ public class SynchronizationProcessor {
             itemDTO.label = generateItemLabel(unitConfig, serviceType);
             itemDTO.name = itemName;
             try {
-                itemDTO.type = OpenHABItemProcessor.getItemType(serviceType, servicePattern);
+                itemDTO.type = OpenHABItemProcessor.getItemType(serviceType);
             } catch (NotAvailableException ex) {
                 LOGGER.warn("Skip service[" + serviceType.name() + "] of unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] because no item type available");
                 continue;
