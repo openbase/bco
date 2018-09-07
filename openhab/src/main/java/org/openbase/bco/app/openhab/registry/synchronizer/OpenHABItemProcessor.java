@@ -26,7 +26,6 @@ import org.openbase.bco.registry.unit.core.consistency.UnitAliasGenerationConsis
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -79,6 +78,7 @@ public class OpenHABItemProcessor {
                 return OPENHAB_ROLLERSHUTTER_TYPE;
             case POWER_STATE_SERVICE:
             case BUTTON_STATE_SERVICE:
+            case ACTIVATION_STATE_SERVICE:
                 return OPENHAB_SWITCH_TYPE;
             case CONTACT_STATE_SERVICE:
                 return OPENHAB_CONTACT_TYPE;
