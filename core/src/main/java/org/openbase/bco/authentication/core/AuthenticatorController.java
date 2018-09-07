@@ -72,18 +72,20 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
     private static final String STORE_FILENAME = "server_credential_store.json";
+    private static final String TICKET_GRANTING_KEY = "ticket_granting_key";
+    private static final String SERVICE_SERVER_SECRET_KEY = "service_server_secret_key";
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
-
-    private final byte[] ticketGrantingServiceSecretKey;
-    private final byte[] serviceServerSecretKey;
 
     private final CredentialStore store;
 
     private static String initialPassword;
 
     private final long ticketValidityTime;
+
+    private byte[] ticketGrantingServiceSecretKey = null;
+    private byte[] serviceServerSecretKey;
 
     public AuthenticatorController() throws InitializationException {
         this(new CredentialStore(), EncryptionHelper.generateKey());
@@ -100,10 +102,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) throws InitializationException {
         this.server = new NotInitializedRSBLocalServer();
 
-        this.ticketGrantingServiceSecretKey = EncryptionHelper.generateKey();
-        this.serviceServerSecretKey = serviceServerPrivateKey;
-
         this.store = store;
+        this.serviceServerSecretKey = serviceServerPrivateKey;
 
         try {
             this.ticketValidityTime = JPService.getProperty(JPSessionTimeout.class).getValue();
@@ -126,6 +126,25 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         }
 
         store.init(STORE_FILENAME);
+
+        if (!store.hasEntry(TICKET_GRANTING_KEY)) {
+            store.addCredentials(TICKET_GRANTING_KEY, EncryptionHelper.generateKey(), false);
+        }
+
+        if (!store.hasEntry(SERVICE_SERVER_SECRET_KEY)) {
+            if (serviceServerSecretKey != null) {
+                store.addCredentials(SERVICE_SERVER_SECRET_KEY, serviceServerSecretKey, false);
+            } else {
+                store.addCredentials(SERVICE_SERVER_SECRET_KEY, EncryptionHelper.generateKey(), false);
+            }
+        }
+
+        try {
+            ticketGrantingServiceSecretKey = store.getCredentials(TICKET_GRANTING_KEY);
+            serviceServerSecretKey = store.getCredentials(SERVICE_SERVER_SECRET_KEY);
+        } catch (NotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
