@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.jp;
+package org.openbase.bco.registry.lib.jp;
 
 /*
  * #%L
- * BCO Registry Utility
+ * BCO Registry Lib
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -22,28 +22,12 @@ package org.openbase.bco.registry.jp;
  * #L%
  */
 
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPBCOVarDirectory;
-import org.openbase.bco.registry.lib.util.BCORegistryLoader;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPBadArgumentException;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPValidationException;
 import org.openbase.jps.preset.AbstractJPString;
-import org.openbase.jps.preset.JPShareDirectory;
-import org.openbase.jps.preset.JPVarDirectory;
 import org.openbase.jps.tools.FileHandler;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

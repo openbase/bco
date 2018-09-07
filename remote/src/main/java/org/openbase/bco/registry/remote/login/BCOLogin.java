@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.login;
+package org.openbase.bco.registry.remote.login;
 
 /*-
  * #%L
- * BCO Registry Utility
+ * BCO Registry Remote
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -10,12 +10,12 @@ package org.openbase.bco.registry.login;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,7 +25,7 @@ package org.openbase.bco.registry.login;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPBCOHomeDirectory;
-import org.openbase.bco.registry.jp.JPBCOAutoLoginUser;
+import org.openbase.bco.registry.lib.jp.JPBCOAutoLoginUser;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
@@ -50,10 +50,10 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class SystemLogin {
+public class BCOLogin {
 
     public static final String LOGIN_PROPERTIES = "login.properties";
-    private static final Logger LOGGER = LoggerFactory.getLogger(SystemLogin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BCOLogin.class);
     private static Properties loginProperties = new Properties();
 
     static {
@@ -87,19 +87,21 @@ public class SystemLogin {
      *
      * @return a future representing the login task.
      */
-    public static Future<Void> autoLogin() {
+    public static Future<Void> autoLogin(final boolean includeSystemUser) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 try {
-                    SystemLogin.autoUserLogin();
+                    BCOLogin.autoUserLogin(includeSystemUser);
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Auto login not possible.", ex, LOGGER, LogLevel.WARN);
+                    if(!includeSystemUser) {
+                        throw ex;
+                    }
+                    BCOLogin.loginBCOUser();
                 }
-                SystemLogin.loginBCOUser();
             } catch (InterruptedException | CancellationException ex) {
                 throw ex;
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory("Auto system login not possible. Please login via user interface to get system permissions!", ex, LOGGER, LogLevel.WARN);
+                ExceptionPrinter.printHistoryAndReturnThrowable("Auto system login not possible. Please login via user interface to get system permissions!", ex, LOGGER, LogLevel.WARN);
             }
             return null;
         });
@@ -111,7 +113,7 @@ public class SystemLogin {
      * @throws CouldNotPerformException is thrown if the auto login could not be performed, e.g. because no auto login user was defined or the credentials are not available.
      * @throws InterruptedException     is thrown if the thread was externally interrupted.
      */
-    public static void autoUserLogin() throws CouldNotPerformException, InterruptedException {
+    public static void autoUserLogin(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException {
         // check if authentication is enabled.
         try {
             if (!JPService.getProperty(JPAuthentication.class).getValue()) {
@@ -122,7 +124,7 @@ public class SystemLogin {
         }
 
 
-        final String userId = SystemLogin.loadAutoLoginUserId();
+        final String userId = BCOLogin.loadAutoLoginUserId(includeSystemUser);
 
         // during tests the registry generation is skipped because the mock registry is handling the db initialization.
         if (!SessionManager.getInstance().hasCredentialsForId(userId)) {
@@ -140,8 +142,11 @@ public class SystemLogin {
         setLocalAutoLoginUser(userId);
     }
 
-    private static String loadAutoLoginUserId() throws CouldNotPerformException, InterruptedException {
+    private static String loadAutoLoginUserId(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException {
         try {
+
+            Registries.waitUntilReady();
+
             // load via local properties file
             String userId = loginProperties.getProperty(DEFAULT_USER_KEY);
 
@@ -162,7 +167,8 @@ public class SystemLogin {
 
             try {
                 // check if value is a valid user
-                if (Registries.getUnitRegistry(true).getUnitConfigById(userId).getUnitType() == UnitType.USER) {
+                final UnitConfig unitConfigById = Registries.getUnitRegistry(true).getUnitConfigById(userId);
+                if (unitConfigById.getUnitType() == UnitType.USER && (includeSystemUser || !unitConfigById.getUserConfig().getIsSystemUser())) {
                     return userId;
                 }
             } catch (NotAvailableException ex) {
@@ -171,7 +177,11 @@ public class SystemLogin {
 
             try {
                 // check if value is valid user
-                return Registries.getUnitRegistry().getUserUnitIdByUserName(userId);
+                userId = Registries.getUnitRegistry().getUserUnitIdByUserName(userId);
+                if (!includeSystemUser && Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getIsSystemUser()) {
+                    throw new NotAvailableException("AutoLoginUser");
+                }
+                return userId;
             } catch (NotAvailableException ex) {
                 // value not a valid username
                 throw new CouldNotPerformException("Can not find a valid username or id in [" + userId + "].");

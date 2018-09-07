@@ -235,7 +235,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         // register alias generator first to make sure other consistency checks can access the alias
+        registerConsistencyHandler(new UnitIdUniqueVerificationConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitAliasGenerationConsistencyHandler(this), UnitConfig.class);
+        registerConsistencyHandler(new UnitAliasUniqueVerificationConsistencyHandler(this), UnitConfig.class);
+        registerConsistencyHandler(new UnitLabelConsistencyHandler(), UnitConfig.class);
 
         agentUnitConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler());
         agentUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
@@ -317,7 +320,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(), UnitConfig.class);
-        registerConsistencyHandler(new UnitAliasUniqueVerificationConsistencyHandler(this), UnitConfig.class);
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new BoundingBoxConsistencyHandler(), UnitConfig.class);
