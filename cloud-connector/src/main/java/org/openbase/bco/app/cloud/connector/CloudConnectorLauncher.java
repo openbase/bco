@@ -25,7 +25,7 @@ package org.openbase.bco.app.cloud.connector;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -59,7 +59,7 @@ public class CloudConnectorLauncher {
         try {
             Registries.waitForData();
 
-            SystemLogin.loginBCOUser();
+            BCOLogin.loginBCOUser();
 
             CloudConnectorAppImpl cloudConnectorApp = new CloudConnectorAppImpl();
             cloudConnectorApp.init(CloudConnectorAppRemote.getCloudConnectorUnitConfig());
