@@ -25,7 +25,7 @@ package org.openbase.bco.registry.unit.lib.jp;
 import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
+import org.openbase.jul.storage.registry.jp.AbstractJPLocalDatabaseDirectory;
 
 import java.io.File;
 
@@ -33,7 +33,7 @@ import java.io.File;
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPAgentConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPAgentConfigDatabaseDirectory extends AbstractJPLocalDatabaseDirectory {
 
     public final static String[] COMMAND_IDENTIFIERS = {"--agent-config-db"};
 

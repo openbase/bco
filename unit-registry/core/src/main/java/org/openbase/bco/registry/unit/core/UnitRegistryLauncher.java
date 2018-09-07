@@ -28,6 +28,7 @@ package org.openbase.bco.registry.unit.core;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
+import org.openbase.bco.registry.template.lib.jp.JPUnitTemplateDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.*;
 import org.openbase.jps.core.JPService;
@@ -57,7 +58,6 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPRecoverDB.class);
-        JPService.registerProperty(JPUnitTemplateDatabaseDirectory.class);
         JPService.registerProperty(JPAgentConfigDatabaseDirectory.class);
         JPService.registerProperty(JPAppConfigDatabaseDirectory.class);
         JPService.registerProperty(JPAuthorizationGroupConfigDatabaseDirectory.class);
@@ -67,7 +67,6 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
         JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
         JPService.registerProperty(JPSceneConfigDatabaseDirectory.class);
         JPService.registerProperty(JPUnitGroupConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPServiceTemplateDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
         JPService.registerProperty(JPClearUnitPosition.class);
