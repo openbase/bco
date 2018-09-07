@@ -22,8 +22,6 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.manager.transform.StopMoveStateTransformer;
-import org.openbase.bco.app.openhab.manager.transform.UpDownStateTransformer;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,16 +40,7 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setBlindState(BlindState blindState) throws CouldNotPerformException {
-        switch (blindState.getValue()) {
-            case UP:
-                return executeCommand(UpDownStateTransformer.transform(blindState));
-            case DOWN:
-                return executeCommand(UpDownStateTransformer.transform(blindState));
-            case STOP:
-                return executeCommand(StopMoveStateTransformer.transform(blindState));
-            default:
-                throw new CouldNotPerformException("Cannot set blind state to unknown state [" + blindState + "]");
-        }
+        return setState(blindState);
     }
 
     @Override

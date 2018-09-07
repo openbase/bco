@@ -1,5 +1,8 @@
 package org.openbase.bco.app.openhab.manager.transform;
 
+import org.eclipse.smarthome.core.library.types.DecimalType;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
+
 /*-
  * #%L
  * BCO Openhab App
@@ -22,33 +25,34 @@ package org.openbase.bco.app.openhab.manager.transform;
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.DecimalType;
-import rst.domotic.state.BlindStateType.BlindState;
-
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BlindStateTransformer {
+public class IlluminanceStateDecimalTypeTransformer implements ServiceStateCommandTransformer<IlluminanceState, DecimalType> {
 
     /**
-     * Transform a number to a brightness state by setting the number as the brightness value.
+     * Transform a number to an illuminationState by setting the number as the illuminance.
      *
      * @param decimalType the brightness value
+     *
      * @return the corresponding brightness state
      */
-    public static BlindState transform(final DecimalType decimalType) {
-        BlindState.Builder state = BlindState.newBuilder();
-        state.setOpeningRatio(decimalType.doubleValue());
+    @Override
+    public IlluminanceState transform(final DecimalType decimalType) {
+        IlluminanceState.Builder state = IlluminanceState.newBuilder();
+        state.setIlluminance(decimalType.doubleValue());
         return state.build();
     }
 
     /**
-     * Get the brightness value.
+     * Get the illuminance value.
      *
-     * @param blindState the state to transform
-     * @return the current brightness value
+     * @param illuminanceState the state
+     *
+     * @return the current illuminance
      */
-    public static DecimalType transform(BlindState blindState) {
-        return new DecimalType(blindState.getOpeningRatio());
+    @Override
+    public DecimalType transform(IlluminanceState illuminanceState) {
+        return new DecimalType(illuminanceState.getIlluminance());
     }
 }

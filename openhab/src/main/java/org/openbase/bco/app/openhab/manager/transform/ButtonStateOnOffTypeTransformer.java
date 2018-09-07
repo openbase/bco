@@ -21,6 +21,7 @@ package org.openbase.bco.app.openhab.manager.transform;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.TypeNotSupportedException;
@@ -28,12 +29,12 @@ import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.state.ButtonStateType.ButtonState.State;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class ButtonStateTransformer {
+public class ButtonStateOnOffTypeTransformer implements ServiceStateCommandTransformer<ButtonState, OnOffType> {
 
-    public static ButtonState transform(final OnOffType onOffType) throws CouldNotTransformException {
+    @Override
+    public ButtonState transform(final OnOffType onOffType) throws CouldNotTransformException {
         switch (onOffType) {
             case OFF:
                 return ButtonState.newBuilder().setValue(State.RELEASED).build();
@@ -44,7 +45,8 @@ public class ButtonStateTransformer {
         }
     }
 
-    public static OnOffType transform(final ButtonState buttonState) throws TypeNotSupportedException, CouldNotTransformException {
+    @Override
+    public OnOffType transform(final ButtonState buttonState) throws TypeNotSupportedException, CouldNotTransformException {
         switch (buttonState.getValue()) {
             case RELEASED:
                 return OnOffType.OFF;

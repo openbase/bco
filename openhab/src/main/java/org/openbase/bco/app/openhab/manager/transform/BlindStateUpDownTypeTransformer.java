@@ -22,37 +22,38 @@ package org.openbase.bco.app.openhab.manager.transform;
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.StopMoveType;
+import org.eclipse.smarthome.core.library.types.UpDownType;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.TypeNotSupportedException;
-import rst.domotic.binding.openhab.StopMoveHolderType.StopMoveHolder;
+import rst.domotic.binding.openhab.UpDownHolderType.UpDownHolder;
 import rst.domotic.state.BlindStateType.BlindState;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class StopMoveStateTransformer {
+public class BlindStateUpDownTypeTransformer implements ServiceStateCommandTransformer<BlindState, UpDownType> {
 
-    public static BlindState transform(final StopMoveType stopMoveType) throws CouldNotTransformException {
-        switch (stopMoveType) {
-            case STOP:
-                return BlindState.newBuilder().setValue(BlindState.State.STOP).build();
-            case MOVE:
-                return BlindState.newBuilder().setValue(BlindState.State.UNKNOWN).build();
+    @Override
+    public BlindState transform(final UpDownType upDownType) throws CouldNotTransformException {
+        switch (upDownType) {
+            case DOWN:
+                return BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
+            case UP:
+                return BlindState.newBuilder().setValue(BlindState.State.UP).build();
             default:
-                throw new CouldNotTransformException("Could not transform " + StopMoveHolder.StopMove.class.getSimpleName() + "[" + stopMoveType.name() + "] is unknown!");
+                throw new CouldNotTransformException("Could not transform " + UpDownHolder.UpDown.class.getSimpleName() + "[" + upDownType.name() + "] is unknown!");
         }
     }
 
-    public static StopMoveType transform(BlindState blindState) throws TypeNotSupportedException, CouldNotTransformException {
+    @Override
+    public UpDownType transform(final BlindState blindState) throws TypeNotSupportedException, CouldNotTransformException {
         switch (blindState.getValue()) {
-            case STOP:
-                return StopMoveType.STOP;
-            case UP:
             case DOWN:
-                return StopMoveType.MOVE;
+                return UpDownType.DOWN;
+            case UP:
+                return UpDownType.UP;
             case UNKNOWN:
-                throw new TypeNotSupportedException(blindState, StopMoveType.class);
+                throw new TypeNotSupportedException(blindState, UpDownType.class);
             default:
                 throw new CouldNotTransformException("Could not transform " + BlindState.class.getSimpleName() + "[" + blindState.getValue().name() + "] is unknown!");
         }

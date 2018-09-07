@@ -22,7 +22,6 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.manager.transform.BrightnessStateTransformer;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,7 +40,7 @@ public class BrightnessStateServiceImpl<ST extends BrightnessStateOperationServi
 
     @Override
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return executeCommand(BrightnessStateTransformer.transform(brightnessState));
+        return setState(brightnessState);
     }
 
     @Override

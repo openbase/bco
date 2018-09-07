@@ -22,8 +22,11 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
+import org.openbase.bco.app.openhab.manager.transform.ServiceTypeCommandMapping;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
@@ -103,21 +106,39 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         return itemName;
     }
 
-    public Future<ActionFuture> executeCommand(final Command command) throws CouldNotPerformException {
-        if (itemName == null) {
-            throw new NotAvailableException("itemID");
+    public Future<ActionFuture> setState(final Message state) throws CouldNotPerformException {
+        for (final Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
+            Command command = ServiceStateCommandTransformerPool.getInstance().getTransformer(state.getClass(), commandClass).transform(state);
+            try {
+                OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
+            } catch (CouldNotPerformException ex) {
+                if (ex.getCause() instanceof NotAvailableException) {
+                    throw new CouldNotPerformException("Thing may not be configured or openHAB not reachable", ex);
+                }
+                throw ex;
+            }
         }
 
-        try {
-            OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
-        } catch (CouldNotPerformException ex) {
-            if (ex.getCause() instanceof NotAvailableException) {
-                throw new CouldNotPerformException("Thing may not be configured or openHAB not reachable", ex);
-            }
-            throw ex;
-        }
         return CompletableFuture.completedFuture(null);
     }
+
+//    public Future<ActionFuture> executeCommand(final Command... commands) throws CouldNotPerformException {
+//        if (itemName == null) {
+//            throw new NotAvailableException("itemID");
+//        }
+//
+//        try {
+//            for (final Command command : commands) {
+//                OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
+//            }
+//        } catch (CouldNotPerformException ex) {
+//            if (ex.getCause() instanceof NotAvailableException) {
+//                throw new CouldNotPerformException("Thing may not be configured or openHAB not reachable", ex);
+//            }
+//            throw ex;
+//        }
+//        return CompletableFuture.completedFuture(null);
+//    }
 
     @Override
     public ServiceProvider getServiceProvider() {

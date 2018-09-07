@@ -24,39 +24,35 @@ package org.openbase.bco.app.openhab.manager.transform;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.TypeNotSupportedException;
-import rst.domotic.state.MotionStateType.MotionState;
-import rst.domotic.state.MotionStateType.MotionState.State;
+import rst.domotic.state.SmokeStateType.SmokeState;
+import rst.domotic.state.SmokeStateType.SmokeState.State;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class MotionStateTransformer {
+public class SmokeStateDecimalTypeTransformer implements ServiceStateCommandTransformer<SmokeState, DecimalType> {
 
-    public static MotionState transform(final DecimalType decimalType) throws CouldNotTransformException {
-        MotionState.Builder motionState = MotionState.newBuilder();
+    //TODO: check if the values from openhab match this transofrmation
+    @Override
+    public SmokeState transform(final DecimalType decimalType) throws CouldNotTransformException {
+        SmokeState.Builder smokeState = SmokeState.newBuilder();
         try {
+            smokeState.setSmokeLevel(decimalType.doubleValue());
             if (decimalType.intValue() == 0) {
-                motionState.setValue(State.NO_MOTION);
+                smokeState.setValue(State.NO_SMOKE);
+            } else if (decimalType.intValue() < 20) {
+                smokeState.setValue(State.SOME_SMOKE);
             } else {
-                motionState.setValue(State.MOTION);
+                smokeState.setValue(State.SMOKE);
             }
-            return motionState.build();
+            return smokeState.build();
         } catch (Exception ex) {
             throw new CouldNotTransformException("Could not transform " + DecimalType.class.getSimpleName() + "[" + decimalType + "] is unknown!", ex);
         }
     }
 
-    public static DecimalType transform(final MotionState motionState) throws CouldNotTransformException, TypeNotSupportedException {
-        switch (motionState.getValue()) {
-            case NO_MOTION:
-                return new DecimalType(0d);
-            case MOTION:
-                return new DecimalType(1d);
-            case UNKNOWN:
-                throw new TypeNotSupportedException(motionState, DecimalType.class);
-            default:
-                throw new CouldNotTransformException("Could not transform " + MotionState.class.getSimpleName() + "[" + motionState.getValue().name() + "] is unknown!");
-        }
+    @Override
+    public DecimalType transform(final SmokeState smokeState) {
+        return new DecimalType(smokeState.getSmokeLevel());
     }
 }

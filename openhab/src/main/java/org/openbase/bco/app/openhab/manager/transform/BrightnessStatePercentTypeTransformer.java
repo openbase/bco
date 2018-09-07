@@ -1,8 +1,5 @@
 package org.openbase.bco.app.openhab.manager.transform;
 
-import org.eclipse.smarthome.core.library.types.DecimalType;
-import rst.domotic.state.IlluminanceStateType.IlluminanceState;
-
 /*-
  * #%L
  * BCO Openhab App
@@ -25,30 +22,38 @@ import rst.domotic.state.IlluminanceStateType.IlluminanceState;
  * #L%
  */
 
+import org.eclipse.smarthome.core.library.types.PercentType;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.BrightnessStateType.BrightnessState.Builder;
+
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class IlluminanceStateTransformer {
+public class BrightnessStatePercentTypeTransformer implements ServiceStateCommandTransformer<BrightnessState, PercentType> {
 
     /**
-     * Transform a number to an illuminationState by setting the number as the illuminance.
+     * Transform a number to a brightness state by setting the number as the brightness value.
      *
-     * @param decimalType the brightness value
+     * @param percentType the brightness value
+     *
      * @return the corresponding brightness state
      */
-    public static IlluminanceState transform(final DecimalType decimalType) {
-        IlluminanceState.Builder state = IlluminanceState.newBuilder();
-        state.setIlluminance(decimalType.doubleValue());
+    @Override
+    public BrightnessState transform(final PercentType percentType) {
+        Builder state = BrightnessState.newBuilder();
+        state.setBrightness(percentType.doubleValue());
         return state.build();
     }
 
     /**
-     * Get the illuminance value.
+     * Get the brightness value.
      *
-     * @param illuminanceState the state
-     * @return the current illuminance
+     * @param brightnessState the state
+     *
+     * @return the current brightness value
      */
-    public static DecimalType transform(IlluminanceState illuminanceState) {
-        return new DecimalType(illuminanceState.getIlluminance());
+    @Override
+    public PercentType transform(BrightnessState brightnessState) {
+        return new PercentType((int) brightnessState.getBrightness());
     }
 }

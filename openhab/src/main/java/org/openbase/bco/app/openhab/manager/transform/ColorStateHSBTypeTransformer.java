@@ -31,9 +31,10 @@ import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType.Color.Type;
 import rst.vision.HSBColorType.HSBColor;
 
-public class ColorStateTransformer {
+public class ColorStateHSBTypeTransformer implements ServiceStateCommandTransformer<ColorState, HSBType> {
 
-    public static ColorState transform(final HSBType hsbType) throws CouldNotTransformException {
+    @Override
+    public ColorState transform(final HSBType hsbType) throws CouldNotTransformException {
         try {
             ColorState.Builder colorState = ColorState.newBuilder();
             colorState.getColorBuilder().setType(Type.HSB);
@@ -47,10 +48,11 @@ public class ColorStateTransformer {
         }
     }
 
-    public static HSBType transform(final ColorState colorState) throws CouldNotTransformException {
+    @Override
+    public HSBType transform(final ColorState colorState) throws CouldNotTransformException {
         try {
             HSBColor hsbColor;
-            if(colorState.getColor().getType() == Type.RGB) {
+            if (colorState.getColor().getType() == Type.RGB) {
                 hsbColor = HSBColorToRGBColorTransformer.transform(colorState.getColor().getRgbColor());
             } else {
                 hsbColor = colorState.getColor().getHsbColor();

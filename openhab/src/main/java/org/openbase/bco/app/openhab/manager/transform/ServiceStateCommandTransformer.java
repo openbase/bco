@@ -25,13 +25,37 @@ package org.openbase.bco.app.openhab.manager.transform;
 import com.google.protobuf.Message;
 import org.eclipse.smarthome.core.types.Command;
 import org.openbase.jul.exception.CouldNotTransformException;
+import org.openbase.jul.exception.TypeNotSupportedException;
 
 /**
+ * @param <S> the service state that can be transformed.
+ * @param <C> the command type that can be transformed
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ServiceStateCommandTransformer<S extends Message, C extends Command> {
 
-    S transform(final C command) throws CouldNotTransformException;
+    /**
+     * Transform a command of type C to a service state of type S.
+     *
+     * @param command the command which will be transformed.
+     *
+     * @return the transformation of the command into the service state.
+     *
+     * @throws CouldNotTransformException if the transformation fails.
+     * @throws TypeNotSupportedException  if the value of the command is not supported.
+     */
+    S transform(final C command) throws CouldNotTransformException, TypeNotSupportedException;
 
-    C transform(final S serviceState) throws CouldNotTransformException;
+    /**
+     * Transform a service state into a command.
+     *
+     * @param serviceState the service state to be transformed.
+     *
+     * @return the transformation of the state into the command.
+     *
+     * @throws CouldNotTransformException if the transformation fails.
+     * @throws TypeNotSupportedException  if the value of the command is not supported.
+     */
+    C transform(final S serviceState) throws CouldNotTransformException, TypeNotSupportedException;
 }

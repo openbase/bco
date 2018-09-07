@@ -22,7 +22,6 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.manager.transform.ColorStateTransformer;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -50,6 +49,6 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        return executeCommand(ColorStateTransformer.transform(colorState));
+        return setState(colorState);
     }
 }

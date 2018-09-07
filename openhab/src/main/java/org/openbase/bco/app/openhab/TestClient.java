@@ -22,17 +22,14 @@ package org.openbase.bco.app.openhab;
  * #L%
  */
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
+import org.eclipse.smarthome.core.types.Command;
+import org.openbase.bco.app.openhab.manager.transform.ServiceTypeCommandMapping;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map.Entry;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 
 public class TestClient {
 
@@ -40,7 +37,22 @@ public class TestClient {
 
     public static void main(String[] args) {
         try {
-            final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//            Registries.getTemplateRegistry().waitForData();
+            Registries.getTemplateRegistry().addDataObserver((observable, data) -> {
+                for (ServiceTemplate serviceTemplate : data.getServiceTemplateList()) {
+                    String commandClasses = "";
+                    try {
+                        for (Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceTemplate.getType())) {
+                            commandClasses += commandClass.getSimpleName() + ", ";
+                        }
+                        LOGGER.info(serviceTemplate.getType().name() + ": " + commandClasses);
+                    } catch (NotAvailableException ex) {
+                        // do nothing
+                    }
+                }
+            });
+
+//            final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 //            final JsonParser jsonParser = new JsonParser();
 //
 //            System.out.println("Start...");
@@ -69,10 +81,10 @@ public class TestClient {
 //                }
 //            }
 
-            final String test = "smarthome/inbox/hue:bridge:00178821671c/added";
-            System.out.println(test.matches("smarthome/inbox/(.+)/added"));
-            System.out.println(test.matches("smarthome/inbox/(.+)/added"));
-            System.out.println(test.matches("smarthome/items/(.+)/state"));
+//            final String test = "smarthome/inbox/hue:bridge:00178821671c/added";
+//            System.out.println(test.matches("smarthome/inbox/(.+)/added"));
+//            System.out.println(test.matches("smarthome/inbox/(.+)/added"));
+//            System.out.println(test.matches("smarthome/items/(.+)/state"));
 
 //            OpenHABRestCommunicator.getInstance().addSSEObserver(new Observer<JsonObject>() {
 //                @Override

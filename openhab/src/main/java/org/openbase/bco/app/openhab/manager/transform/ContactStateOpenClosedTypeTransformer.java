@@ -30,9 +30,10 @@ import rst.domotic.state.ContactStateType.ContactState;
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class OpenClosedStateTransformer {
+public class ContactStateOpenClosedTypeTransformer implements ServiceStateCommandTransformer<ContactState, OpenClosedType> {
 
-    public static ContactState transform(OpenClosedType openClosedType) throws CouldNotTransformException {
+    @Override
+    public ContactState transform(final OpenClosedType openClosedType) throws CouldNotTransformException {
         switch (openClosedType) {
             case CLOSED:
                 return ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
@@ -43,7 +44,8 @@ public class OpenClosedStateTransformer {
         }
     }
 
-    public static OpenClosedType transform(ContactState contactState) throws CouldNotTransformException, TypeNotSupportedException {
+    @Override
+    public OpenClosedType transform(ContactState contactState) throws CouldNotTransformException, TypeNotSupportedException {
         switch (contactState.getValue()) {
             case CLOSED:
                 return OpenClosedType.CLOSED;

@@ -22,13 +22,15 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.manager.transform.PowerStateTransformer;
+import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 
 import java.util.concurrent.Future;
@@ -41,7 +43,7 @@ public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        return executeCommand(PowerStateTransformer.transform(powerState));
+        return setState(powerState);
     }
 
     @Override
