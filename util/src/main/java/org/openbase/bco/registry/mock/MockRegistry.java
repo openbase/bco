@@ -214,7 +214,8 @@ public class MockRegistry {
         ACTIVITY_MULTI_STATE_SERVICE(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, CommunicationType.ACTIVITY_MULTI_STATE),
         EMPHASIS_STATE_SERVICE(ServiceType.EMPHASIS_STATE_SERVICE, CommunicationType.EMPHASIS_STATE),
         LOCAL_POSITION_STATE_SERVICE(ServiceType.LOCAL_POSITION_STATE_SERVICE, CommunicationType.LOCAL_POSITION_STATE),
-        GLOBAL_POSITION_STATE_SERVICE(ServiceType.GLOBAL_POSITION_STATE_SERVICE, CommunicationType.GLOBAL_POSITION_STATE);
+        GLOBAL_POSITION_STATE_SERVICE(ServiceType.GLOBAL_POSITION_STATE_SERVICE, CommunicationType.GLOBAL_POSITION_STATE),
+        SMOKE_STATE_SERVICE(ServiceType.SMOKE_STATE_SERVICE, CommunicationType.SMOKE_STATE);
 
 
         private final ServiceTemplate serviceTemplate;
@@ -759,6 +760,7 @@ public class MockRegistry {
      * Registers the given unit.
      *
      * @param unitConfig
+     *
      * @throws CouldNotPerformException
      * @throws InterruptedException
      * @throws ExecutionException
