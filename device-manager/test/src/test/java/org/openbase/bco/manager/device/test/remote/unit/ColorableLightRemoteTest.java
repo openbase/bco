@@ -46,6 +46,7 @@ import rst.vision.HSBColorType.HSBColor;
 import java.awt.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -295,9 +296,12 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             public void update(Observable<PowerState> source, PowerState data) throws Exception {
                 powerStateObserverUpdateNumber++;
                 if (powerStateObserverUpdateNumber == 1 || powerStateObserverUpdateNumber == 3) {
+                    // TODO: check does not work on notification thread
                     assertEquals("Notified on unexpected PowerState in update[" + powerStateObserverUpdateNumber + "]!", PowerState.State.OFF, data.getValue());
-                } else if (powerStateObserverUpdateNumber == 2) {
+                } else if (powerStateObserverUpdateNumber == 2|| powerStateObserverUpdateNumber == 3|| powerStateObserverUpdateNumber == 4) {
+                    // TODO: check does not work on notification thread
                     assertEquals("Notified on unexpected PowerState in update[" + powerStateObserverUpdateNumber + "]!", PowerState.State.ON, data.getValue());
+
                 }
             }
         });
@@ -306,7 +310,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         colorableLightRemote.setPowerState(PowerState.State.ON).get();
         colorableLightRemote.setNeutralWhite().get();
         colorableLightRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(14).build());
-        colorableLightRemote.setColor(Color.RED).get();
+        colorableLightRemote.setColor(HSBColor.newBuilder().setBrightness(12).setSaturation(10).build());
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
         assertEquals("PowerStateObserver wasn't notified the correct amount of times!", 3, powerStateObserverUpdateNumber);

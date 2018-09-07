@@ -24,7 +24,7 @@ package org.openbase.bco.manager.scene.core;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.manager.scene.lib.SceneControllerFactory;
 import org.openbase.bco.manager.scene.lib.SceneManager;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Launchable;
@@ -34,7 +34,6 @@ import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.EnablingStateType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -74,7 +73,7 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        SystemLogin.loginBCOUser();
+        BCOLogin.loginBCOUser();
         sceneRegistrySynchronizer.activate();
     }
 

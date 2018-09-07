@@ -28,7 +28,7 @@ package org.openbase.bco.manager.agent.core;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentControllerFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Launchable;
@@ -75,7 +75,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        SystemLogin.loginBCOUser();
+        BCOLogin.loginBCOUser();
 
         agentRegistrySynchronizer.activate();
     }

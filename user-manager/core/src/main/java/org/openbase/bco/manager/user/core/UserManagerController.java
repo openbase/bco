@@ -22,7 +22,7 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 import org.openbase.bco.manager.user.lib.*;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -88,7 +88,7 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        SystemLogin.loginBCOUser();
+        BCOLogin.loginBCOUser();
 
         unitRegistrySynchronizer.activate();
         authorizationGroupRegistrySynchronizer.activate();

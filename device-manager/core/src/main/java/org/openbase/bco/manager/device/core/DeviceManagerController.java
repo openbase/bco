@@ -29,7 +29,7 @@ import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -144,7 +144,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         active = true;
-        SystemLogin.loginBCOUser();
+        BCOLogin.loginBCOUser();
         deviceRegistrySynchronizer.activate();
         unitSimulationManager.activate();
     }

@@ -28,7 +28,7 @@ import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupController;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupControllerFactory;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -103,7 +103,7 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        SystemLogin.loginBCOUser();
+        BCOLogin.loginBCOUser();
 
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();
