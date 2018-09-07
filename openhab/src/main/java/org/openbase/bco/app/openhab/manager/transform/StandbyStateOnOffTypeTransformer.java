@@ -1,6 +1,6 @@
 package org.openbase.bco.app.openhab.manager.transform;
 
-/*
+/*-
  * #%L
  * BCO Openhab App
  * %%
@@ -25,34 +25,35 @@ package org.openbase.bco.app.openhab.manager.transform;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.TypeNotSupportedException;
-import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.binding.openhab.OnOffHolderType;
+import rst.domotic.state.StandbyStateType.StandbyState;
+import rst.domotic.state.StandbyStateType.StandbyState.State;
 
-/**
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
- */
-public class ActivationStateTransformer {
+public class StandbyStateOnOffTypeTransformer implements ServiceStateCommandTransformer<StandbyState, OnOffType> {
 
-    public static ActivationState transform(final OnOffType onOffType) throws CouldNotTransformException {
+    @Override
+    public StandbyState transform(OnOffType onOffType) throws CouldNotTransformException {
         switch (onOffType) {
             case OFF:
-                return ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
+                return StandbyState.newBuilder().setValue(State.RUNNING).build();
             case ON:
-                return ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
+                return StandbyState.newBuilder().setValue(State.STANDBY).build();
             default:
-                throw new CouldNotTransformException("Could not transform " + OnOffType.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
+                throw new CouldNotTransformException("Could not transform " + OnOffHolderType.OnOffHolder.OnOff.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
         }
     }
 
-    public static OnOffType transform(final ActivationState activationState) throws TypeNotSupportedException, CouldNotTransformException {
-        switch (activationState.getValue()) {
-            case DEACTIVE:
+    @Override
+    public OnOffType transform(StandbyState standbyState) throws TypeNotSupportedException, CouldNotTransformException {
+        switch (standbyState.getValue()) {
+            case RUNNING:
                 return OnOffType.OFF;
-            case ACTIVE:
+            case STANDBY:
                 return OnOffType.ON;
             case UNKNOWN:
-                throw new TypeNotSupportedException(activationState, OnOffType.class);
+                throw new TypeNotSupportedException(standbyState, OnOffType.class);
             default:
-                throw new CouldNotTransformException("Could not transform " + ActivationState.class.getSimpleName() + "[" + activationState.getValue().name() + "] is unknown!");
+                throw new CouldNotTransformException("Could not transform " + StandbyState.State.class.getSimpleName() + "[" + standbyState.getValue().name() + "] is unknown!");
         }
     }
 }

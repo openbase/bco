@@ -31,10 +31,11 @@ import rst.domotic.state.AlarmStateType.AlarmState.State;
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AlarmStateTransformer {
+public class AlarmStateDecimalTypeTransformer implements ServiceStateCommandTransformer<AlarmState, DecimalType> {
 
     //TODO: check if the values from openhab match this transformation
-    public static AlarmState transform(final DecimalType decimalType) throws CouldNotTransformException {
+    @Override
+    public AlarmState transform(final DecimalType decimalType) throws CouldNotTransformException {
         switch (decimalType.intValue()) {
             case 0:
                 return AlarmState.newBuilder().setValue(State.NO_ALARM).build();
@@ -45,7 +46,8 @@ public class AlarmStateTransformer {
         }
     }
 
-    public static DecimalType transform(final AlarmState alarmState) throws TypeNotSupportedException, CouldNotTransformException {
+    @Override
+    public DecimalType transform(final AlarmState alarmState) throws TypeNotSupportedException, CouldNotTransformException {
         switch (alarmState.getValue()) {
             case NO_ALARM:
                 return new DecimalType(0);

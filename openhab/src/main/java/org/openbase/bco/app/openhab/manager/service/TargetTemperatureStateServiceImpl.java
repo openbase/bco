@@ -22,7 +22,8 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.manager.transform.TemperatureStateTransformer;
+import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,7 +42,7 @@ public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureState
 
     @Override
     public Future<ActionFuture> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
-        return executeCommand(TemperatureStateTransformer.transform(temperatureState));
+        return executeCommand(ServiceStateCommandTransformerPool.getInstance().getTransformer(TemperatureState.class, DecimalType.class).transform(temperatureState));
     }
 
     @Override

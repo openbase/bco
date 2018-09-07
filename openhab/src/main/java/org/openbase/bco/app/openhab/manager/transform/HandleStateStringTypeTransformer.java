@@ -32,9 +32,10 @@ import rst.domotic.state.HandleStateType.HandleState;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class HandleStateTransformer {
+public class HandleStateStringTypeTransformer implements ServiceStateCommandTransformer<HandleState, StringType> {
 
-    public static HandleState transform(final StringType value) throws CouldNotTransformException {
+    @Override
+    public HandleState transform(final StringType value) throws CouldNotTransformException {
         switch (StringProcessor.transformToUpperCase(value.toString())) {
             case "CLOSED":
                 return HandleState.newBuilder().setPosition(0).build();
@@ -47,7 +48,8 @@ public class HandleStateTransformer {
         }
     }
 
-    public static StringType transform(final HandleState value) throws CouldNotTransformException {
+    @Override
+    public StringType transform(final HandleState value) throws CouldNotTransformException {
         switch (value.getPosition()) {
             case 0:
                 return new StringType("CLOSED");

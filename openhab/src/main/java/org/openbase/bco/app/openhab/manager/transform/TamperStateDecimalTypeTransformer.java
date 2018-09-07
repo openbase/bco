@@ -30,9 +30,10 @@ import rst.domotic.state.TamperStateType.TamperState;
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class TamperStateTransformer {
+public class TamperStateDecimalTypeTransformer implements ServiceStateCommandTransformer<TamperState, DecimalType> {
 
-    public static TamperState transform(final DecimalType decimalType) throws CouldNotTransformException {
+    @Override
+    public TamperState transform(final DecimalType decimalType) throws CouldNotTransformException {
         if (decimalType.intValue() == 0) {
             return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
         } else if (decimalType.intValue() > 0) {
@@ -43,7 +44,8 @@ public class TamperStateTransformer {
         }
     }
 
-    public static DecimalType transform(final TamperState tamperState) throws TypeNotSupportedException, CouldNotTransformException {
+    @Override
+    public DecimalType transform(final TamperState tamperState) throws TypeNotSupportedException, CouldNotTransformException {
         switch (tamperState.getValue()) {
             case NO_TAMPER:
                 return new DecimalType(0d);

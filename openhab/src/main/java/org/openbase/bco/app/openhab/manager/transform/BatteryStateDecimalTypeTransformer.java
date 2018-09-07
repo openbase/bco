@@ -27,9 +27,9 @@ import rst.domotic.state.BatteryStateType.BatteryState;
 import rst.domotic.state.BatteryStateType.BatteryState.State;
 
 /**
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BatteryStateTransformer {
+public class BatteryStateDecimalTypeTransformer implements ServiceStateCommandTransformer<BatteryState, DecimalType> {
 
     /**
      * Transform a number to a battery state. The number is set as the level and
@@ -39,9 +39,11 @@ public class BatteryStateTransformer {
      * battery state.
      *
      * @param decimalType the battery level between 0 and 100
+     *
      * @return the corresponding battery state
      */
-    public static BatteryState transform(final DecimalType decimalType) {
+    @Override
+    public BatteryState transform(final DecimalType decimalType) {
         BatteryState.Builder state = BatteryState.newBuilder();
         state.setLevel(decimalType.doubleValue());
         if (state.getLevel() > 30) {
@@ -58,9 +60,11 @@ public class BatteryStateTransformer {
      * Get the battery level between 0 and 100.
      *
      * @param batteryState the state
+     *
      * @return the current battery level
      */
-    public static DecimalType transform(BatteryState batteryState) {
+    @Override
+    public DecimalType transform(BatteryState batteryState) {
         return new DecimalType(batteryState.getLevel());
     }
 }

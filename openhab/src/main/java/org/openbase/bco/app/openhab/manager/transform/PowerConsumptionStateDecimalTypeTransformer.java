@@ -28,7 +28,7 @@ import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class PowerConsumptionStateTransformer {
+public class PowerConsumptionStateDecimalTypeTransformer implements ServiceStateCommandTransformer<PowerConsumptionState, DecimalType> {
 
     //TODO: has to be part of the unit
     /**
@@ -45,10 +45,12 @@ public class PowerConsumptionStateTransformer {
      * must be transformed.
      *
      * @param decimalType the new value for the current in mA
+     *
      * @return a PowerConsumptionState with the given current and a voltage of
      * 230V
      */
-    public static PowerConsumptionState transform(final DecimalType decimalType) {
+    @Override
+    public PowerConsumptionState transform(final DecimalType decimalType) {
         PowerConsumptionState.Builder state = PowerConsumptionState.newBuilder();
         state.setCurrent(decimalType.doubleValue() / MILLI_TO_AMPERE);
         state.setVoltage(DEFAULT_VOLTAGE);
@@ -60,9 +62,11 @@ public class PowerConsumptionStateTransformer {
      * Get the current in milli ampere from a PowerConsumptionState.
      *
      * @param powerConsumptionState the state
+     *
      * @return the current in milli ampere
      */
-    public static DecimalType transform(PowerConsumptionState powerConsumptionState) {
+    @Override
+    public DecimalType transform(PowerConsumptionState powerConsumptionState) {
         return new DecimalType(powerConsumptionState.getCurrent() * MILLI_TO_AMPERE);
     }
 }

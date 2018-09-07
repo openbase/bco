@@ -22,14 +22,17 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.openbase.bco.app.openhab.manager.transform.StopMoveStateTransformer;
-import org.openbase.bco.app.openhab.manager.transform.UpDownStateTransformer;
+import com.google.protobuf.Message;
+import org.eclipse.smarthome.core.library.types.UpDownType;
+import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformer;
+import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 
 import java.util.concurrent.Future;
@@ -42,16 +45,8 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setBlindState(BlindState blindState) throws CouldNotPerformException {
-        switch (blindState.getValue()) {
-            case UP:
-                return executeCommand(UpDownStateTransformer.transform(blindState));
-            case DOWN:
-                return executeCommand(UpDownStateTransformer.transform(blindState));
-            case STOP:
-                return executeCommand(StopMoveStateTransformer.transform(blindState));
-            default:
-                throw new CouldNotPerformException("Cannot set blind state to unknown state [" + blindState + "]");
-        }
+        ServiceStateCommandTransformer<Message, UpDownType> transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(ServiceType.BLIND_STATE_SERVICE, UpDownType.class);
+        return executeCommand(transformer.transform(blindState));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package org.openbase.bco.app.openhab.manager.transform;
 
-/*
+/*-
  * #%L
  * BCO Openhab App
  * %%
@@ -22,19 +22,18 @@ package org.openbase.bco.app.openhab.manager.transform;
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.DecimalType;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
+import org.eclipse.smarthome.core.library.types.PercentType;
+import rst.domotic.state.BlindStateType.BlindState;
 
-/**
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
- */
-public class TemperatureStateTransformer {
+public class BlindStatePercentTypeTransformer implements ServiceStateCommandTransformer<BlindState, PercentType> {
 
-    public static TemperatureState transform(final DecimalType decimalType) {
-        return TemperatureState.newBuilder().setTemperature(decimalType.doubleValue()).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
+    @Override
+    public BlindState transform(final PercentType decimalType) {
+        return BlindState.newBuilder().setOpeningRatio(decimalType.doubleValue()).build();
     }
 
-    public static DecimalType transform(final TemperatureState temperatureState) {
-        return new DecimalType(temperatureState.getTemperature());
+    @Override
+    public PercentType transform(final BlindState blindState) {
+        return new PercentType((int) blindState.getOpeningRatio());
     }
 }
