@@ -43,7 +43,7 @@ public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        return executeCommand(ServiceStateCommandTransformerPool.getInstance().getTransformer(ServiceType.POWER_STATE_SERVICE, OnOffType.class).transform(powerState));
+        return setState(powerState);
     }
 
     @Override

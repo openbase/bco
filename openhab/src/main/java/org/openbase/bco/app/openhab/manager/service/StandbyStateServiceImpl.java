@@ -22,8 +22,6 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.OnOffType;
-import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,7 +40,7 @@ public class StandbyStateServiceImpl<ST extends StandbyStateOperationService & U
 
     @Override
     public Future<ActionFuture> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
-        return executeCommand(ServiceStateCommandTransformerPool.getInstance().getTransformer(StandbyState.class, OnOffType.class).transform(standbyState));
+        return setState(standbyState);
     }
 
     @Override

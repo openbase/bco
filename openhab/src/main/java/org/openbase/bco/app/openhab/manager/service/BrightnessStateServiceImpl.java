@@ -22,8 +22,6 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.PercentType;
-import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,7 +40,7 @@ public class BrightnessStateServiceImpl<ST extends BrightnessStateOperationServi
 
     @Override
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return executeCommand(ServiceStateCommandTransformerPool.getInstance().getTransformer(BrightnessState.class, PercentType.class).transform(brightnessState));
+        return setState(brightnessState);
     }
 
     @Override

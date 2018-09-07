@@ -22,8 +22,6 @@ package org.openbase.bco.app.openhab.manager.service;
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.HSBType;
-import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -32,7 +30,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ColorStateType.ColorState;
 
 import java.util.concurrent.Future;
@@ -52,6 +49,6 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        return executeCommand(ServiceStateCommandTransformerPool.getInstance().getTransformer(ServiceType.COLOR_STATE_SERVICE, HSBType.class).transform(colorState));
+        return setState(colorState);
     }
 }

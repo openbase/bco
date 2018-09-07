@@ -25,8 +25,10 @@ package org.openbase.bco.app.openhab.manager;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.Message;
+import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
-import org.openbase.bco.app.openhab.manager.transform.CommandTransformer;
+import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
+import org.openbase.bco.app.openhab.manager.transform.ServiceTypeCommandMapping;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor.OpenHABItemNameMetaData;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -34,10 +36,15 @@ import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.TimeUnit;
 
 public class CommandExecutor implements Observer<JsonObject> {
 
@@ -80,7 +87,7 @@ public class CommandExecutor implements Observer<JsonObject> {
         }
         try {
             final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
-            final Message serviceData = CommandTransformer.getServiceData(state, metaData.getServiceType());
+            final Message serviceData = getServiceData(state, metaData.getServiceType());
 
             if (serviceData == null) {
                 // unsupported state for service, see CommandTransformer for details
@@ -94,6 +101,38 @@ public class CommandExecutor implements Observer<JsonObject> {
                 return;
             }
             throw ex;
+        }
+    }
+
+    private static final String EMPTY_COMMAND_STRING = "null";
+
+    public static Message getServiceData(final String commandString, final ServiceType serviceType) throws CouldNotPerformException {
+        if (commandString.equalsIgnoreCase(EMPTY_COMMAND_STRING)) {
+            LOGGER.debug("Ignore state update [" + commandString + "] for service[" + serviceType + "]");
+            return null;
+        }
+
+        try {
+            Command command = null;
+            for (Class<? extends Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
+                try {
+                    command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString);
+                    break;
+                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                    LOGGER.error("Command class[" + commandClass.getSimpleName() + "] does not posses a valueOf(String) method", ex);
+                } catch (IllegalArgumentException ex) {
+                    // continue with the next command class, exception will be thrown if none is found
+                }
+            }
+
+            if (command == null) {
+                throw new CouldNotPerformException("Could not transform [" + commandString + "] into a state for service type[" + serviceType.name() + "]");
+            }
+
+            Message serviceData = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceType, command).transform(command);
+            return TimestampProcessor.updateTimestamp(System.currentTimeMillis(), serviceData, TimeUnit.MICROSECONDS);
+        } catch (NotAvailableException ex) {
+            throw new CouldNotPerformException("Could not transform [" + commandString + "] into a state for service type[" + serviceType.name() + "]", ex);
         }
     }
 }

@@ -57,8 +57,8 @@ public class ServiceStateCommandTransformerPool {
     }
 
     @SuppressWarnings("unchecked")
-    public <S extends Message, C extends Command> ServiceStateCommandTransformer<S, C> getTransformer(final Class<S> serviceStateClass, final Class<C> commandClass) throws NotAvailableException {
-        return (ServiceStateCommandTransformer<S, C>) getTransformer(serviceStateClass.getSimpleName(), commandClass);
+    public <S extends Message, C extends Command> ServiceStateCommandTransformer getTransformer(final Class<S> serviceStateClass, final Class<C> commandClass) throws NotAvailableException {
+        return getTransformer(serviceStateClass.getSimpleName(), commandClass);
     }
 
     @SuppressWarnings("unchecked")
