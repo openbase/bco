@@ -196,7 +196,7 @@ public class BCOLogin {
             final File propertiesFile = new File(JPService.getProperty(JPBCOHomeDirectory.class).getValue(), LOGIN_PROPERTIES);
             if (propertiesFile.exists()) {
                 loginProperties.load(new FileInputStream(propertiesFile));
-                LOGGER.info("Load login properties from " + propertiesFile.getAbsolutePath());
+                LOGGER.debug("Load login properties from " + propertiesFile.getAbsolutePath());
             }
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("No login properties found!", ex, LOGGER);
@@ -213,9 +213,9 @@ public class BCOLogin {
         loginProperties.setProperty(DEFAULT_USER_KEY, userId);
         try {
             final File propertiesFile = new File(JPService.getProperty(JPBCOHomeDirectory.class).getValue(), LOGIN_PROPERTIES);
-            LOGGER.info("Store Properties to " + propertiesFile.getAbsolutePath());
+            LOGGER.debug("Store Properties to " + propertiesFile.getAbsolutePath());
             if (!propertiesFile.exists()) {
-                LOGGER.info("Create: " + propertiesFile.createNewFile());
+                LOGGER.debug("Create: " + propertiesFile.createNewFile());
             }
             loginProperties.store(new FileOutputStream(propertiesFile), "BCO Login Properties");
         } catch (Exception ex) {
