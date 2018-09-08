@@ -718,7 +718,7 @@ public class MockRegistry {
                 Registries.getUnitRegistry().updateUnitConfig(dalUnits.get(i).toBuilder().addAlias(alias[i]).build()).get();
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not setup Alias[" + alias + "]");
+            throw new CouldNotPerformException("Could not setup Alias[" + Arrays.toString(alias) + "] for DalUnit[" + unitType.name() + "] of Device[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel(), "?") + "]", ex);
         }
     }
 
