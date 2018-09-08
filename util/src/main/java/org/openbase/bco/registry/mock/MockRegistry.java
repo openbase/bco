@@ -10,12 +10,12 @@ package org.openbase.bco.registry.mock;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -39,6 +39,8 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -110,8 +112,8 @@ public class MockRegistry {
     public static final String ALIAS_DEVICE_MOTION_SENSOR_HELL = "F_MotionSensor_Device_Hell";
     public static final String ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY = "F_MotionSensor_Device_Stairway";
     public static final String ALIAS_DEVICE_POWER_PLUG = "PW_PowerPlug_Device";
-    public static final String ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS = "Reed_Heaven_Stairs";
-    public static final String ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS = "Reed_Hell_Stairs";
+    public static final String ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS_DOOR = "Reed_Heaven_Stairs";
+    public static final String ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS_DOOR = "Reed_Hell_Stairs";
     public static final String ALIAS_DEVICE_REED_SWITCH_HOMEMATIC = "HM_ReedSwitch_Device";
     public static final String ALIAS_DEVICE_REED_SWITCH_STAIRWAY_WINDOW = "Reed_Stairway_Window";
     public static final String ALIAS_DEVICE_ROLLERSHUTTER = "HA_TYA628C_Device";
@@ -127,6 +129,8 @@ public class MockRegistry {
     public static final String ALIAS_LOCATION_ROOT_PARADISE = "Paradise";
     public static final String ALIAS_LOCATION_STAIRWAY_TO_HEAVEN = "Stairway to Heaven";
     public static final String ALIAS_REED_SWITCH_STAIRWAY_WINDOW = "Reed_Stairway_Window";
+    public static final String ALIAS_REED_SWITCH_HEAVEN_STAIRS_DOOR = "Reed_Heaven_Stairs_Door";
+    public static final String ALIAS_REED_SWITCH_HELL_STAIRS_DOOR = "Hell";
     public static final String ALIAS_USER_MAX_MUSTERMANN = "MaxMustermann";
     public static final String ALIAS_WINDOW_STAIRS_HELL_LOOKOUT = "Stairs_Hell_Lookout";
 
@@ -532,7 +536,7 @@ public class MockRegistry {
             Pose hellPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(3).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig hellPlacement = PlacementConfig.newBuilder().setPosition(hellPosition).setShape(hellShape).setLocationId(paradise.getId()).build();
-            UnitConfig hell = registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_HELL, tileLocationConfig, hellPlacement));
+            registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_HELL, tileLocationConfig, hellPlacement));
 
             // Create stairway to heaven
             final List<Vec3DDouble> stairwayVertices = new ArrayList<>();
@@ -592,23 +596,26 @@ public class MockRegistry {
     private void registerConnections() throws CouldNotPerformException, InterruptedException {
         try {
             List<String> tileIds = new ArrayList<>();
-            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN).getId());
-            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
             String reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(getUnitAlias(UnitType.REED_CONTACT)).getId();
+            System.out.println("ALIAS_LOCATION_HEAVEN: " +Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
+            System.out.println("ALIAS_LOCATION_HELL: " +Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
+            System.out.println("count: " +tileIds.size());
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_GATE, connectionConfig));
 
             tileIds.clear();
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN).getId());
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).getId());
-            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT).get(0).getId();
+            reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_REED_SWITCH_HEAVEN_STAIRS_DOOR).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_STAIRS_HEAVEN_GATE, connectionConfig));
 
             tileIds.clear();
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL).getId());
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).getId());
-            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Hell_Stairs", UnitType.REED_CONTACT).get(0).getId();
+            reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_REED_SWITCH_HELL_STAIRS_DOOR).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_STAIRS_HELL_GATE, connectionConfig));
 
@@ -717,9 +724,13 @@ public class MockRegistry {
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_F_FGS_221, serialNumber, lightClass));
 
             // powerConsumptionSensor, powerPlug
-            DeviceClass powerPlugClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_PLUGWISE_POWER_PLUG, "070140", COMPANY_PLUGWISE,
-                    UnitType.POWER_SWITCH,
-                    UnitType.POWER_CONSUMPTION_SENSOR)).get();
+            DeviceClass powerPlugClass = Registries.getClassRegistry().
+                    registerDeviceClass(generateDeviceClass(
+                            LABEL_DEVICE_CLASS_PLUGWISE_POWER_PLUG,
+                            "070140",
+                            COMPANY_PLUGWISE,
+                            UnitType.POWER_SWITCH,
+                            UnitType.POWER_CONSUMPTION_SENSOR)).get();
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_POWER_PLUG, serialNumber, powerPlugClass));
 
@@ -728,9 +739,21 @@ public class MockRegistry {
                     generateDeviceClass(LABEL_DEVICE_CLASS_HOMEMATIC_REED_SWITCH, "Sec_SC_2", COMPANY_HOMEMATIC, UnitType.REED_CONTACT)).get();
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HOMEMATIC, serialNumber, reedSwitchClass));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_STAIRWAY_WINDOW, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS_DOOR, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN)),
+                    UnitType.REED_CONTACT,
+                    ALIAS_REED_SWITCH_HEAVEN_STAIRS_DOOR);
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS_DOOR, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN)),
+                    UnitType.REED_CONTACT,
+                    ALIAS_REED_SWITCH_HELL_STAIRS_DOOR);
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_STAIRWAY_WINDOW, serialNumber, reedSwitchClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN)),
+                    UnitType.REED_CONTACT,
+                    ALIAS_REED_SWITCH_STAIRWAY_WINDOW);
 
             // roller shutter
             DeviceClass rollerShutterClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HAGER_TYA_628_C, "TYA628C", COMPANY_HAGER,
@@ -753,6 +776,37 @@ public class MockRegistry {
 
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
+        }
+    }
+
+    private void registerDALUnitAlias(final UnitConfig deviceUnitConfig, final UnitType unitType, final String... alias) throws CouldNotPerformException, ExecutionException, InterruptedException {
+        try {
+            final ArrayList<UnitConfig> dalUnits = new ArrayList();
+
+            // iterate over provided dal units
+            for (String dalUnitId : Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getId(), UnitType.DEVICE).getDeviceConfig().getUnitIdList()) {
+                // lookup dal unit
+                final UnitConfig dalUnitConfig = Registries.getUnitRegistry().getUnitConfigById(dalUnitId);
+
+                // lookup dal units
+                if (dalUnitConfig.getUnitType() == unitType) {
+                    dalUnits.add(dalUnitConfig);
+                }
+            }
+
+            // validate
+            if(dalUnits.isEmpty()) {
+                throw new InvalidStateException(LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + " does not provide a " + unitType.name());
+            } if(alias.length != dalUnits.size()) {
+                throw new InvalidStateException(LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + "s amount of " + unitType.name() + " does not match alias amount of " + alias.length);
+            }
+
+            // setup aliases
+            for (int i = 0; i < alias.length; i++) {
+                Registries.getUnitRegistry().updateUnitConfig(dalUnits.get(i).toBuilder().addAlias(alias[i]).build()).get();
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not setup Alias[" + alias + "]");
         }
     }
 
