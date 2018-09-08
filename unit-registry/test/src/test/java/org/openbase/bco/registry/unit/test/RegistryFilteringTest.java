@@ -114,7 +114,7 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         if (unitConfig == null) {
             throw new NotAvailableException("test location");
         }
-        logger.info("Found suitable test location[" + unitConfig.getLabel() + "]");
+        logger.info("Found suitable test location[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]");
         // remove read and access permissions
         unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false).setAccess(false);
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();

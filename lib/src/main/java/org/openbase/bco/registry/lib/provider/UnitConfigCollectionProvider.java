@@ -25,6 +25,7 @@ package org.openbase.bco.registry.lib.provider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -84,7 +85,7 @@ public interface UnitConfigCollectionProvider {
 
         // validate type
         if (unitConfig.getUnitType() != unitType) {
-            throw new VerificationFailedException("Referred Unit[" + unitConfig.getLabel() + "] is not compatible to given type!");
+            throw new VerificationFailedException("Referred Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] is not compatible to given type!");
         }
 
         return unitConfig;

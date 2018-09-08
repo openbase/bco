@@ -69,7 +69,7 @@ public class UntShapeGenerator {
             throw new CouldNotPerformException("Shape could not be resolved by any source.");
 
         } catch (final CouldNotPerformException ex) {
-            throw new NotAvailableException("Shape", "of Unit [" + unitConfig.getLabel() + "]", ex);
+            throw new NotAvailableException("Shape", "of Unit [" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]", ex);
         }
     }
 
