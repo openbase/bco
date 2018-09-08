@@ -115,9 +115,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         deviceWithoutLabel = Registries.getUnitRegistry().registerUnitConfig(deviceWithoutLabel).get();
 
         assertEquals("The device label is not set as the id if it is empty!",
-                deviceClass.getCompany() + " " +
-                        LabelProcessor.getBestMatch(deviceClass.getLabel()) + " " +
-                        deviceWithoutLabel.getAlias(0),
+                LabelProcessor.format(deviceClass.getCompany() + " " + LabelProcessor.getBestMatch(deviceClass.getLabel()) + " " + deviceWithoutLabel.getAlias(0)),
                 LabelProcessor.getBestMatch(deviceWithoutLabel.getLabel()));
     }
 
