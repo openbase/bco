@@ -86,7 +86,7 @@ public class RemoteAction implements Action {
                 throw new VerificationFailedException("Referred Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] is disabled!");
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw new VerificationFailedException("Referred Unit[" + unitConfig.getLabel() + "] is disabled!");
+                throw new VerificationFailedException("Referred Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] is disabled!");
             }
         }
     }
