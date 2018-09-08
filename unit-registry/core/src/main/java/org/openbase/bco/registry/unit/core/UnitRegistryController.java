@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -566,7 +566,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param unitAlias {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -577,6 +579,26 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             }
         }
         throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "]");
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitAlias {@inheritDoc}
+     * @param unitType  {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws CouldNotPerformException {
+        synchronized (aliasIdMapLock) {
+            if (aliasIdMap.containsKey(unitAlias)) {
+                return getUnitConfigById(aliasIdMap.get(unitAlias), unitType);
+            }
+        }
+        throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "] of UnitType[" + unitType.name() + "]");
     }
 
     @Override
@@ -651,6 +673,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -662,6 +685,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -682,6 +706,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -693,6 +718,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -704,6 +730,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -715,7 +742,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param serviceType
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -736,7 +765,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      *
      * @param unitType
      * @param serviceTypes
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -992,6 +1023,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param authorizationToken {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -1010,6 +1042,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override

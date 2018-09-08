@@ -60,6 +60,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -275,6 +276,25 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             }
         }
         throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "]");
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitAlias {@inheritDoc}
+     * @param unitType {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws CouldNotPerformException {
+        synchronized (aliasIdMapLock) {
+            if (aliasIdMap.containsKey(unitAlias)) {
+                return getUnitConfigById(aliasIdMap.get(unitAlias), unitType);
+            }
+        }
+        throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "] of UnitType["+unitType.name()+"]");
     }
 
     @Override

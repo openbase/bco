@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -98,7 +98,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * This method registers the given unit config in the registry.
      *
      * @param unitConfig the unit config to register.
+     *
      * @return the registered unit config with all applied consistency changes.
+     *
      * @throws CouldNotPerformException is thrown if the entry already exists or results in an inconsistent registry
      */
     @RPCMethod
@@ -111,7 +113,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method updates the given unit config.
      *
      * @param unitConfig the updated unit config.
+     *
      * @return the updated unit config with all applied consistency changes.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
@@ -124,7 +128,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method removes the given unit config out of the global registry.
      *
      * @param unitConfig the unit config to remove.
+     *
      * @return The removed unit config.
+     *
      * @throws CouldNotPerformException is thrown if the removal fails.
      */
     @RPCMethod
@@ -139,7 +145,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * comparison.
      *
      * @param unitConfig the unit config used for the identification.
+     *
      * @return true if the unit exists.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -196,6 +204,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -207,12 +216,30 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Hint: If you want to address more than one unit with an alias than create a unit group of such units and define an alias for those group.
      *
      * @param unitAlias the alias to identify the unit.
+     *
      * @return the unit config referred by the alias.
+     *
      * @throws NotAvailableException    is thrown if no unit is matching the given alias.
      * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
      */
     @RPCMethod
     UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException;
+
+
+    /**
+     * Method returns the unit matching the given alias. An alias is a unique identifier of units.
+     * <p>
+     * Hint: If you want to address more than one unit with an alias than create a unit group of such units and define an alias for those group.
+     *
+     * @param unitAlias the alias to identify the unit.
+     * @param unitType  the type to validate the resulting unit.
+     *
+     * @return the unit config referred by the alias.
+     *
+     * @throws NotAvailableException    is thrown if no unit is matching the given alias.
+     * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
+     */
+    UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws CouldNotPerformException;
 
     /**
      * Method returns all registered units with the given label. Label resolving
@@ -221,7 +248,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Note: PLEASE DO NOT USE THIS METHOD TO REQUEST DEVICES FOR THE CONTROLLING PURPOSE BECAUSE LABELS ARE NOT A STABLE IDENTIFIER! USE ID OR ALIAS INSTEAD!
      *
      * @param unitConfigLabel the label to identify a set of units.
+     *
      * @return a list of the requested unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
@@ -242,7 +271,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Note: The type {@code UnitType.UNKNOWN} is used as wildcard and will return a list of all registered units.
      *
      * @param type the unit type to filter.
+     *
      * @return a list of unit configurations.
+     *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
     default List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
@@ -262,6 +293,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Base units are units of the following types: LOCATION, CONNECTION, SCENE, AGENT, APP, DEVICE, USER, AUTHORIZATION_GROUP, UNIT_GROUP
      *
      * @return a list of dal units.
+     *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
     List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException;
@@ -271,12 +303,14 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Base units are units of the following types: LOCATION, CONNECTION, SCENE, AGENT, APP, DEVICE, USER, AUTHORIZATION_GROUP, UNIT_GROUP
      *
      * @return a list of base units.
+     *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
     List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException;
 
     /**
      * @return a list containing all service configs of all units.
+     *
      * @throws CouldNotPerformException is thrown if the config list could not be generated.
      */
     default List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
@@ -291,7 +325,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all service configs of all units filtered by the given {@code serviceType}.
      *
      * @param serviceType the service type to filter.
+     *
      * @return a list of service configs matching the given {@code serviceType}.
+     *
      * @throws CouldNotPerformException is thrown if the config list could not be generated.
      */
     default List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
@@ -312,6 +348,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -322,7 +359,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param unitType    the unit type to filter.
      * @param serviceType the service type to filter.
+     *
      * @return a list of unit types matching the given unit and service type.
+     *
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType unitType, final ServiceType serviceType) throws CouldNotPerformException {
@@ -348,7 +387,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param unitType     the unit type to filter.
      * @param serviceTypes a list of service types to filter.
+     *
      * @return a list of unit types matching the given unit and service type.
+     *
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType unitType, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
@@ -375,7 +416,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns a list of all unit group configs where the given unit config is a member of the group.
      *
      * @param unitConfig the unit config used to identify the member unit.
+     *
      * @return a list of unit group configs.
+     *
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
@@ -386,7 +429,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns a list of all unit group configs where the given unit is a member of the group.
      *
      * @param unitId the unit id defining the member unit.
+     *
      * @return a list of unit group configs.
+     *
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByUnitConfig(final String unitId) throws CouldNotPerformException {
@@ -403,7 +448,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns a list of all unit group configs which are providing at least one member of the given {@code unitType}.
      *
      * @param unitType the unit type to filter the groups.
+     *
      * @return a list of unit group configs.
+     *
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByUnitType(final UnitType unitType) throws CouldNotPerformException {
@@ -420,7 +467,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all unit configs filtered by the given {@code serviceType}.
      *
      * @param serviceType the service types to filter.
+     *
      * @return a list of unit types matching the given service types.
+     *
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final ServiceType serviceType) throws CouldNotPerformException {
@@ -440,7 +489,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all unit configs filtered by the given {@code serviceTypes}.
      *
      * @param serviceTypes a list of service types to filter.
+     *
      * @return a list of unit types matching the given service types.
+     *
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
@@ -464,7 +515,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method collects all member unit configs of the given unit group and returns those as list.
      *
      * @param unitGroupUnitConfig the unit group of the members.
+     *
      * @return a list of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig unitGroupUnitConfig) throws CouldNotPerformException {
@@ -482,7 +535,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * given scope.
      *
      * @param scope the scope of the unit used as identifier.
+     *
      * @return the unit config matching the given scope.
+     *
      * @throws CouldNotPerformException
      */
     @RPCMethod
@@ -505,6 +560,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -516,6 +572,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -527,6 +584,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -538,6 +596,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -549,6 +608,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -560,6 +620,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -571,6 +632,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -582,6 +644,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -593,6 +656,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -604,6 +668,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -615,6 +680,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * if the underling database is loaded out of a version tag.
      *
      * @return true if read only.
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -624,6 +690,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -633,6 +700,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -642,6 +710,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -651,6 +720,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -660,6 +730,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -669,6 +740,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -678,6 +750,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -687,6 +760,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -696,6 +770,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -705,6 +780,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -714,6 +790,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -723,6 +800,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -732,6 +810,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return true if consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -753,7 +832,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param coordinate
      * @param radius
      * @param unitType
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius, final UnitType unitType) throws CouldNotPerformException {
@@ -777,7 +858,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * If multiple users happen to have the same user name, the first one is returned.
      *
      * @param userName
+     *
      * @return User ID
+     *
      * @throws CouldNotPerformException
      * @throws NotAvailableException    If no user with the given user name could be found.
      */
@@ -798,7 +881,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all location unit configs which are of the given location type.
      *
      * @param locationType the type of the location.
+     *
      * @return a list of the requested unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getLocationUnitConfigsByType(final LocationType locationType) throws CouldNotPerformException {
@@ -812,7 +897,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Call to {@link #getLocationUnitConfigsByCoordinate(Vec3DDouble, LocationType)} with location type unknown.
      *
      * @param coordinate the coordinate for which it is checked if it is inside a location.
+     *
      * @return a list of the requested unit configs sorted by location type.
+     *
      * @throws CouldNotPerformException       is thrown if the request fails.
      * @throws java.lang.InterruptedException is thrown if the process is interrupted
      */
@@ -828,7 +915,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param coordinate   the coordinate for which it is checked if it is inside a location
      * @param locationType the type of locations checked, unknown means all locations
+     *
      * @return a list of the requested unit configs sorted by location type
+     *
      * @throws CouldNotPerformException       is thrown if the request fails.
      * @throws java.lang.InterruptedException is thrown if the process is interrupted
      */
@@ -910,7 +999,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all unit configurations which are direct or recursive related to the given location id.
      *
      * @param locationId the id of the location which provides the units.
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
@@ -923,7 +1014,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param locationId the id of the location which provides the units.
      * @param recursive  defines if recursive related unit should be included as well.
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLocation(final String locationId, final boolean recursive) throws CouldNotPerformException {
@@ -944,7 +1037,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param type
      * @param locationConfigId
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
@@ -971,7 +1066,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param type             service type filter.
      * @param locationConfigId related location.
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
@@ -1000,7 +1097,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * related to the given location id.
      *
      * @param locationId
+     *
      * @return the list of service configurations.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException    is thrown if the given location config id
      *                                  is unknown.
@@ -1018,7 +1117,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * related to the given location alias.
      *
      * @param locationAlias the alias to identify the location.
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLocationAlias(final String locationAlias) throws CouldNotPerformException {
@@ -1036,7 +1137,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param unitLabel  the label tested
      * @param locationId the id of the location from which units are returned
+     *
      * @return a list of unit configs containing the given label withing the given location
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
@@ -1053,7 +1156,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param unitLabel  the label tested
      * @param locationId the id of the location from which units are returned
      * @param recursive  flag determining if the whole location tree should be considered
+     *
      * @return a list of unit configs containing the given label withing the given location
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId, final boolean recursive) throws CouldNotPerformException {
@@ -1068,7 +1173,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param unitType
      * @param locationAlias
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
@@ -1084,7 +1191,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method generates a list of service types supported by the given location.
      *
      * @param locationId the location to filter the types.
+     *
      * @return a list of supported service types.
+     *
      * @throws NotAvailableException is thrown in case the list could not be computed.
      */
     default Set<ServiceType> getServiceTypesByLocation(final String locationId) throws CouldNotPerformException {
@@ -1102,7 +1211,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * connection id.
      *
      * @param connectionConfigId
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException {
@@ -1119,7 +1230,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param type
      * @param connectionConfigId
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
@@ -1146,7 +1259,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param type               service type filter.
      * @param connectionConfigId related connection.
+     *
      * @return A collection of unit configs.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
@@ -1174,7 +1289,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * connection id.
      *
      * @param connectionConfigId
+     *
      * @return the list of service configurations.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException    is thrown if the given connection config id
      *                                  is unknown.
@@ -1192,7 +1309,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * does not belong to a tile, the could not perform exception is thrown.
      *
      * @param locationId the id of the location which neighbors you want to get
+     *
      * @return all neighbor tiles
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getNeighborLocations(final String locationId) throws CouldNotPerformException {
@@ -1221,7 +1340,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all agent unit configs which are based on the given agent class.
      *
      * @param agentClass the agent class to identify the units.
+     *
      * @return a list of matching agent configs.
+     *
      * @throws CouldNotPerformException is thrown in case the list could not be generated.
      */
     default List<UnitConfig> getAgentUnitConfigsByAgentClass(final AgentClass agentClass) throws CouldNotPerformException {
@@ -1232,7 +1353,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all agent unit configs which are based on the given agent class.
      *
      * @param agentClassId the if of the agent class to identify the units.
+     *
      * @return a list of matching agent configs.
+     *
      * @throws CouldNotPerformException is thrown in case the list could not be generated.
      */
     default List<UnitConfig> getAgentUnitConfigsByAgentClassId(final String agentClassId) throws CouldNotPerformException {
@@ -1253,7 +1376,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all app unit configs which are based on the given app class.
      *
      * @param appClass the app class to identify the units.
+     *
      * @return a list of matching app configs.
+     *
      * @throws CouldNotPerformException is thrown in case the list could not be generated.
      */
     default List<UnitConfig> getAppUnitConfigsByAppClass(final AppClass appClass) throws CouldNotPerformException, InterruptedException {
@@ -1264,7 +1389,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all app unit configs which are based on the given app class.
      *
      * @param appClassId the if of the app class to identify the units.
+     *
      * @return a list of matching app configs.
+     *
      * @throws CouldNotPerformException is thrown in case the list could not be generated.
      */
     default List<UnitConfig> getAppUnitConfigsByAppClassId(final String appClassId) throws CouldNotPerformException, InterruptedException {
@@ -1292,7 +1419,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Else the token cannot be verified and encrypted which means everybody listening could use it.
      *
      * @param authorizationToken the authorizationToken which is verified an encrypted
+     *
      * @return a future of a task that verifies and encrypts the token
+     *
      * @throws CouldNotPerformException if the task cannot be created
      */
     Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken) throws CouldNotPerformException;
@@ -1308,8 +1437,10 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param authenticatedValue The authenticated value for the request containing a valid ticket and an authorizationToken encrypted
      *                           with the session key.
+     *
      * @return The future of a task that creates an authenticated value containing an updated ticket and the token encoded via Base64
      * and encrypted with the session key.
+     *
      * @throws CouldNotPerformException if the task cannot be created
      */
     @RPCMethod
