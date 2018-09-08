@@ -10,12 +10,12 @@ package org.openbase.bco.registry.mock;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -40,7 +40,6 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -95,8 +94,6 @@ import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription
  */
 public class MockRegistry {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MockRegistry.class);
-
     public static final String ALIAS_DEVICE_COLORABLE_LIGHT = "PH_Hue_E27_Device";
     public static final String ALIAS_DEVICE_COLORABLE_LIGHT_BORROWED = "PH_Hue_E27_Device_BORROWED";
     public static final String ALIAS_DEVICE_COLORABLE_LIGHT_DEVICE_STAIRWAY = "PH_Hue_E27_Device_Stairway";
@@ -133,16 +130,13 @@ public class MockRegistry {
     public static final String ALIAS_REED_SWITCH_HELL_STAIRS_DOOR = "Hell";
     public static final String ALIAS_USER_MAX_MUSTERMANN = "MaxMustermann";
     public static final String ALIAS_WINDOW_STAIRS_HELL_LOOKOUT = "Stairs_Hell_Lookout";
-
     public static final String BINDING_OPENHAB = "OPENHAB";
-
     public static final String COMPANY_FIBARO = "Fibaro";
     public static final String COMPANY_GIRA = "Gira";
     public static final String COMPANY_HAGER = "Hager";
     public static final String COMPANY_HOMEMATIC = "Homematic";
     public static final String COMPANY_PHILIPS = "Philips";
     public static final String COMPANY_PLUGWISE = "Plugwise";
-
     public static final String LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING = "AbsenceEnergySaving";
     public static final String LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING = "HeaterEnergySaving";
     public static final String LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING = "IlluminationLightSaving";
@@ -160,21 +154,18 @@ public class MockRegistry {
     public static final String LABEL_DEVICE_CLASS_HOMEMATIC_ROTARY_HANDLE_SENSOR = "Homematic_RotaryHandleSensor";
     public static final String LABEL_DEVICE_CLASS_PHILIPS_HUE_E_27 = "Philips_Hue_E27";
     public static final String LABEL_DEVICE_CLASS_PLUGWISE_POWER_PLUG = "Plugwise_PowerPlug";
-
     public static final String USER_NAME = "uSeRnAmE";
     public static final String USER_FIRST_NAME = "Max";
     public static final String USER_LAST_NAME = "Mustermann";
-
     public static final Map<String, String> AGENT_CLASS_LABEL_ID_MAP = new HashMap<>();
-    public static UnitConfig testUser;
-
     public static final AxisAlignedBoundingBox3DFloat DEFAULT_BOUNDING_BOX = AxisAlignedBoundingBox3DFloat.newBuilder()
             .setHeight(10)
             .setWidth(20)
             .setDepth(30)
             .setLeftFrontBottom(Translation.newBuilder().setX(0).setY(0).setZ(0).build())
             .build();
-
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MockRegistry.class);
+    public static UnitConfig testUser;
     private static AuthenticatorLauncher authenticatorLauncher;
     private static AuthenticatorController authenticatorController;
 
@@ -182,175 +173,6 @@ public class MockRegistry {
     private static ClassRegistryLauncher classRegistryLauncher;
     private static TemplateRegistryLauncher templateRegistryLauncher;
     private static UnitRegistryLauncher unitRegistryLauncher;
-
-    public enum MockServiceTemplate {
-        ACTIVATION_STATE_SERVICE(ServiceType.ACTIVATION_STATE_SERVICE, CommunicationType.ACTIVATION_STATE),
-        BATTERY_STATE_SERVICE(ServiceType.BATTERY_STATE_SERVICE, CommunicationType.BATTERY_STATE),
-        BRIGHTNESS_STATE_SERVICE(ServiceType.BRIGHTNESS_STATE_SERVICE, CommunicationType.BRIGHTNESS_STATE),
-        BUTTON_STATE_SERVICE(ServiceType.BUTTON_STATE_SERVICE, CommunicationType.BUTTON_STATE),
-        SWITCH_STATE_SERVICE(ServiceType.SWITCH_STATE_SERVICE, CommunicationType.SWITCH_STATE),
-        COLOR_STATE_SERVICE(ServiceType.COLOR_STATE_SERVICE, CommunicationType.COLOR_STATE),
-        HANDLE_STATE_SERVICE(ServiceType.HANDLE_STATE_SERVICE, CommunicationType.HANDLE_STATE),
-        MOTION_STATE_SERVICE(ServiceType.MOTION_STATE_SERVICE, CommunicationType.MOTION_STATE),
-        POWER_CONSUMPTION_STATE_SERVICE(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, CommunicationType.POWER_CONSUMPTION_STATE),
-        POWER_STATE_SERVICE(ServiceType.POWER_STATE_SERVICE, CommunicationType.POWER_STATE),
-        CONTACT_STATE_SERVICE(ServiceType.CONTACT_STATE_SERVICE, CommunicationType.CONTACT_STATE),
-        BLIND_STATE_SERVICE(ServiceType.BLIND_STATE_SERVICE, CommunicationType.BLIND_STATE),
-        TAMPER_STATE_SERVICE(ServiceType.TAMPER_STATE_SERVICE, CommunicationType.TAMPER_STATE),
-        TARGET_TEMPERATURE_STATE_SERVICE(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, CommunicationType.TEMPERATURE_STATE),
-        TEMPERATURE_STATE_SERVICE(ServiceType.TEMPERATURE_STATE_SERVICE, CommunicationType.TEMPERATURE_STATE),
-        STANDBY_STATE_SERVICE(ServiceType.STANDBY_STATE_SERVICE, CommunicationType.STANDBY_STATE),
-        SMOKE_ALARM_STATE_SERVICE(ServiceType.SMOKE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
-        TEMPERATURE_ALARM_STATE_SERVICE(ServiceType.TEMPERATURE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
-        WATER_ALARM_STATE_SERVICE(ServiceType.WATER_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
-        FIRE_ALARM_STATE_SERVICE(ServiceType.FIRE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
-        TEMPEST_ALARM_STATE_SERVICE(ServiceType.TEMPEST_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
-        EARTHQUAKE_ALARM_STATE_SERVICE(ServiceType.EARTHQUAKE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
-        INTRUSION_ALARM_STATE_SERVICE(ServiceType.INTRUSION_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
-        MEDICAL_EMERGENCY_ALARM_STATE_SERVICE(ServiceType.MEDICAL_EMERGENCY_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
-        DOOR_STATE_SERVICE(ServiceType.DOOR_STATE_SERVICE, CommunicationType.DOOR_STATE),
-        WINDOW_STATE_SERVICE(ServiceType.WINDOW_STATE_SERVICE, CommunicationType.WINDOW_STATE),
-        PASSAGE_STATE_SERVICE(ServiceType.PASSAGE_STATE_SERVICE, CommunicationType.PASSAGE_STATE),
-        RFID_STATE_SERVICE(ServiceType.RFID_STATE_SERVICE, CommunicationType.RFID_STATE),
-        PRESENCE_STATE_SERVICE(ServiceType.PRESENCE_STATE_SERVICE, CommunicationType.PRESENCE_STATE),
-        ILLUMINANCE_STATE_SERVICE(ServiceType.ILLUMINANCE_STATE_SERVICE, CommunicationType.ILLUMINANCE_STATE),
-        USER_TRANSIT_STATE_SERVICE(ServiceType.USER_TRANSIT_STATE_SERVICE, CommunicationType.USER_TRANSIT_STATE),
-        ACTIVITY_MULTI_STATE_SERVICE(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, CommunicationType.ACTIVITY_MULTI_STATE),
-        EMPHASIS_STATE_SERVICE(ServiceType.EMPHASIS_STATE_SERVICE, CommunicationType.EMPHASIS_STATE),
-        LOCAL_POSITION_STATE_SERVICE(ServiceType.LOCAL_POSITION_STATE_SERVICE, CommunicationType.LOCAL_POSITION_STATE),
-        GLOBAL_POSITION_STATE_SERVICE(ServiceType.GLOBAL_POSITION_STATE_SERVICE, CommunicationType.GLOBAL_POSITION_STATE),
-        SMOKE_STATE_SERVICE(ServiceType.SMOKE_STATE_SERVICE, CommunicationType.SMOKE_STATE);
-
-
-        private final ServiceTemplate serviceTemplate;
-
-        MockServiceTemplate(final ServiceType serviceType, final CommunicationType communicationType) {
-            this.serviceTemplate = ServiceTemplate.newBuilder().setType(serviceType).setCommunicationType(communicationType).build();
-        }
-
-        public ServiceTemplate getServiceTemplate() {
-            return serviceTemplate;
-        }
-    }
-
-    public enum MockServiceDescription {
-        // endings:
-        // SOS = STATE_OPERATION_SERVICE
-        // SPS = STATE_PROVIDER_SERVICE
-        // SCS = STATE_CONSUMER_SERVICE
-        ACTIVATION_SPS(ServiceType.ACTIVATION_STATE_SERVICE, ServicePattern.PROVIDER),
-        ACTIVATION_SOS(ServiceType.ACTIVATION_STATE_SERVICE, ServicePattern.OPERATION),
-        BATTERY_SPS(ServiceType.BATTERY_STATE_SERVICE, ServicePattern.PROVIDER),
-        BLIND_SOS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.OPERATION),
-        BLIND_SPS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.PROVIDER),
-        BRIGHTNESS_SOS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.OPERATION),
-        BRIGHTNESS_SPS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.PROVIDER),
-        ILLUMINANCE_SPS(ServiceType.ILLUMINANCE_STATE_SERVICE, ServicePattern.PROVIDER),
-        BUTTON_SPS(ServiceType.BUTTON_STATE_SERVICE, ServicePattern.PROVIDER),
-        COLOR_SOS(ServiceType.COLOR_STATE_SERVICE, ServicePattern.OPERATION),
-        COLOR_SPS(ServiceType.COLOR_STATE_SERVICE, ServicePattern.PROVIDER),
-        CONTACT_SPS(ServiceType.CONTACT_STATE_SERVICE, ServicePattern.PROVIDER),
-        HANDLE_SPS(ServiceType.HANDLE_STATE_SERVICE, ServicePattern.PROVIDER),
-        MOTION_SPS(ServiceType.MOTION_STATE_SERVICE, ServicePattern.PROVIDER),
-        POWER_CONSUMPTION_SPS(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, ServicePattern.PROVIDER),
-        POWER_SOS(ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION),
-        POWER_SPS(ServiceType.POWER_STATE_SERVICE, ServicePattern.PROVIDER),
-        SMOKE_ALARM_SPS(ServiceType.SMOKE_ALARM_STATE_SERVICE, ServicePattern.PROVIDER),
-        SMOKE_SPS(ServiceType.SMOKE_STATE_SERVICE, ServicePattern.PROVIDER),
-        STANDBY_SPS(ServiceType.STANDBY_STATE_SERVICE, ServicePattern.PROVIDER),
-        STANDBY_SOS(ServiceType.STANDBY_STATE_SERVICE, ServicePattern.OPERATION),
-        TAMPER_SPS(ServiceType.TAMPER_STATE_SERVICE, ServicePattern.PROVIDER),
-        TARGET_TEMPERATURE_SOS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.OPERATION),
-        TARGET_TEMPERATURE_SPS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
-        TEMPERATURE_SPS(ServiceType.TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
-        LOCAL_POSITION_SOS(ServiceType.LOCAL_POSITION_STATE_SERVICE, ServicePattern.OPERATION),
-        LOCAL_POSITION_SPS(ServiceType.LOCAL_POSITION_STATE_SERVICE, ServicePattern.PROVIDER),
-        GLOBAL_POSITION_SOS(ServiceType.GLOBAL_POSITION_STATE_SERVICE, ServicePattern.OPERATION),
-        GLOBAL_POSITION_SPS(ServiceType.GLOBAL_POSITION_STATE_SERVICE, ServicePattern.PROVIDER),
-        PRESENCE_SOS(ServiceType.PRESENCE_STATE_SERVICE, ServicePattern.OPERATION),
-        PRESENCE_SPS(ServiceType.PRESENCE_STATE_SERVICE, ServicePattern.PROVIDER),
-        ACTIVITY_MULTI_SOS(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, ServicePattern.OPERATION),
-        ACTIVITY_MULTI_SPS(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, ServicePattern.PROVIDER),
-        USER_TRANSIT_SOS(ServiceType.USER_TRANSIT_STATE_SERVICE, ServicePattern.OPERATION),
-        USER_TRANSIT_SPS(ServiceType.USER_TRANSIT_STATE_SERVICE, ServicePattern.PROVIDER);
-
-        private final ServiceDescription description;
-
-        MockServiceDescription(ServiceType type, ServicePattern servicePattern) {
-            ServiceDescription.Builder descriptionBuilder = ServiceDescription.newBuilder();
-            descriptionBuilder.setServiceType(type);
-            descriptionBuilder.setPattern(servicePattern);
-            this.description = descriptionBuilder.build();
-        }
-
-        public ServiceDescription getDescription() {
-            return description;
-        }
-    }
-
-    public enum MockUnitTemplate {
-
-        COLORABLE_LIGHT(UnitType.COLORABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
-        DIMMABLE_LIGHT(UnitType.DIMMABLE_LIGHT, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
-        LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
-        MOTION_DETECTOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
-        LIGHT_SENSOR(UnitType.LIGHT_SENSOR, ILLUMINANCE_SPS),
-        BUTTON(UnitType.BUTTON, BUTTON_SPS),
-        DIMMER(UnitType.DIMMER, BRIGHTNESS_SOS, BRIGHTNESS_SPS, POWER_SOS, POWER_SPS),
-        HANDLE(UnitType.HANDLE, HANDLE_SPS),
-        POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_SPS),
-        POWER_SOURCE(UnitType.POWER_SWITCH, POWER_SOS, POWER_SPS),
-        REED_CONTACT(UnitType.REED_CONTACT, CONTACT_SPS),
-        ROLLER_SHUTTER(UnitType.ROLLER_SHUTTER, BLIND_SOS, BLIND_SPS),
-        TAMPER_DETECTOR(UnitType.TAMPER_DETECTOR, TAMPER_SPS),
-        TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, TARGET_TEMPERATURE_SOS, TARGET_TEMPERATURE_SPS, TEMPERATURE_SPS),
-        SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, SMOKE_SPS, SMOKE_ALARM_SPS),
-        TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
-        BATTERY(UnitType.BATTERY, BATTERY_SPS),
-        LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS,
-                SMOKE_ALARM_SPS, SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS),
-        CONNECTION(UnitType.CONNECTION),
-        SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
-        AGENT(UnitType.AGENT, ACTIVATION_SPS, ACTIVATION_SOS),
-        APP(UnitType.APP, ACTIVATION_SPS, ACTIVATION_SOS),
-        UNIT_GROUP(UnitType.UNIT_GROUP, COLOR_SPS, COLOR_SOS, POWER_SPS, POWER_SOS),
-        USER(UnitType.USER, LOCAL_POSITION_SOS, LOCAL_POSITION_SPS, GLOBAL_POSITION_SOS, GLOBAL_POSITION_SPS, PRESENCE_SOS, PRESENCE_SPS,
-                USER_TRANSIT_SOS, USER_TRANSIT_SPS, ACTIVITY_MULTI_SOS, ACTIVITY_MULTI_SPS);
-
-        private final UnitTemplate template;
-
-        MockUnitTemplate(UnitType type, MockServiceDescription... serviceTemplates) {
-            UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
-            templateBuilder.setType(type);
-            for (MockServiceDescription serviceTemplate : serviceTemplates) {
-                templateBuilder.addServiceDescription(serviceTemplate.getDescription());
-            }
-
-            switch (type) {
-                case COLORABLE_LIGHT:
-                    templateBuilder.addIncludedType(UnitType.DIMMABLE_LIGHT);
-                    break;
-                case DIMMABLE_LIGHT:
-                    templateBuilder.addIncludedType(UnitType.LIGHT);
-                    break;
-            }
-
-            this.template = templateBuilder.build();
-        }
-
-        public UnitTemplate getTemplate() {
-            return template;
-        }
-
-        public static UnitTemplate getTemplate(UnitType type) throws CouldNotPerformException {
-            for (MockUnitTemplate templateType : values()) {
-                if (templateType.getTemplate().getType() == type) {
-                    return templateType.getTemplate();
-                }
-            }
-            throw new CouldNotPerformException("Could not find template for " + type + "!");
-        }
-    }
 
     protected MockRegistry() throws InstantiationException {
         try {
@@ -422,45 +244,40 @@ public class MockRegistry {
             Registries.waitForData();
 
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
-                try {
-                    LOGGER.debug("Update serviceTemplates...");
-                    for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
-                        final String id = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getType()).getId();
-                        Registries.getTemplateRegistry().updateServiceTemplate(mockServiceTemplate.getServiceTemplate().toBuilder().setId(id).build()).get();
-                    }
-
-                    LOGGER.debug("Update unit templates...");
-                    // load templates
-                    for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                        String unitTemplateId = Registries.getTemplateRegistry().getUnitTemplateByType(template.getTemplate().getType()).getId();
-                        Registries.getTemplateRegistry().updateUnitTemplate(template.getTemplate().toBuilder().setId(unitTemplateId).build()).get();
-                    }
-
-                    LOGGER.debug("Register user...");
-                    registerUser();
-
-                    LOGGER.debug("Register agent classes...");
-                    registerAgentClasses();
-
-                    LOGGER.debug("Register locations...");
-                    registerLocations();
-                    LOGGER.debug("Wait until registry is ready...");
-                    Registries.waitUntilReady();
-
-                    LOGGER.debug("Register devices...");
-                    registerDevices();
-                    LOGGER.debug("Wait until registry is ready...");
-                    Registries.waitUntilReady();
-
-                    LOGGER.debug("Register connections...");
-                    registerConnections();
-
-                    LOGGER.debug("Wait for final consistency...");
-                    Registries.waitUntilReady();
-
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+                LOGGER.debug("Update serviceTemplates...");
+                for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
+                    final String id = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getType()).getId();
+                    Registries.getTemplateRegistry().updateServiceTemplate(mockServiceTemplate.getServiceTemplate().toBuilder().setId(id).build()).get();
                 }
+
+                LOGGER.debug("Update unit templates...");
+                // load templates
+                for (MockUnitTemplate template : MockUnitTemplate.values()) {
+                    String unitTemplateId = Registries.getTemplateRegistry().getUnitTemplateByType(template.getTemplate().getType()).getId();
+                    Registries.getTemplateRegistry().updateUnitTemplate(template.getTemplate().toBuilder().setId(unitTemplateId).build()).get();
+                }
+
+                LOGGER.debug("Register user...");
+                registerUser();
+
+                LOGGER.debug("Register agent classes...");
+                registerAgentClasses();
+
+                LOGGER.debug("Register locations...");
+                registerLocations();
+                LOGGER.debug("Wait until registry is ready...");
+                Registries.waitUntilReady();
+
+                LOGGER.debug("Register devices...");
+                registerDevices();
+                LOGGER.debug("Wait until registry is ready...");
+                Registries.waitUntilReady();
+
+                LOGGER.debug("Register connections...");
+                registerConnections();
+
+                LOGGER.debug("Wait for final consistency...");
+                Registries.waitUntilReady();
                 return null;
             }));
 
@@ -474,6 +291,111 @@ public class MockRegistry {
             shutdown();
             throw new InstantiationException(this, ex);
         }
+    }
+
+    public static String getUnitAlias(final UnitType unitType) {
+        return getUnitAlias(unitType, 1);
+    }
+
+    public static String getUnitAlias(final UnitType unitType, final int number) {
+        return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "-" + number;
+    }
+
+    /**
+     * Registers the given unit.
+     *
+     * @param unitConfig
+     *
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    private static UnitConfig registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        return Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
+    }
+
+    public static PlacementConfig getDefaultPlacement(UnitConfig location) {
+        Rotation rotation = Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
+        Translation translation = Translation.newBuilder().setX(0).setY(0).setZ(0).build();
+        Pose pose = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
+        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(location.getId()).build();
+    }
+
+    public static Iterable<ServiceConfigType.ServiceConfig> generateServiceConfig(final UnitTemplate template) {
+        final List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
+        template.getServiceDescriptionList().stream().forEach((serviceDescription) -> {
+            BindingConfig bindingServiceConfig = BindingConfig.newBuilder().setBindingId(BINDING_OPENHAB).build();
+            serviceConfigList.add(ServiceConfig.newBuilder().setServiceDescription(serviceDescription).setBindingConfig(bindingServiceConfig).build());
+        });
+        return serviceConfigList;
+    }
+
+    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, DeviceClass clazz) throws CouldNotPerformException {
+        return generateDeviceConfig(alias, serialNumber, InventoryState.State.INSTALLED, clazz, ALIAS_LOCATION_ROOT_PARADISE);
+    }
+
+    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, DeviceClass clazz, String locationLabel) throws CouldNotPerformException {
+        return generateDeviceConfig(alias, serialNumber, InventoryState.State.INSTALLED, clazz, locationLabel);
+    }
+
+    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz) throws CouldNotPerformException {
+        return generateDeviceConfig(alias, serialNumber, inventoryState, clazz, ALIAS_LOCATION_ROOT_PARADISE);
+    }
+
+    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz, String locationLabel) throws CouldNotPerformException {
+        DeviceConfig tmp = DeviceConfig.newBuilder()
+                .setSerialNumber(serialNumber)
+                .setDeviceClassId(clazz.getId())
+                .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(inventoryState))
+                .build();
+        UnitConfig.Builder deviceUnitConfig = UnitConfig.newBuilder()
+                .setPlacementConfig(getDefaultPlacement(Registries.getUnitRegistry().getUnitConfigByAlias(locationLabel)))
+                .setDeviceConfig(tmp)
+                .setUnitType(UnitType.DEVICE);
+        deviceUnitConfig.addAlias(alias);
+        LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
+        return deviceUnitConfig.build();
+    }
+
+    private static List<UnitTemplateConfig> generateUnitTemplateConfigs(List<UnitTemplate.UnitType> unitTypes) throws CouldNotPerformException {
+        final List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
+        for (UnitTemplate.UnitType type : unitTypes) {
+            Set<ServiceTemplateConfig> serviceTemplateConfigs = new HashSet<>();
+            for (ServiceDescription serviceDescription : MockUnitTemplate.getTemplate(type).getServiceDescriptionList()) {
+                serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getServiceType()).build());
+            }
+            UnitTemplateConfig config = UnitTemplateConfig.newBuilder().setType(type).addAllServiceTemplateConfig(serviceTemplateConfigs).build();
+            unitTemplateConfigs.add(config);
+        }
+        return unitTemplateConfigs;
+    }
+
+    public static DeviceClass generateDeviceClass(String label, String productNumber, String company, UnitTemplate.UnitType... types) throws CouldNotPerformException {
+        List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>(Arrays.asList(types));
+        DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setProductNumber(productNumber).setCompany(company)
+                .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(generateUnitTemplateConfigs(unitTypeList))
+                .setShape(Shape.newBuilder().setBoundingBox(DEFAULT_BOUNDING_BOX));
+        LabelProcessor.addLabel(deviceClass.getLabelBuilder(), Locale.ENGLISH, label);
+        return deviceClass.build();
+    }
+
+    public static BindingConfig getBindingConfig() {
+        BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
+        bindingConfigBuilder.setBindingId(MockRegistry.BINDING_OPENHAB);
+        return bindingConfigBuilder.build();
+    }
+
+    public static void registerUnitConsistencyHandler(final ConsistencyHandler<String, IdentifiableMessage<String, UnitConfig, Builder>, ProtoBufMessageMap<String, UnitConfig, Builder>, ProtoBufRegistry<String, UnitConfig, Builder>> consistencyHandler) throws CouldNotPerformException {
+        unitRegistryLauncher.getLaunchable().getDeviceUnitConfigRegistry().registerConsistencyHandler(consistencyHandler);
+    }
+
+    public static UnitConfig.Builder generateAgentConfig(final String agentClassLabel, final String alias, final String locationAlias) throws CouldNotPerformException {
+        final UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.AGENT);
+        agentUnitConfig.getAgentConfigBuilder().setAgentClassId(AGENT_CLASS_LABEL_ID_MAP.get(agentClassLabel));
+        agentUnitConfig.getPlacementConfigBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigByAlias(locationAlias).getId());
+        LabelProcessor.addLabel(agentUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
+        agentUnitConfig.addAlias(alias);
+        return agentUnitConfig;
     }
 
     protected void shutdown() {
@@ -585,23 +507,15 @@ public class MockRegistry {
         return unitConfig.build();
     }
 
-    public static String getUnitAlias(final UnitType unitType) {
-        return getUnitAlias(unitType, 1);
-    }
-
-    public static String getUnitAlias(final UnitType unitType, final int number) {
-        return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "-" + number;
-    }
-
     private void registerConnections() throws CouldNotPerformException, InterruptedException {
         try {
             List<String> tileIds = new ArrayList<>();
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
             String reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(getUnitAlias(UnitType.REED_CONTACT)).getId();
-            System.out.println("ALIAS_LOCATION_HEAVEN: " +Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
-            System.out.println("ALIAS_LOCATION_HELL: " +Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
-            System.out.println("count: " +tileIds.size());
+            System.out.println("ALIAS_LOCATION_HEAVEN: " + Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
+            System.out.println("ALIAS_LOCATION_HELL: " + Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
+            System.out.println("count: " + tileIds.size());
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_GATE, connectionConfig));
 
@@ -795,9 +709,10 @@ public class MockRegistry {
             }
 
             // validate
-            if(dalUnits.isEmpty()) {
+            if (dalUnits.isEmpty()) {
                 throw new InvalidStateException(LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + " does not provide a " + unitType.name());
-            } if(alias.length != dalUnits.size()) {
+            }
+            if (alias.length != dalUnits.size()) {
                 throw new InvalidStateException(LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + "s amount of " + unitType.name() + " does not match alias amount of " + alias.length);
             }
 
@@ -810,100 +725,172 @@ public class MockRegistry {
         }
     }
 
-    /**
-     * Registers the given unit.
-     *
-     * @param unitConfig
-     *
-     * @throws CouldNotPerformException
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
-    private static UnitConfig registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
-        return Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
-    }
+    public enum MockServiceTemplate {
+        ACTIVATION_STATE_SERVICE(ServiceType.ACTIVATION_STATE_SERVICE, CommunicationType.ACTIVATION_STATE),
+        BATTERY_STATE_SERVICE(ServiceType.BATTERY_STATE_SERVICE, CommunicationType.BATTERY_STATE),
+        BRIGHTNESS_STATE_SERVICE(ServiceType.BRIGHTNESS_STATE_SERVICE, CommunicationType.BRIGHTNESS_STATE),
+        BUTTON_STATE_SERVICE(ServiceType.BUTTON_STATE_SERVICE, CommunicationType.BUTTON_STATE),
+        SWITCH_STATE_SERVICE(ServiceType.SWITCH_STATE_SERVICE, CommunicationType.SWITCH_STATE),
+        COLOR_STATE_SERVICE(ServiceType.COLOR_STATE_SERVICE, CommunicationType.COLOR_STATE),
+        HANDLE_STATE_SERVICE(ServiceType.HANDLE_STATE_SERVICE, CommunicationType.HANDLE_STATE),
+        MOTION_STATE_SERVICE(ServiceType.MOTION_STATE_SERVICE, CommunicationType.MOTION_STATE),
+        POWER_CONSUMPTION_STATE_SERVICE(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, CommunicationType.POWER_CONSUMPTION_STATE),
+        POWER_STATE_SERVICE(ServiceType.POWER_STATE_SERVICE, CommunicationType.POWER_STATE),
+        CONTACT_STATE_SERVICE(ServiceType.CONTACT_STATE_SERVICE, CommunicationType.CONTACT_STATE),
+        BLIND_STATE_SERVICE(ServiceType.BLIND_STATE_SERVICE, CommunicationType.BLIND_STATE),
+        TAMPER_STATE_SERVICE(ServiceType.TAMPER_STATE_SERVICE, CommunicationType.TAMPER_STATE),
+        TARGET_TEMPERATURE_STATE_SERVICE(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, CommunicationType.TEMPERATURE_STATE),
+        TEMPERATURE_STATE_SERVICE(ServiceType.TEMPERATURE_STATE_SERVICE, CommunicationType.TEMPERATURE_STATE),
+        STANDBY_STATE_SERVICE(ServiceType.STANDBY_STATE_SERVICE, CommunicationType.STANDBY_STATE),
+        SMOKE_ALARM_STATE_SERVICE(ServiceType.SMOKE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
+        TEMPERATURE_ALARM_STATE_SERVICE(ServiceType.TEMPERATURE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
+        WATER_ALARM_STATE_SERVICE(ServiceType.WATER_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
+        FIRE_ALARM_STATE_SERVICE(ServiceType.FIRE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
+        TEMPEST_ALARM_STATE_SERVICE(ServiceType.TEMPEST_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
+        EARTHQUAKE_ALARM_STATE_SERVICE(ServiceType.EARTHQUAKE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
+        INTRUSION_ALARM_STATE_SERVICE(ServiceType.INTRUSION_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
+        MEDICAL_EMERGENCY_ALARM_STATE_SERVICE(ServiceType.MEDICAL_EMERGENCY_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
+        DOOR_STATE_SERVICE(ServiceType.DOOR_STATE_SERVICE, CommunicationType.DOOR_STATE),
+        WINDOW_STATE_SERVICE(ServiceType.WINDOW_STATE_SERVICE, CommunicationType.WINDOW_STATE),
+        PASSAGE_STATE_SERVICE(ServiceType.PASSAGE_STATE_SERVICE, CommunicationType.PASSAGE_STATE),
+        RFID_STATE_SERVICE(ServiceType.RFID_STATE_SERVICE, CommunicationType.RFID_STATE),
+        PRESENCE_STATE_SERVICE(ServiceType.PRESENCE_STATE_SERVICE, CommunicationType.PRESENCE_STATE),
+        ILLUMINANCE_STATE_SERVICE(ServiceType.ILLUMINANCE_STATE_SERVICE, CommunicationType.ILLUMINANCE_STATE),
+        USER_TRANSIT_STATE_SERVICE(ServiceType.USER_TRANSIT_STATE_SERVICE, CommunicationType.USER_TRANSIT_STATE),
+        ACTIVITY_MULTI_STATE_SERVICE(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, CommunicationType.ACTIVITY_MULTI_STATE),
+        EMPHASIS_STATE_SERVICE(ServiceType.EMPHASIS_STATE_SERVICE, CommunicationType.EMPHASIS_STATE),
+        LOCAL_POSITION_STATE_SERVICE(ServiceType.LOCAL_POSITION_STATE_SERVICE, CommunicationType.LOCAL_POSITION_STATE),
+        GLOBAL_POSITION_STATE_SERVICE(ServiceType.GLOBAL_POSITION_STATE_SERVICE, CommunicationType.GLOBAL_POSITION_STATE),
+        SMOKE_STATE_SERVICE(ServiceType.SMOKE_STATE_SERVICE, CommunicationType.SMOKE_STATE);
 
-    public static PlacementConfig getDefaultPlacement(UnitConfig location) {
-        Rotation rotation = Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
-        Translation translation = Translation.newBuilder().setX(0).setY(0).setZ(0).build();
-        Pose pose = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
-        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(location.getId()).build();
-    }
 
-    public static Iterable<ServiceConfigType.ServiceConfig> generateServiceConfig(final UnitTemplate template) {
-        final List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
-        template.getServiceDescriptionList().stream().forEach((serviceDescription) -> {
-            BindingConfig bindingServiceConfig = BindingConfig.newBuilder().setBindingId(BINDING_OPENHAB).build();
-            serviceConfigList.add(ServiceConfig.newBuilder().setServiceDescription(serviceDescription).setBindingConfig(bindingServiceConfig).build());
-        });
-        return serviceConfigList;
-    }
+        private final ServiceTemplate serviceTemplate;
 
-    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, DeviceClass clazz) throws CouldNotPerformException {
-        return generateDeviceConfig(alias, serialNumber, InventoryState.State.INSTALLED, clazz, ALIAS_LOCATION_ROOT_PARADISE);
-    }
-
-    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, DeviceClass clazz, String locationLabel) throws CouldNotPerformException {
-        return generateDeviceConfig(alias, serialNumber, InventoryState.State.INSTALLED, clazz, locationLabel);
-    }
-
-    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz) throws CouldNotPerformException {
-        return generateDeviceConfig(alias, serialNumber, inventoryState, clazz, ALIAS_LOCATION_ROOT_PARADISE);
-    }
-
-    public static UnitConfig generateDeviceConfig(String alias, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz, String locationLabel) throws CouldNotPerformException {
-        DeviceConfig tmp = DeviceConfig.newBuilder()
-                .setSerialNumber(serialNumber)
-                .setDeviceClassId(clazz.getId())
-                .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(inventoryState))
-                .build();
-        UnitConfig.Builder deviceUnitConfig = UnitConfig.newBuilder()
-                .setPlacementConfig(getDefaultPlacement(Registries.getUnitRegistry().getUnitConfigByAlias(locationLabel)))
-                .setDeviceConfig(tmp)
-                .setUnitType(UnitType.DEVICE);
-        deviceUnitConfig.addAlias(alias);
-        LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
-        return deviceUnitConfig.build();
-    }
-
-    private static List<UnitTemplateConfig> generateUnitTemplateConfigs(List<UnitTemplate.UnitType> unitTypes) throws CouldNotPerformException {
-        final List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
-        for (UnitTemplate.UnitType type : unitTypes) {
-            Set<ServiceTemplateConfig> serviceTemplateConfigs = new HashSet<>();
-            for (ServiceDescription serviceDescription : MockUnitTemplate.getTemplate(type).getServiceDescriptionList()) {
-                serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getServiceType()).build());
-            }
-            UnitTemplateConfig config = UnitTemplateConfig.newBuilder().setType(type).addAllServiceTemplateConfig(serviceTemplateConfigs).build();
-            unitTemplateConfigs.add(config);
+        MockServiceTemplate(final ServiceType serviceType, final CommunicationType communicationType) {
+            this.serviceTemplate = ServiceTemplate.newBuilder().setType(serviceType).setCommunicationType(communicationType).build();
         }
-        return unitTemplateConfigs;
+
+        public ServiceTemplate getServiceTemplate() {
+            return serviceTemplate;
+        }
     }
 
-    public static DeviceClass generateDeviceClass(String label, String productNumber, String company, UnitTemplate.UnitType... types) throws CouldNotPerformException {
-        List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>(Arrays.asList(types));
-        DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setProductNumber(productNumber).setCompany(company)
-                .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(generateUnitTemplateConfigs(unitTypeList))
-                .setShape(Shape.newBuilder().setBoundingBox(DEFAULT_BOUNDING_BOX));
-        LabelProcessor.addLabel(deviceClass.getLabelBuilder(), Locale.ENGLISH, label);
-        return deviceClass.build();
+    public enum MockServiceDescription {
+        // endings:
+        // SOS = STATE_OPERATION_SERVICE
+        // SPS = STATE_PROVIDER_SERVICE
+        // SCS = STATE_CONSUMER_SERVICE
+        ACTIVATION_SPS(ServiceType.ACTIVATION_STATE_SERVICE, ServicePattern.PROVIDER),
+        ACTIVATION_SOS(ServiceType.ACTIVATION_STATE_SERVICE, ServicePattern.OPERATION),
+        BATTERY_SPS(ServiceType.BATTERY_STATE_SERVICE, ServicePattern.PROVIDER),
+        BLIND_SOS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.OPERATION),
+        BLIND_SPS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.PROVIDER),
+        BRIGHTNESS_SOS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.OPERATION),
+        BRIGHTNESS_SPS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.PROVIDER),
+        ILLUMINANCE_SPS(ServiceType.ILLUMINANCE_STATE_SERVICE, ServicePattern.PROVIDER),
+        BUTTON_SPS(ServiceType.BUTTON_STATE_SERVICE, ServicePattern.PROVIDER),
+        COLOR_SOS(ServiceType.COLOR_STATE_SERVICE, ServicePattern.OPERATION),
+        COLOR_SPS(ServiceType.COLOR_STATE_SERVICE, ServicePattern.PROVIDER),
+        CONTACT_SPS(ServiceType.CONTACT_STATE_SERVICE, ServicePattern.PROVIDER),
+        HANDLE_SPS(ServiceType.HANDLE_STATE_SERVICE, ServicePattern.PROVIDER),
+        MOTION_SPS(ServiceType.MOTION_STATE_SERVICE, ServicePattern.PROVIDER),
+        POWER_CONSUMPTION_SPS(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, ServicePattern.PROVIDER),
+        POWER_SOS(ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION),
+        POWER_SPS(ServiceType.POWER_STATE_SERVICE, ServicePattern.PROVIDER),
+        SMOKE_ALARM_SPS(ServiceType.SMOKE_ALARM_STATE_SERVICE, ServicePattern.PROVIDER),
+        SMOKE_SPS(ServiceType.SMOKE_STATE_SERVICE, ServicePattern.PROVIDER),
+        STANDBY_SPS(ServiceType.STANDBY_STATE_SERVICE, ServicePattern.PROVIDER),
+        STANDBY_SOS(ServiceType.STANDBY_STATE_SERVICE, ServicePattern.OPERATION),
+        TAMPER_SPS(ServiceType.TAMPER_STATE_SERVICE, ServicePattern.PROVIDER),
+        TARGET_TEMPERATURE_SOS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.OPERATION),
+        TARGET_TEMPERATURE_SPS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
+        TEMPERATURE_SPS(ServiceType.TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
+        LOCAL_POSITION_SOS(ServiceType.LOCAL_POSITION_STATE_SERVICE, ServicePattern.OPERATION),
+        LOCAL_POSITION_SPS(ServiceType.LOCAL_POSITION_STATE_SERVICE, ServicePattern.PROVIDER),
+        GLOBAL_POSITION_SOS(ServiceType.GLOBAL_POSITION_STATE_SERVICE, ServicePattern.OPERATION),
+        GLOBAL_POSITION_SPS(ServiceType.GLOBAL_POSITION_STATE_SERVICE, ServicePattern.PROVIDER),
+        PRESENCE_SOS(ServiceType.PRESENCE_STATE_SERVICE, ServicePattern.OPERATION),
+        PRESENCE_SPS(ServiceType.PRESENCE_STATE_SERVICE, ServicePattern.PROVIDER),
+        ACTIVITY_MULTI_SOS(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, ServicePattern.OPERATION),
+        ACTIVITY_MULTI_SPS(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, ServicePattern.PROVIDER),
+        USER_TRANSIT_SOS(ServiceType.USER_TRANSIT_STATE_SERVICE, ServicePattern.OPERATION),
+        USER_TRANSIT_SPS(ServiceType.USER_TRANSIT_STATE_SERVICE, ServicePattern.PROVIDER);
+
+        private final ServiceDescription description;
+
+        MockServiceDescription(ServiceType type, ServicePattern servicePattern) {
+            ServiceDescription.Builder descriptionBuilder = ServiceDescription.newBuilder();
+            descriptionBuilder.setServiceType(type);
+            descriptionBuilder.setPattern(servicePattern);
+            this.description = descriptionBuilder.build();
+        }
+
+        public ServiceDescription getDescription() {
+            return description;
+        }
     }
 
-    public static BindingConfig getBindingConfig() {
-        BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
-        bindingConfigBuilder.setBindingId(MockRegistry.BINDING_OPENHAB);
-        return bindingConfigBuilder.build();
-    }
+    public enum MockUnitTemplate {
 
-    public static void registerUnitConsistencyHandler(final ConsistencyHandler<String, IdentifiableMessage<String, UnitConfig, Builder>, ProtoBufMessageMap<String, UnitConfig, Builder>, ProtoBufRegistry<String, UnitConfig, Builder>> consistencyHandler) throws CouldNotPerformException {
-        unitRegistryLauncher.getLaunchable().getDeviceUnitConfigRegistry().registerConsistencyHandler(consistencyHandler);
-    }
+        COLORABLE_LIGHT(UnitType.COLORABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
+        DIMMABLE_LIGHT(UnitType.DIMMABLE_LIGHT, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
+        LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
+        MOTION_DETECTOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
+        LIGHT_SENSOR(UnitType.LIGHT_SENSOR, ILLUMINANCE_SPS),
+        BUTTON(UnitType.BUTTON, BUTTON_SPS),
+        DIMMER(UnitType.DIMMER, BRIGHTNESS_SOS, BRIGHTNESS_SPS, POWER_SOS, POWER_SPS),
+        HANDLE(UnitType.HANDLE, HANDLE_SPS),
+        POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_SPS),
+        POWER_SOURCE(UnitType.POWER_SWITCH, POWER_SOS, POWER_SPS),
+        REED_CONTACT(UnitType.REED_CONTACT, CONTACT_SPS),
+        ROLLER_SHUTTER(UnitType.ROLLER_SHUTTER, BLIND_SOS, BLIND_SPS),
+        TAMPER_DETECTOR(UnitType.TAMPER_DETECTOR, TAMPER_SPS),
+        TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, TARGET_TEMPERATURE_SOS, TARGET_TEMPERATURE_SPS, TEMPERATURE_SPS),
+        SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, SMOKE_SPS, SMOKE_ALARM_SPS),
+        TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
+        BATTERY(UnitType.BATTERY, BATTERY_SPS),
+        LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS,
+                SMOKE_ALARM_SPS, SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS),
+        CONNECTION(UnitType.CONNECTION),
+        SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
+        AGENT(UnitType.AGENT, ACTIVATION_SPS, ACTIVATION_SOS),
+        APP(UnitType.APP, ACTIVATION_SPS, ACTIVATION_SOS),
+        UNIT_GROUP(UnitType.UNIT_GROUP, COLOR_SPS, COLOR_SOS, POWER_SPS, POWER_SOS),
+        USER(UnitType.USER, LOCAL_POSITION_SOS, LOCAL_POSITION_SPS, GLOBAL_POSITION_SOS, GLOBAL_POSITION_SPS, PRESENCE_SOS, PRESENCE_SPS,
+                USER_TRANSIT_SOS, USER_TRANSIT_SPS, ACTIVITY_MULTI_SOS, ACTIVITY_MULTI_SPS);
 
-    public static UnitConfig.Builder generateAgentConfig(final String agentClassLabel, final String alias, final String locationAlias) throws CouldNotPerformException {
-        final UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.AGENT);
-        agentUnitConfig.getAgentConfigBuilder().setAgentClassId(AGENT_CLASS_LABEL_ID_MAP.get(agentClassLabel));
-        agentUnitConfig.getPlacementConfigBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigByAlias(locationAlias).getId());
-        LabelProcessor.addLabel(agentUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
-        agentUnitConfig.addAlias(alias);
-        return agentUnitConfig;
+        private final UnitTemplate template;
+
+        MockUnitTemplate(UnitType type, MockServiceDescription... serviceTemplates) {
+            UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
+            templateBuilder.setType(type);
+            for (MockServiceDescription serviceTemplate : serviceTemplates) {
+                templateBuilder.addServiceDescription(serviceTemplate.getDescription());
+            }
+
+            switch (type) {
+                case COLORABLE_LIGHT:
+                    templateBuilder.addIncludedType(UnitType.DIMMABLE_LIGHT);
+                    break;
+                case DIMMABLE_LIGHT:
+                    templateBuilder.addIncludedType(UnitType.LIGHT);
+                    break;
+            }
+
+            this.template = templateBuilder.build();
+        }
+
+        public static UnitTemplate getTemplate(UnitType type) throws CouldNotPerformException {
+            for (MockUnitTemplate templateType : values()) {
+                if (templateType.getTemplate().getType() == type) {
+                    return templateType.getTemplate();
+                }
+            }
+            throw new CouldNotPerformException("Could not find template for " + type + "!");
+        }
+
+        public UnitTemplate getTemplate() {
+            return template;
+        }
     }
 }

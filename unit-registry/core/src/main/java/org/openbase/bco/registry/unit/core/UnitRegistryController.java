@@ -572,13 +572,17 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(String unitAlias) throws CouldNotPerformException {
-        synchronized (aliasIdMapLock) {
-            if (aliasIdMap.containsKey(unitAlias)) {
-                return getUnitConfigById(aliasIdMap.get(unitAlias));
+    public UnitConfig getUnitConfigByAlias(String unitAlias) throws NotAvailableException {
+        try {
+            synchronized (aliasIdMapLock) {
+                if (aliasIdMap.containsKey(unitAlias)) {
+                    return getUnitConfigById(aliasIdMap.get(unitAlias));
+                }
             }
+            throw new NotAvailableException("Alias", unitAlias);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitConfig with Alias", unitAlias, ex);
         }
-        throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "]");
     }
 
     /**
@@ -592,13 +596,17 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws CouldNotPerformException {
-        synchronized (aliasIdMapLock) {
-            if (aliasIdMap.containsKey(unitAlias)) {
-                return getUnitConfigById(aliasIdMap.get(unitAlias), unitType);
+    public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException {
+        try {
+            synchronized (aliasIdMapLock) {
+                if (aliasIdMap.containsKey(unitAlias)) {
+                    return getUnitConfigById(aliasIdMap.get(unitAlias), unitType);
+                }
             }
+            throw new NotAvailableException("Alias", unitAlias);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitConfig of UnitType[" + unitType.name() + "] with Alias", unitAlias, ex);
         }
-        throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "] of UnitType[" + unitType.name() + "]");
     }
 
     @Override

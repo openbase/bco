@@ -223,7 +223,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
      */
     @RPCMethod
-    UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException;
+    UnitConfig getUnitConfigByAlias(final String unitAlias) throws NotAvailableException;
 
 
     /**
@@ -239,7 +239,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws NotAvailableException    is thrown if no unit is matching the given alias.
      * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
      */
-    UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws CouldNotPerformException;
+    UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException;
 
     /**
      * Method returns all registered units with the given label. Label resolving

@@ -10,22 +10,20 @@ package org.openbase.bco.registry.unit.remote;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import com.google.protobuf.ByteString;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -41,10 +39,6 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
-import org.openbase.jul.pattern.MockUpFilter;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
@@ -63,7 +57,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -230,7 +223,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitConfig
+     *
      * @return
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     @Override
@@ -251,7 +246,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitConfigId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
@@ -265,36 +262,47 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitAlias {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(String unitAlias) throws CouldNotPerformException {
-        synchronized (aliasIdMapLock) {
-            if (aliasIdMap.containsKey(unitAlias)) {
-                return getUnitConfigById(aliasIdMap.get(unitAlias));
+    public UnitConfig getUnitConfigByAlias(String unitAlias) throws NotAvailableException {
+        try {
+            synchronized (aliasIdMapLock) {
+                if (aliasIdMap.containsKey(unitAlias)) {
+                    return getUnitConfigById(aliasIdMap.get(unitAlias));
+                }
             }
+            throw new NotAvailableException("Alias", unitAlias);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitConfig with Alias", unitAlias, ex);
         }
-        throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "]");
     }
 
     /**
      * {@inheritDoc}
      *
      * @param unitAlias {@inheritDoc}
-     * @param unitType {@inheritDoc}
+     * @param unitType  {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws CouldNotPerformException {
-        synchronized (aliasIdMapLock) {
-            if (aliasIdMap.containsKey(unitAlias)) {
-                return getUnitConfigById(aliasIdMap.get(unitAlias), unitType);
+    public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException {
+        try {
+            synchronized (aliasIdMapLock) {
+                if (aliasIdMap.containsKey(unitAlias)) {
+                    return getUnitConfigById(aliasIdMap.get(unitAlias), unitType);
+                }
             }
+            throw new NotAvailableException("Alias", unitAlias);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitConfig of UnitType[" + unitType.name() + "] with Alias", unitAlias, ex);
         }
-        throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "] of UnitType["+unitType.name()+"]");
     }
 
     @Override
@@ -347,6 +355,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -358,6 +367,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -383,6 +393,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -721,7 +732,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param authorizationToken {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -738,7 +751,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
