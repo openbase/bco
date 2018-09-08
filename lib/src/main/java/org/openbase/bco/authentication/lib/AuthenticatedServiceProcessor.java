@@ -118,7 +118,7 @@ public class AuthenticatedServiceProcessor {
 
                     if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
                         if (!GeneratedMessage.class.isAssignableFrom(internalClass)) {
-                            throw new CouldNotPerformException("Authenticated value has a value but the method implemented by the server did not expect one");
+                            throw new CouldNotPerformException("Authenticated value has a value but the method implemented by the server did not expect one!");
                         }
                         // when not logged in the received value is not encrypted but just send as a byte string
                         // so get the received message by calling parseFrom which is supported by every message
@@ -130,7 +130,7 @@ public class AuthenticatedServiceProcessor {
                     RETURN result = executable.process(message, null);
                     if (result != null) {
                         if (!(result instanceof GeneratedMessage)) {
-                            throw new CouldNotPerformException("Result[" + result + "] of authenticated action is not a message or not null and therefore not supported");
+                            throw new CouldNotPerformException("Result[" + result + "] of authenticated action is not a message or not null and therefore not supported!");
                         }
 
                         // add result as a byte string to the response
@@ -143,7 +143,7 @@ public class AuthenticatedServiceProcessor {
             // return the response
             return response.build();
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not execute authenticated action", ex);
+            throw new CouldNotPerformException("Could not execute authenticated action!", ex);
         }
     }
 
