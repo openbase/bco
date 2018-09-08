@@ -715,7 +715,6 @@ public class MockRegistry {
 
             // setup aliases
             for (int i = 0; i < alias.length; i++) {
-                System.err.println("register alias "+ alias[i] + " for unit "+ LabelProcessor.getBestMatch(dalUnits.get(i).getLabel()));
                 Registries.getUnitRegistry().updateUnitConfig(dalUnits.get(i).toBuilder().addAlias(alias[i]).build()).get();
             }
         } catch (CouldNotPerformException ex) {
