@@ -60,7 +60,7 @@ public class ThingBCOUnitSynchronization extends AbstractSynchronizer<String, Id
             try {
                 Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
             } catch (ExecutionException ex) {
-                throw new CouldNotPerformException("Could not update device[" + unitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+                throw new CouldNotPerformException("Could not update device[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
             }
         }
     }
