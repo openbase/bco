@@ -54,8 +54,9 @@ public class ConnectionTilesConsistencyHandler extends AbstractProtoBufRegistryC
         UnitConfig.Builder connectionUnitConfig = entry.getMessage().toBuilder();
         ConnectionConfig.Builder connectionConfig = connectionUnitConfig.getConnectionConfigBuilder();
 
+
         if (connectionConfig.getTileIdList().size() < 2) {
-            throw new InvalidStateException("Connections must connect at least 2 tiles which is not true for connection [" + entry.getMessage() + "]");
+            throw new InvalidStateException("Connections must connect at least 2 tiles which is not true for connection [" + entry.getMessage() + "] which is connecting only "+connectionConfig.getTileIdList().size()+"!");
         }
 
         boolean modification = false;
