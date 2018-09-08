@@ -29,6 +29,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
