@@ -127,7 +127,7 @@ public class MockRegistry {
     public static final String ALIAS_LOCATION_STAIRWAY_TO_HEAVEN = "Stairway to Heaven";
     public static final String ALIAS_REED_SWITCH_STAIRWAY_WINDOW = "Reed_Stairway_Window";
     public static final String ALIAS_REED_SWITCH_HEAVEN_STAIRS_DOOR = "Reed_Heaven_Stairs_Door";
-    public static final String ALIAS_REED_SWITCH_HELL_STAIRS_DOOR = "Hell";
+    public static final String ALIAS_REED_SWITCH_HELL_STAIRS_DOOR = "Reed_Hell_Staris_Door";
     public static final String ALIAS_USER_MAX_MUSTERMANN = "MaxMustermann";
     public static final String ALIAS_WINDOW_STAIRS_HELL_LOOKOUT = "Stairs_Hell_Lookout";
     public static final String BINDING_OPENHAB = "OPENHAB";
@@ -513,9 +513,6 @@ public class MockRegistry {
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
             String reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(getUnitAlias(UnitType.REED_CONTACT)).getId();
-            System.out.println("ALIAS_LOCATION_HEAVEN: " + Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
-            System.out.println("ALIAS_LOCATION_HELL: " + Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
-            System.out.println("count: " + tileIds.size());
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_GATE, connectionConfig));
 
@@ -718,6 +715,7 @@ public class MockRegistry {
 
             // setup aliases
             for (int i = 0; i < alias.length; i++) {
+                System.err.println("register alias "+ alias[i] + " for unit "+ LabelProcessor.getBestMatch(dalUnits.get(i).getLabel()));
                 Registries.getUnitRegistry().updateUnitConfig(dalUnits.get(i).toBuilder().addAlias(alias[i]).build()).get();
             }
         } catch (CouldNotPerformException ex) {
