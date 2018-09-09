@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -39,6 +39,7 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.schedule.FutureWrapper;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
@@ -61,6 +62,7 @@ public class TestWaitUntilReady {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestWaitUntilReady.class);
 
     private static boolean delayConsistencyCheck = false;
+    private boolean waitedUntilReady = false;
 
     public TestWaitUntilReady() {
     }
@@ -110,8 +112,6 @@ public class TestWaitUntilReady {
         }
     }
 
-    private boolean waitedUntilReady = false;
-
     @Test(timeout = 30000)
     public void testWaitUntilReady() throws Exception {
         System.out.println("testWaitUntilReady");
@@ -135,21 +135,29 @@ public class TestWaitUntilReady {
         for (int i = 0; i < iterations; ++i) {
             waitedUntilReady = false;
             UnitConfig deviceUnitConfig = MockRegistry.generateDeviceConfig(deviceLabel + i, String.valueOf(i), deviceClass);
-//            System.out.println("Trigger device registration!");
+            // System.out.println("Trigger device registration!");
             AuthenticatedValueFuture authenticationFuture = (AuthenticatedValueFuture) Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
-            TransactionSynchronizationFuture synchronizationFuture = (TransactionSynchronizationFuture) authenticationFuture.getInternalFuture();
-//            System.out.println("Wait until ready");
+
+
+            FutureWrapper synchronizationFuture = (FutureWrapper) authenticationFuture.getInternalFuture();
+
+            // lookup synchronization future
+            while (!(synchronizationFuture instanceof TransactionSynchronizationFuture)) {
+                synchronizationFuture = (FutureWrapper) synchronizationFuture.getInternalFuture();
+            }
+
+            // System.out.println("Wait until ready");
 
             // needed to make sure the registry is processing the registration task.
             Thread.sleep(20);
 
-//            System.out.println("wait");
+            // System.out.println("wait");
             Registries.waitUntilReady();
-//            System.out.println("continue");
+            //            System.out.println("continue");
             Assert.assertTrue("Test failed because registry is not consistent after wait until done returned.", Registries.getUnitRegistry().getData().getUnitConfigRegistryConsistent());
             long time = System.currentTimeMillis();
             try {
-//                registrationFuture.get();
+                // registrationFuture.get();
                 synchronizationFuture.getInternalFuture().get(5, TimeUnit.MILLISECONDS);
                 LOGGER.info("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
             } catch (TimeoutException ex) {
