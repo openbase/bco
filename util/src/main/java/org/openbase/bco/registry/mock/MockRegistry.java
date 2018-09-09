@@ -10,12 +10,12 @@ package org.openbase.bco.registry.mock;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -310,8 +310,13 @@ public class MockRegistry {
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    private static UnitConfig registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
-        return Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
+    private static UnitConfig registerUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        unitConfig = Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
+        while (!Registries.getUnitRegistry().containsUnitConfig(unitConfig)) {
+            LOGGER.error(Registries.getUnitRegistry()+ "Registry not properly synchronized Unit["+LabelProcessor.getBestMatch(unitConfig.getLabel())+"]!");
+            Thread.sleep(10);
+        }
+        return unitConfig;
     }
 
     public static PlacementConfig getDefaultPlacement(UnitConfig location) {
