@@ -41,6 +41,6 @@ public interface SmokeStateProviderService extends ProviderService {
     }
 
     static void verifySmokeState(final SmokeState smokeState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(smokeState);
+        Services.verifyServiceState(smokeState);
     }
 }

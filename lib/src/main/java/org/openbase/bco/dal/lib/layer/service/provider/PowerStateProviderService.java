@@ -41,6 +41,6 @@ public interface PowerStateProviderService extends ProviderService {
     }
 
     static void verifyPowerState(final PowerState powerState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(powerState);
+        Services.verifyServiceState(powerState);
     }
 }

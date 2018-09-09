@@ -41,6 +41,6 @@ public interface ContactStateProviderService extends ProviderService {
     }
 
     static void verifyContactState(final ContactState contactState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(contactState);
+        Services.verifyServiceState(contactState);
     }
 }

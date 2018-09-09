@@ -41,6 +41,6 @@ public interface WindowStateProviderService extends ProviderService {
     }
 
     static void verifyWindowState(final WindowState windowState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(windowState);
+        Services.verifyServiceState(windowState);
     }
 }

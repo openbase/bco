@@ -41,6 +41,6 @@ public interface StandbyStateProviderService extends ProviderService {
     }
 
     static void verifyStandbyState(final StandbyState standbyState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(standbyState);
+        Services.verifyServiceState(standbyState);
     }
 }

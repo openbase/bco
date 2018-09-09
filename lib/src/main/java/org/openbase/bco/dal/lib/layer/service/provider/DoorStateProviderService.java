@@ -41,6 +41,6 @@ public interface DoorStateProviderService extends ProviderService {
     }
 
     static void verifyDoorState(final DoorState doorState) throws VerificationFailedException {
-            Services.verifyOperationServiceState(doorState);
+            Services.verifyServiceState(doorState);
     }
 }

@@ -41,6 +41,6 @@ public interface TamperStateProviderService extends ProviderService {
     }
 
     static void verifyTamperState(final TamperState tamperState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(tamperState);
+        Services.verifyServiceState(tamperState);
     }
 }

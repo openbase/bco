@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -361,7 +361,7 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static void verifyOperationServiceState(final Message serviceState) throws VerificationFailedException {
+    public static void verifyServiceState(final Message serviceState) throws VerificationFailedException {
 
         if (serviceState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));
@@ -371,7 +371,7 @@ public class Services extends ServiceStateProcessor {
         try {
             valueMethod = serviceState.getClass().getMethod("getValue");
             try {
-                verifyOperationServiceStateValue((Enum) valueMethod.invoke(serviceState));
+                verifyServiceStateValue((Enum) valueMethod.invoke(serviceState));
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassCastException ex) {
                 ExceptionPrinter.printHistory("Operation service verification phase failed of ServiceState[ " + serviceState.getClass().getSimpleName() + "]!", ex, LOGGER);
             }
@@ -380,7 +380,7 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static void verifyOperationServiceStateValue(final Enum value) throws VerificationFailedException {
+    public static void verifyServiceStateValue(final Enum value) throws VerificationFailedException {
         if (value == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceStateValue"));
         }

@@ -41,6 +41,6 @@ public interface MotionStateProviderService extends ProviderService {
     }
 
     static void verifyMotionState(final MotionState motionState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(motionState);
+        Services.verifyServiceState(motionState);
     }
 }

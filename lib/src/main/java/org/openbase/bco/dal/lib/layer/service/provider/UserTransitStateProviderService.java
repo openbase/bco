@@ -42,6 +42,6 @@ public interface UserTransitStateProviderService extends ProviderService {
     }
 
     static void verifyUserTransitState(final UserTransitState userTransitState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(userTransitState);
+        Services.verifyServiceState(userTransitState);
     }
 }

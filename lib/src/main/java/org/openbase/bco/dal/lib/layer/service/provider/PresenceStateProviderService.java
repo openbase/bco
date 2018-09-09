@@ -41,6 +41,6 @@ public interface PresenceStateProviderService extends ProviderService {
     }
 
     static void verifyPresenceState(final PresenceState presenceState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(presenceState);
+        Services.verifyServiceState(presenceState);
     }
 }

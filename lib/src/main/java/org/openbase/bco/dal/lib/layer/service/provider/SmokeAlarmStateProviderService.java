@@ -33,14 +33,10 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface SmokeAlarmStateProviderService extends ProviderService {
+public interface SmokeAlarmStateProviderService extends AlarmStateProviderService {
 
     @RPCMethod(legacy = true)
     default AlarmState getSmokeAlarmState() throws NotAvailableException {
         return (AlarmState) getServiceProvider().getServiceState(SMOKE_ALARM_STATE_SERVICE);
-    }
-
-    static void verifySmokeAlarmState(final AlarmState smokeAlarmState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(smokeAlarmState);
     }
 }

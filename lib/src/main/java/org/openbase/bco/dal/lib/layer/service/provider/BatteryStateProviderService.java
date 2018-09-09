@@ -44,7 +44,7 @@ public interface BatteryStateProviderService extends ProviderService {
 
     static BatteryState verifyBatteryState(BatteryState batteryState) throws VerificationFailedException {
         batteryState = revalidate(batteryState);
-        Services.verifyOperationServiceState(batteryState);
+        Services.verifyServiceState(batteryState);
         return batteryState;
     }
 

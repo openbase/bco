@@ -66,7 +66,7 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
 //        logger.debug("Setting [" + getLabel() + "] to BlindState [" + state + "]");
 //
 //        try {
-//            Services.verifyOperationServiceState(state);
+//            Services.verifyServiceState(state);
 //        } catch (VerificationFailedException ex) {
 //            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
 //        }

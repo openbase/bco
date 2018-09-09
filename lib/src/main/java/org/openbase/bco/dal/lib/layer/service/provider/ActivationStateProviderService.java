@@ -41,6 +41,6 @@ public interface ActivationStateProviderService extends ProviderService {
     }
 
     static void verifyActivationState(final ActivationState activationState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(activationState);
+        Services.verifyServiceState(activationState);
     }
 }
