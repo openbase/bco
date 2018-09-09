@@ -28,10 +28,12 @@ import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
@@ -62,8 +64,10 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
 
+        // legacy mode needed for testLegacyRemoteCallGetColor() test.
+        JPService.registerProperty(JPRSBLegacyMode.class, true);
+        AbstractBCODeviceManagerTest.setUpClass();
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
     }
 
@@ -197,7 +201,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
-    public void testRemoteCallGetColor() throws Exception {
+    public void testLegacyRemoteCallGetColor() throws Exception {
         System.out.println("getColor");
         HSBColor color = HSBColor.newBuilder().setHue(61).setSaturation(23).setBrightness(37).build();
         colorableLightRemote.setColor(color).get();
