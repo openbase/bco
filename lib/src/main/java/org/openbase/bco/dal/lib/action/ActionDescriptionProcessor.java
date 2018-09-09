@@ -545,8 +545,8 @@ public class ActionDescriptionProcessor {
      * @throws CouldNotPerformException if the service attribute cannot be verified or if the service attribute cannot
      *                                  be serialized
      */
-    public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-        Services.verifyServiceState(serviceAttribute);
+    public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+        serviceAttribute = Services.verifyAndRevalidateServiceState(serviceAttribute);
 
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         ServiceJSonProcessor jSonProcessor = new ServiceJSonProcessor();

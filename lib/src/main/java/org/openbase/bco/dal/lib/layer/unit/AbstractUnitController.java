@@ -575,7 +575,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
 
             // verify the service state
-            Services.verifyServiceState(newState);
+            newState = Services.verifyAndRevalidateServiceState(newState);
 
             updateTransactionId();
 

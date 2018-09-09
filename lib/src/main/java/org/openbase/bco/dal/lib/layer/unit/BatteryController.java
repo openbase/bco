@@ -42,21 +42,4 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
     public BatteryController(final UnitHost unitHost, BatteryData.Builder builder) throws InstantiationException {
         super(BatteryController.class, unitHost, builder);
     }
-
-    @Override
-    protected void applyCustomDataUpdate(BatteryData.Builder internalBuilder, ServiceType serviceType) {
-        switch (serviceType) {
-            case BATTERY_STATE_SERVICE:
-                if (!internalBuilder.getBatteryState().hasValue() || internalBuilder.getBatteryState().getValue() == BatteryState.State.UNKNOWN) {
-                    if (internalBuilder.getBatteryState().getLevel() <= 5) {
-                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.INSUFFICIENT);
-                    } else if (internalBuilder.getBatteryState().getLevel() <= 15) {
-                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.CRITICAL);
-                    } else {
-                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.OK);
-                    }
-                }
-                break;
-        }
-    }
 }

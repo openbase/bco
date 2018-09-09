@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -386,11 +386,21 @@ public class Services extends ServiceStateProcessor {
         }
 
         if (value.name().equals("UNKNOWN")) {
-            throw new VerificationFailedException("UNKNOWN." + value.getClass().getSimpleName() + " is an invalid operation service state!");
+            throw new VerificationFailedException(value.getClass().getSimpleName() + ".UNKNOWN" + " is an invalid operation service state!");
         }
     }
 
-    public static Message verifyServiceState(final Message serviceState) throws VerificationFailedException {
+    /**
+     * Verification of the given service state inclusive consistency revalidation.
+     * This means field are recalculated in case they are not consistent against each other.
+     *
+     * @param serviceState the state type to validate.
+     *
+     * @return the given state or an updated version of it.
+     *
+     * @throws VerificationFailedException is thrown if the state is invalid and no repair functions are available.
+     */
+    public static Message verifyAndRevalidateServiceState(final Message serviceState) throws VerificationFailedException {
         try {
             try {
                 final Object verifiedState = detectServiceStateVerificationMethod(serviceState).invoke(null, serviceState);
