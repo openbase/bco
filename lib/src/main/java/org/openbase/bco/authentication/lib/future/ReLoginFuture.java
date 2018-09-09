@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.lib.future;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
+import org.openbase.jul.schedule.FutureWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,35 +38,54 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ReLoginFuture<V> implements Future<V> {
+public class ReLoginFuture<T> implements Future<T>, FutureWrapper<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReLoginFuture.class);
 
-    private final Future<V> internalFuture;
+    private final Future<T> internalFuture;
     private final SessionManager sessionManager;
 
-    public ReLoginFuture(final Future<V> internalFuture, final SessionManager sessionManager) {
+    public ReLoginFuture(final Future<T> internalFuture, final SessionManager sessionManager) {
         this.internalFuture = internalFuture;
         this.sessionManager = sessionManager;
     }
 
+    /**
+     * {@inheritDoc}
+     * @param mayInterruptIfRunning {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         return internalFuture.cancel(mayInterruptIfRunning);
     }
 
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean isCancelled() {
         return internalFuture.isCancelled();
     }
 
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean isDone() {
         return internalFuture.isDone();
     }
 
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     * @throws ExecutionException {@inheritDoc}
+     */
     @Override
-    public V get() throws InterruptedException, ExecutionException {
+    public T get() throws InterruptedException, ExecutionException {
         try {
             return internalFuture.get();
         } catch (ExecutionException ex) {
@@ -73,8 +93,17 @@ public class ReLoginFuture<V> implements Future<V> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @param timeout {@inheritDoc}
+     * @param unit {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     * @throws ExecutionException {@inheritDoc}
+     * @throws TimeoutException {@inheritDoc}
+     */
     @Override
-    public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         try {
             return internalFuture.get(timeout, unit);
         } catch (ExecutionException ex) {
@@ -93,5 +122,14 @@ public class ReLoginFuture<V> implements Future<V> {
         }
         // was no login error so just return the exception
         return ex;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<T> getInternalFuture() {
+        return internalFuture;
     }
 }
