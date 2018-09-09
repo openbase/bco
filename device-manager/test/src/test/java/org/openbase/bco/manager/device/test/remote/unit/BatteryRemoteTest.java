@@ -32,6 +32,7 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BatteryStateType.BatteryState;
+import rst.domotic.state.BatteryStateType.BatteryState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import static org.junit.Assert.assertEquals;
@@ -86,7 +87,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
 
             BatteryState lastState = batteryRemote.getBatteryState();
             level = 9.5;
-            state = TimestampProcessor.updateTimestampWithCurrentTime(BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.INSUFFICIENT)).build();
+            state = TimestampProcessor.updateTimestampWithCurrentTime(BatteryState.newBuilder().setLevel(level).setValue(State.CRITICAL)).build();
             deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId()).applyDataUpdate(state, ServiceType.BATTERY_STATE_SERVICE);
             batteryRemote.requestData().get();
             assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
