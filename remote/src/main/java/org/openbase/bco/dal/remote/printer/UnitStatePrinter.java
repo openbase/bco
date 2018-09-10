@@ -9,22 +9,28 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.DefaultInitializable;
+import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
-public class UnitStateLogger implements DefaultInitializable {
+import java.io.PrintStream;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnitStateLogger.class);
+public class UnitStatePrinter implements DefaultInitializable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnitStatePrinter.class);
 
     private final CustomUnitPool customUnitPool;
     private final Observer<Message> unitStateObserver;
+    private final PrintStream printStream;
 
-    public UnitStateLogger() throws InstantiationException {
+    public UnitStatePrinter(final PrintStream printStream, final Filter<UnitConfig>... filters) throws InstantiationException {
         try {
-            this.customUnitPool = new CustomUnitPool();
+            this.printStream = printStream;
+            this.customUnitPool = new CustomUnitPool(filters);
             this.unitStateObserver = (source, data) -> {
                 print((Unit) source, data);
             };
@@ -55,7 +61,7 @@ public class UnitStateLogger implements DefaultInitializable {
 
     private void print(Unit unit, ServiceType serviceType, Message data) {
         try {
-            System.out.println("unit(" + unit.getUnitType().name().toLowerCase() + ", " + unit.getId() + ", " + Services.invokeProviderServiceMethod(serviceType, unit) + ").");
+            printStream.println("unit(" + unit.getUnitType().name().toLowerCase() + ", " + unit.getId() + ", " + Services.invokeProviderServiceMethod(serviceType, unit) + ").");
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not print " + serviceType.name() + " of " + unit, ex, LOGGER);
         }
