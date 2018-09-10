@@ -36,7 +36,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface BlindStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default BlindState getBlindState() throws NotAvailableException {
         return (BlindState) getServiceProvider().getServiceState(BLIND_STATE_SERVICE);
     }

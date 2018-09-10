@@ -61,7 +61,7 @@ public interface Location extends BaseUnit<LocationData>, PresenceStateProviderS
         return serviceTypeSet;
     }
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     @Override
     Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
 }

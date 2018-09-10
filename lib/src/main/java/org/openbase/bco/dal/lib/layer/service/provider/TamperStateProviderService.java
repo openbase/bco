@@ -35,12 +35,12 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface TamperStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default TamperState getTamperState() throws NotAvailableException {
         return (TamperState) getServiceProvider().getServiceState(TAMPER_STATE_SERVICE);
     }
 
     static void verifyTamperState(final TamperState tamperState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(tamperState);
+        Services.verifyServiceState(tamperState);
     }
 }

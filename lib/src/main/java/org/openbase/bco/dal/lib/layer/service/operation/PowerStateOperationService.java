@@ -34,7 +34,7 @@ import rst.domotic.state.PowerStateType.PowerState;
  */
 public interface PowerStateOperationService extends OperationService, PowerStateProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException;
 
     default Future<ActionFuture> setPowerState(final PowerState.State powerState) throws CouldNotPerformException {

@@ -1,6 +1,6 @@
-package org.openbase.bco.dal.lib.layer.service.provider;
+package org.openbase.bco.dal.lib.layer.service.operation;
 
-/*
+/*-
  * #%L
  * BCO DAL Library
  * %%
@@ -22,25 +22,19 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.provider.LocalPositionStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.ButtonStateType.ButtonState;
+import org.openbase.jul.exception.CouldNotPerformException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_STATE_SERVICE;
+import java.util.concurrent.Future;
 
 /**
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface ButtonStateProviderService extends ProviderService {
+public interface LocalPositionStateOperationService extends OperationService, LocalPositionStateProviderService {
 
     @RPCMethod(legacy = true)
-    default ButtonState getButtonState() throws NotAvailableException {
-        return (ButtonState) getServiceProvider().getServiceState(BUTTON_STATE_SERVICE);
-    }
-
-    static void verifyButtonState(final ButtonState buttonState) throws VerificationFailedException {
-        Services.verifyServiceState(buttonState);
-    }
+    Future<ActionFuture> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException;
 }

@@ -48,12 +48,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVATION_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable, ActivationStateProviderService {
@@ -65,11 +63,13 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
     private Future<ActionFuture> executionFuture;
     private boolean enabled;
+    private final ActivationStateOperationServiceImpl activationStateOperationService;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
         super(unitClass, builder);
         try {
-            registerOperationService(ServiceType.ACTIVATION_STATE_SERVICE, new ActivationStateOperationServiceImpl(this));
+            this.activationStateOperationService = new ActivationStateOperationServiceImpl(this);
+            registerOperationService(ServiceType.ACTIVATION_STATE_SERVICE, activationStateOperationService);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -102,9 +102,9 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                 enabled = true;
                 activate();
                 if (detectAutostart()) {
-                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
+                    activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
                 } else {
-                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
+                    activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
                 }
             }
         } catch (ExecutionException ex) {
@@ -118,7 +118,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
             synchronized (enablingLock) {
                 cancelExecution();
                 enabled = false;
-                setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
+                activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
                 deactivate();
             }
         } catch (ExecutionException ex) {
@@ -156,7 +156,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     protected abstract void stop() throws CouldNotPerformException, InterruptedException;
 
-    private class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
+    public class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
 
         private final ServiceProvider serviceProvider;
 

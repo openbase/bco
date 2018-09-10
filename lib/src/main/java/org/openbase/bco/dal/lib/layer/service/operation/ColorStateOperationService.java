@@ -39,19 +39,19 @@ import rst.vision.RGBColorType.RGBColor;
  */
 public interface ColorStateOperationService extends OperationService, ColorStateProviderService {
 
-    public static final String NEUTRAL_WHITE_KEY = "NEUTRAL_WHITE";
-    public static final HSBColor DEFAULT_NEUTRAL_WHITE = HSBColor.newBuilder().setHue(0).setSaturation(0).setBrightness(80).build();
-    public static final Color DEFAULT_NEUTRAL_WHITE_COLOR = Color.newBuilder().setType(Type.HSB).setHsbColor(DEFAULT_NEUTRAL_WHITE).build();
+    String NEUTRAL_WHITE_KEY = "NEUTRAL_WHITE";
+    HSBColor DEFAULT_NEUTRAL_WHITE = HSBColor.newBuilder().setHue(0).setSaturation(0).setBrightness(80).build();
+    Color DEFAULT_NEUTRAL_WHITE_COLOR = Color.newBuilder().setType(Type.HSB).setHsbColor(DEFAULT_NEUTRAL_WHITE).build();
 
-    @RPCMethod
-    public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException;
+    @RPCMethod(legacy = true)
+    Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException;
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
         return setColor(DEFAULT_NEUTRAL_WHITE);
     }
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default Future<ActionFuture> setColor(final HSBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(color).build());
     }

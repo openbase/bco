@@ -361,7 +361,7 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static void verifyOperationServiceState(final Message serviceState) throws VerificationFailedException {
+    public static void verifyServiceState(final Message serviceState) throws VerificationFailedException {
 
         if (serviceState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));
@@ -371,7 +371,7 @@ public class Services extends ServiceStateProcessor {
         try {
             valueMethod = serviceState.getClass().getMethod("getValue");
             try {
-                verifyOperationServiceStateValue((Enum) valueMethod.invoke(serviceState));
+                verifyServiceStateValue((Enum) valueMethod.invoke(serviceState));
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassCastException ex) {
                 ExceptionPrinter.printHistory("Operation service verification phase failed of ServiceState[ " + serviceState.getClass().getSimpleName() + "]!", ex, LOGGER);
             }
@@ -380,17 +380,27 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static void verifyOperationServiceStateValue(final Enum value) throws VerificationFailedException {
+    public static void verifyServiceStateValue(final Enum value) throws VerificationFailedException {
         if (value == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceStateValue"));
         }
 
         if (value.name().equals("UNKNOWN")) {
-            throw new VerificationFailedException("UNKNOWN." + value.getClass().getSimpleName() + " is an invalid operation service state!");
+            throw new VerificationFailedException(value.getClass().getSimpleName() + ".UNKNOWN" + " is an invalid operation service state!");
         }
     }
 
-    public static Message verifyServiceState(final Message serviceState) throws VerificationFailedException {
+    /**
+     * Verification of the given service state inclusive consistency revalidation.
+     * This means field are recalculated in case they are not consistent against each other.
+     *
+     * @param serviceState the state type to validate.
+     *
+     * @return the given state or an updated version of it.
+     *
+     * @throws VerificationFailedException is thrown if the state is invalid and no repair functions are available.
+     */
+    public static Message verifyAndRevalidateServiceState(final Message serviceState) throws VerificationFailedException {
         try {
             try {
                 final Object verifiedState = detectServiceStateVerificationMethod(serviceState).invoke(null, serviceState);

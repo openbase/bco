@@ -40,6 +40,7 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.jul.extension.rsb.com.exception.RSBResolvedException;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.LoggerFactory;
 import rsb.RSBException;
@@ -123,7 +124,7 @@ public class ActionRescheduler {
                                 break;
                         }
                     } catch (RSBException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
+                        ExceptionPrinter.printHistory(new RSBResolvedException(ex), LOGGER);
                     }
                 }
             } else {
@@ -177,8 +178,7 @@ public class ActionRescheduler {
                                 try {
                                     allocatableResource.getRemote().extend(periodSecs, TimeUnit.SECONDS);
                                 } catch (RSBException ex) {
-                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extend resource allocation", ex), LOGGER);
-                                    Logger.getLogger(ActionRescheduler.class.getName()).log(Level.SEVERE, null, ex);
+                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extend resource allocation", new RSBResolvedException(ex)), LOGGER);
                                 }
                             }
                         }
@@ -203,7 +203,7 @@ public class ActionRescheduler {
             try {
                 allocatableResource.shutdown();
             } catch (RSBException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not shutdown allocatableResource", ex), LOGGER);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not shutdown allocatableResource", new RSBResolvedException(ex)), LOGGER);
             }
         }
         allocationMap.clear();

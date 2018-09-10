@@ -21,15 +21,15 @@ package org.openbase.bco.dal.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.visual.util.LoginDialog;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.ImageIcon;
-
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.registry.lib.jp.JPBCOAutoLoginUser;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -67,14 +67,36 @@ public class DalVisualRemote extends javax.swing.JFrame {
         try {
             instance = this;
 
-            SystemLogin.loginBCOUser();
             initComponents();
             loadImage();
 
             selectorPanel.addObserver(genericUnitPanel.getUnitConfigObserver());
             init();
+            SessionManager.getInstance().addLoginObserver((o, t) -> {
+                updateDynamicComponents();
+            });
+            updateDynamicComponents();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
+        }
+    }
+
+    private void updateDynamicComponents() {
+        if (SessionManager.getInstance().isLoggedIn()) {
+            loginMenuItem.setText("Switch User");
+            try {
+                String userId = SessionManager.getInstance().getUserId();
+                if (userId == null) {
+                    userId = SessionManager.getInstance().getClientId();
+                }
+                logoutMenuItem.setText("Logout User: " + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName());
+            } catch (CouldNotPerformException ex) {
+                logoutMenuItem.setText("Logout");
+            }
+            logoutMenuItem.setVisible(true);
+        } else {
+            loginMenuItem.setText("Login");
+            logoutMenuItem.setVisible(false);
         }
     }
 
@@ -105,26 +127,73 @@ public class DalVisualRemote extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
         statusPanel = new org.openbase.bco.dal.visual.util.StatusPanel();
         genericUnitPanel = new org.openbase.bco.dal.visual.unit.GenericUnitPanel();
         jPanel1 = new javax.swing.JPanel();
+        jSeparator1 = new javax.swing.JSeparator();
         try {
             selectorPanel = new org.openbase.bco.dal.visual.util.SelectorPanel();
         } catch (org.openbase.jul.exception.InstantiationException e1) {
             e1.printStackTrace();
         }
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        loginMenuItem = new javax.swing.JMenuItem();
+        logoutMenuItem = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        exitMenuItem = new javax.swing.JMenuItem();
+
+        jCheckBoxMenuItem1.setSelected(true);
+        jCheckBoxMenuItem1.setText("jCheckBoxMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("BCO Visual Remote");
+        setLocationByPlatform(true);
 
+        jPanel1.add(jSeparator1);
         jPanel1.add(selectorPanel);
+
+        jMenu1.setText("Session");
+        jMenu1.setToolTipText("Click to open the login dialog.");
+
+        loginMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        loginMenuItem.setText("Login");
+        loginMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loginMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(loginMenuItem);
+
+        logoutMenuItem.setText("Logout");
+        logoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logoutMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(logoutMenuItem);
+        jMenu1.add(jSeparator2);
+
+        exitMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        exitMenuItem.setText("Exit");
+        exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(exitMenuItem);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(statusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 899, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(genericUnitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -135,13 +204,26 @@ public class DalVisualRemote extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(genericUnitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(genericUnitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void loginMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginMenuItemActionPerformed
+        LoginDialog.showDialog();
+    }//GEN-LAST:event_loginMenuItemActionPerformed
+
+    private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+        setVisible(false);
+        System.exit(0);
+    }//GEN-LAST:event_exitMenuItemActionPerformed
+
+    private void logoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutMenuItemActionPerformed
+        SessionManager.getInstance().logout();
+    }//GEN-LAST:event_logoutMenuItemActionPerformed
 
     /**
      *
@@ -172,15 +254,10 @@ public class DalVisualRemote extends javax.swing.JFrame {
         //</editor-fold>
         JPService.setApplicationName(DalVisualRemote.class);
         JPService.registerProperty(JPAuthentication.class);
+        JPService.registerProperty(JPBCOAutoLoginUser.class);
         JPService.parseAndExitOnError(args);
 
-
-        try {
-
-            SystemLogin.loginBCOUser();
-        } catch (CouldNotPerformException e) {
-            System.out.println("Local system login failed. Please login via user interface to get system permissions!");
-        }
+        BCOLogin.autoLogin(true);
 
         /* Create and display the form */
         java.awt.EventQueue.invokeAndWait(() -> {
@@ -194,8 +271,16 @@ public class DalVisualRemote extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem exitMenuItem;
     private org.openbase.bco.dal.visual.unit.GenericUnitPanel genericUnitPanel;
+    private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JMenuItem loginMenuItem;
+    private javax.swing.JMenuItem logoutMenuItem;
     private org.openbase.bco.dal.visual.util.SelectorPanel selectorPanel;
     private org.openbase.bco.dal.visual.util.StatusPanel statusPanel;
     // End of variables declaration//GEN-END:variables

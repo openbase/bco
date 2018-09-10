@@ -35,12 +35,12 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface ActivationStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default ActivationState getActivationState() throws NotAvailableException {
         return (ActivationState) getServiceProvider().getServiceState(ACTIVATION_STATE_SERVICE);
     }
 
     static void verifyActivationState(final ActivationState activationState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(activationState);
+        Services.verifyServiceState(activationState);
     }
 }

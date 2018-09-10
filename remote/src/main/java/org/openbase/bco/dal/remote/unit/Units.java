@@ -346,7 +346,7 @@ public class Units {
      */
     private static void resetUnitRegistryObserver() throws InterruptedException, CouldNotPerformException {
         Registries.getUnitRegistry().removeDataObserver(UNIT_REGISTRY_OBSERVER);
-        UNIT_DIFF.replaceOriginMap(new IdentifiableMessageMap<>(Registries.getUnitRegistry().getDalUnitConfigs()));
+        UNIT_DIFF.replaceOriginalMap(new IdentifiableMessageMap<>(Registries.getUnitRegistry().getDalUnitConfigs()));
         Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
     }
 

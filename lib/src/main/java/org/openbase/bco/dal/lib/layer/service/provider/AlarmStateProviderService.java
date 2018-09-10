@@ -23,24 +23,16 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 
 import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.ButtonStateType.ButtonState;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_STATE_SERVICE;
+import rst.domotic.state.AlarmStateType.AlarmState;
 
 /**
+ *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface ButtonStateProviderService extends ProviderService {
+public interface AlarmStateProviderService extends ProviderService {
 
-    @RPCMethod(legacy = true)
-    default ButtonState getButtonState() throws NotAvailableException {
-        return (ButtonState) getServiceProvider().getServiceState(BUTTON_STATE_SERVICE);
-    }
-
-    static void verifyButtonState(final ButtonState buttonState) throws VerificationFailedException {
-        Services.verifyServiceState(buttonState);
+    static void verifyAlarmState(final AlarmState alarmState) throws VerificationFailedException {
+        Services.verifyServiceState(alarmState);
     }
 }

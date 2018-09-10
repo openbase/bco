@@ -71,8 +71,6 @@ import rst.spatial.ShapeType.Shape;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.Future;
 
 /**
@@ -135,53 +133,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         }
     }
 
-    /**
-     * @param serviceState
-     *
-     * @throws VerificationFailedException
-     * @deprecated please use Services.verifyOperationServiceState(...) instead
-     */
-    @Deprecated
-    default void verifyOperationServiceState(final Object serviceState) throws VerificationFailedException {
-
-        if (serviceState == null) {
-            throw new VerificationFailedException(new NotAvailableException("ServiceState"));
-        }
-
-        final Method valueMethod;
-        try {
-            valueMethod = serviceState.getClass().getMethod("getValue");
-        } catch (NoSuchMethodException ex) {
-            // service state does contain any value so verification is not possible.
-            return;
-        }
-
-        try {
-            verifyOperationServiceStateValue((Enum) valueMethod.invoke(serviceState));
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassCastException ex) {
-            ExceptionPrinter.printHistory("Operation service verification phase failed!", ex, LoggerFactory.getLogger(getClass()));
-        }
-    }
-
-    /**
-     * @param value
-     *
-     * @throws VerificationFailedException
-     * @deprecated please use Services.verifyOperationServiceStateValue(...) instead
-     */
-    @Deprecated
-    default void verifyOperationServiceStateValue(final Enum value) throws VerificationFailedException {
-
-        if (value == null) {
-            throw new VerificationFailedException(new NotAvailableException("ServiceStateValue"));
-        }
-
-        if (value.name().equals("UNKNOWN")) {
-            throw new VerificationFailedException("UNKNOWN." + value.getClass().getSimpleName() + " is an invalid operation service state of " + this + "!");
-        }
-    }
-
-    @RPCMethod
+    @RPCMethod(legacy = true)
     @Override
     default Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -201,7 +153,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                         Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServiceTemplate.ServicePattern.PROVIDER, this);
 
                         // verify operation service state (e.g. ignore UNKNOWN service states)
-                        Services.verifyOperationServiceState(serviceAttribute);
+                        Services.verifyServiceState(serviceAttribute);
 
                         // fill action config
                         final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
@@ -236,7 +188,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         });
     }
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     @Override
     Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException;
 

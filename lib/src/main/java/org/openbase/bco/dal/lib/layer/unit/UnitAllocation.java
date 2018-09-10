@@ -21,17 +21,20 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import de.citec.csra.allocation.cli.ExecutableResource;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.rsb.com.exception.RSBResolvedException;
 import rsb.RSBException;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -46,7 +49,7 @@ public class UnitAllocation {
             try {
                 taskExecutor.startup();
             } catch (RSBException ex) {
-                throw new CouldNotPerformException("Could not schedule allocation!", ex);
+                throw new CouldNotPerformException("Could not schedule allocation!", new RSBResolvedException(ex));
             }
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -70,15 +73,16 @@ public class UnitAllocation {
                 taskExecutor = null;
             }
         } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not free unit allocation!");
+            throw new CouldNotPerformException("Could not free unit allocation!", new RSBResolvedException(ex));
         }
     }
 
     /**
-     *
      * @param timeout
      * @param timeUnit
+     *
      * @return
+     *
      * @throws InterruptedException
      * @throws ExecutionException
      * @throws TimeoutException

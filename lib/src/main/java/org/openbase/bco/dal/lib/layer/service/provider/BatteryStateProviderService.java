@@ -26,6 +26,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.BatteryStateType.BatteryState;
+import rst.domotic.state.BatteryStateType.BatteryState.Builder;
+import rst.domotic.state.BatteryStateType.BatteryState.State;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
 
@@ -35,12 +37,39 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface BatteryStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default BatteryState getBatteryState() throws NotAvailableException {
         return (BatteryState) getServiceProvider().getServiceState(BATTERY_STATE_SERVICE);
     }
 
-    static void verifyBatteryState(final BatteryState batteryState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(batteryState);
+    static BatteryState verifyBatteryState(BatteryState batteryState) throws VerificationFailedException {
+        batteryState = revalidate(batteryState);
+        Services.verifyServiceState(batteryState);
+        return batteryState;
+    }
+
+    static BatteryState revalidate(BatteryState batteryState) {
+        if (batteryState.hasLevel()) {
+            final Builder batteryStateBuilder = batteryState.toBuilder();
+            if (batteryState.getLevel() <= 5) {
+                batteryStateBuilder.setValue(BatteryState.State.INSUFFICIENT);
+            } else if (batteryState.getLevel() <= 15) {
+                batteryStateBuilder.setValue(BatteryState.State.CRITICAL);
+            } else {
+                batteryStateBuilder.setValue(BatteryState.State.OK);
+            }
+            return batteryStateBuilder.build();
+        } else if (!batteryState.hasLevel() && batteryState.getValue() != BatteryState.State.UNKNOWN) {
+            final Builder batteryStateBuilder = batteryState.toBuilder();
+            if(batteryState.getValue() == BatteryState.State.INSUFFICIENT) {
+                batteryStateBuilder.setLevel(5);
+            }else if(batteryState.getValue() == BatteryState.State.CRITICAL) {
+                batteryStateBuilder.setLevel(15);
+            }else if(batteryState.getValue() == State.OK) {
+                batteryStateBuilder.setLevel(100);
+            }
+            return batteryStateBuilder.build();
+        }
+        return batteryState;
     }
 }

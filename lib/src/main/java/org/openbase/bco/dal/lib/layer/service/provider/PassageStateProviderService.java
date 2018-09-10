@@ -34,7 +34,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface PassageStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default PassageState getPassageState() throws NotAvailableException {
         return (PassageState) getServiceProvider().getServiceState(PASSAGE_STATE_SERVICE);
     }

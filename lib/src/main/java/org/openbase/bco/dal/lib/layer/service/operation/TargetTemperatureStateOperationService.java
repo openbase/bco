@@ -34,6 +34,6 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  */
 public interface TargetTemperatureStateOperationService extends OperationService, TargetTemperatureStateProviderService {
 
-    @RPCMethod
-    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException;
+    @RPCMethod(legacy = true)
+    Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException;
 }

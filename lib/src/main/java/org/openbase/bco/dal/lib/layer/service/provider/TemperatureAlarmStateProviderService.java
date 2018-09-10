@@ -33,14 +33,10 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface TemperatureAlarmStateProviderService extends ProviderService {
+public interface TemperatureAlarmStateProviderService extends AlarmStateProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default AlarmState getTemperatureAlarmState() throws NotAvailableException {
         return (AlarmState) getServiceProvider().getServiceState(TEMPERATURE_ALARM_STATE_SERVICE);
-    }
-
-    static void verifyTemperatureAlarmState(final AlarmState temperatureAlarmState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(temperatureAlarmState);
     }
 }

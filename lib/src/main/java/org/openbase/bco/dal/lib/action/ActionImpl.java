@@ -84,7 +84,7 @@ public class ActionImpl implements Action {
             this.serviceState = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
 
             // verify service attribute
-            serviceState = Services.verifyServiceState(serviceState);
+            serviceState = Services.verifyAndRevalidateServiceState(serviceState);
 
             // since its an action it has to be an operation service pattern
             this.serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
@@ -217,7 +217,7 @@ public class ActionImpl implements Action {
                     try {
 
                         // Verify service state
-                        Services.verifyServiceState(serviceState);
+                        serviceState = Services.verifyAndRevalidateServiceState(serviceState);
 
                         // Verify authority
                         final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();

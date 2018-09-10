@@ -35,10 +35,10 @@ import rst.domotic.state.StandbyStateType.StandbyState;
  */
 public interface StandbyStateOperationService extends OperationService, StandbyStateProviderService {
 
-    @RPCMethod
-    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException;
+    @RPCMethod(legacy = true)
+    Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException;
 
-    public default Future<ActionFuture> setStandbyState(final StandbyState.State standbyState) throws CouldNotPerformException {
+    default Future<ActionFuture> setStandbyState(final StandbyState.State standbyState) throws CouldNotPerformException {
         return setStandbyState(StandbyState.newBuilder().setValue(standbyState).build());
     }
 }

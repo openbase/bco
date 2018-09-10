@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -46,6 +47,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.AlarmStateType;
@@ -222,5 +224,10 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
                 throw new CouldNotPerformException("Could not update current status!", ex);
             }
         });
+    }
+
+    @Override
+    public void validateMiddleware() throws InvalidStateException {
+        serviceRemoteManager.validateMiddleware();
     }
 }

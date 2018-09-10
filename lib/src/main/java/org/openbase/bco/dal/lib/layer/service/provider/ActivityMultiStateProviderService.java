@@ -27,22 +27,34 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVITY_MULTI_STATE_SERVICE;
 
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface ActivityMultiStateProviderService extends ProviderService{
-    
-    @RPCMethod
+public interface ActivityMultiStateProviderService extends ProviderService {
+
+    @RPCMethod(legacy = true)
     default ActivityMultiState getActivityMultiState() throws NotAvailableException {
         return (ActivityMultiState) getServiceProvider().getServiceState(ACTIVITY_MULTI_STATE_SERVICE);
     }
 
-    static void verifyActivityMultiState(final ActivityMultiState activityMultiState) throws VerificationFailedException {
+    static ActivityMultiState verifyActivityMultiState(final ActivityMultiState activityMultiState) throws VerificationFailedException {
         if (activityMultiState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));
         }
+
+        ActivityMultiState.Builder builder = activityMultiState.toBuilder();
+        final Set<String> activityIdSet = new HashSet<>(activityMultiState.getActivityIdList());
+        if (activityIdSet.size() != activityMultiState.getActivityIdCount()) {
+            builder.clearActivityId();
+            builder.addAllActivityId(activityIdSet);
+        }
+        return builder.build();
+
+        //TODO validate that an activity config exists for every id
     }
 }

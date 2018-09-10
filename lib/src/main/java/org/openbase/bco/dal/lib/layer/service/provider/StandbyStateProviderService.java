@@ -35,12 +35,12 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface StandbyStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default StandbyState getStandbyState() throws NotAvailableException {
         return (StandbyState) getServiceProvider().getServiceState(STANDBY_STATE_SERVICE);
     }
 
     static void verifyStandbyState(final StandbyState standbyState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(standbyState);
+        Services.verifyServiceState(standbyState);
     }
 }

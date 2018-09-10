@@ -35,12 +35,12 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface MotionStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default MotionState getMotionState() throws NotAvailableException {
         return (MotionState) getServiceProvider().getServiceState(MOTION_STATE_SERVICE);
     }
 
     static void verifyMotionState(final MotionState motionState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(motionState);
+        Services.verifyServiceState(motionState);
     }
 }

@@ -44,6 +44,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -99,7 +100,6 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -260,7 +260,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
-     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -382,7 +381,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
+
         RPCHelper.registerInterface(Unit.class, this, server);
 
         // collect and register service interface methods via unit templates
@@ -601,7 +602,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // choose with which value to update
                 if (equalFields) {
 
-                    // use the requested state but update the timestamp if available
+                    // use the requested state but update the timestamp if not available
                     if (TimestampProcessor.hasTimestamp(serviceState)) {
                         Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTEMP_FIELD_NAME);
                         newState = requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
@@ -621,7 +622,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
 
             // verify the service state
-            Services.verifyServiceState(newState);
+            newState = Services.verifyAndRevalidateServiceState(newState);
 
             updateTransactionId();
 
@@ -632,7 +633,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // copy latestValueOccurrence map from current state, only if available
             Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
             if (latestValueOccurrenceField != null) {
-                Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, this);
+                Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
                 newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
             }
 
@@ -645,7 +646,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 //Set timestamp if missing
                 if (!serviceStateBuilder.hasField(serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp"))) {
-                    logger.warn("State[" + serviceStateBuilder.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestamp!");
+                    logger.warn("State[" + Services.getServiceStateName(serviceType) + "] of " + this + " does not contain any state related timestamp!");
                     TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder, logger);
                 }
 
@@ -823,6 +824,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         try {
             // check if user has permissions to read the service state
             if (!AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
+                if (userId == null) {
+                    throw new PermissionDeniedException("User[Other] has no permission to read " + serviceType.name() + " of " + this);
+                }
                 throw new PermissionDeniedException("User[" + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName() + "] has no permission to read " + serviceType.name() + " of " + this);
             }
             return Services.invokeProviderServiceMethod(serviceType, getData());
@@ -831,8 +835,26 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected D filterDataForUser(DB dataBuilder, String userId) throws CouldNotPerformException {
         try {
+            // test if user or client is inside the admin group, if yes return the unfiltered data builder
+            if (userId != null) {
+                try {
+                    final UnitConfig adminGroup = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS);
+                    for (final String id : userId.split("@")) {
+                        for (final String memberId : adminGroup.getAuthorizationGroupConfig().getMemberIdList()) {
+                            if (id.equals(memberId)) {
+                                return (D) dataBuilder.build();
+                            }
+                        }
+                    }
+                } catch (CouldNotPerformException ex) {
+                    // admin group not available so just continue
+                }
+            }
+
+            // no admin so test normal permissions
             if (AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
                 // user has read permissions so send everything
                 return (D) dataBuilder.build();
@@ -855,7 +877,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
-     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -889,12 +910,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
     public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
         //logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to PowerState [" + serviceState + "]");
+        if (!operationServiceMap.containsKey(serviceType)) {
+            return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
+        }
         try {
             return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
         } catch (CouldNotPerformException ex) {

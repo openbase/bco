@@ -21,18 +21,15 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.CouldNotPerformException;
+
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
 import rst.domotic.state.BatteryStateType.BatteryState;
 import rst.domotic.unit.dal.BatteryDataType.BatteryData;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class BatteryController extends AbstractDALUnitController<BatteryData, BatteryData.Builder> implements Battery {
@@ -44,22 +41,5 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
 
     public BatteryController(final UnitHost unitHost, BatteryData.Builder builder) throws InstantiationException {
         super(BatteryController.class, unitHost, builder);
-    }
-
-    @Override
-    protected void applyCustomDataUpdate(BatteryData.Builder internalBuilder, ServiceType serviceType) {
-        switch (serviceType) {
-            case BATTERY_STATE_SERVICE:
-                if (!internalBuilder.getBatteryState().hasValue() || internalBuilder.getBatteryState().getValue() == BatteryState.State.UNKNOWN) {
-                    if (internalBuilder.getBatteryState().getLevel() <= 5) {
-                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.INSUFFICIENT);
-                    } else if (internalBuilder.getBatteryState().getLevel() <= 15) {
-                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.CRITICAL);
-                    } else {
-                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.OK);
-                    }
-                }
-                break;
-        }
     }
 }

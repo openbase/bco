@@ -36,12 +36,12 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface SwitchStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default SwitchState getSwitchState() throws NotAvailableException {
         return (SwitchState) getServiceProvider().getServiceState(SWITCH_STATE_SERVICE);
     }
 
     static void verifyActivationState(final ActivationState activationState) throws VerificationFailedException {
-        Services.verifyOperationServiceState(activationState);
+        Services.verifyServiceState(activationState);
     }
 }

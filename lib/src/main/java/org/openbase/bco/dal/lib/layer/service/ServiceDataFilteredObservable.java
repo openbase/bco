@@ -21,32 +21,34 @@ package org.openbase.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.Message.Builder;
 import com.google.protobuf.Message;
+import com.google.protobuf.Message.Builder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.pattern.provider.DataProvider;
 
 /**
+ * Observable for service data. It uses a custom hash generator that filters responsible actions
+ * and timestamps from the service data type so that changes in these values do not trigger a notification.
  *
+ * @param <M> the service data type handled by this observable
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
- * @param <M>
  */
 public class ServiceDataFilteredObservable<M extends Message> extends MessageObservable<M> {
 
-    public static final String RESPONSIBLE_ACTION_FIELD = "responsible_action";
+    private static final String RESPONSIBLE_ACTION_FIELD = "responsible_action";
 
     public ServiceDataFilteredObservable(final DataProvider<M> source) {
         super(source);
 
-        this.setHashGenerator((M value) -> removeResponsibleActoin(removeTimestamps(value.toBuilder())).build().hashCode());
+        this.setHashGenerator((M value) -> removeResponsibleAction(removeTimestamps(value.toBuilder())).build().hashCode());
     }
 
-    private Builder removeResponsibleActoin(final Builder builder) {
+    private Builder removeResponsibleAction(final Builder builder) {
         Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
-        descriptorForType.getFields().stream().filter((field) -> (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE && field.getName().equals(RESPONSIBLE_ACTION_FIELD))).forEachOrdered((field) -> {
-            builder.clearField(field);
-        });
+        descriptorForType.getFields().stream().filter((field) ->
+                (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE && field.getName().equals(RESPONSIBLE_ACTION_FIELD))).forEachOrdered(builder::clearField);
         return builder;
     }
 

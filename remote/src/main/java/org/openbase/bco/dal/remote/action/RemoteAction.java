@@ -31,6 +31,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,13 +52,12 @@ import java.util.concurrent.Future;
 public class RemoteAction implements Action {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAction.class);
-
+    private final SyncObject executionSync = new SyncObject(RemoteAction.class);
     private ActionDescription actionDescription;
     private UnitConfig unitConfig;
     private ServiceRemoteFactory serviceRemoteFactory;
     private AbstractServiceRemote<?, ?> serviceRemote;
     private Future<ActionFuture> executionFuture;
-    private final SyncObject executionSync = new SyncObject(RemoteAction.class);
 
     @Override
     public void init(final ActionDescription actionDescription) throws InitializationException, InterruptedException {
@@ -86,7 +86,11 @@ public class RemoteAction implements Action {
                 throw new VerificationFailedException("Referred Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] is disabled!");
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw new VerificationFailedException("Referred Unit[" + unitConfig.getLabel() + "] is disabled!");
+                try {
+                    throw new VerificationFailedException("Referred Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] is disabled!");
+                } catch (NotAvailableException exx) {
+                    throw new VerificationFailedException("Referred Unit[" + unitConfig.getId() + "] is disabled!");
+                }
             }
         }
     }

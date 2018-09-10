@@ -35,12 +35,12 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public interface DoorStateProviderService extends ProviderService {
 
-    @RPCMethod
+    @RPCMethod(legacy = true)
     default DoorState getDoorState() throws NotAvailableException {
         return (DoorState) getServiceProvider().getServiceState(DOOR_STATE_SERVICE);
     }
 
     static void verifyDoorState(final DoorState doorState) throws VerificationFailedException {
-            Services.verifyOperationServiceState(doorState);
+            Services.verifyServiceState(doorState);
     }
 }
