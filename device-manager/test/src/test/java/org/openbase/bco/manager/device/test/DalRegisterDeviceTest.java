@@ -163,7 +163,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 
     boolean running = true;
 
-    @Test(timeout = 15000)
+    @Test(timeout = 60000)
     public void testRegisteringManyDevices() throws Exception {
         System.out.println("testRegisteringManyDevices");
 
