@@ -115,7 +115,7 @@ public class Services extends ServiceStateProcessor {
      * @return The state type name as string.
      *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
-     *                                                          //
+     *
      */
     public static String getServiceStateName(final ServiceTemplate template) throws NotAvailableException {
         try {
