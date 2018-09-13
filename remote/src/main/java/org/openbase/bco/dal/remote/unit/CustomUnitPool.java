@@ -1,7 +1,30 @@
 package org.openbase.bco.dal.remote.unit;
 
+/*-
+ * #%L
+ * BCO DAL Remote
+ * %%
+ * Copyright (C) 2014 - 2018 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
+ * #L%
+ */
+
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitFilters;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -17,6 +40,7 @@ import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RemoteControllerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +60,12 @@ public class CustomUnitPool implements DefaultInitializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomUnitPool.class);
 
     private final ReentrantReadWriteLock UNIT_REMOTE_REGISTRY_LOCK = new ReentrantReadWriteLock();
-    private final Observer<UnitRegistryData> unitRegistryDataObserver;
+    private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryDataObserver;
     private final Observer unitDataObserver;
     private final RemoteControllerRegistry<String, UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
     private final ProtobufListDiff<String, UnitConfig, Builder> unitConfigDiff;
     private final Set<Filter<UnitConfig>> filterSet;
-    private final ObservableImpl<Message> unitDataObservable;
+    private final ObservableImpl<Unit, Message> unitDataObservable;
 
     public CustomUnitPool(final Collection<Filter<UnitConfig>> filters) throws InstantiationException {
         this(filters.toArray(new Filter[filters.size()]));
@@ -58,7 +82,11 @@ public class CustomUnitPool implements DefaultInitializable {
                 sync();
             };
             this.unitDataObserver = (source, data) -> {
-                unitDataObservable.notifyObservers(source, (Message) data);
+                try {
+                unitDataObservable.notifyObservers((Unit) source, (Message) data);
+                } catch (ClassCastException ex) {
+                    ExceptionPrinter.printHistory("Could not handle incoming data because type is unknown!", ex, LOGGER);
+                }
             };
 
         } catch (CouldNotPerformException ex) {
@@ -158,7 +186,7 @@ public class CustomUnitPool implements DefaultInitializable {
      *
      * @param observer is the observer to register.
      */
-    public void addObserver(Observer<Message> observer) {
+    public void addObserver(Observer<Unit, Message> observer) {
         unitDataObservable.addObserver(observer);
     }
 
@@ -167,7 +195,7 @@ public class CustomUnitPool implements DefaultInitializable {
      *
      * @param observer is the observer to remove.
      */
-    public void removeObserver(Observer<Message> observer) {
+    public void removeObserver(Observer<Unit, Message> observer) {
         unitDataObservable.removeObserver(observer);
     }
 

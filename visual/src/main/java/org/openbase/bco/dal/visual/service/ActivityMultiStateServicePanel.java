@@ -31,6 +31,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
 import rst.domotic.state.ActivityStateType.ActivityState;
@@ -65,7 +66,7 @@ public class ActivityMultiStateServicePanel extends AbstractServicePanel<Activit
             Registries.getActivityRegistry(true);
             updateComboBoxModel();
 
-            Registries.getActivityRegistry().addDataObserver((Observable<ActivityRegistryData> source, ActivityRegistryData data) -> {
+            Registries.getActivityRegistry().addDataObserver((final DataProvider<ActivityRegistryData> source, ActivityRegistryData data) -> {
                 updateComboBoxModel();
             });
         } catch (CouldNotPerformException ex) {

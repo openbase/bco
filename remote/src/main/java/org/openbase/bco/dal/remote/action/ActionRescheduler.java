@@ -25,12 +25,7 @@ import com.google.protobuf.GeneratedMessage;
 import de.citec.csra.allocation.cli.AllocatableResource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -149,7 +144,8 @@ public class ActionRescheduler {
             ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescription);
             try {
                 UnitRemote<? extends GeneratedMessage> unit = Units.getUnit(actionDescription.getServiceStateDescription().getUnitId(), true);
-                addRescheduleAction(unit.applyAction(actionDescription.build()).get(actionDescription.getExecutionTimePeriod(), TimeUnit.SECONDS).toBuilder());
+                final Future<ActionFuture> future = unit.applyAction(actionDescription.build());
+                addRescheduleAction(future.get(actionDescription.getExecutionTimePeriod(), TimeUnit.SECONDS).toBuilder());
                 //TODO What to do in case of Exception? Just call reApplyAction again?
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);

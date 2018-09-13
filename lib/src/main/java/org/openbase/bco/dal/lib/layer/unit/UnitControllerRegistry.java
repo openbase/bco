@@ -23,7 +23,10 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.SynchronizableRegistry;
+
+import java.util.Map;
 
 /**
  *
@@ -41,5 +44,5 @@ public interface UnitControllerRegistry<D extends GeneratedMessage, DB extends D
      * @return the scope matching unit controller.
      * @throws NotAvailableException is thrown in case there is no unit registered for the given scope.
      */
-    public UnitController<D, DB> getUnitByScope(final String scope) throws NotAvailableException;
+    UnitController<D, DB> getUnitByScope(final String scope) throws NotAvailableException;
 }

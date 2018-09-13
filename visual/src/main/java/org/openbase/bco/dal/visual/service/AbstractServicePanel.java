@@ -32,6 +32,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -76,8 +77,8 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
     private ServiceConfig[] serviceConfigs;
 
     private UnitRemote unitRemote;
-    private final Observer<Object> dataObserver;
-    private final Observer<ConnectionState> connectionStateObserver;
+    private final Observer dataObserver;
+    private final Observer<Remote, ConnectionState> connectionStateObserver;
     protected StatusPanel statusPanel;
     private final SyncObject executerSync = new SyncObject("ExecuterSync");
     private String unitId = "";
@@ -101,10 +102,10 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
 //
 //                }
 //            };
-            this.dataObserver = (Observer) (Observable source, Object data) -> {
+            this.dataObserver = (Observer) (source, data) -> {
                 updateDynamicComponents();
             };
-            this.connectionStateObserver = (Observable<ConnectionState> source, ConnectionState connectionState) -> {
+            this.connectionStateObserver = (source, connectionState) -> {
                 enableComponents(this, connectionState.equals(ConnectionState.CONNECTED));
                 logger.info("enable: " + connectionState.equals(ConnectionState.CONNECTED));
             };

@@ -52,7 +52,7 @@ public class Consumer implements Manageable<ServiceConfig> {
 
     public Consumer(final UnitController<?,?> unitController) {
         this.active = false;
-        this.serviceStateObserver = (Observer) (final Observable source, final Object data) -> {
+        this.serviceStateObserver = (source, data) -> {
             try {
                 ActionDescription responsibleAction = ActionDescriptionProcessor.getResponsibleAction(((GeneratedMessage) data));
                 

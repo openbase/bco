@@ -32,6 +32,7 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -45,7 +46,7 @@ import org.slf4j.Logger;
  * @param <UR> UnitRemote
  * @param <DT> DataType
  */
-public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote, DT extends GeneratedMessage> extends AbstractTrigger {
+public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends GeneratedMessage> extends AbstractTrigger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
 
@@ -57,8 +58,8 @@ public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote, D
     private final ServiceType serviceType;
     private final double upperBoundary;
     private final double lowerBoundary;
-    private final Observer<DT> dataObserver;
-    private final Observer<Remote.ConnectionState> connectionObserver;
+    private final Observer<DataProvider<DT>, DT> dataObserver;
+    private final Observer<Remote,Remote.ConnectionState> connectionObserver;
     private final TriggerOperation triggerOperation;
     private final String specificValueCall;
     private boolean active = false;
@@ -75,11 +76,11 @@ public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote, D
         this.triggerOperation = triggerOperation;
         this.specificValueCall = specificValueCall;
 
-        dataObserver = (Observable<DT> source, DT data) -> {
+        dataObserver = (DataProvider<DT> source, DT data) -> {
             verifyCondition(data);
         };
 
-        connectionObserver = (Observable<Remote.ConnectionState> source, Remote.ConnectionState data) -> {
+        connectionObserver = (Remote source, Remote.ConnectionState data) -> {
             if (data.equals(Remote.ConnectionState.CONNECTED)) {
                 verifyCondition((DT) unitRemote.getData());
             } else {

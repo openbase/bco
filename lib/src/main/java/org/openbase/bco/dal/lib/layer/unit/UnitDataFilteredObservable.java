@@ -42,7 +42,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  * @param <M>
  */
-public class UnitDataFilteredObservable<M extends Message> extends AbstractObservable<M> {
+public class UnitDataFilteredObservable<M extends Message> extends AbstractObservable<DataProvider<M>, M> {
 
     private final DataProvider<M> unit;
     private final ServiceTempus serviceTempus;

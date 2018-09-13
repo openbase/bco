@@ -275,7 +275,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
     }
 
     private GeneratedMessage.Builder loadUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
-        GeneratedMessage.Builder builder = null;
+        GeneratedMessage.Builder builder;
         try {
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
             String unitMessageClassName = "rst.domotic.unit.dal." + unitTypeName + "DataType$" + unitTypeName + "Data";
@@ -287,7 +287,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
             }
 
             try {
-                builder = (GeneratedMessage.Builder) messageClass.getMethod("newBuilder", null).invoke(null, null);
+                builder = (GeneratedMessage.Builder) messageClass.getMethod("newBuilder").invoke(null);
             } catch (NoSuchMethodException | SecurityException ex) {
                 throw new CouldNotPerformException("Could not instantiate builder out of Class[" + messageClass.getName() + "]!", ex);
             }

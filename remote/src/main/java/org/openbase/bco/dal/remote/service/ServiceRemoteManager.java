@@ -30,6 +30,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -81,7 +82,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
     private final SyncObject serviceRemoteMapLock = new SyncObject("ServiceRemoteMapLock");
     private final ServiceRemoteFactory serviceRemoteFactory;
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
-    private final Observer serviceDataObserver;
+    private final Observer<Unit, Message> serviceDataObserver;
     private final DataProvider<D> responsibleInstance;
     private boolean filterInfrastructureUnits;
 
@@ -94,10 +95,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         this.filterInfrastructureUnits = filterInfrastructureUnits;
         this.serviceRemoteMap = new HashMap<>();
         this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
-
-        serviceDataObserver = (Observer) (Observable source, Object data) -> {
-            notifyServiceUpdate(source, data);
-        };
+        this.serviceDataObserver = (source, data) -> notifyServiceUpdate(source, data);
     }
 
     public synchronized void applyConfigUpdate(final List<String> unitIDList) throws CouldNotPerformException, InterruptedException {
@@ -477,7 +475,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 
     protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
 
-    protected abstract void notifyServiceUpdate(final Observable source, final Object data) throws NotAvailableException, InterruptedException;
+    protected abstract void notifyServiceUpdate(final Unit source, final Message data) throws NotAvailableException, InterruptedException;
 
     @Override
     public boolean isDataAvailable() {
@@ -500,7 +498,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
     }
 
     @Override
-    public void addDataObserver(final Observer<D> observer) {
+    public void addDataObserver(final Observer<DataProvider<D>, D> observer) {
         synchronized (serviceRemoteMapLock) {
             for (final Remote<D> remote : serviceRemoteMap.values()) {
                 remote.addDataObserver(observer);
@@ -509,7 +507,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
     }
 
     @Override
-    public void removeDataObserver(Observer<D> observer) {
+    public void removeDataObserver(Observer<DataProvider<D>, D> observer) {
         synchronized (serviceRemoteMapLock) {
             for (final Remote<D> remote : serviceRemoteMap.values()) {
                 remote.removeDataObserver(observer);

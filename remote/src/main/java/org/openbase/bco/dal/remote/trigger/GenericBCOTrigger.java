@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.trigger;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -31,7 +32,9 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,15 +50,15 @@ import java.lang.reflect.Method;
  * @param <STE> StateTypeEnum
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class GenericBCOTrigger<UR extends AbstractUnitRemote, DT extends GeneratedMessage, STE extends Enum<STE>> extends AbstractTrigger {
+public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends GeneratedMessage, STE extends Enum<STE>> extends AbstractTrigger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
 
     private final UR unitRemote;
     private final STE targetState;
     private final ServiceType serviceType;
-    private final Observer<DT> dataObserver;
-    private final Observer<ConnectionState> connectionObserver;
+    private final Observer<DataProvider<DT>, DT> dataObserver;
+    private final Observer<Remote, ConnectionState> connectionObserver;
     private boolean active = false;
 
     public GenericBCOTrigger(final UR unitRemote, final STE targetState, final ServiceType serviceType) throws InstantiationException {
@@ -64,11 +67,11 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote, DT extends Generat
         this.targetState = targetState;
         this.serviceType = serviceType;
 
-        dataObserver = (Observable<DT> source, DT data) -> {
+        dataObserver = (DataProvider<DT> source, DT data) -> {
             verifyCondition(data);
         };
 
-        connectionObserver = (Observable<ConnectionState> source, ConnectionState data) -> {
+        connectionObserver = (Remote source, ConnectionState data) -> {
             if (data.equals(ConnectionState.CONNECTED)) {
                 verifyCondition((DT) unitRemote.getData());
             } else {

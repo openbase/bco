@@ -30,10 +30,7 @@ import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.*;
-import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
-import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
-import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.*;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -48,6 +45,7 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -64,6 +62,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
+import javax.xml.crypto.Data;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -94,7 +93,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private final Observer dataObserver;
     private final Observer unitConfigObserver;
     private final Observer connectionStateObserver;
-    protected final ObservableImpl<ST> serviceStateObservable = new ObservableImpl<>();
+    protected final ObservableImpl<DataProvider<ST>, ST> serviceStateObservable = new ObservableImpl<>();
     private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
     private final SyncObject maintainerLock = new SyncObject("MaintainerLock");
     private final SyncObject connectionStateLock = new SyncObject("ConnectionStateLock");
@@ -127,7 +126,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         this.disabledUnitRemoteMap = new HashMap<>();
         this.infrastructureUnitMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
-        this.dataObserver = (Observable source, Object data) -> {
+        this.dataObserver = (source, data) -> {
             updateServiceState();
         };
         this.unitConfigObserver = (source, data) -> {
@@ -189,7 +188,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @param observer the observer which is notified
      */
     @Override
-    public void addDataObserver(final Observer<ST> observer) {
+    public void addDataObserver(final Observer<DataProvider<ST>, ST> observer) {
         serviceStateObservable.addObserver(observer);
     }
 
@@ -199,12 +198,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @param observer the observer which has been registered
      */
     @Override
-    public void removeDataObserver(final Observer<ST> observer) {
+    public void removeDataObserver(final Observer<DataProvider<ST>, ST> observer) {
         serviceStateObservable.removeObserver(observer);
     }
 
     @Override
-    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+    public void addServiceStateObserver(final ServiceType serviceType, final Observer<DataProvider<ST>, ST> observer) {
         try {
             if (serviceType != getServiceType()) {
                 throw new VerificationFailedException("ServiceType[" + serviceType.name() + "] is not compatible with " + this);
@@ -216,7 +215,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
-    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+    public void removeServiceStateObserver(final ServiceType serviceType, final Observer<DataProvider<ST>, ST> observer) {
         try {
             if (serviceType != getServiceType()) {
                 throw new VerificationFailedException("ServiceType[" + serviceType.name() + "] is not compatible with " + this);

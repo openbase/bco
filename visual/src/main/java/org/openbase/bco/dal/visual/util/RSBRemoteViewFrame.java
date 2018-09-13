@@ -78,7 +78,7 @@ public abstract class RSBRemoteViewFrame<M extends GeneratedMessage> extends jav
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void update(final Observable source, Object data) {
+    public void update(final Object source, Object data) {
         updateDynamicComponents();
     }
     

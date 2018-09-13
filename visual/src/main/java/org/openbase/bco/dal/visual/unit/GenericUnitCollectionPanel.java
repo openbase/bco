@@ -21,20 +21,13 @@ package org.openbase.bco.dal.visual.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.swing.JComponent;
+
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.visual.swing.layout.LayoutGenerator;
@@ -44,11 +37,13 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import javax.swing.*;
+import java.util.*;
+
 /**
+ * @param <RS> The unit remote service to use.
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
- * @param <RS> The unit remote service to use.
  */
 public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends javax.swing.JPanel {
 
@@ -56,14 +51,17 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
 
     private final Map<String, GenericUnitPanel<RS>> unitPanelMap;
     private final SyncObject unitPanelMapLock = new SyncObject("UnitPanelMapLock");
-    private final Observer<String> removedObserver;
+    private final Observer<Object, String> removedObserver;
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel contentPanel;
+    private javax.swing.JScrollPane contentScrollPane;
 
     /**
      * Creates new form GenericUnitCollectionPanel
      */
     public GenericUnitCollectionPanel() {
         unitPanelMap = new HashMap<>();
-        removedObserver = (final Observable<String> source, String data) -> {
+        removedObserver = (source, data) -> {
             synchronized (unitPanelMapLock) {
                 if (unitPanelMap.containsKey(data)) {
                     unitPanelMap.remove(data);
@@ -160,7 +158,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         LOGGER.info("Add " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " with " + serviceType.name() + " " + serviceAttribute + "to unit panel.");
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
-            try {   
+            try {
                 String mapKey = unitConfig.getId() + serviceType.toString();
                 genericUnitPanel = new GenericUnitPanel<>();
                 if (removable) {
@@ -245,17 +243,13 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(contentScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(contentScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(contentScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(contentScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel contentPanel;
-    private javax.swing.JScrollPane contentScrollPane;
     // End of variables declaration//GEN-END:variables
 }

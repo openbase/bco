@@ -46,6 +46,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -192,9 +193,9 @@ public class Units {
 //    public static final Class<? extends AudioSourceRemote> AUDIO_SOURCE = AudioSourceRemote.class;
     public static Units instance;
     private static RemoteControllerRegistry<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
-    private static final Observer<UnitRegistryData> UNIT_REGISTRY_OBSERVER = new Observer<UnitRegistryData>() {
+    private static final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> UNIT_REGISTRY_OBSERVER = new Observer<DataProvider<UnitRegistryData>, UnitRegistryData>() {
         @Override
-        public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+        public void update(DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
             UNIT_DIFF.diff(Registries.getUnitRegistry().getUnitConfigs());
             try {

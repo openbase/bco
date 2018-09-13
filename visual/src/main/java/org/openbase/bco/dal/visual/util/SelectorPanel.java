@@ -33,11 +33,13 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.UnitRegistryDataType;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -65,7 +67,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     private LocationUnitConfigHolder selectedLocationConfigHolder;
     private UnitConfigHolder selectedUnitConfigHolder;
 
-    private ObservableImpl<UnitConfig> unitConfigObservable;
+    private ObservableImpl<DataProvider<UnitConfig>, UnitConfig> unitConfigObservable;
 
     private boolean init = false;
 
@@ -110,7 +112,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
         // register change observer
-        Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
             SwingUtilities.invokeLater(() -> {
                 updateDynamicComponents();
             });
@@ -261,11 +263,11 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
     }
 
-    public void addObserver(Observer<UnitConfig> observer) {
+    public void addObserver(Observer<DataProvider<UnitConfig>, UnitConfig> observer) {
         unitConfigObservable.addObserver(observer);
     }
 
-    public void removeObserver(Observer<UnitConfig> observer) {
+    public void removeObserver(Observer<DataProvider<UnitConfig>, UnitConfig> observer) {
         unitConfigObservable.removeObserver(observer);
     }
 

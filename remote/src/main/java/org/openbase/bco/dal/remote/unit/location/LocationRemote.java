@@ -11,7 +11,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
@@ -124,7 +126,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             }
 
             @Override
-            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
+            protected void notifyServiceUpdate(Unit source, Message data) {
                 // anything needed here?
             }
         };

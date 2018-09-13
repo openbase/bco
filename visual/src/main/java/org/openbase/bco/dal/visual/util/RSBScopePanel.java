@@ -37,21 +37,21 @@ public class RSBScopePanel extends javax.swing.JPanel {
 
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final ObservableImpl<Scope> observable;
+    private final ObservableImpl<Object, Scope> observable;
 
     /**
      * Creates new form ScopePanel
      */
     public RSBScopePanel() {
         initComponents();
-        observable = new ObservableImpl<>();
+        observable = new ObservableImpl<>(this);
     }
 
-    public void addObserver(Observer<Scope> observer) {
+    public void addObserver(Observer<Object, Scope> observer) {
         observable.addObserver(observer);
     }
 
-    public void removeObserver(Observer<Scope> observer) {
+    public void removeObserver(Observer<Object, Scope> observer) {
         observable.removeObserver(observer);
     }
 

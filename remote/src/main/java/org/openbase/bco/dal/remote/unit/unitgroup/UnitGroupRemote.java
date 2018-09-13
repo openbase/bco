@@ -25,7 +25,9 @@ package org.openbase.bco.dal.remote.unit.unitgroup;
 import java.util.Set;
 import java.util.concurrent.*;
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroup;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
@@ -111,7 +113,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
             }
 
             @Override
-            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
+            protected void notifyServiceUpdate(Unit source, Message data) throws InterruptedException {
                 updateUnitData();
             }
         };

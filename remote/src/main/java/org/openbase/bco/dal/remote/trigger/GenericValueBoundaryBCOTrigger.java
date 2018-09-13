@@ -32,6 +32,8 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -56,8 +58,8 @@ public class GenericValueBoundaryBCOTrigger<UR extends AbstractUnitRemote, DT ex
     private final UR unitRemote;
     private final ServiceType serviceType;
     private final double boundary;
-    private final Observer<DT> dataObserver;
-    private final Observer<Remote.ConnectionState> connectionObserver;
+    private final Observer<DataProvider<DT>,DT> dataObserver;
+    private final Observer<Remote, ConnectionState> connectionObserver;
     private final TriggerOperation triggerOperation;
     private final String specificValueCall;
     private boolean active = false;
@@ -71,11 +73,11 @@ public class GenericValueBoundaryBCOTrigger<UR extends AbstractUnitRemote, DT ex
         this.triggerOperation = triggerOperation;
         this.specificValueCall = specificValueCall;
 
-        dataObserver = (Observable<DT> source, DT data) -> {
+        dataObserver = (source, data) -> {
             verifyCondition(data);
         };
 
-        connectionObserver = (Observable<Remote.ConnectionState> source, Remote.ConnectionState data) -> {
+        connectionObserver = (Remote source, Remote.ConnectionState data) -> {
             if (data.equals(Remote.ConnectionState.CONNECTED)) {
                 verifyCondition((DT) unitRemote.getData());
             } else {

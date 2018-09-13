@@ -122,12 +122,12 @@ public class ServiceStateProcessorTest {
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 1231, presenceState2);
         presenceState2.setTimestamp(Timestamp.newBuilder().setTime(1231)).setValue(PresenceState.State.ABSENT);
 
-        messageObservable.addObserver(new Observer<LocationData>() {
+        messageObservable.addObserver(new Observer<DataProvider<LocationData>, LocationData>() {
 
             private int notificationCounter = 0;
 
             @Override
-            public void update(Observable<LocationData> source, LocationData data) throws Exception {
+            public void update(DataProvider<LocationData> source, LocationData data) throws Exception {
                 notificationCounter++;
                 assertEquals("LocationData has been notified even though only the timestamp changed", 1, notificationCounter);
             }
@@ -180,11 +180,11 @@ public class ServiceStateProcessorTest {
         }
 
         @Override
-        public void addDataObserver(Observer<M> observer) {
+        public void addDataObserver(Observer<DataProvider<M>, M> observer) {
         }
 
         @Override
-        public void removeDataObserver(Observer<M> observer) {
+        public void removeDataObserver(Observer<DataProvider<M>, M> observer) {
         }
 
         @Override
