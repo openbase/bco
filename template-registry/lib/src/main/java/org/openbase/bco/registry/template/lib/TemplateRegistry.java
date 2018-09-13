@@ -29,11 +29,14 @@ import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.RegistryService;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
 import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
 import java.util.concurrent.Future;
@@ -46,7 +49,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method updates the given unit template.
      *
      * @param unitTemplate the updated unit template.
+     *
      * @return the updated unit template.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
@@ -57,7 +62,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method updates a unit template encoded in a transaction value.
      *
      * @param transactionValue the unit template to update in a transaction id.
+     *
      * @return a transaction value containing the transaction id from the controller and the updated unit template encoded.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
@@ -67,6 +74,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method returns true if the underlying registry is marked as read only.
      *
      * @return if the unit template registry is read only
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -76,6 +84,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method returns true if the underlying registry is marked as consistent.
      *
      * @return if the unit template registry is consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -88,7 +97,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method updates the given service template.
      *
      * @param serviceTemplate the updated service template.
+     *
      * @return the updated service template.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
@@ -98,7 +109,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method updates a service template encoded in a transaction value.
      *
      * @param transactionValue the service template to update in a transaction id.
+     *
      * @return a transaction value containing the transaction id from the controller and the updated service template encoded.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
@@ -108,6 +121,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method returns true if the underlying registry is marked as consistent.
      *
      * @return if the service template registry is consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -117,10 +131,27 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method returns true if the underlying registry is marked as consistent.
      *
      * @return if the unit template registry is consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
     Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Construct the service attribute type for a service type. The service attribute type is the class name of
+     * the service state.
+     *
+     * @param serviceType the service type for which the attribute type is retrieved.
+     *
+     * @return a string representing the service state used for the given service type.
+     *
+     * @throws CouldNotPerformException if the service template for the service type is not available.
+     */
+    default String getServiceAttributeType(final ServiceType serviceType) throws CouldNotPerformException {
+        final ServiceTemplate serviceTemplate = getServiceTemplateByType(serviceType);
+        final String communicationTypeName = StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getCommunicationType().name());
+        return PowerState.class.getName().replaceAll(PowerState.class.getSimpleName(), communicationTypeName);
+    }
 
     // ===================================== ActivityTemplate Methods =============================================================
 
@@ -128,7 +159,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method updates the given activity template.
      *
      * @param activityTemplate the updated activity template.
+     *
      * @return the updated activity template.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
@@ -138,7 +171,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method updates a activity template encoded in a transaction value.
      *
      * @param transactionValue the activity template to update in a transaction id.
+     *
      * @return a transaction value containing the transaction id from the controller and the updated activity template encoded.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
@@ -148,6 +183,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method returns true if the underlying registry is marked as consistent.
      *
      * @return if the activity template registry is consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -157,6 +193,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * Method returns true if the underlying registry is marked as consistent.
      *
      * @return if the activity template registry is consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod

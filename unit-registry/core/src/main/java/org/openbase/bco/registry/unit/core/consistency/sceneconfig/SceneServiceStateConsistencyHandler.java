@@ -22,17 +22,23 @@ package org.openbase.bco.registry.unit.core.consistency.sceneconfig;
  * #L%
  */
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 
 import java.util.ArrayList;
@@ -40,20 +46,43 @@ import java.util.List;
 
 /**
  * Consistency handler validating service state descriptions inside a service config.
- * It removes them if the referenced unit does not exists or the unit type does not match.
- * <p>
- * TODO: further properties could be validated like if the service type is part of the unit type
+ * For a detailed list of changes performed see {@link #validateServiceStateDescriptions(SceneConfig.Builder, FieldDescriptor)}.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SceneServiceStateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, Builder> {
 
     private final List<ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder>> unitRegistryList;
+    private final ProtoBufJSonProcessor protoBufJSonProcessor;
 
+    private final FieldDescriptor requiredServiceStateDescriptionField;
+    private final FieldDescriptor optionalServiceStateDescriptionField;
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitRegistryList a list of all unit registries. Needed to verify if the unit id in the service state
+     *                         description exists.
+     */
     public SceneServiceStateConsistencyHandler(final List<ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder>> unitRegistryList) {
         this.unitRegistryList = unitRegistryList;
+
+        this.protoBufJSonProcessor = new ProtoBufJSonProcessor();
+        this.requiredServiceStateDescriptionField = SceneConfig.getDescriptor().findFieldByNumber(SceneConfig.REQUIRED_SERVICE_STATE_DESCRIPTION_FIELD_NUMBER);
+        this.optionalServiceStateDescriptionField = SceneConfig.getDescriptor().findFieldByNumber(SceneConfig.OPTIONAL_SERVICE_STATE_DESCRIPTION_FIELD_NUMBER);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param id       {@inheritDoc}
+     * @param entry    {@inheritDoc}
+     * @param entryMap {@inheritDoc}
+     * @param registry {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws EntryModification        {@inheritDoc}
+     */
     @Override
     public void processData(final String id, final IdentifiableMessage<String, UnitConfig, Builder> entry,
                             final ProtoBufMessageMap<String, UnitConfig, Builder> entryMap,
@@ -61,59 +90,92 @@ public class SceneServiceStateConsistencyHandler extends AbstractProtoBufRegistr
         final UnitConfig.Builder sceneUnitConfig = entry.getMessage().toBuilder();
         final SceneConfig.Builder sceneConfig = sceneUnitConfig.getSceneConfigBuilder();
 
+        if (validateServiceStateDescriptions(sceneConfig, requiredServiceStateDescriptionField) ||
+                validateServiceStateDescriptions(sceneConfig, optionalServiceStateDescriptionField)) {
+            throw new EntryModification(entry.setMessage(sceneUnitConfig.build(), this), this);
+        }
+    }
+
+    /**
+     * Validate a list of service state descriptions inside a scene config. Service state descriptions are removed
+     * if the defined unit does not exists, does not have the defined service or the service attribute could not
+     * be de-serialized. The unit type in the service state description is updated if it does not match the type
+     * of the defined unit and the service attribute type is updated if it does not match the defined service type.
+     *
+     * @param sceneConfig     the scene config in which a list of service state description is updated.
+     * @param fieldDescriptor field descriptor of a field containing a list of service state descriptions. This is
+     *                        either the required or optional service state description field.
+     *
+     * @return if a modification to the service state description list occurred.
+     *
+     * @throws CouldNotPerformException if the validation fails.
+     */
+    @SuppressWarnings("unchecked")
+    private boolean validateServiceStateDescriptions(final SceneConfig.Builder sceneConfig, final FieldDescriptor fieldDescriptor) throws CouldNotPerformException {
         boolean modification = false;
-        // verify that all required service state descriptions are valid
-        List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>(sceneConfig.getRequiredServiceStateDescriptionList());
-        sceneConfig.clearRequiredServiceStateDescription();
+        final List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>((List<ServiceStateDescription>) sceneConfig.getField(fieldDescriptor));
+        sceneConfig.clearField(fieldDescriptor);
         for (final ServiceStateDescription serviceStateDescription : serviceStateDescriptionList) {
+            final ServiceStateDescription.Builder builder = serviceStateDescription.toBuilder();
             UnitConfig unitConfig = null;
             for (final ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> unitRegistry : unitRegistryList) {
-                if (unitRegistry.contains(serviceStateDescription.getUnitId())) {
-                    unitConfig = unitRegistry.getMessage(serviceStateDescription.getUnitId());
+                if (unitRegistry.contains(builder.getUnitId())) {
+                    unitConfig = unitRegistry.getMessage(builder.getUnitId());
                     break;
                 }
             }
 
             if (unitConfig == null) {
+                logger.debug("Remove serviceStateDescription of unit {} because it does not exist", builder.getUnitId());
                 modification = true;
                 continue;
             }
 
-            if (unitConfig.getUnitType() != serviceStateDescription.getUnitType()) {
+            if (unitConfig.getUnitType() != builder.getUnitType() &&
+                    !CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(builder.getUnitType()).contains(unitConfig.getUnitType())) {
+                logger.debug("Update unitType of serviceStateDescription to {}", unitConfig.getUnitType().name());
+                builder.setUnitType(unitConfig.getUnitType());
                 modification = true;
-                continue;
             }
 
-            sceneConfig.addRequiredServiceStateDescription(serviceStateDescription);
-        }
+            boolean validServiceTypeForUnit = false;
+            final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(builder.getUnitType());
+            for (final ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
+                if (serviceDescription.getPattern() != ServicePattern.OPERATION) {
+                    continue;
+                }
 
-        // verify that all optional service state descriptions are valid
-        serviceStateDescriptionList = new ArrayList<>(sceneConfig.getOptionalServiceStateDescriptionList());
-        sceneConfig.clearOptionalServiceStateDescription();
-        for (final ServiceStateDescription serviceStateDescription : serviceStateDescriptionList) {
-            UnitConfig unitConfig = null;
-            for (final ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> unitRegistry : unitRegistryList) {
-                if (unitRegistry.contains(serviceStateDescription.getUnitId())) {
-                    unitConfig = unitRegistry.getMessage(serviceStateDescription.getUnitId());
+                if (serviceDescription.getServiceType() == serviceDescription.getServiceType()) {
+                    validServiceTypeForUnit = true;
                     break;
                 }
             }
 
-            if (unitConfig == null) {
+            if (!validServiceTypeForUnit) {
+                logger.debug("Remove serviceStateDescription because serviceType {} is not an operation service of unitType {}",
+                        builder.getServiceType().name(), builder.getUnitType().name());
                 modification = true;
                 continue;
             }
 
-            if (unitConfig.getUnitType() != serviceStateDescription.getUnitType()) {
+            final String serviceAttributeType = CachedTemplateRegistryRemote.getRegistry().getServiceAttributeType(builder.getServiceType());
+            if (!builder.getServiceAttributeType().equals(serviceAttributeType)) {
+                logger.debug("Update serviceAttributeType of serviceStateDescription from {} to {}", builder.getServiceAttributeType(), serviceAttributeType);
+                builder.setServiceAttributeType(serviceAttributeType);
+                modification = true;
+            }
+
+            try {
+                protoBufJSonProcessor.deserialize(builder.getServiceAttribute(), builder.getServiceAttributeType());
+            } catch (CouldNotPerformException ex) {
+                logger.debug("Remove serviceStateDescription because the attribute {} could not be de-serialized into attributeType {}",
+                        builder.getServiceAttributeType());
                 modification = true;
                 continue;
             }
 
-            sceneConfig.addOptionalServiceStateDescription(serviceStateDescription);
+            sceneConfig.addRepeatedField(fieldDescriptor, builder.build());
         }
-
-        if (modification) {
-            throw new EntryModification(entry.setMessage(sceneUnitConfig), this);
-        }
+        return modification;
     }
 }
