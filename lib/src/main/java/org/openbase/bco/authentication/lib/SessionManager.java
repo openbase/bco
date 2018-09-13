@@ -81,7 +81,7 @@ public class SessionManager implements Shutdownable {
      * Observable on which it is notified if login or logout is triggered.
      * The user@client id is notified on login in null on logout.
      */
-    private final ObservableImpl<String> loginObservable;
+    private final ObservableImpl<SessionManager, String> loginObservable;
     /**
      * The ticket and authenticator of the current session.
      */
@@ -129,7 +129,7 @@ public class SessionManager implements Shutdownable {
             LOGGER.warn("Could not register session manager shutdown hook", ex);
         }
         // create login observable
-        this.loginObservable = new ObservableImpl<>();
+        this.loginObservable = new ObservableImpl<>(this);
         // add executor service so that it is not waited for notifications and so that they are done in parallel
         this.loginObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
         // save and init credential store
@@ -851,11 +851,11 @@ public class SessionManager implements Shutdownable {
         return userId;
     }
 
-    public void addLoginObserver(Observer<String> observer) {
+    public void addLoginObserver(Observer<SessionManager, String> observer) {
         loginObservable.addObserver(observer);
     }
 
-    public void removeLoginObserver(Observer<String> observer) {
+    public void removeLoginObserver(Observer<SessionManager, String> observer) {
         loginObservable.removeObserver(observer);
     }
 

@@ -370,7 +370,7 @@ public class SessionManagerTest extends AuthenticationTest {
         final SyncObject loginSyncObject = new SyncObject("LoginSyncObject");
         final long maxWaitTime = 1000;
 
-        Observer<String> loginObserver = (Observable<String> source, String data) -> {
+        Observer<SessionManager, String> loginObserver = (SessionManager source, String data) -> {
             synchronized (loginSyncObject) {
                 notificationCounter++;
                 loginSyncObject.notifyAll();

@@ -44,7 +44,7 @@ import java.util.concurrent.*;
 
 public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage, CONFIG extends GeneratedMessage> extends AbstractConfigurableRemote<M, CONFIG> {
 
-    private final Observer<String> loginObserver;
+    private final Observer<SessionManager, String> loginObserver;
     /**
      * Data object for other permissions;
      */

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
-public class ExceptionReporter extends ObservableImpl<ExceptionReporter.ExceptionReport> {
+public class ExceptionReporter extends ObservableImpl<ExceptionReporter, ExceptionReporter.ExceptionReport> {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionReporter.class);
 

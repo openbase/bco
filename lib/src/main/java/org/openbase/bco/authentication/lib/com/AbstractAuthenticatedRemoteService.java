@@ -42,7 +42,7 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
     /**
      * Observer updating data on login changes.
      */
-    private final Observer<String> loginObserver;
+    private final Observer<SessionManager, String> loginObserver;
     /**
      * Data object for other permissions;
      */
