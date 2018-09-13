@@ -47,19 +47,12 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
     }
 
     /**
-     * Return whether the internal map only holds one entry for the service server.
-     *
-     * @return true if no client/user is registered except the service server.
-     */
-    public boolean hasOnlyServiceServer() {
-        return (getEntryMap().size() == 1 && hasEntry(SERVICE_SERVER_ID));
-    }
-
-    /**
      * Get the encrypted login credentials for a given user.
      *
      * @param userId id of the user
+     *
      * @return the credentials of the user
+     *
      * @throws NotAvailableException if not credentials for the user are saved in the store
      */
     public byte[] getCredentials(String userId) throws NotAvailableException {
@@ -97,6 +90,7 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      * Tells whether a given user has administrator permissions.
      *
      * @param userId id of the user checked
+     *
      * @return if the user with the possesses admin permissions, this is also false if not user with the given id exists
      */
     public boolean isAdmin(final String userId) {
@@ -112,6 +106,7 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      *
      * @param userId  user to change flag of
      * @param isAdmin boolean whether user is admin or not
+     *
      * @throws NotAvailableException if there is no user given userId
      */
     public void setAdmin(final String userId, final boolean isAdmin) throws NotAvailableException {
@@ -136,6 +131,7 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      * {@inheritDoc}
      *
      * @param internalMap the internal map {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override

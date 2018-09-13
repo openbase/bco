@@ -149,7 +149,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        if (store.isEmpty() || JPService.testMode()) {
+        if (!store.hasEntry(CredentialStore.SERVICE_SERVER_ID) || JPService.testMode()) {
             // Generate private/public key pair for service servers.
             final KeyPair keyPair = EncryptionHelper.generateKeyPair();
             store.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false);
@@ -167,7 +167,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         }
 
-        if (store.hasOnlyServiceServer() || JPService.testMode()) {
+        if (initialPasswordRequired() || JPService.testMode()) {
             // Generate initial password.
             initialPassword = RandomStringUtils.randomAlphanumeric(15);
         }
@@ -199,6 +199,18 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         } catch (final CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not wait for activation!", ex);
         }
+    }
+
+    /**
+     * Test if the initial password needs to be generated. This is the case if only three entries are in the credential
+     * store. One for the service server client, one for the ticket granting key and one for the service server secret
+     * key.
+     *
+     * @return if an initial password has to be generated.
+     */
+    private boolean initialPasswordRequired() {
+        return (store.getSize() == 3 && store.hasEntry(CredentialStore.SERVICE_SERVER_ID)
+                && store.hasEntry(TICKET_GRANTING_KEY) && store.hasEntry(SERVICE_SERVER_SECRET_KEY));
     }
 
     @Override
@@ -303,7 +315,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                if (initialPassword != null && (store.hasOnlyServiceServer() || JPService.testMode())) {
+                if (initialPassword != null && (initialPasswordRequired() || JPService.testMode())) {
                     if (!loginCredentialsChange.hasId() || !loginCredentialsChange.hasNewCredentials()) {
                         throw new RejectedException("Cannot register first user, id and/or new credentials empty");
                     }

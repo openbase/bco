@@ -49,6 +49,7 @@ import java.util.*;
  *
  * @param <DT>  the internal data type handled by this store
  * @param <SDT> the data type the internal map is converted to/from for de-/serialization
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
@@ -57,6 +58,7 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
      * Sets the permissions to UNIX 600 so only the owner has permission to read and to write to this protected file.
      *
      * @param file the file whose permissions are updated
+     *
      * @throws CouldNotPerformException is thrown if the file could not be protected.
      */
     public static void protectFile(final File file) throws CouldNotPerformException {
@@ -104,6 +106,7 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
      * for the executing user.
      *
      * @param filename the filename for the file in the credentials directory for the store
+     *
      * @throws InitializationException if initialization fails, e.g. because the executing user does not have permissions
      *                                 to load the file
      */
@@ -164,6 +167,7 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
      * Determines if there is an entry with given id.
      *
      * @param id the id to check
+     *
      * @return true if existent, false otherwise
      */
     public boolean hasEntry(final String id) {
@@ -174,7 +178,9 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
      * Get the entry for an id.
      *
      * @param id the id checked
+     *
      * @return the entry for the given id
+     *
      * @throws NotAvailableException if no entry for the id exists
      */
     public DT getEntry(final String id) throws NotAvailableException {
@@ -219,6 +225,15 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
     }
 
     /**
+     * Get the number of entries in this store.
+     *
+     * @return the number of entries saved in this store.
+     */
+    public int getSize() {
+        return map.size();
+    }
+
+    /**
      * Shutdown the store by saving it.
      */
     @Override
@@ -241,6 +256,7 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
      * Save all entries by generating the data to be serialized from the internal map.
      *
      * @param internalMap the internal map
+     *
      * @return the data to be serialized
      */
     protected abstract SDT save(final Map<String, DT> internalMap);
