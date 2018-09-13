@@ -45,6 +45,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -71,7 +72,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     private UnitConfigHolder selectedUnitConfigHolder;
     private ServiceTypeHolder selectedServiceTypeHolder;
 
-    private final ObservableImpl<ServiceTypeHolder> unitConfigServiceTypeObservable;
+    private final ObservableImpl<Object, ServiceTypeHolder> unitConfigServiceTypeObservable;
 
     private boolean init = false;
 
@@ -111,13 +112,13 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
         // register change observer
-        Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
             SwingUtilities.invokeLater(() -> {
                 updateDynamicComponents();
             });
         });
 
-        Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
             SwingUtilities.invokeLater(() -> {
                 updateDynamicComponents();
             });
@@ -308,11 +309,11 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         }
     }
 
-    public void addObserver(Observer<ServiceTypeHolder> observer) {
+    public void addObserver(Observer<Object, ServiceTypeHolder> observer) {
         unitConfigServiceTypeObservable.addObserver(observer);
     }
 
-    public void removeObserver(Observer<ServiceTypeHolder> observer) {
+    public void removeObserver(Observer<Object, ServiceTypeHolder> observer) {
         unitConfigServiceTypeObservable.removeObserver(observer);
     }
 

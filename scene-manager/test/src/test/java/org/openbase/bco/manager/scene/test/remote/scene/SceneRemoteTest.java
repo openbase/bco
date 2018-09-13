@@ -103,7 +103,7 @@ public class SceneRemoteTest {
     private static PowerStateServiceRemote powerStateServiceRemote;
     private static ColorStateServiceRemote colorStateServiceRemote;
     final SyncObject LOCK = new SyncObject("waitForSceneExecution");
-    final Observer notifyChangeObserver = (Observer) (Observable source, Object data) -> {
+    final Observer notifyChangeObserver = (source, data) -> {
         synchronized (LOCK) {
             LOCK.notifyAll();
         }

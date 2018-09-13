@@ -21,6 +21,7 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
@@ -29,10 +30,12 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.PresenceStateType.PresenceStateOrBuilder;
 import rst.domotic.unit.location.LocationDataType;
+import rst.domotic.unit.location.LocationDataType.LocationData;
 
 /**
  *
@@ -46,12 +49,12 @@ public class PersonLightProviderAgent extends AbstractAgentController {
 
     public static final double MINIMUM_LIGHT_THRESHOLD = 100;
     private LocationRemote locationRemote;
-    private final Observer<LocationDataType.LocationData> locationObserver;
+    private final Observer<DataProvider<LocationData>, LocationData> locationObserver;
 
     public PersonLightProviderAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
         super(PersonLightProviderAgent.class);
         
-        locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
+        locationObserver = (final DataProvider<LocationData> source, LocationDataType.LocationData data) -> {
             try {
                 notifyPresenceStateChanged(data.getPresenceState());
             } catch (CouldNotPerformException ex) {

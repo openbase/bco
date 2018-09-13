@@ -31,6 +31,7 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.app.AppDataType.AppData;
@@ -54,7 +55,7 @@ public class AppRemoteFactoryImpl implements Factory<AppRemote, UnitConfig> {
     public AppRemote newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             AppRemote appRemote = Units.getUnit(config, false, Units.APP);
-            appRemote.addDataObserver((final Observable<AppData> source, AppData data) -> {
+            appRemote.addDataObserver((final DataProvider<AppData> source, AppData data) -> {
                 openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
             });
             return appRemote;

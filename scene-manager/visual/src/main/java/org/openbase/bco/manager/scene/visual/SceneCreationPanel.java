@@ -45,6 +45,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.LoggerFactory;
 import rst.configuration.LabelType.Label;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -60,7 +61,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneCreationPanel.class);
 
-    private final ObservableImpl<SceneConfig> observable;
+    private final ObservableImpl<DataProvider<SceneConfig>, SceneConfig> observable;
     private UnitConfig lastSelected = null;
     private LocationUnitConfigHolder location = null;
 
@@ -82,10 +83,10 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() throws CouldNotPerformException, InitializationException, InterruptedException {
-        Registries.getUnitRegistry().addDataObserver((final Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
             updateDynamicComponents();
         });
-        locationSelectorPanel.addObserver((final Observable<LocationUnitConfigHolder> source, LocationUnitConfigHolder data) -> {
+        locationSelectorPanel.addObserver((final Object source, LocationUnitConfigHolder data) -> {
             location = data;
             logger.info("location update:" + location);
         });
@@ -298,11 +299,11 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_applyUpdateButtonActionPerformed
 
-    public void addObserver(Observer<SceneConfig> observer) {
+    public void addObserver(Observer<DataProvider<SceneConfig>, SceneConfig> observer) {
         observable.addObserver(observer);
     }
 
-    public void removeObserver(Observer<SceneConfig> observer) {
+    public void removeObserver(Observer<DataProvider<SceneConfig>, SceneConfig> observer) {
         observable.removeObserver(observer);
     }
 

@@ -36,6 +36,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -50,7 +51,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
 
     protected static final Logger logger = LoggerFactory.getLogger(LocationSelectorPanel.class);
 
-    private final ObservableImpl<LocationUnitConfigHolder> locationConfigHolderObservable;
+    private final ObservableImpl<Object, LocationUnitConfigHolder> locationConfigHolderObservable;
     private boolean enableAllLocation;
     private LocationUnitConfigHolder selectedLocationConfigHolder;
     private StatusPanel statusPanel;
@@ -87,7 +88,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() throws InterruptedException, NotAvailableException {
-        Registries.getUnitRegistry().addDataObserver((final Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
             updateDynamicComponents();
         });
         updateDynamicComponents();
@@ -199,11 +200,11 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox locationComboBox;
     // End of variables declaration//GEN-END:variables
 
-    public void addObserver(Observer<LocationUnitConfigHolder> observer) {
+    public void addObserver(Observer<Object, LocationUnitConfigHolder> observer) {
         locationConfigHolderObservable.addObserver(observer);
     }
 
-    public void removeObserver(Observer<LocationUnitConfigHolder> observer) {
+    public void removeObserver(Observer<Object, LocationUnitConfigHolder> observer) {
         locationConfigHolderObservable.removeObserver(observer);
     }
 

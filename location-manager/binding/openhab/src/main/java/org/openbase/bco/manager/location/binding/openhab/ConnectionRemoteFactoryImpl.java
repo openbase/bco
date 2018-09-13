@@ -30,6 +30,7 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -54,7 +55,7 @@ public class ConnectionRemoteFactoryImpl implements Factory<ConnectionRemote, Un
     public ConnectionRemote newInstance(UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             ConnectionRemote connectionRemote = Units.getUnit(config, false, Units.CONNECTION);
-            connectionRemote.addDataObserver((final Observable<ConnectionData> source, ConnectionData data) -> {
+            connectionRemote.addDataObserver((final DataProvider<ConnectionData> source, ConnectionData data) -> {
                 //todo: implement
 //                 openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(locationUnitConfig, ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE)).build());
             });

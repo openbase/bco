@@ -41,11 +41,11 @@ public class OntologyTrigger extends org.openbase.jul.pattern.trigger.AbstractTr
 
     // release TODO: move to ontology
     private Trigger trigger;
-    private final Observer<ActivationState.State> triggerObserver;
+    private final Observer<Trigger, ActivationState.State> triggerObserver;
 
     public OntologyTrigger(TriggerConfig config) throws InstantiationException {
         super();
-        triggerObserver = (Observable<ActivationState.State> source, ActivationState.State data) -> {
+        triggerObserver = (Trigger source, ActivationState.State data) -> {
             notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(data).build()));
         };
         try {

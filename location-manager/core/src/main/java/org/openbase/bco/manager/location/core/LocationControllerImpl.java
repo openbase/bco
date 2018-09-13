@@ -22,11 +22,13 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.processing.StandbyController;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
@@ -43,6 +45,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.slf4j.Logger;
@@ -124,7 +127,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                 }
 
                 @Override
-                protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException {
+                protected void notifyServiceUpdate(Unit source, Message data) throws NotAvailableException {
                     try {
                         unitEventFilter.trigger();
                     } catch (final CouldNotPerformException ex) {
@@ -136,9 +139,9 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
             registerOperationService(ServiceType.STANDBY_STATE_SERVICE, new StandbyStateOperationServiceImpl(this));
 
             this.presenceDetector = new PresenceDetector();
-            this.presenceDetector.addDataObserver(new Observer<PresenceState>() {
+            this.presenceDetector.addDataObserver(new Observer<DataProvider<PresenceState>, PresenceState>() {
                 @Override
-                public void update(Observable<PresenceState> source, PresenceState data) throws Exception {
+                public void update(DataProvider<PresenceState> source, PresenceState data) throws Exception {
                     try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                         LOGGER.debug("Set " + this + " presence to [" + data.getValue() + "]");
                         dataBuilder.getInternalBuilder().setPresenceState(data);

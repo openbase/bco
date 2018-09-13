@@ -35,6 +35,7 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
@@ -100,7 +101,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         NetDeviceDetector netDeviceDetector = new NetDeviceDetector();
                         netDeviceDetector.init(netDevice);
                         netDeviceDetectorMap.put(netDevice, netDeviceDetector);
-                        netDeviceDetector.addObserver((Observable<Boolean> source, Boolean reachable) -> {
+                        netDeviceDetector.addObserver((NetDeviceDetector source, Boolean reachable) -> {
                             synchronized (netDeviceDetectorMapLock) {
                                 final PresenceState.Builder presenceState = TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder(), logger);
                                 for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
@@ -254,7 +255,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         return applyUnauthorizedAction(localPositionState, LOCAL_POSITION_STATE_SERVICE);
     }
 
-    private class NetDeviceDetector extends ObservableImpl<Boolean> implements Manageable<String> {
+    private class NetDeviceDetector extends ObservableImpl<NetDeviceDetector, Boolean> implements Manageable<String> {
 
         private static final int REACHABLE_TIMEOUT = 5000;
         private static final int REQUEST_PERIOD = 60000;

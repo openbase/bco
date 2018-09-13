@@ -40,6 +40,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -106,7 +107,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private final Object AGENT_LOCK = new SyncObject("PowerStateLock");
     private PowerState.State latestPowerStateSource = PowerState.State.UNKNOWN;
     private PowerState.State latestPowerStateTarget = PowerState.State.UNKNOWN;
-    private final Observer<GeneratedMessage> sourceObserver, sourceRequestObserver, targetObserver, targetRequestObserer;
+    private final Observer<DataProvider<GeneratedMessage>, GeneratedMessage> sourceObserver, sourceRequestObserver, targetObserver, targetRequestObserver;
     private final List<UnitRemote> targetRemotes = new ArrayList<>();
     private UnitRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
@@ -116,28 +117,28 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         super(PowerStateSynchroniserAgent.class);
 
         // initialize observer
-        sourceObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
+        sourceObserver = (final DataProvider<GeneratedMessage> source, GeneratedMessage data) -> {
             try {
                 handleSourcePowerStateUpdate(((PowerState) data).getValue());
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         };
-        sourceRequestObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
+        sourceRequestObserver = (final DataProvider<GeneratedMessage> source, GeneratedMessage data) -> {
             try {
                 handleSourcePowerStateRequest(((PowerState) data).getValue());
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         };
-        targetObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
+        targetObserver = (final DataProvider<GeneratedMessage> source, GeneratedMessage data) -> {
             try {
                 handleTargetPowerStateUpdate(((PowerState) data).getValue());
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         };
-        targetRequestObserer = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
+        targetRequestObserver = (final DataProvider<GeneratedMessage> source, GeneratedMessage data) -> {
             try {
                 handleTargetPowerStateRequest(((PowerState) data).getValue());
             } catch (Exception ex) {
@@ -418,14 +419,14 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         latestPowerStateTarget = PowerState.State.UNKNOWN;
         for (UnitRemote targetRemote : targetRemotes) {
             // add observer for requested and current power states
-            targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserer);
+            targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserver);
             targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, targetObserver);
 
             // if colorable light create and add color state observer as well 
             if (targetRemote instanceof ColorableLightRemote) {
                 unitRemoteColorObserverMap.put(targetRemote, new ServiceStateObserver(true) {
                     @Override
-                    public void updateServiceData(Observable<Message> source, Message data) throws Exception {
+                    public void updateServiceData(DataProvider<Message> source, Message data) throws Exception {
                         handleTargetColorStateUpdate((ColorState) data, targetRemote);
                     }
                 });
@@ -479,7 +480,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         unitRemoteColorObserverMap.clear();
 
         targetRemotes.forEach((targetRemote) -> {
-            targetRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserer);
+            targetRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserver);
             targetRemote.removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, targetObserver);
         });
     }

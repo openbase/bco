@@ -33,6 +33,7 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -57,7 +58,7 @@ public class UnitGroupRemoteFactoryImpl implements Factory<UnitGroupRemote, Unit
     public UnitGroupRemote newInstance(final UnitConfig unitGroupUnitConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             UnitGroupRemote unitGroupRemote = Units.getUnit(unitGroupUnitConfig, false, Units.UNITGROUP);
-            unitGroupRemote.addDataObserver((final Observable<UnitGroupData> source, UnitGroupData data) -> {
+            unitGroupRemote.addDataObserver((final DataProvider<UnitGroupData> source, UnitGroupData data) -> {
                 // some locations do not have units for a given state so this state will not be set in LocationData and should not be updated in openhab
                 if (data.hasColorState()) {
                     openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColorState().getColor().getHsbColor()).setItem(generateItemId(unitGroupUnitConfig, ServiceType.COLOR_STATE_SERVICE)).build());

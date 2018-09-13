@@ -22,8 +22,10 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupController;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -106,7 +108,7 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
             }
 
             @Override
-            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
+            protected void notifyServiceUpdate(Unit source, Message data) throws InterruptedException {
                 updateUnitData();
             }
         };

@@ -36,6 +36,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
@@ -71,10 +72,10 @@ public class SceneEditor extends javax.swing.JFrame {
     
     public SceneEditor init() throws InitializationException, InterruptedException {
         try {
-            sceneSelectorPanel.addObserver((final Observable<SelectorPanel.ServiceTypeHolder> source, SelectorPanel.ServiceTypeHolder data) -> {
+            sceneSelectorPanel.addObserver((final Object source, SelectorPanel.ServiceTypeHolder data) -> {
                 genericUnitCollectionPanel.add(data.getUnitConfig(), data.getServiceType(), true);
             });
-            sceneCreationPanel.addObserver((final Observable<SceneConfig> source, SceneConfig data) -> {
+            sceneCreationPanel.addObserver((final DataProvider<SceneConfig> source, SceneConfig data) -> {
                 genericUnitCollectionPanel.clearUnitPanel();
                 for (ServiceStateDescription serviceStateDescription : data.getRequiredServiceStateDescriptionList()) {
                     logger.info("Adding new unit panel for action [" + serviceStateDescription.getServiceAttributeType() + "][" + serviceStateDescription.getServiceAttribute() + "]");

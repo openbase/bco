@@ -27,6 +27,7 @@ import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.bco.dal.remote.action.ActionRescheduler.RescheduleOption;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -60,7 +61,7 @@ public class PresenceLightAgent extends AbstractResourceAllocationAgent {
 
         actionRescheduleHelper = new ActionRescheduler(RescheduleOption.EXTEND, 30);
 
-        triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
+        triggerHolderObserver = (Trigger source, ActivationState data) -> {
             logger.warn("New trigger state: " + data.getValue());
             GlobalCachedExecutorService.submit(() -> {
                 if (data.getValue().equals(ActivationState.State.ACTIVE)) {

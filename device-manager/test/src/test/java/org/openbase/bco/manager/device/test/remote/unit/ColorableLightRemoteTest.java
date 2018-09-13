@@ -36,6 +36,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -292,12 +293,12 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             colorableLightRemote.setPowerState(PowerState.State.ON).get();
         }
 
-        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, new Observer<PowerState>() {
+        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, new Observer<DataProvider<PowerState>, PowerState>() {
 
             int updateNumber = 0;
 
             @Override
-            public void update(Observable<PowerState> source, PowerState data) throws Exception {
+            public void update(DataProvider<PowerState> source, PowerState data) throws Exception {
                 powerStateObserverUpdateNumber++;
             }
         });

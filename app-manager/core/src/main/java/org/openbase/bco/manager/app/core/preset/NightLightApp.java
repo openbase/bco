@@ -31,6 +31,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
@@ -63,7 +64,7 @@ public class NightLightApp extends AbstractAppController {
 
     private SyncObject locationMapLock = new SyncObject("LocationMapLock");
 
-    private Map<LocationRemote, Observer<LocationData>> locationMap;
+    private Map<LocationRemote, Observer<DataProvider<LocationData>, LocationData>> locationMap;
 
     public NightLightApp() throws InstantiationException, InterruptedException {
         super(NightLightApp.class);

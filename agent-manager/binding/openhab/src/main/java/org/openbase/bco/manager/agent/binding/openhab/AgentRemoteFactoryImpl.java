@@ -32,6 +32,7 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, UnitConfig> 
     public AgentRemote newInstance(UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             AgentRemote agentRemote = Units.getUnit(config, false, Units.AGENT);
-            agentRemote.addDataObserver((final Observable<AgentData> source, AgentData data) -> {
+            agentRemote.addDataObserver((final DataProvider<AgentData> source, AgentData data) -> {
                 OpenhabCommandType.OpenhabCommand build = OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build();
                 try {
                     openHABRemote.postUpdate(build).get();

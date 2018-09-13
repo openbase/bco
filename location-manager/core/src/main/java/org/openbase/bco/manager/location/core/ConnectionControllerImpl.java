@@ -26,9 +26,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
@@ -147,7 +150,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
             }
 
             @Override
-            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
+            protected void notifyServiceUpdate(Unit source, Message data) {
                 updateCurrentState();
             }
         };

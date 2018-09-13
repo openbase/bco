@@ -28,6 +28,7 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.remote.action.ActionRescheduler;
+import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -61,7 +62,7 @@ public class AbsenceEnergySavingAgent extends AbstractResourceAllocationAgent {
 
         actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
-        triggerHolderObserver = (Observable<ActivationStateType.ActivationState> source, ActivationStateType.ActivationState data) -> {
+        triggerHolderObserver = (Trigger source, ActivationStateType.ActivationState data) -> {
             GlobalCachedExecutorService.submit(() -> {
                 if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
                     switchlightsOff();

@@ -29,6 +29,7 @@ import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.bco.dal.remote.trigger.preset.IlluminanceDualBoundaryTrigger;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -67,7 +68,7 @@ public class IlluminationLightSavingAgent extends AbstractResourceAllocationAgen
 
         actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
-        triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
+        triggerHolderObserver = (Trigger source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 regulateLightIntensity();
             } else {

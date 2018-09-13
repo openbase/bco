@@ -32,6 +32,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.trigger.Trigger;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
@@ -41,7 +42,7 @@ import rst.domotic.state.ActivationStateType.ActivationState;
 public abstract class AbstractResourceAllocationAgent extends AbstractAgentController {
 
     protected ActionRescheduler actionRescheduleHelper;
-    protected Observer<ActivationState> triggerHolderObserver;
+    protected Observer<Trigger, ActivationState> triggerHolderObserver;
 
     public AbstractResourceAllocationAgent(final Class unitClass) throws InstantiationException {
         super(unitClass);
@@ -51,7 +52,7 @@ public abstract class AbstractResourceAllocationAgent extends AbstractAgentContr
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
         
-        agentTriggerHolder.registerObserver(triggerHolderObserver);
+        agentTriggerHolder.addObserver(triggerHolderObserver);
     }
 
     @Override
@@ -81,7 +82,7 @@ public abstract class AbstractResourceAllocationAgent extends AbstractAgentContr
     @Override
     public void shutdown() {
         actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
+        agentTriggerHolder.removeObserver(triggerHolderObserver);
         agentTriggerHolder.shutdown();
         super.shutdown();
     }

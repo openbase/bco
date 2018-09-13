@@ -28,6 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import java.io.File;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
@@ -116,7 +117,7 @@ public class OpenHABConfigGenerator implements Launchable<Void>, VoidInitializab
             itemConfigGenerator.init();
             Registries.waitForData();
 
-            Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+            Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
                 generate();
             });
             generate();

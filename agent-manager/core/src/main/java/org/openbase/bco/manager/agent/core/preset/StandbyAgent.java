@@ -28,6 +28,7 @@ import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import rst.domotic.state.PresenceStateType;
@@ -48,7 +49,7 @@ public class StandbyAgent extends AbstractAgentController {
     private LocationRemote locationRemote;
     private final Timeout timeout;
     private final SyncObject standbySync = new SyncObject("StandbySync");
-    private final Observer<LocationData> locationDataObserver;
+    private final Observer<DataProvider<LocationData>, LocationData> locationDataObserver;
 
 
     public StandbyAgent() throws CouldNotPerformException {

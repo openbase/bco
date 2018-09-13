@@ -35,6 +35,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -77,13 +78,13 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     private final Set<ButtonRemote> buttonRemoteSet;
     private final List<RemoteAction> remoteActionList;
     private final SyncObject actionListSync = new SyncObject("ActionListSync");
-    private final Observer<ButtonData> buttonObserver;
+    private final Observer<DataProvider<ButtonData>, ButtonData> buttonObserver;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
         this.buttonRemoteSet = new HashSet<>();
         this.remoteActionList = new ArrayList<>();
-        this.buttonObserver = (final Observable<ButtonData> source, ButtonData data) -> {
+        this.buttonObserver = (final DataProvider<ButtonData> source, ButtonData data) -> {
 
             // skip initial button state synchronization during system startup
             if (data.getButtonStateLast().getValue().equals(State.UNKNOWN)) {

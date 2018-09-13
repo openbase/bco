@@ -31,6 +31,7 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType;
@@ -56,7 +57,7 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, UnitCo
     public LocationRemote newInstance(final UnitConfig locationUnitConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             LocationRemote locationRemote = Units.getUnit(locationUnitConfig, false, Units.LOCATION);
-            locationRemote.addDataObserver((final Observable<LocationData> source, LocationData data) -> {
+            locationRemote.addDataObserver((final DataProvider<LocationData> source, LocationData data) -> {
                 // some locations do not have units for a given state so this state will not be set in LocationData and should not be updated in openhab
                 if (data.hasColorState()) {
                     openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColorState().getColor().getHsbColor()).setItem(generateItemId(locationUnitConfig, ServiceType.COLOR_STATE_SERVICE)).build());
