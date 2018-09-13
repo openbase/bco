@@ -35,6 +35,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.pattern.ChangeListener;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
@@ -72,6 +73,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     private final ReentrantReadWriteLock lock;
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
     private Future notifyChangeFuture;
+    ChangeListener transactionListener;
 
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
@@ -107,6 +109,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         this.randomJitter = new Random();
         this.lockedRegistries = new ArrayList<>();
         this.lock = new ReentrantReadWriteLock();
+        this.transactionListener = () -> {
+            updateTransactionId();
+        };
     }
 
     @Override
@@ -209,7 +214,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     @Override
     public void notifyChange() throws CouldNotPerformException, InterruptedException {
-        updateTransactionId();
         try {
             // sync registry flags
             syncRegistryFlags();
@@ -342,6 +346,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             registry.addObserver((source, data) -> {
                 notifyChange();
             });
+            registry.addTransactionListener(transactionListener);
         });
     }
 
