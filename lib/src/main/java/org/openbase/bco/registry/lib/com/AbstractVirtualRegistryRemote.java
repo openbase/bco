@@ -60,7 +60,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         this.remoteRegistryFieldDescriptorMap = new HashMap<>();
         this.remoteRegistrySyncMap = new HashMap<>();
         this.registryRemotes = new ArrayList<>();
-        this.synchronisationObserver = (Observer) (Observable source, Object data1) -> {
+        this.synchronisationObserver = (Observer) (source, data) -> {
             synchronized (virtualRegistrySyncLock) {
                 virtualRegistrySyncLock.notifyAll();
             }

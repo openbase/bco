@@ -35,6 +35,7 @@ import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.AbstractFilter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     /**
      * The observable to get informed about data updates.
      */
-    private Observable<M> observable;
+    private Observable<DataProvider<M>, M> observable;
 
     /**
      * The internal data synchronizer which synchronizes the remote registry via the remote service.
@@ -226,7 +227,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         }
 
         // register an observer on the filter to update when the filtering changes
-        filterObserver = (Observable source, Object data) -> {
+        filterObserver = (source, data) -> {
             if (remoteService.isDataAvailable()) {
                 remoteRegistrySynchronizer.update(null, remoteService.getData());
             }

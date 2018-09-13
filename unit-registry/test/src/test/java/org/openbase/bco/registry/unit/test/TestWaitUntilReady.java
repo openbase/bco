@@ -39,6 +39,7 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureWrapper;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
@@ -123,7 +124,7 @@ public class TestWaitUntilReady {
         DeviceClass deviceClass = MockRegistry.generateDeviceClass(deviceClassLabel, productNumber, company, UnitType.POWER_SWITCH, UnitType.BUTTON, UnitType.HANDLE);
         deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClass).get();
 
-        Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
             if (waitedUntilReady) {
                 Assert.assertTrue("Received an update even though waitUntilReady has returned!", false);
             }

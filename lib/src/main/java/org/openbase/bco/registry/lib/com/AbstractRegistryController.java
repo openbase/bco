@@ -339,7 +339,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     private void registerObserver() throws CouldNotPerformException {
         registryList.stream().forEach((registry) -> {
-            registry.addObserver((Observable source, Object data) -> {
+            registry.addObserver((source, data) -> {
                 notifyChange();
             });
         });

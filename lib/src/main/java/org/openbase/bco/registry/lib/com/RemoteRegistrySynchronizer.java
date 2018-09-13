@@ -31,6 +31,7 @@ import org.openbase.jul.pattern.AbstractFilter;
 import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ import java.util.List;
  * @param <M>
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class RemoteRegistrySynchronizer<M extends GeneratedMessage> implements Observer<M> {
+public class RemoteRegistrySynchronizer<M extends GeneratedMessage> implements Observer<DataProvider<M>, M> {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RemoteRegistrySynchronizer.class);
 
@@ -84,7 +85,7 @@ public class RemoteRegistrySynchronizer<M extends GeneratedMessage> implements O
     }
 
     @Override
-    public void update(final Observable<M> source, final M data) throws Exception {
+    public void update(final DataProvider<M> source, final M data) throws Exception {
         try {
             if (data == null) {
                 throw new NotAvailableException("RegistryData");
