@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,7 @@ public class ServiceTypeCommandMapping {
     public static Set<Class<Command>> getCommandClasses(final ServiceType serviceType) throws NotAvailableException {
         synchronized (UPDATE_LOCK) {
             if (MAP.isEmpty()) {
-                Registries.getTemplateRegistry().addDataObserver((observable, data) -> buildMap());
+                Registries.getTemplateRegistry().addDataObserver((provider, data) -> buildMap());
 
                 try {
                     if (!Registries.getTemplateRegistry().isDataAvailable()) {

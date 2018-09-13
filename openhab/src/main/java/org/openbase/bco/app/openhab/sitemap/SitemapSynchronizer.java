@@ -14,6 +14,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -110,7 +111,7 @@ public class SitemapSynchronizer implements Launchable<Void>, VoidInitializable 
         try {
             Registries.waitForData();
 
-            Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+            Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
                 generate();
             });
             generate();

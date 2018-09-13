@@ -100,7 +100,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
     private final JsonParser jsonParser;
 
     private final SyncObject topicObservableMapLock = new SyncObject("topicObservableMapLock");
-    private final Map<String, Observable<JsonObject>> topicObservableMap;
+    private final Map<String, Observable<Object, JsonObject>> topicObservableMap;
     private SseEventSource sseEventSource;
 
     public OpenHABRestCommunicator() throws InitializationException {
@@ -122,7 +122,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
     @Override
     public void shutdown() {
         synchronized (topicObservableMapLock) {
-            for (final Observable<JsonObject> jsonObjectObservable : topicObservableMap.values()) {
+            for (final Observable<Object, JsonObject> jsonObjectObservable : topicObservableMap.values()) {
                 jsonObjectObservable.shutdown();
             }
             topicObservableMap.clear();
@@ -132,11 +132,11 @@ public class OpenHABRestCommunicator implements Shutdownable {
         }
     }
 
-    public void addSSEObserver(Observer<JsonObject> observer) {
+    public void addSSEObserver(Observer<Object, JsonObject> observer) {
         addSSEObserver(observer, "");
     }
 
-    public void addSSEObserver(final Observer<JsonObject> observer, final String topicRegex) {
+    public void addSSEObserver(final Observer<Object, JsonObject> observer, final String topicRegex) {
         synchronized (topicObservableMapLock) {
             if (topicObservableMap.containsKey(topicRegex)) {
                 topicObservableMap.get(topicRegex).addObserver(observer);
@@ -149,7 +149,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
                 sseEventSource.open();
             }
 
-            final ObservableImpl<JsonObject> observable = new ObservableImpl<>();
+            final ObservableImpl<Object, JsonObject> observable = new ObservableImpl<>(this);
             observable.addObserver(observer);
             topicObservableMap.put(topicRegex, observable);
             sseEventSource.register(inboundSseEvent -> {
@@ -165,11 +165,11 @@ public class OpenHABRestCommunicator implements Shutdownable {
         }
     }
 
-    public void removeSSEObserver(Observer<JsonObject> observer) {
+    public void removeSSEObserver(Observer<Object, JsonObject> observer) {
         removeSSEObserver(observer, "");
     }
 
-    public void removeSSEObserver(Observer<JsonObject> observer, final String topicFilter) {
+    public void removeSSEObserver(Observer<Object, JsonObject> observer, final String topicFilter) {
         synchronized (topicObservableMapLock) {
             if (topicObservableMap.containsKey(topicFilter)) {
                 topicObservableMap.get(topicFilter).removeObserver(observer);

@@ -38,7 +38,7 @@ public class TestClient {
     public static void main(String[] args) {
         try {
 //            Registries.getTemplateRegistry().waitForData();
-            Registries.getTemplateRegistry().addDataObserver((observable, data) -> {
+            Registries.getTemplateRegistry().addDataObserver((provider, data) -> {
                 for (ServiceTemplate serviceTemplate : data.getServiceTemplateList()) {
                     String commandClasses = "";
                     try {

@@ -46,7 +46,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
 
-public class CommandExecutor implements Observer<JsonObject> {
+public class CommandExecutor implements Observer<Object, JsonObject> {
 
     public static final String PAYLOAD_KEY = "payload";
 
@@ -61,7 +61,7 @@ public class CommandExecutor implements Observer<JsonObject> {
     }
 
     @Override
-    public void update(Observable<JsonObject> observable, JsonObject payload) {
+    public void update(Object source, JsonObject payload) {
         // extract item name from topic
         final String topic = payload.get(OpenHABRestCommunicator.TOPIC_KEY).getAsString();
         // topic structure: smarthome/items/{itemName}/command

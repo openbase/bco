@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.pattern.provider.ObservableDataProviderAdapter;
 
 /**
@@ -39,7 +40,7 @@ public abstract class AbstractSSEObservable<DTO> extends ObservableDataProviderA
 
     private final String topicFilter;
     private int observerCount;
-    private final Observer<JsonObject> observer;
+    private final Observer<Object, JsonObject> observer;
 
     /**
      * Create a new service send event observable that converts and filters received data.
@@ -66,7 +67,7 @@ public abstract class AbstractSSEObservable<DTO> extends ObservableDataProviderA
      * @param observer {@inheritDoc}
      */
     @Override
-    public void addDataObserver(final Observer<DTO> observer) {
+    public void addDataObserver(final Observer<DataProvider<DTO>, DTO> observer) {
         if (observerCount == 0) {
             OpenHABRestCommunicator.getInstance().addSSEObserver(this.observer, topicFilter);
         }
@@ -81,7 +82,7 @@ public abstract class AbstractSSEObservable<DTO> extends ObservableDataProviderA
      * @param observer {@inheritDoc}
      */
     @Override
-    public void removeDataObserver(Observer<DTO> observer) {
+    public void removeDataObserver(Observer<DataProvider<DTO>, DTO> observer) {
         super.removeDataObserver(observer);
 
         observerCount--;

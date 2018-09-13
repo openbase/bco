@@ -30,6 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class InboxApprover implements Activatable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InboxApprover.class);
 
-    private final Observer<DiscoveryResultDTO> observer;
+    private final Observer<DataProvider<DiscoveryResultDTO>, DiscoveryResultDTO> observer;
     private final InboxAddedObservable inboxAddedObservable;
     private boolean active;
 

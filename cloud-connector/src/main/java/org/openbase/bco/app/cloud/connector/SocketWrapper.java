@@ -46,6 +46,7 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -782,11 +783,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         return loggedIn;
     }
 
-    private class UnitRegistryObserver implements Observer<UnitRegistryData> {
+    private class UnitRegistryObserver implements Observer<DataProvider<UnitRegistryData>, UnitRegistryData> {
         private JsonObject lastSyncResponse = null;
 
         @Override
-        public void update(final Observable<UnitRegistryData> source, final UnitRegistryData data) throws Exception {
+        public void update(final DataProvider<UnitRegistryData> source, final UnitRegistryData data) throws Exception {
 
             // build a response for a sync request
             final JsonObject syncResponse = new JsonObject();

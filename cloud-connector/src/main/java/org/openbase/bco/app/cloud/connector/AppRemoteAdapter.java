@@ -30,6 +30,7 @@ import org.openbase.bco.dal.remote.unit.app.AppRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
@@ -102,12 +103,12 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public void addDataObserver(final ServiceTempus serviceTempus, final Observer<AppData> observer) {
+    public void addDataObserver(final ServiceTempus serviceTempus, final Observer<DataProvider<AppData>, AppData> observer) {
         appRemote.addDataObserver(serviceTempus, observer);
     }
 
     @Override
-    public void removeDataObserver(final ServiceTempus serviceTempus, final Observer<AppData> observer) {
+    public void removeDataObserver(final ServiceTempus serviceTempus, final Observer<DataProvider<AppData>, AppData> observer) {
         appRemote.removeDataObserver(serviceTempus, observer);
     }
 
@@ -177,12 +178,12 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public void addDataObserver(final Observer<AppData> observer) {
+    public void addDataObserver(final Observer<DataProvider<AppData>, AppData> observer) {
         appRemote.addDataObserver(observer);
     }
 
     @Override
-    public void removeDataObserver(final Observer<AppData> observer) {
+    public void removeDataObserver(final Observer<DataProvider<AppData>, AppData> observer) {
         appRemote.removeDataObserver(observer);
     }
 
