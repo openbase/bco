@@ -22,6 +22,7 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
  * #L%
  */
 
+import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
 import org.eclipse.smarthome.core.items.dto.ItemDTO;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -51,7 +52,6 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -73,7 +73,9 @@ public class SynchronizationProcessor {
      * config where the id of the thing is referenced.
      *
      * @param thingDTO the thing for which a device should be retrieved
+     *
      * @return a device unit config for the thing as described above
+     *
      * @throws NotAvailableException if no device could be found
      */
     public static UnitConfig getDeviceForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
@@ -133,16 +135,23 @@ public class SynchronizationProcessor {
         return new ThingUID("bco", unitConfig.getUnitType().name().toLowerCase(), unitConfig.getId()).toString();
     }
 
+    public static DeviceClass getDeviceClassByDiscoveryResult(final DiscoveryResultDTO discoveryResult) throws CouldNotPerformException {
+        String classIdentifier = discoveryResult.thingTypeUID;
+        if(classIdentifier.startsWith("zwave")) {
+            classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + discoveryResult.properties.get(ZWAVE_DEVICE_TYPE_KEY);
+        }
+        return getDeviceClassIdentifier(classIdentifier);
+    }
 
-    public static DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+    public static DeviceClass getDeviceClassIdentifier(final ThingDTO thingDTO) throws CouldNotPerformException {
         String classIdentifier = thingDTO.thingTypeUID;
         if (thingDTO.thingTypeUID.startsWith("zwave")) {
             classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + thingDTO.properties.get(ZWAVE_DEVICE_TYPE_KEY);
         }
-        return getDeviceClassByThing(classIdentifier);
+        return getDeviceClassIdentifier(classIdentifier);
     }
 
-    public static DeviceClass getDeviceClassByThing(final String classIdentifier) throws CouldNotPerformException {
+    private static DeviceClass getDeviceClassIdentifier(final String classIdentifier) throws CouldNotPerformException {
         // iterate over all device classes
         for (final DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
             // get the most global meta config
@@ -162,36 +171,6 @@ public class SynchronizationProcessor {
         }
         // throw exception because device class could not be found
         throw new NotAvailableException("DeviceClass for class identifier[" + classIdentifier + "]");
-
-        //TODO: this is a possible fallback solution which is only tested for the fibaro motion sensor: remove or keep?
-//        final String[] thingTypeUIDSplit = thingDTO.thingTypeUID.split(":");
-//        if (thingTypeUIDSplit.length != 2) {
-//            throw new CouldNotPerformException("Could not parse thingTypeUID[" + thingDTO.thingTypeUID + "]. Does not match known pattern binding:deviceInfo");
-//        }
-//
-//        // String binding = split[0];
-//        final String deviceInfo = thingTypeUIDSplit[1];
-//        final String[] deviceInfoSplit = deviceInfo.split("_");
-//        if (deviceInfoSplit.length < 2) {
-//            throw new CouldNotPerformException("Could not parse deviceInfo[" + deviceInfo + "]. Does not match known pattern company_productNumber_...");
-//        }
-//
-//        final String company = deviceInfoSplit[0];
-//        final String productNumber = deviceInfoSplit[1];
-//
-//        try {
-//            for (final DeviceClass deviceClass : Registries.getDeviceRegistry().getDeviceClasses()) {
-//                if (deviceClass.getCompany().equalsIgnoreCase(company)) {
-//                    if (deviceClass.getProductNumber().replace("-", "").equalsIgnoreCase(productNumber)) {
-//                        return deviceClass;
-//                    }
-//                }
-//            }
-//        } catch (InterruptedException ex) {
-//            Thread.currentThread().interrupt();
-//            throw new CouldNotPerformException("Interrupted", ex);
-//        }
-//        throw new NotAvailableException("Device from company[" + company + "] with productNumber[" + productNumber + "]");
     }
 
     public static void registerAndValidateItems(final UnitConfig unitConfig) throws CouldNotPerformException {
@@ -368,7 +347,7 @@ public class SynchronizationProcessor {
         }
     }
 
-    public static final String generateItemLabel(final UnitConfig unitConfig, final ServiceType serviceType) throws CouldNotPerformException {
+    public static String generateItemLabel(final UnitConfig unitConfig, final ServiceType serviceType) throws CouldNotPerformException {
         return LabelProcessor.getFirstLabel(unitConfig.getLabel()) + " " + LabelProcessor.getBestMatch(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getLabel());
     }
 
@@ -377,7 +356,9 @@ public class SynchronizationProcessor {
      *
      * @param deviceUnitConfig the device from which the label and location is taken
      * @param thing            the thing which is updated
+     *
      * @return if the thing has been updated meaning that the label or location changed
+     *
      * @throws CouldNotPerformException if the update could not be performed
      */
     public static boolean updateThingToUnit(final UnitConfig deviceUnitConfig, final EnrichedThingDTO thing) throws CouldNotPerformException {
@@ -403,21 +384,29 @@ public class SynchronizationProcessor {
      *
      * @param thing      the thing which has changed
      * @param unitConfig the unit which is updated
+     *
      * @return if the thing has been updated meaning that the label or location changed
+     *
      * @throws CouldNotPerformException if the update could not be performed
      */
     public static boolean updateUnitToThing(final EnrichedThingDTO thing, final UnitConfig.Builder unitConfig) throws CouldNotPerformException, InterruptedException {
         boolean modification = false;
-        // TODO: only adding the label, or remove the old one, or at least move new one to higher priority?
         // update label and location
         if (!LabelProcessor.contains(unitConfig.getLabel(), thing.label)) {
             modification = true;
-            LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, thing.label);
+            String oldLabel = LabelProcessor.getBestMatch(unitConfig.getLabel());
+            LabelProcessor.replace(unitConfig.getLabelBuilder(), oldLabel, thing.label);
         }
         if (thing.location != null) {
-            final String locationId = SynchronizationProcessor.getLocationForThing(thing).getId();
+            String locationId;
+            try {
+                locationId = SynchronizationProcessor.getLocationForThing(thing).getId();
+            } catch (NotAvailableException ex) {
+                LOGGER.info("Skip setting location of unit for thing {} because its location {} is not available", thing.UID, thing.location);
+                return modification;
+            }
 
-            if (!locationId.equalsIgnoreCase(unitConfig.getPlacementConfig().getLocationId())) {
+            if (!locationId.equals(unitConfig.getPlacementConfig().getLocationId())) {
                 modification = true;
                 unitConfig.getPlacementConfigBuilder().setLocationId(locationId);
                 if (unitConfig.getUnitType() == UnitType.DEVICE) {

@@ -103,7 +103,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         // get device class for thing
         DeviceClass deviceClass;
         try {
-            deviceClass = SynchronizationProcessor.getDeviceClassByThing(thingDTO);
+            deviceClass = SynchronizationProcessor.getDeviceClassIdentifier(thingDTO);
         } catch (NotAvailableException ex) {
             logger.warn("Ignore thing[" + thingDTO.UID + "] because no matching device class found");
             return;
