@@ -42,9 +42,9 @@ import java.util.List;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ItemDalUnitSynchronization extends AbstractSynchronizer<String, IdentifiableEnrichedItemDTO> {
+public class ItemUnitSynchronization extends AbstractSynchronizer<String, IdentifiableEnrichedItemDTO> {
 
-    public ItemDalUnitSynchronization(final SyncObject synchronizationLock) throws InstantiationException {
+    public ItemUnitSynchronization(final SyncObject synchronizationLock) throws InstantiationException {
         super(new ItemObservable(), synchronizationLock);
     }
 

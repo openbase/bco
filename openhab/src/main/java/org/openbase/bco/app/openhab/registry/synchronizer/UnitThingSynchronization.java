@@ -23,20 +23,26 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
  */
 
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
-import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.List;
 
 /**
+ * Synchronization for units handled by the BCO binding. This synchronization routine merely removes a thing
+ * if the according unit is removed because updating the thing configuration on unit config updates is done by
+ * the binding itself.
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitThingSynchronization extends AbstractSynchronizer<String, IdentifiableMessage<String, UnitConfig, Builder>> {
@@ -46,6 +52,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
      *
      * @param synchronizationLock a lock used during a synchronization. This is lock should be shared with
      *                            other synchronization managers so that they will not interfere with each other.
+     *
      * @throws InstantiationException if instantiation fails
      * @throws NotAvailableException  if the unit registry is not available
      */
@@ -54,42 +61,34 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
     }
 
     /**
-     * Update the label and location of a thing belonging to the unit.
+     * Do nothing.
      *
      * @param identifiableMessage the unit updated
+     *
      * @throws CouldNotPerformException if the thing could not be updated
      */
     @Override
     public void update(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        // update thing label and location if needed
-        final UnitConfig unitConfig = identifiableMessage.getMessage();
-        final EnrichedThingDTO thing = SynchronizationProcessor.getThingForUnit(unitConfig);
-
-        if (SynchronizationProcessor.updateThingToUnit(unitConfig, thing)) {
-            OpenHABRestCommunicator.getInstance().updateThing(thing);
-        }
+        // do nothing because the binding itself updates the according thing configuration
     }
 
     /**
-     * Only perform an initial sync between a unit and its thing by calling {@link #update(IdentifiableMessage)}
-     * if its the initial sync.
-     * Things for units are created through the discovery of the BCO binding.
+     * Do nothing.
      *
      * @param identifiableMessage the unit initially registered
+     *
      * @throws CouldNotPerformException if the initial update could not be performed.
      */
     @Override
     public void register(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        // if this is the initial sync make sure that things and units are synced
-        if (isInitialSync()) {
-            update(identifiableMessage);
-        }
+        // do nothing because the binding itself updates the according thing configuration
     }
 
     /**
      * Remove the thing belonging to a unit.
      *
      * @param identifiableMessage the removed unit
+     *
      * @throws CouldNotPerformException if the thing could not be removed or updated
      */
     @Override
@@ -106,13 +105,14 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
         }
 
         // delete thing
-        OpenHABRestCommunicator.getInstance().deleteThing(thing);
+        SynchronizationProcessor.deleteThing(thing);
     }
 
     /**
      * {@inheritDoc}
      *
      * @return a list of units managed by the unit registry
+     *
      * @throws CouldNotPerformException it the units are not available
      */
     @Override
@@ -121,20 +121,45 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
     }
 
     /**
-     * Verify that the unit is not a device of object.
+     * Verify that the unit is handled by the binding.
      *
      * @param identifiableMessage the unit checked
-     * @return if the device managed by openHAB
+     *
+     * @return if the device managed by the bco binding
      */
     @Override
     public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
-        // do not manage devices and objects
-        //TODO: currently only locations are supported
-        switch (identifiableMessage.getMessage().getUnitType()) {
-            case LOCATION:
-                return true;
-            default:
-                return false;
+        try {
+            return handledByBCOBinding(identifiableMessage.getMessage());
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not verify unit " + identifiableMessage.getMessage().getAlias(0), ex, logger);
+            return false;
         }
+    }
+
+    private boolean handledByBCOBinding(final UnitConfig unitConfig) throws CouldNotPerformException {
+        // ignore all units without services
+        if (unitConfig.getServiceConfigCount() == 0) {
+            return false;
+        }
+
+        // ignore system users
+        if (unitConfig.getUnitType() == UnitType.USER && unitConfig.getUserConfig().getIsSystemUser()) {
+            return false;
+        }
+
+        // ignore all units from devices handled by the openhab app
+        if (!unitConfig.getUnitHostId().isEmpty()) {
+            UnitConfig unitHost = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
+            if (unitHost.getUnitType() == UnitType.DEVICE) {
+                DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(unitHost.getDeviceConfig().getDeviceClassId());
+                if (deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("openhab")) {
+                    return false;
+                }
+            }
+        }
+
+        // accept everything else
+        return true;
     }
 }

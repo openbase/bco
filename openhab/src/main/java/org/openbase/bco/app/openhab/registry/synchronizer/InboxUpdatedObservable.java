@@ -29,20 +29,18 @@ import com.google.gson.JsonParser;
 import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
 
 /**
- * Observable notifying on inbox events of openHAB.
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class InboxAddedObservable extends AbstractSSEObservable<DiscoveryResultDTO> {
+public class InboxUpdatedObservable extends AbstractSSEObservable<DiscoveryResultDTO> {
 
     private static final String PAYLOAD_KEY = "payload";
-    private static final String INBOX_ADDED_TOPIC_FILTER = "smarthome/inbox/(.+)/added";
+    private static final String INBOX_UPDATE_TOPIC_FILTER = "smarthome/inbox/(.+)/updated";
 
     private final Gson gson;
     private final JsonParser jsonParser;
 
-    public InboxAddedObservable() {
-        super(INBOX_ADDED_TOPIC_FILTER, DiscoveryResultDTO.class);
+    public InboxUpdatedObservable() {
+        super(INBOX_UPDATE_TOPIC_FILTER, DiscoveryResultDTO.class);
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.jsonParser = new JsonParser();
     }

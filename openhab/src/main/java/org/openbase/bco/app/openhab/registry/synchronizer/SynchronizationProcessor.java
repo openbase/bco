@@ -24,7 +24,6 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
 
 import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
 import org.eclipse.smarthome.core.items.dto.ItemDTO;
-import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.dto.ChannelDTO;
 import org.eclipse.smarthome.core.thing.dto.ThingDTO;
@@ -137,7 +136,7 @@ public class SynchronizationProcessor {
 
     public static DeviceClass getDeviceClassByDiscoveryResult(final DiscoveryResultDTO discoveryResult) throws CouldNotPerformException {
         String classIdentifier = discoveryResult.thingTypeUID;
-        if(classIdentifier.startsWith("zwave")) {
+        if (classIdentifier.startsWith("zwave")) {
             classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + discoveryResult.properties.get(ZWAVE_DEVICE_TYPE_KEY);
         }
         return getDeviceClassIdentifier(classIdentifier);
@@ -173,19 +172,6 @@ public class SynchronizationProcessor {
         throw new NotAvailableException("DeviceClass for class identifier[" + classIdentifier + "]");
     }
 
-    public static void registerAndValidateItems(final UnitConfig unitConfig) throws CouldNotPerformException {
-        switch (unitConfig.getUnitType()) {
-            case DEVICE:
-                for (final String unitId : unitConfig.getDeviceConfig().getUnitIdList()) {
-                    registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), getThingForDevice(unitConfig));
-                }
-                break;
-            default:
-                registerAndValidateItems(unitConfig, getThingForUnit(unitConfig));
-                break;
-        }
-    }
-
     public static Map<ServiceType, ServicePattern> generateServiceMap(final UnitConfig unitConfig) {
         // build service mapping for services to create matching items
         // this map will only contain provider and operation services, and if there are both for the same service the operation service will be saved
@@ -213,10 +199,6 @@ public class SynchronizationProcessor {
     }
 
     private static String getChannelUID(final UnitConfig unitConfig, final ServiceType serviceType, final ServicePattern servicePattern, final ThingDTO thingDTO) throws CouldNotPerformException {
-        if (thingDTO.UID.startsWith("bco")) {
-            return new ChannelUID(new ThingUID(thingDTO.UID), getChannelId(serviceType, servicePattern)).toString();
-        }
-
         String channelUID = "";
         final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
         final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
@@ -262,10 +244,6 @@ public class SynchronizationProcessor {
         return channelUID;
     }
 
-    private static String getChannelId(final ServiceType serviceType, final ServicePattern servicePattern) {
-        return serviceType.name().toLowerCase().replace("_service", "");
-    }
-
     public static void registerAndValidateItems(final UnitConfig unitConfig, final ThingDTO thingDTO) throws CouldNotPerformException {
         final List<ItemChannelLinkDTO> itemChannelLinks = OpenHABRestCommunicator.getInstance().getItemChannelLinks();
         for (final Entry<ServiceType, ServicePattern> entry : generateServiceMap(unitConfig).entrySet()) {
@@ -274,34 +252,7 @@ public class SynchronizationProcessor {
 
             LOGGER.debug("Register/Validate item for service[" + serviceType.name() + "] of unit[" + unitConfig.getAlias(0) + "]");
 
-            // This is kind of a hack to support switching only lights in a location
             String itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType);
-            if (unitConfig.getUnitType() == UnitType.LOCATION && serviceType == ServiceType.POWER_STATE_SERVICE) {
-                itemName += "Light";
-
-                LOGGER.debug("Generate special entry to only switch lights in a location: " + itemName);
-                if (!OpenHABRestCommunicator.getInstance().hasItem(itemName)) {
-                    final String channelUID = getChannelUID(unitConfig, serviceType, servicePattern, thingDTO) + "_light";
-
-                    LOGGER.debug("Item does not already exist: " + channelUID);
-                    // create and register item
-                    ItemDTO itemDTO = new ItemDTO();
-                    itemDTO.label = generateItemLabel(unitConfig, serviceType) + " Light";
-                    itemDTO.name = itemName;
-                    try {
-                        itemDTO.type = OpenHABItemProcessor.getItemType(serviceType);
-                    } catch (NotAvailableException ex) {
-                        LOGGER.warn("Skip service[" + serviceType.name() + "] of unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] because no item type available");
-                        continue;
-                    }
-                    itemDTO = OpenHABRestCommunicator.getInstance().registerItem(itemDTO);
-                    LOGGER.debug("Successfully registered item[" + itemDTO.name + "] for dal unit");
-
-                    // link item to thing channel
-                    OpenHABRestCommunicator.getInstance().registerItemChannelLink(itemDTO.name, channelUID);
-                    LOGGER.debug("Successfully created link between item[" + itemDTO.name + "] and channel[" + channelUID + "]");
-                }
-            }
 
             String channelUID;
             try {
@@ -348,7 +299,7 @@ public class SynchronizationProcessor {
     }
 
     public static String generateItemLabel(final UnitConfig unitConfig, final ServiceType serviceType) throws CouldNotPerformException {
-        return LabelProcessor.getFirstLabel(unitConfig.getLabel()) + " " + LabelProcessor.getBestMatch(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getLabel());
+        return LabelProcessor.getBestMatch(unitConfig.getLabel()) + " " + LabelProcessor.getBestMatch(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getLabel());
     }
 
     /**
@@ -416,5 +367,31 @@ public class SynchronizationProcessor {
         }
 
         return modification;
+    }
+
+    /**
+     * Helper method for deleting a thing. This method will also delete all items and itemChannelLinks connected
+     * to the thing.
+     *
+     * @param thingDTO the thing to be removed.
+     *
+     * @throws CouldNotPerformException if removing the thing fails.
+     */
+    public static void deleteThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+        final List<ItemChannelLinkDTO> itemChannelLinks = OpenHABRestCommunicator.getInstance().getItemChannelLinks();
+        for (final ChannelDTO channel : thingDTO.channels) {
+            for (final ItemChannelLinkDTO itemChannelLink : itemChannelLinks) {
+                if (!itemChannelLink.channelUID.equals(channel.uid)) {
+                    continue;
+                }
+
+                if (OpenHABRestCommunicator.getInstance().hasItem(itemChannelLink.itemName)) {
+                    OpenHABRestCommunicator.getInstance().deleteItem(itemChannelLink.itemName);
+                }
+
+                OpenHABRestCommunicator.getInstance().deleteItemChannelLink(itemChannelLink);
+            }
+        }
+        OpenHABRestCommunicator.getInstance().deleteThing(thingDTO.UID);
     }
 }

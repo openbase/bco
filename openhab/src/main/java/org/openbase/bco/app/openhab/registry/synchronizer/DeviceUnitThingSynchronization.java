@@ -42,7 +42,7 @@ import java.util.List;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceThingSynchronization extends AbstractSynchronizer<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
+public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 
     /**
      * Create a new synchronization manager from BCO device units to openHAB things.
@@ -52,7 +52,7 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
      * @throws InstantiationException if instantiation fails
      * @throws NotAvailableException  if the unit registry is not available
      */
-    public DeviceThingSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
+    public DeviceUnitThingSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
         super(Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), synchronizationLock);
     }
 
@@ -134,7 +134,7 @@ public class DeviceThingSynchronization extends AbstractSynchronizer<String, Ide
         }
 
         // delete thing
-        OpenHABRestCommunicator.getInstance().deleteThing(thing);
+        SynchronizationProcessor.deleteThing(thing);
     }
 
     /**

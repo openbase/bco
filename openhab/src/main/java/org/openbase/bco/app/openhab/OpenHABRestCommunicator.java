@@ -44,6 +44,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -119,6 +120,23 @@ public class OpenHABRestCommunicator implements Shutdownable {
         }
     }
 
+    public boolean isOpenHABOnline() {
+        try {
+            getDiscoveryResults();
+        } catch (CouldNotPerformException e) {
+            if (e.getCause() instanceof ProcessingException) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void waitForOpenHAB() throws InterruptedException {
+        while (!isOpenHABOnline()) {
+            Thread.sleep(1000);
+        }
+    }
+
     @Override
     public void shutdown() {
         synchronized (topicObservableMapLock) {
@@ -146,6 +164,14 @@ public class OpenHABRestCommunicator implements Shutdownable {
             if (sseEventSource == null) {
                 final WebTarget webTarget = baseWebTarget.path(EVENTS_TARGET);
                 sseEventSource = SseEventSource.target(webTarget).build();
+
+                try {
+                    LOGGER.warn("Wait for openHAB");
+                    waitForOpenHAB();
+                    LOGGER.warn("OpenHAB is online");
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 sseEventSource.open();
             }
 
@@ -344,7 +370,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
             final Response response = webTarget.request().get();
 
             return validateResponse(response);
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | ProcessingException ex) {
             throw new CouldNotPerformException("Could not get sub-URL[" + target + "]", ex);
         }
     }
@@ -355,7 +381,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
             final Response response = webTarget.request().delete();
 
             return validateResponse(response);
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | ProcessingException ex) {
             throw new CouldNotPerformException("Could not delete sub-URL[" + target + "]", ex);
         }
     }
@@ -370,7 +396,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
             final Response response = webTarget.request().put(Entity.entity(value, mediaType));
 
             return validateResponse(response);
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | ProcessingException ex) {
             throw new CouldNotPerformException("Could not put value[" + value + "] on sub-URL[" + target + "]", ex);
         }
     }
@@ -385,18 +411,21 @@ public class OpenHABRestCommunicator implements Shutdownable {
             final Response response = webTarget.request().post(Entity.entity(value, mediaType));
 
             return validateResponse(response);
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | ProcessingException ex) {
             throw new CouldNotPerformException("Could not post value[" + value + "] on sub-URL[" + target + "]", ex);
         }
     }
 
-    private String validateResponse(final Response response) throws CouldNotPerformException {
+    private String validateResponse(final Response response) throws CouldNotPerformException, ProcessingException {
         final String result = response.readEntity(String.class);
 
         if (response.getStatus() == 200 || response.getStatus() == 202) {
             return result;
         } else if (response.getStatus() == 404) {
             throw new NotAvailableException("URL");
+        } else if (response.getStatus() == 503) {
+            // throw a processing exception to indicate that openHAB is still not fully started, this is used to wait for openHAB
+            throw new ProcessingException("OpenHAB server not ready");
         } else {
             throw new CouldNotPerformException("Response returned with errorCode[" + response.getStatus() + "] and error message[" + result + "]");
         }

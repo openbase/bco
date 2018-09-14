@@ -43,11 +43,13 @@ public class InboxApprover implements Activatable {
 
     private final Observer<DataProvider<DiscoveryResultDTO>, DiscoveryResultDTO> observer;
     private final InboxAddedObservable inboxAddedObservable;
+    private final InboxUpdatedObservable inboxUpdatedObservable;
     private boolean active;
 
     public InboxApprover() {
         this.active = false;
         this.inboxAddedObservable = new InboxAddedObservable();
+        this.inboxUpdatedObservable = new InboxUpdatedObservable();
         observer = (source, discoveryResultDTO) -> {
             try {
                 // approve everything from the bco binding
@@ -71,6 +73,7 @@ public class InboxApprover implements Activatable {
     public void activate() throws CouldNotPerformException {
         active = true;
         this.inboxAddedObservable.addDataObserver(observer);
+        this.inboxUpdatedObservable.addDataObserver(observer);
         // trigger observer on device class changes, maybe this leads to new things that can be approved
         Registries.getClassRegistry().getDeviceClassRemoteRegistry().addDataObserver((source, data) -> {
             for (DiscoveryResultDTO discoveryResult : OpenHABRestCommunicator.getInstance().getDiscoveryResults()) {
@@ -91,6 +94,7 @@ public class InboxApprover implements Activatable {
     @Override
     public void deactivate() {
         this.inboxAddedObservable.removeDataObserver(observer);
+        this.inboxUpdatedObservable.removeDataObserver(observer);
         active = false;
     }
 

@@ -33,8 +33,6 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitializable {
 
@@ -43,25 +41,26 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
     private final SyncObject synchronizationLock = new SyncObject("SyncLock");
 
     private final InboxApprover inboxApprover;
-    private final ThingDeviceUnitSynchronization thingDeviceUnitSynchronization;
-    private final DeviceThingSynchronization deviceThingSynchronization;
-    private final UnitItemSynchronization unitItemSynchronization;
-    private final ItemDalUnitSynchronization itemDalUnitSynchronization;
 
-//    private final ThingBCOUnitSynchronization thingBCOUnitSynchronization;
-//    private final UnitThingSynchronization unitThingSynchronization;
+    private final ThingDeviceUnitSynchronization thingDeviceUnitSynchronization;
+    private final DeviceUnitThingSynchronization deviceUnitThingSynchronization;
+
+    private final ThingUnitSynchronization thingUnitSynchronization;
+    private final UnitThingSynchronization unitThingSynchronization;
+
+    private final ItemUnitSynchronization itemUnitSynchronization;
 
     public OpenHABConfigSynchronizer() throws InstantiationException {
         try {
             this.inboxApprover = new InboxApprover();
+
             this.thingDeviceUnitSynchronization = new ThingDeviceUnitSynchronization(synchronizationLock);
-            this.deviceThingSynchronization = new DeviceThingSynchronization(synchronizationLock);
+            this.deviceUnitThingSynchronization = new DeviceUnitThingSynchronization(synchronizationLock);
 
-            this.unitItemSynchronization = new UnitItemSynchronization(synchronizationLock);
-            this.itemDalUnitSynchronization = new ItemDalUnitSynchronization(synchronizationLock);
+            this.thingUnitSynchronization = new ThingUnitSynchronization(synchronizationLock);
+            this.unitThingSynchronization = new UnitThingSynchronization(synchronizationLock);
 
-//            this.thingBCOUnitSynchronization = new ThingBCOUnitSynchronization(synchronizationLock);
-//            this.unitThingSynchronization = new UnitThingSynchronization(synchronizationLock);
+            this.itemUnitSynchronization = new ItemUnitSynchronization(synchronizationLock);
         } catch (NotAvailableException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -73,42 +72,46 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
         // TODO: this is a hack implemented because waitForData did not work correctly last time tested
-        while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
-            Thread.sleep(100);
-        }
-        LOGGER.info("Users: " + Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size());
-        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
-            LOGGER.info(unitConfig.getUserConfig().getUserName());
-        }
+//        while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
+//            Thread.sleep(100);
+//        }
+//        LOGGER.info("Users: " + Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size());
+//        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
+//            LOGGER.info(unitConfig.getUserConfig().getUserName());
+//        }
         SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
+
         thingDeviceUnitSynchronization.activate();
-        deviceThingSynchronization.activate();
-        unitItemSynchronization.activate();
-        itemDalUnitSynchronization.activate();
-//        thingBCOUnitSynchronization.activate();
-//        unitThingSynchronization.activate();
+        deviceUnitThingSynchronization.activate();
+
+        thingUnitSynchronization.activate();
+        unitThingSynchronization.activate();
+
+        itemUnitSynchronization.activate();
+
         inboxApprover.activate();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         inboxApprover.deactivate();
+
         thingDeviceUnitSynchronization.deactivate();
-        deviceThingSynchronization.deactivate();
-        unitItemSynchronization.deactivate();
-        itemDalUnitSynchronization.deactivate();
-//        thingBCOUnitSynchronization.deactivate();
-//        unitThingSynchronization.deactivate();
+        deviceUnitThingSynchronization.deactivate();
+
+        thingUnitSynchronization.deactivate();
+        unitThingSynchronization.deactivate();
+
+        itemUnitSynchronization.deactivate();
     }
 
     @Override
     public boolean isActive() {
         return thingDeviceUnitSynchronization.isActive()
-                && deviceThingSynchronization.isActive()
-                && unitItemSynchronization.isActive()
-                && itemDalUnitSynchronization.isActive()
-                && inboxApprover.isActive();
-//                && thingBCOUnitSynchronization.isActive()
-//                && unitThingSynchronization.isActive();
+                && deviceUnitThingSynchronization.isActive()
+                && itemUnitSynchronization.isActive()
+                && inboxApprover.isActive()
+                && thingUnitSynchronization.isActive()
+                && unitThingSynchronization.isActive();
     }
 }

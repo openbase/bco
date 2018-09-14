@@ -32,6 +32,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import rst.domotic.state.InventoryStateType.InventoryState.State;
@@ -64,16 +65,15 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             final UnitConfig.Builder deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(updatedThing).toBuilder();
 
             if (SynchronizationProcessor.updateUnitToThing(updatedThing, deviceUnitConfig)) {
-                try {
-                    Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
-                } catch (ExecutionException ex) {
-                    throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
-                }
+                Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build());
+//                try {
+//                    Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
+//                } catch (ExecutionException ex) {
+//                    throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+//                }
             }
         } catch (NotAvailableException ex) {
-            // thing is updated but not yet registered, so try to register again, this can happen e.g. for zwave devices whose
-            // properties are filled afterwards
-            registerDevice(updatedThing);
+            logger.warn("Unit for thing {} not available", identifiableEnrichedThingDTO.getDTO().UID);
         }
     }
 
@@ -95,7 +95,10 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             }
         }
 
-        registerDevice(thingDTO);
+        GlobalCachedExecutorService.submit(() -> {
+            registerDevice(thingDTO);
+            return null;
+        });
     }
 
     private void registerDevice(ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
@@ -158,11 +161,12 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         }
 
         // remove device
-        try {
-            Registries.getUnitRegistry().removeUnitConfig(deviceUnitConfig).get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not remove device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
-        }
+        Registries.getUnitRegistry().removeUnitConfig(deviceUnitConfig);
+//        try {
+//            Registries.getUnitRegistry().removeUnitConfig(deviceUnitConfig).get();
+//        } catch (ExecutionException ex) {
+//            throw new CouldNotPerformException("Could not remove device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+//        }
     }
 
     @Override
@@ -177,6 +181,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
     @Override
     public boolean verifyEntry(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) {
         // only handle things not managed by the bco binding
-        return !identifiableEnrichedThingDTO.getId().startsWith(ThingBCOUnitSynchronization.BCO_BINDING_ID);
+        return !identifiableEnrichedThingDTO.getId().startsWith(ThingUnitSynchronization.BCO_BINDING_ID);
     }
 }
