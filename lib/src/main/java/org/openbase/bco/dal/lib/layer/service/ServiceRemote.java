@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -36,6 +37,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -49,7 +51,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> extends Manageable<UnitConfigType.UnitConfig>, Service, Remote<ST>, ServiceProvider {
+public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> extends Manageable<UnitConfigType.UnitConfig>, Service, Remote<ST>, ServiceProvider<ST> {
 
     /**
      * Add an observer to get notifications when the service state changes.
@@ -57,7 +59,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @param observer the observer which is notified
      */
     @Override
-    void addDataObserver(final Observer<ST> observer);
+    void addDataObserver(final Observer<DataProvider<ST>, ST> observer);
 
     /**
      * Returns a collection of all internally used unit remotes.
@@ -135,7 +137,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @param observer the observer which has been registered
      */
     @Override
-    void removeDataObserver(final Observer<ST> observer);
+    void removeDataObserver(final Observer<DataProvider<ST>, ST> observer);
 
     /**
      * Removes the internal unit remote referred by the given config.
@@ -180,7 +182,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @param observer the observer to observe the connection state of the internal unit remotes.
      */
     @Override
-    default void addConnectionStateObserver(Observer<ConnectionState> observer) {
+    default void addConnectionStateObserver(Observer<Remote, ConnectionState> observer) {
         for (Remote remote : getInternalUnits()) {
             remote.addConnectionStateObserver(observer);
         }
@@ -192,7 +194,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @param observer the observer to remove.
      */
     @Override
-    default void removeConnectionStateObserver(Observer<ConnectionState> observer) {
+    default void removeConnectionStateObserver(Observer<Remote, ConnectionState> observer) {
         for (final Remote remote : getInternalUnits()) {
             remote.removeConnectionStateObserver(observer);
         }

@@ -48,8 +48,15 @@
                 <configuration>
                     <programs>
                         <program>
+                            <mainClass>org.openbase.bco.dal.remote.printer.BCOLogger</mainClass>
+                            <id>bco-logger</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
                             <mainClass>org.openbase.bco.dal.remote.DALRemote</mainClass>
-                            <id>dal-remote</id>
+                            <id>bco-remote</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

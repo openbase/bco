@@ -39,7 +39,9 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.visual.swing.layout.LayoutGenerator;
@@ -63,8 +65,8 @@ import static org.openbase.bco.dal.visual.service.AbstractServicePanel.SERVICE_P
  */
 public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteView<RS> {
 
-    private final Observer<UnitConfig> unitConfigObserver;
-    private final Observer<ConnectionState> connectionStateObserver;
+    private final Observer<DataProvider<UnitConfig>, UnitConfig> unitConfigObserver;
+    private final Observer<Remote, ConnectionState> connectionStateObserver;
     private boolean autoRemove;
     private List<JComponent> componentList;
     private StatusPanel statusPanel;
@@ -83,12 +85,12 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
         }
 
         // init unit config observer
-        this.unitConfigObserver = (Observable<UnitConfig> source, UnitConfig config) -> {
+        this.unitConfigObserver = (source, config) -> {
             updateUnitConfig(config);
         };
 
         // init connection observer
-        this.connectionStateObserver = (Observable<ConnectionState> source, ConnectionState connectionState) -> {
+        this.connectionStateObserver = (source, connectionState) -> {
             updateConnectionState(connectionState);
         };
         initComponents();
@@ -100,11 +102,11 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
         this.autoRemove = autoRemove;
     }
 
-    public Observer<UnitConfig> getUnitConfigObserver() {
+    public Observer<DataProvider<UnitConfig>, UnitConfig> getUnitConfigObserver() {
         return unitConfigObserver;
     }
 
-    private void updateConnectionState(final ConnectionState connectionState) throws InterruptedException {
+    private void updateConnectionState(final ConnectionState connectionState) {
         try {
             // build unit label
             String remoteLabel;

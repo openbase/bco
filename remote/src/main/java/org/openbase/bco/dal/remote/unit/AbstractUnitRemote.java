@@ -47,6 +47,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
@@ -68,6 +69,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
+import javax.xml.crypto.Data;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +89,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
-    private final Observer<UnitRegistryData> unitRegistryObserver;
+    private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
     private UnitTemplate template;
@@ -98,9 +100,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     public AbstractUnitRemote(final Class<D> dataClass) {
         super(dataClass, UnitConfig.class);
 
-        this.unitRegistryObserver = new Observer<UnitRegistryData>() {
+        this.unitRegistryObserver = new Observer<DataProvider<UnitRegistryData>, UnitRegistryData>() {
             @Override
-            public void update(final Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+            public void update(final DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
                 try {
                     final UnitConfig newUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(getId());
                     if (!newUnitConfig.equals(getConfig())) {
@@ -119,12 +121,12 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
             this.unitDataObservableMap.put(serviceTempus, new UnitDataFilteredObservable<>(this, serviceTempus));
-            super.addDataObserver((Observable<D> source, D data1) -> {
+            super.addDataObserver((DataProvider<D> source, D data1) -> {
                 unitDataObservableMap.get(serviceTempus).notifyObservers(data1);
             });
 
             this.serviceTempusServiceTypeObservableMap.put(serviceTempus, new HashMap<>());
-            addDataObserver(serviceTempus, (Observable<D> source, D data1) -> {
+            addDataObserver(serviceTempus, (DataProvider<D> source, D data1) -> {
                 final Set<ServiceType> serviceTypeSet = new HashSet<>();
                 for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
                     if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
@@ -280,22 +282,22 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     @Override
-    public void addDataObserver(Observer<D> observer) {
+    public void addDataObserver(Observer<DataProvider<D>, D> observer) {
         addDataObserver(ServiceTempus.CURRENT, observer);
     }
 
     @Override
-    public void addDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
+    public void addDataObserver(ServiceTempus serviceTempus, Observer<DataProvider<D>, D> observer) {
         unitDataObservableMap.get(serviceTempus).addObserver(observer);
     }
 
     @Override
-    public void removeDataObserver(Observer<D> observer) {
+    public void removeDataObserver(Observer<DataProvider<D>, D> observer) {
         removeDataObserver(ServiceTempus.CURRENT, observer);
     }
 
     @Override
-    public void removeDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
+    public void removeDataObserver(ServiceTempus serviceTempus, Observer<DataProvider<D>, D> observer) {
         unitDataObservableMap.get(serviceTempus).removeObserver(observer);
     }
 

@@ -63,15 +63,15 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
     private final PresenceState.Builder presenceState;
     private final Timeout presenceTimeout;
-    private final Observer<LocationData> locationDataObserver;
+    private final Observer<DataProvider<LocationData>, LocationData> locationDataObserver;
     private DataProvider<LocationData> locationDataProvider;
-    private final ObservableImpl<PresenceState> presenceStateObservable;
+    private final ObservableImpl<DataProvider<PresenceState>, PresenceState> presenceStateObservable;
     private boolean active;
 
     public PresenceDetector() {
         this.presenceState = PresenceState.newBuilder();
         this.active = false;
-        this.presenceStateObservable = new ObservableImpl<>();
+        this.presenceStateObservable = new ObservableImpl<>(this);
         this.presenceTimeout = new Timeout(PRESENCE_TIMEOUT) {
 
             @Override
@@ -95,7 +95,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
             }
         };
 
-        locationDataObserver = (Observable<LocationData> source, LocationData data) -> {
+        locationDataObserver = (DataProvider<LocationData> source, LocationData data) -> {
             updateMotionState(data.getMotionState());
         };
     }
@@ -208,12 +208,12 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
     }
 
     @Override
-    public void addDataObserver(final Observer<PresenceState> observer) {
+    public void addDataObserver(final Observer<DataProvider<PresenceState>, PresenceState> observer) {
         presenceStateObservable.addObserver(observer);
     }
 
     @Override
-    public void removeDataObserver(final Observer<PresenceState> observer) {
+    public void removeDataObserver(final Observer<DataProvider<PresenceState>, PresenceState> observer) {
         presenceStateObservable.removeObserver(observer);
     }
 

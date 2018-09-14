@@ -21,8 +21,10 @@ package org.openbase.bco.dal.remote.trigger.preset;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -35,6 +37,7 @@ import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.DoorStateType.DoorState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.WindowStateType.WindowState;
+import rst.domotic.unit.location.LocationDataType.LocationData;
 
 /**
  *
@@ -43,7 +46,7 @@ import rst.domotic.state.WindowStateType.WindowState;
 public class NeighborConnectionPresenceTrigger extends AbstractTrigger {
 
     private final Observer dataObserver;
-    private final Observer<Remote.ConnectionState> connectionObserver;
+    private final Observer<Remote, ConnectionState> connectionObserver;
     private final LocationRemote locationRemote;
     private final ConnectionRemote connectionRemote;
     private boolean active = false;
@@ -58,7 +61,7 @@ public class NeighborConnectionPresenceTrigger extends AbstractTrigger {
             verifyCondition();
         };
 
-        connectionObserver = (Observable<Remote.ConnectionState> source, Remote.ConnectionState data) -> {
+        connectionObserver = (source, data) -> {
             if (data.equals(Remote.ConnectionState.CONNECTED)) {
                 verifyCondition();
             } else {

@@ -32,6 +32,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 
 /**
@@ -73,10 +74,10 @@ public class UnitControllerRegistryImpl<D extends GeneratedMessage, DB extends D
     /**
      * Class to synchronize the scope controller map with the unit controller registry.
      */
-    private class UnitControllerSynchronizer implements Observer<Map<String, UnitController<D, DB>>> {
+    private class UnitControllerSynchronizer implements Observer<DataProvider<Map<String, UnitController<D, DB>>>, Map<String, UnitController<D, DB>>> {
 
         @Override
-        public void update(final Observable<Map<String, UnitController<D, DB>>> source, final Map<String, UnitController<D, DB>> data) throws Exception {
+        public void update(final DataProvider<Map<String, UnitController<D, DB>>> source, final Map<String, UnitController<D, DB>> data) throws Exception {
 
             final Collection<UnitController<D, DB>> unitControllerCollection = data.values();
             // add new entries to the scope controller map

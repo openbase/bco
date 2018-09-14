@@ -32,6 +32,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -42,7 +43,7 @@ import rst.rsb.ScopeType.Scope;
  * @param <RS>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage>, Shutdownable {
+public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<DataProvider<GeneratedMessage>, GeneratedMessage>, Shutdownable {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -73,7 +74,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     }
 
     @Override
-    public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) {
+    public void update(final DataProvider<GeneratedMessage> source, GeneratedMessage data) {
         try {
             updateDynamicComponents(data);
         } catch (CouldNotPerformException ex) {

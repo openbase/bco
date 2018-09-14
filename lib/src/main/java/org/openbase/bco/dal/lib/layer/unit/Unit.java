@@ -606,7 +606,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * @param serviceTempus The service tempus on which the observer is added.
      * @param observer      The observer which is added.
      */
-    void addDataObserver(ServiceTempus serviceTempus, final Observer<D> observer);
+    void addDataObserver(ServiceTempus serviceTempus, final Observer<DataProvider<D>, D> observer);
 
     /**
      * Remove a data observer which is only notified if data for the given
@@ -616,7 +616,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * @param serviceTempus The service tempus on which the observer is removed.
      * @param observer      The observer which is removed.
      */
-    void removeDataObserver(ServiceTempus serviceTempus, final Observer<D> observer);
+    void removeDataObserver(ServiceTempus serviceTempus, final Observer<DataProvider<D>, D> observer);
 
     /**
      * Returns true if this unit is a dal unit.

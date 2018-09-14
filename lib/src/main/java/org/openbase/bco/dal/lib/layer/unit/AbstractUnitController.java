@@ -64,6 +64,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -110,7 +111,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
     }
 
-    private final Observer<UnitRegistryData> unitRegistryObserver;
+    private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
     private Map<ServiceType, OperationService> operationServiceMap;
@@ -128,15 +129,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             unitDataObservableMap.put(serviceTempus, new UnitDataFilteredObservable<>(this, serviceTempus));
-            super.addDataObserver((Observable<D> source, D data) -> {
+            super.addDataObserver((DataProvider<D> source, D data) -> {
                 unitDataObservableMap.get(serviceTempus).notifyObservers(data);
             });
 
             serviceTempusServiceTypeObservableMap.put(serviceTempus, new HashMap<>());
         }
-        this.unitRegistryObserver = new Observer<UnitRegistryData>() {
+        this.unitRegistryObserver = new Observer<DataProvider<UnitRegistryData>, UnitRegistryData>() {
             @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+            public void update(DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
                 try {
                     final UnitConfig newUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(getId());
                     if (!newUnitConfig.equals(getConfig())) {
@@ -726,12 +727,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public void addDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
+    public void addDataObserver(ServiceTempus serviceTempus, Observer<DataProvider<D>, D> observer) {
         unitDataObservableMap.get(serviceTempus).addObserver(observer);
     }
 
     @Override
-    public void removeDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
+    public void removeDataObserver(ServiceTempus serviceTempus, Observer<DataProvider<D>, D> observer) {
         unitDataObservableMap.get(serviceTempus).removeObserver(observer);
     }
 

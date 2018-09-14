@@ -23,9 +23,11 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import com.google.protobuf.Message;
+import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 
 /**
  * An observer which is can be set to filter empty service updates.
@@ -33,7 +35,7 @@ import org.openbase.jul.pattern.Observer;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class ServiceStateObserver implements Observer<Message> {
+public abstract class ServiceStateObserver implements Observer<DataProvider<Message>, Message> {
 
     private final boolean filterEmptyUpdates;
 
@@ -42,7 +44,7 @@ public abstract class ServiceStateObserver implements Observer<Message> {
     }
 
     @Override
-    public void update(Observable<Message> source, Message serviceData) throws Exception {
+    public void update(DataProvider<Message> source, Message serviceData) throws Exception {
         if(filterEmptyUpdates && ProtoBufFieldProcessor.isMessageEmpty(serviceData)) {
             return;
         }
@@ -50,5 +52,5 @@ public abstract class ServiceStateObserver implements Observer<Message> {
         updateServiceData(source, serviceData);
     }
 
-    public abstract void updateServiceData(Observable<Message> source, Message data) throws Exception;
+    public abstract void updateServiceData(DataProvider<Message> source, Message data) throws Exception;
 }

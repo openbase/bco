@@ -42,7 +42,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemote> {
 
-    private final ObservableImpl<String> removedObservable;
+    private final ObservableImpl<Object, String> removedObservable;
     private String mapId;
     private UnitType filteredUnitType = UnitType.UNKNOWN;
 
@@ -135,11 +135,11 @@ public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemo
         filteredUnitType = (UnitType) unitTypeComboBox.getSelectedItem();
     }//GEN-LAST:event_unitTypeComboBoxActionPerformed
 
-    public void addObserver(Observer<String> removedObserver) {
+    public void addObserver(Observer<Object, String> removedObserver) {
         removedObservable.addObserver(removedObserver);
     }
 
-    public void removeObserver(Observer<String> removedObserver) {
+    public void removeObserver(Observer<Object, String> removedObserver) {
         removedObservable.removeObserver(removedObserver);
     }
 

@@ -27,6 +27,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +43,12 @@ public class UnitStateAwaiter<D extends GeneratedMessage, UR extends UnitRemote<
     protected final Logger logger = LoggerFactory.getLogger(UnitStateAwaiter.class);
 
     private final SyncObject stateMonitor = new SyncObject("StateMonitor");
-    private final Observer<D> dataObserver;
+    private final Observer<DataProvider<D>, D> dataObserver;
     private final UR unitRemote;
 
     public UnitStateAwaiter(final UR unitRemote) {
         this.unitRemote = unitRemote;
-        this.dataObserver = (Observable<D> source, D data) -> {
+        this.dataObserver = (DataProvider<D> source, D data) -> {
             synchronized (stateMonitor) {
                 stateMonitor.notifyAll();
             }
