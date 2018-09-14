@@ -22,27 +22,22 @@ package org.openbase.bco.dal.remote.printer;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.jp.JPRemoteMethod;
-import org.openbase.bco.dal.lib.jp.JPRemoteMethodParameters;
-import org.openbase.bco.dal.lib.jp.JPRemoteService;
 import org.openbase.bco.dal.remote.DALRemote;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BCOStateLogger extends UnitStatePrinter {
+public class BCOLogger extends UnitStatePrinter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DALRemote.class);
 
-    public static final String APP_NAME = DALRemote.class.getSimpleName();
+    public static final String APP_NAME = BCOLogger.class.getSimpleName();
 
-    public BCOStateLogger() throws InstantiationException {
+    public BCOLogger() throws InstantiationException {
         super(System.out);
     }
 
@@ -56,7 +51,7 @@ public class BCOStateLogger extends UnitStatePrinter {
         JPService.parseAndExitOnError(args);
 
         try {
-            new BCOStateLogger().init();
+            new BCOLogger().init();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         }
