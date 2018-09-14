@@ -33,7 +33,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -41,7 +40,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Synchronization for things managed by the bco binding.
@@ -121,20 +119,23 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
             // retrieve service type for the channel and generate item name
             ServiceType serviceType;
             String itemName;
+            String itemLabel;
             if (channel.id.equals("power_state_light")) {
                 // handle special case fo location item
                 serviceType = ServiceType.POWER_STATE_SERVICE;
-                itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType) + " Light";
+                itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType) + "Light";
+                itemLabel = SynchronizationProcessor.generateItemLabel(unitConfig, serviceType) + " Light";
             } else {
                 serviceType = ServiceType.valueOf(channel.id.toUpperCase() + "_SERVICE");
                 itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType);
+                itemLabel = SynchronizationProcessor.generateItemLabel(unitConfig, serviceType);
             }
 
             // if item does not already exist register it
             if (!OpenHABRestCommunicator.getInstance().hasItem(itemName)) {
                 ItemDTO itemDTO = new ItemDTO();
                 itemDTO.name = itemName;
-                itemDTO.label = SynchronizationProcessor.generateItemLabel(unitConfig, serviceType);
+                itemDTO.label = itemLabel;
                 try {
                     itemDTO.type = OpenHABItemProcessor.getItemType(serviceType);
                 } catch (NotAvailableException ex) {
