@@ -125,7 +125,7 @@ public class DeviceConfigUtils {
         if (deviceConfigHasDuplicatedUnitType) {
             for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
                 if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
-                    return deviceUnitConfig.getLabel() + "_" + LabelProcessor.getBestMatch(unitTemplateConfig.getLabel());
+                    return LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + "_" + LabelProcessor.getBestMatch(unitTemplateConfig.getLabel());
                 }
             }
             throw new CouldNotPerformException("DeviceClass[" + deviceClass.getId() + "] does not contain UnitTemplateConfig[" + unitConfig.getUnitTemplateConfigId() + "]!");
