@@ -24,10 +24,9 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.collection.*;
-import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -62,7 +61,7 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
         IlluminanceStateProviderServiceCollection,
         EmphasisStateOperationServiceCollection {
 
-    Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException;
+    Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException;
 
     ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException;
 

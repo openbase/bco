@@ -39,7 +39,7 @@ import java.util.Set;
 public interface UnitGroup extends BaseUnit<UnitGroupData>, MultiUnitServiceFusion {
 
     @Override
-    default Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {
+    default Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException {
         final Set<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
         try {
             for (final ServiceDescription serviceDescription : getConfig().getUnitGroupConfig().getServiceDescriptionList()) {
