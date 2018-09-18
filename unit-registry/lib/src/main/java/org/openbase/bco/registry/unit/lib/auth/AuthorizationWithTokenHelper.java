@@ -60,6 +60,7 @@ public class AuthorizationWithTokenHelper {
      *
      * @param authorizationToken the authorization token that is checked
      * @param unitRegistry       registry used to resolve authorization groups and locations to check permissions
+     *
      * @throws CouldNotPerformException thrown if the token is invalid
      */
     public static void verifyAuthorizationToken(final AuthorizationToken authorizationToken, final UnitRegistry unitRegistry) throws CouldNotPerformException {
@@ -109,8 +110,10 @@ public class AuthorizationWithTokenHelper {
      * @param unitConfig             the unit config for which permissions are checked
      * @param permissionType         the permission type which is checked
      * @param unitRegistry           unit registry used to resolve ids
+     *
      * @return a string representing the authorized user, this is either just the username of the authenticated user
      * or the username of the authenticated user followed by the username of the issuer of the authorization token
+     *
      * @throws CouldNotPerformException thrown if the user does not have permissions or if the check fails
      */
     public static String canDo(
@@ -133,8 +136,10 @@ public class AuthorizationWithTokenHelper {
      *                               it will be ignored
      * @param serviceType            the service type for which is checked if the authorization tokens gives permissions for it, if it is null
      *                               it will be ignored
+     *
      * @return a string representing the authorized user, this is either just the username of the authenticated user
      * or the username of the authenticated user followed by the username of the issuer of the authorization token
+     *
      * @throws CouldNotPerformException thrown if the user does not have permissions or if the check fails
      */
     public static String canDo(
