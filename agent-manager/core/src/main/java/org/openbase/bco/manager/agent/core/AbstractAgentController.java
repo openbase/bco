@@ -35,7 +35,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.calendar.DateTimeType;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
@@ -77,41 +76,5 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
     @Override
     public Future<ActionFuture> setEmphasisState(EmphasisState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, EMPHASIS_STATE_SERVICE);
-    }
-
-    protected ActionDescription.Builder getNewActionDescription(ActionAuthorityType.ActionAuthority actionAuthority,
-                                                                ResourceAllocationType.ResourceAllocation.Initiator initiator,
-                                                                long executionTimePeriod,
-                                                                ResourceAllocationType.ResourceAllocation.Policy policy,
-                                                                ResourceAllocationType.ResourceAllocation.Priority priority,
-                                                                UnitRemote<?> unitRemote,
-                                                                Message serviceAttribute,
-                                                                UnitTemplateType.UnitTemplate.UnitType unitType,
-                                                                ServiceTemplateType.ServiceTemplate.ServiceType serviceType,
-                                                                MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy multiResourceAllocationStrategy) throws CouldNotPerformException {
-
-        ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.getActionDescription(actionAuthority, initiator);
-        actionDescriptionBuilder.setExecutionTimePeriod(executionTimePeriod);
-        if (executionTimePeriod != 0) {
-            DateTimeType.DateTime dateTime = DateTimeType.DateTime.newBuilder().setDateTimeType(DateTimeType.DateTime.Type.FLOATING).setMillisecondsSinceEpoch(System.currentTimeMillis() + executionTimePeriod).build();
-            actionDescriptionBuilder.setExecutionValidity(dateTime);
-        }
-        actionDescriptionBuilder.setMultiResourceAllocationStrategy(MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.newBuilder().setStrategy(multiResourceAllocationStrategy).build());
-
-        ResourceAllocationType.ResourceAllocation.Builder resourceAllocation = actionDescriptionBuilder.getResourceAllocationBuilder();
-        resourceAllocation.setPolicy(policy);
-        resourceAllocation.setPriority(priority);
-        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
-        ActionDescriptionProcessor.updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
-        ServiceStateDescriptionType.ServiceStateDescription.Builder serviceStateDescription = actionDescriptionBuilder.getServiceStateDescriptionBuilder();
-        serviceStateDescription.setUnitId(unitRemote.getId().toString());
-        serviceStateDescription.setUnitType(unitType);
-        actionDescriptionBuilder.setDescription(actionDescriptionBuilder.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
-//        actionDescriptionBuilder.setLabel(LabelProcessor.replace(actionDescriptionBuilder.getLabel(), ActionDescriptionProcessor.LABEL_KEY, unitRemote.getConfig().getLabel()));
-
-        ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
-        ActionDescriptionProcessor.updateResourceAllocationId(actionDescriptionBuilder);
-
-        return actionDescriptionBuilder;
     }
 }

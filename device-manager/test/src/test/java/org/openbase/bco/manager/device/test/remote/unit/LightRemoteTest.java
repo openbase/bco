@@ -76,7 +76,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
         lightRemote.requestData().get();
         assertEquals("Power has not been set in time!", state.getValue(), lightRemote.getData().getPowerState().getValue());
         //TODO: adapt when changed to using authenticated value
-//        assertEquals("TransactionId has not been set correctly", actionFuture.getActionDescription(0).getTransactionId(), lightRemote.getTransactionId());
+//        assertEquals("TransactionId has not been set correctly", actionFuture.generateActionDescriptionBuilder(0).getTransactionId(), lightRemote.getTransactionId());
     }
 
     /**

@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -39,7 +38,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
@@ -64,7 +62,7 @@ public class RandomLightPatternAgent extends AbstractResourceAllocationAgent {
     public RandomLightPatternAgent() throws InstantiationException {
         super(RandomLightPatternAgent.class);
 
-        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+//        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Trigger source, ActivationStateType.ActivationState data) -> {
             GlobalCachedExecutorService.submit(() -> {
@@ -116,50 +114,50 @@ public class RandomLightPatternAgent extends AbstractResourceAllocationAgent {
 
         @Override
         public void run() {
-            try {
-                List<LocationRemote> childLocationList = locationRemote.getChildLocationList(true);
-                LocationRemote currentLocation = childLocationList.get(ThreadLocalRandom.current().nextInt(childLocationList.size()));
-
-                while (true) {
-                    ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                            ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                            1000 * 30,
-                            ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                            ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                            currentLocation,
-                            PowerState.newBuilder().setValue(PowerState.State.ON).build(),
-                            UnitType.LIGHT,
-                            ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                            MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-                    actionRescheduleHelper.startActionRescheduleing(currentLocation.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-
-                    //TODO: waiting time 
-                    Thread.sleep(600000);
-                    actionRescheduleHelper.stopExecution();
-                    actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                            ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                            1000 * 30,
-                            ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                            ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                            currentLocation,
-                            PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
-                            UnitType.LIGHT,
-                            ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                            MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-                    currentLocation.applyAction(actionDescriptionBuilder.build()).get().toBuilder();
-
-                    List<LocationRemote> neighborLocationList = currentLocation.getNeighborLocationList(true);
-                    currentLocation = neighborLocationList.get(ThreadLocalRandom.current().nextInt(neighborLocationList.size()));
-                }
-            } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-                Logger.getLogger(RandomLightPatternAgent.class.getName()).log(Level.SEVERE, null, ex);
-                interrupt();
-            }
+//            try {
+//                List<LocationRemote> childLocationList = locationRemote.getChildLocationList(true);
+//                LocationRemote currentLocation = childLocationList.get(ThreadLocalRandom.current().nextInt(childLocationList.size()));
+//
+//                while (true) {
+//                    ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                            ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                            1000 * 30,
+//                            ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                            ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                            currentLocation,
+//                            PowerState.newBuilder().setValue(PowerState.State.ON).build(),
+//                            UnitType.LIGHT,
+//                            ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+//                            MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//                    actionRescheduleHelper.startActionRescheduleing(currentLocation.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//
+//                    //TODO: waiting time
+//                    Thread.sleep(600000);
+//                    actionRescheduleHelper.stopExecution();
+//                    actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                            ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                            1000 * 30,
+//                            ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                            ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                            currentLocation,
+//                            PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+//                            UnitType.LIGHT,
+//                            ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+//                            MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//                    currentLocation.applyAction(actionDescriptionBuilder.build()).get().toBuilder();
+//
+//                    List<LocationRemote> neighborLocationList = currentLocation.getNeighborLocationList(true);
+//                    currentLocation = neighborLocationList.get(ThreadLocalRandom.current().nextInt(neighborLocationList.size()));
+//                }
+//            } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//                Logger.getLogger(RandomLightPatternAgent.class.getName()).log(Level.SEVERE, null, ex);
+//                interrupt();
+//            }
         }
 
         @Override
         public void interrupt() {
-            actionRescheduleHelper.stopExecution();
+//            actionRescheduleHelper.stopExecution();
 
             super.interrupt();
         }

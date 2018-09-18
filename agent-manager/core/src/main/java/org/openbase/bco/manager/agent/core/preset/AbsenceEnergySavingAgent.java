@@ -27,7 +27,6 @@ import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -37,7 +36,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
 import rst.domotic.service.ServiceTemplateType;
@@ -60,7 +58,7 @@ public class AbsenceEnergySavingAgent extends AbstractResourceAllocationAgent {
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(AbsenceEnergySavingAgent.class);
 
-        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+//        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Trigger source, ActivationStateType.ActivationState data) -> {
             GlobalCachedExecutorService.submit(() -> {
@@ -68,7 +66,7 @@ public class AbsenceEnergySavingAgent extends AbstractResourceAllocationAgent {
                     switchlightsOff();
                     switchMultimediaOff();
                 } else {
-                    actionRescheduleHelper.stopExecution();
+//                    actionRescheduleHelper.stopExecution();
                 }
                 return null;
             });
@@ -94,48 +92,48 @@ public class AbsenceEnergySavingAgent extends AbstractResourceAllocationAgent {
     }
 
     private void switchlightsOff() {
-        try {
-            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                    1000 * 30,
-                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                    locationRemote,
-                    PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
-                    UnitType.LIGHT,
-                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            logger.error("Could not switch on Lights.", ex);
-        }
+//        try {
+//            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                    1000 * 30,
+//                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                    locationRemote,
+//                    PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+//                    UnitType.LIGHT,
+//                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+//                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//            logger.error("Could not switch on Lights.", ex);
+//        }
     }
 
     private void switchMultimediaOff() {
-        try {
-            List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
-            if (!unitsByLabel.isEmpty()) {
-                UnitGroupRemote multimediaGroup = unitsByLabel.get(0);
-                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                        1000 * 30,
-                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                        multimediaGroup,
-                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
-                        UnitType.UNKNOWN,
-                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                        MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-                actionRescheduleHelper.addRescheduleAction(multimediaGroup.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-            }
-        } catch (NotAvailableException ex) {
-            logger.info("MultimediaGroup not available.");
-        } catch (InterruptedException ex) {
-            logger.error("Could not get MultimediaGroup!");
-        } catch (CouldNotPerformException ex) {
-            logger.error("Could not set Powerstate of MultimediaGroup.");
-        } catch (ExecutionException ex) {
-            logger.error("Could not set Powerstate of MultimediaGroup!");
-        }
+//        try {
+//            List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
+//            if (!unitsByLabel.isEmpty()) {
+//                UnitGroupRemote multimediaGroup = unitsByLabel.get(0);
+//                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                        1000 * 30,
+//                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                        multimediaGroup,
+//                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+//                        UnitType.UNKNOWN,
+//                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+//                        MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//                actionRescheduleHelper.addRescheduleAction(multimediaGroup.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//            }
+//        } catch (NotAvailableException ex) {
+//            logger.info("MultimediaGroup not available.");
+//        } catch (InterruptedException ex) {
+//            logger.error("Could not get MultimediaGroup!");
+//        } catch (CouldNotPerformException ex) {
+//            logger.error("Could not set Powerstate of MultimediaGroup.");
+//        } catch (ExecutionException ex) {
+//            logger.error("Could not set Powerstate of MultimediaGroup!");
+//        }
     }
 }

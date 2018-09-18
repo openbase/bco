@@ -23,8 +23,6 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
-import org.openbase.bco.dal.remote.action.ActionRescheduler.RescheduleOption;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.jul.pattern.trigger.Trigger;
@@ -36,7 +34,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
 import rst.domotic.service.ServiceTemplateType;
@@ -59,7 +57,7 @@ public class PresenceLightAgent extends AbstractResourceAllocationAgent {
     public PresenceLightAgent() throws InstantiationException {
         super(PresenceLightAgent.class);
 
-        actionRescheduleHelper = new ActionRescheduler(RescheduleOption.EXTEND, 30);
+//        actionRescheduleHelper = new ActionRescheduler(RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Trigger source, ActivationState data) -> {
             logger.warn("New trigger state: " + data.getValue());
@@ -68,7 +66,7 @@ public class PresenceLightAgent extends AbstractResourceAllocationAgent {
                     switchlightsOn();
                 } else {
                     logger.warn("Stop execution");
-                    actionRescheduleHelper.stopExecution();
+//                    actionRescheduleHelper.stopExecution();
                 }
                 return null;
             });
@@ -93,20 +91,20 @@ public class PresenceLightAgent extends AbstractResourceAllocationAgent {
     }
 
     private void switchlightsOn() {
-        try {
-            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
-                    ResourceAllocation.Initiator.SYSTEM,
-                    1000 * 30,
-                    ResourceAllocation.Policy.FIRST,
-                    ResourceAllocation.Priority.NORMAL,
-                    locationRemote,
-                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
-                    UnitType.LIGHT,
-                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            logger.error("Could not switch on Lights.", ex);
-        }
+//        try {
+//            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
+//                    ResourceAllocation.Initiator.SYSTEM,
+//                    1000 * 30,
+//                    ResourceAllocation.Policy.FIRST,
+//                    ResourceAllocation.Priority.NORMAL,
+//                    locationRemote,
+//                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
+//                    UnitType.LIGHT,
+//                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+//                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//            logger.error("Could not switch on Lights.", ex);
+//        }
     }
 }

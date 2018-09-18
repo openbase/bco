@@ -28,7 +28,6 @@ import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -38,7 +37,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
@@ -65,13 +63,13 @@ public class TemperatureControllerAgent extends AbstractResourceAllocationAgent 
 
         previousTemperatureState = new HashMap();
 
-        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+//        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Trigger source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 regulateTemperature();
             } else {
-                actionRescheduleHelper.stopExecution();
+//                actionRescheduleHelper.stopExecution();
                 restoreTemperature();
             }
         };
@@ -100,55 +98,55 @@ public class TemperatureControllerAgent extends AbstractResourceAllocationAgent 
     }
 
     private void regulateTemperature() {
-        previousTemperatureState.clear();
-        try {
-            for (TemperatureControllerRemote remote : locationRemote.getUnits(UnitType.TEMPERATURE_CONTROLLER, true, Units.TEMPERATURE_CONTROLLER)) {
-                previousTemperatureState.put(remote, remote.getTargetTemperatureState());
-
-            }
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            logger.error("Could not get all TemperatureControllerRemotes.", ex);
-        }
-
-        try {
-            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                    1000 * 30,
-                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                    locationRemote,
-                    TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(13.0).build()),
-                    UnitType.TEMPERATURE_CONTROLLER,
-                    ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE,
-                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            logger.error("Could not set targetTemperatureState.", ex);
-        }
+//        previousTemperatureState.clear();
+//        try {
+//            for (TemperatureControllerRemote remote : locationRemote.getUnits(UnitType.TEMPERATURE_CONTROLLER, true, Units.TEMPERATURE_CONTROLLER)) {
+//                previousTemperatureState.put(remote, remote.getTargetTemperatureState());
+//
+//            }
+//        } catch (CouldNotPerformException | InterruptedException ex) {
+//            logger.error("Could not get all TemperatureControllerRemotes.", ex);
+//        }
+//
+//        try {
+//            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                    1000 * 30,
+//                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                    locationRemote,
+//                    TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(13.0).build()),
+//                    UnitType.TEMPERATURE_CONTROLLER,
+//                    ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE,
+//                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//            logger.error("Could not set targetTemperatureState.", ex);
+//        }
     }
 
     private void restoreTemperature() {
-        if (previousTemperatureState == null | previousTemperatureState.isEmpty()) {
-            return;
-        }
-
-        previousTemperatureState.forEach((remote, temperatureState) -> {
-            try {
-                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                        1000 * 30,
-                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                        remote,
-                        TimestampProcessor.updateTimestampWithCurrentTime(temperatureState),
-                        UnitType.TEMPERATURE_CONTROLLER,
-                        ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE,
-                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-                remote.applyAction(actionDescriptionBuilder.build()).get().toBuilder();
-            } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-                logger.error("Could not restore targetTemperatureState.", ex);
-            }
-        });
-        previousTemperatureState.clear();
+//        if (previousTemperatureState == null | previousTemperatureState.isEmpty()) {
+//            return;
+//        }
+//
+//        previousTemperatureState.forEach((remote, temperatureState) -> {
+//            try {
+//                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                        1000 * 30,
+//                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                        remote,
+//                        TimestampProcessor.updateTimestampWithCurrentTime(temperatureState),
+//                        UnitType.TEMPERATURE_CONTROLLER,
+//                        ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE,
+//                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//                remote.applyAction(actionDescriptionBuilder.build()).get().toBuilder();
+//            } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//                logger.error("Could not restore targetTemperatureState.", ex);
+//            }
+//        });
+//        previousTemperatureState.clear();
     }
 }

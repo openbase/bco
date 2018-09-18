@@ -24,7 +24,6 @@ package org.openbase.bco.manager.agent.core.preset;
 
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,7 +40,7 @@ import rst.domotic.state.ActivationStateType.ActivationState;
  */
 public abstract class AbstractResourceAllocationAgent extends AbstractAgentController {
 
-    protected ActionRescheduler actionRescheduleHelper;
+//    protected ActionRescheduler actionRescheduleHelper;
     protected Observer<Trigger, ActivationState> triggerHolderObserver;
 
     public AbstractResourceAllocationAgent(final Class unitClass) throws InstantiationException {
@@ -74,16 +73,16 @@ public abstract class AbstractResourceAllocationAgent extends AbstractAgentContr
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
-        actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.deactivate();
+//        logger.info("Deactivating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
+//        actionRescheduleHelper.stopExecution();
+//        agentTriggerHolder.deactivate();
     }
 
     @Override
     public void shutdown() {
-        actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.removeObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
+//        actionRescheduleHelper.stopExecution();
+//        agentTriggerHolder.removeObserver(triggerHolderObserver);
+//        agentTriggerHolder.shutdown();
+//        super.shutdown();
     }
 }

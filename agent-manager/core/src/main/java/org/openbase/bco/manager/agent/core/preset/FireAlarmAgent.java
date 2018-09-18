@@ -25,7 +25,6 @@ import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -34,7 +33,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
@@ -58,13 +56,13 @@ public class FireAlarmAgent extends AbstractResourceAllocationAgent {
     public FireAlarmAgent() throws InstantiationException {
         super(FireAlarmAgent.class);
 
-        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+//        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Trigger source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 alarmRoutine();
             } else {
-                actionRescheduleHelper.stopExecution();
+//                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -90,34 +88,34 @@ public class FireAlarmAgent extends AbstractResourceAllocationAgent {
     }
 
     private void alarmRoutine() {
-        try {
-            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                    1000 * 30,
-                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                    ResourceAllocationType.ResourceAllocation.Priority.EMERGENCY,
-                    locationRemote,
-                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
-                    UnitType.LIGHT,
-                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-
-            actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                    1000 * 30,
-                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                    ResourceAllocationType.ResourceAllocation.Priority.EMERGENCY,
-                    locationRemote,
-                    BlindStateType.BlindState.newBuilder().setOpeningRatio(100.0).build(),
-                    UnitType.UNKNOWN,
-                    ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
-                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-            actionRescheduleHelper.addRescheduleAction(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-
-            // TODO: Maybe also set Color and Brightness?
-        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            logger.error("Could not execute alarm routine.", ex);
-        }
+//        try {
+//            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                    1000 * 30,
+//                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                    ResourceAllocationType.ResourceAllocation.Priority.EMERGENCY,
+//                    locationRemote,
+//                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
+//                    UnitType.LIGHT,
+//                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+//                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//
+//            actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                    1000 * 30,
+//                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                    ResourceAllocationType.ResourceAllocation.Priority.EMERGENCY,
+//                    locationRemote,
+//                    BlindStateType.BlindState.newBuilder().setOpeningRatio(100.0).build(),
+//                    UnitType.UNKNOWN,
+//                    ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
+//                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//            actionRescheduleHelper.addRescheduleAction(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//
+//            // TODO: Maybe also set Color and Brightness?
+//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//            logger.error("Could not execute alarm routine.", ex);
+//        }
     }
 }

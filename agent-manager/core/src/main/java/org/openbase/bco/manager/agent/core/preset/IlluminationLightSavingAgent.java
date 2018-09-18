@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.bco.dal.remote.trigger.preset.IlluminanceDualBoundaryTrigger;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.trigger.Trigger;
@@ -39,7 +38,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
@@ -66,13 +64,13 @@ public class IlluminationLightSavingAgent extends AbstractResourceAllocationAgen
     public IlluminationLightSavingAgent() throws InstantiationException {
         super(IlluminationLightSavingAgent.class);
 
-        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+//        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Trigger source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 regulateLightIntensity();
             } else {
-                actionRescheduleHelper.stopExecution();
+//                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -121,43 +119,43 @@ public class IlluminationLightSavingAgent extends AbstractResourceAllocationAgen
     }
 
     private void regulateLightIntensity() throws CouldNotPerformException {
-        try {
-            List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("AmbientLightGroup"), true, Units.UNITGROUP);
-            if (!unitsByLabel.isEmpty()) {
-                UnitGroupRemote ambientLightGroup = unitsByLabel.get(0);
-
-                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                        1000 * 30,
-                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                        ambientLightGroup,
-                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
-                        UnitType.LIGHT,
-                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-                actionRescheduleHelper.startActionRescheduleing(ambientLightGroup.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-
-                Thread.sleep(SLEEP_MILLI);
-            }
-
-            if (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_ILLUMINATION) {
-                actionRescheduleHelper.stopExecution(); // Workaround: Otherwise the defined Lights of the AmbientGroup would be allocated again -> conflict.
-                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                        1000 * 30,
-                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                        locationRemote,
-                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
-                        UnitType.LIGHT,
-                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-                actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-
-            }
-        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            logger.error("Could not set light intensity.", ex);
-        }
+//        try {
+//            List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("AmbientLightGroup"), true, Units.UNITGROUP);
+//            if (!unitsByLabel.isEmpty()) {
+//                UnitGroupRemote ambientLightGroup = unitsByLabel.get(0);
+//
+//                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                        1000 * 30,
+//                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                        ambientLightGroup,
+//                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+//                        UnitType.LIGHT,
+//                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+//                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//                actionRescheduleHelper.startActionRescheduleing(ambientLightGroup.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//
+//                Thread.sleep(SLEEP_MILLI);
+//            }
+//
+//            if (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_ILLUMINATION) {
+//                actionRescheduleHelper.stopExecution(); // Workaround: Otherwise the defined Lights of the AmbientGroup would be allocated again -> conflict.
+//                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                        1000 * 30,
+//                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                        locationRemote,
+//                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+//                        UnitType.LIGHT,
+//                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+//                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//                actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//
+//            }
+//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//            logger.error("Could not set light intensity.", ex);
+//        }
     }
 }

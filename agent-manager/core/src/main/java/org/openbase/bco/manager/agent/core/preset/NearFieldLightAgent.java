@@ -27,18 +27,12 @@ import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.bco.dal.remote.trigger.preset.NeighborConnectionPresenceTrigger;
 import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.Observable;
-import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionAuthorityType;
-import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -61,13 +55,13 @@ public class NearFieldLightAgent extends AbstractResourceAllocationAgent {
     public NearFieldLightAgent() throws InstantiationException {
         super(NearFieldLightAgent.class);
 
-        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+//        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Trigger source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 dimmLights();
             } else {
-                actionRescheduleHelper.stopExecution();
+//                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -100,20 +94,20 @@ public class NearFieldLightAgent extends AbstractResourceAllocationAgent {
     }
 
     private void dimmLights() {
-        try {
-            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-                    1000 * 30,
-                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-                    locationRemote,
-                    BrightnessState.newBuilder().setBrightness(0.5).build(),
-                    UnitTemplateType.UnitTemplate.UnitType.DIMMABLE_LIGHT,
-                    ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE,
-                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            logger.error("Could not dim lights.", ex);
-        }
+//        try {
+//            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+//                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+//                    1000 * 30,
+//                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+//                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+//                    locationRemote,
+//                    BrightnessState.newBuilder().setBrightness(0.5).build(),
+//                    UnitTemplateType.UnitTemplate.UnitType.DIMMABLE_LIGHT,
+//                    ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE,
+//                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+//            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//            logger.error("Could not dim lights.", ex);
+//        }
     }
 }
