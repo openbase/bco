@@ -64,7 +64,7 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
     public ActivityRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPActivityRegistryScope.class, ActivityRegistryData.class);
         try {
-            this.activityConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, ActivityRegistryData.ACTIVITY_CONFIG_FIELD_NUMBER);
+            this.activityConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, ActivityRegistryData.ACTIVITY_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

@@ -28,7 +28,6 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -54,7 +53,7 @@ public class RequiredAuthorizationGroupCreationPlugin extends FileRegistryPlugin
     @Override
     public void init(ProtoBufRegistry<String, UnitConfig, Builder> config) throws InitializationException, InterruptedException {
         try {
-            if(!containsAuthorizationGrouptByLabel(ADMIN_GROUP_LABEL)) {
+            if(!containsAuthorizationGroupByLabel(ADMIN_GROUP_LABEL)) {
                 UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitType.AUTHORIZATION_GROUP);
                 LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, ADMIN_GROUP_LABEL);
                 authorisationGroupRegistry.register(unitConfig.build());
@@ -64,7 +63,7 @@ public class RequiredAuthorizationGroupCreationPlugin extends FileRegistryPlugin
         }
     }
 
-    private boolean containsAuthorizationGrouptByLabel(String label) throws CouldNotPerformException {
+    private boolean containsAuthorizationGroupByLabel(final String label) throws CouldNotPerformException {
         for (UnitConfig authorizationGroupUnitConfig : authorisationGroupRegistry.getMessages()) {
             if (authorizationGroupUnitConfig.getLabel().equals(label)) {
                 return true;

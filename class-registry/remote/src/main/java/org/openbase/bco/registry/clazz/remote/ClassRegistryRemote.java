@@ -68,10 +68,11 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     public ClassRegistryRemote() throws InstantiationException {
         super(JPClassRegistryScope.class, ClassRegistryData.class);
+
         try {
-            agentClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, ClassRegistryData.AGENT_CLASS_FIELD_NUMBER);
-            appClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, ClassRegistryData.APP_CLASS_FIELD_NUMBER);
-            deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, ClassRegistryData.DEVICE_CLASS_FIELD_NUMBER);
+            agentClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, ClassRegistryData.AGENT_CLASS_FIELD_NUMBER);
+            appClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, ClassRegistryData.APP_CLASS_FIELD_NUMBER);
+            deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, ClassRegistryData.DEVICE_CLASS_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -129,6 +130,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -142,7 +144,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param deviceClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      * @throws NotAvailableException    {@inheritDoc}
      */
@@ -156,7 +160,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param deviceClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -173,7 +179,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param deviceClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -186,7 +194,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param deviceClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -199,7 +209,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param deviceClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -216,7 +228,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param deviceClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -233,6 +247,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      * @throws NotAvailableException    {@inheritDoc}
      */
@@ -246,6 +261,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -266,6 +282,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -282,7 +299,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param agentClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -299,7 +318,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param agentClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -312,7 +333,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param agentClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -325,7 +348,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param agentClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -342,7 +367,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param agentClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -359,6 +386,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -371,6 +399,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -383,7 +412,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param agentClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -396,6 +427,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -408,7 +440,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param appClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -425,7 +459,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param appClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -438,7 +474,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param appClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -451,7 +489,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param appClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -468,7 +508,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param appClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -485,7 +527,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @param appClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -498,6 +542,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -510,6 +555,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -522,6 +568,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override

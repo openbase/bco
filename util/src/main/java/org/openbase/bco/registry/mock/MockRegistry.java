@@ -38,6 +38,7 @@ import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -312,9 +313,8 @@ public class MockRegistry {
      */
     private static UnitConfig registerUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
         unitConfig = Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
-        while (!Registries.getUnitRegistry().containsUnitConfig(unitConfig)) {
-            LOGGER.error(Registries.getUnitRegistry()+ "Registry not properly synchronized Unit["+LabelProcessor.getBestMatch(unitConfig.getLabel())+"]!");
-            Thread.sleep(10);
+        if (!Registries.getUnitRegistry().containsUnitConfig(unitConfig)) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new FatalImplementationErrorException("unit is not contained after registration task finished", MockRegistry.class), LOGGER);
         }
         return unitConfig;
     }
@@ -375,13 +375,17 @@ public class MockRegistry {
         return unitTemplateConfigs;
     }
 
-    public static DeviceClass generateDeviceClass(String label, String productNumber, String company, UnitTemplate.UnitType... types) throws CouldNotPerformException {
+    public static DeviceClass registerDeviceClass(String label, String productNumber, String company, UnitTemplate.UnitType... types) throws CouldNotPerformException, ExecutionException, InterruptedException {
         List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>(Arrays.asList(types));
         DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setProductNumber(productNumber).setCompany(company)
                 .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(generateUnitTemplateConfigs(unitTypeList))
                 .setShape(Shape.newBuilder().setBoundingBox(DEFAULT_BOUNDING_BOX));
         LabelProcessor.addLabel(deviceClass.getLabelBuilder(), Locale.ENGLISH, label);
-        return deviceClass.build();
+        DeviceClass registeredDeviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClass.build()).get();
+        if (!Registries.getClassRegistry().containsDeviceClass(registeredDeviceClass)) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new FatalImplementationErrorException("DeviceClass is not contained after registration task finished", MockRegistry.class), LOGGER);
+        }
+        return registeredDeviceClass;
     }
 
     public static BindingConfig getBindingConfig() {
@@ -587,7 +591,7 @@ public class MockRegistry {
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
             // colorable light
-            DeviceClass colorableLightClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_PHILIPS_HUE_E_27, "KV01_18U", COMPANY_PHILIPS, UnitType.COLORABLE_LIGHT)).get();
+            DeviceClass colorableLightClass = registerDeviceClass(LABEL_DEVICE_CLASS_PHILIPS_HUE_E_27, "KV01_18U", COMPANY_PHILIPS, UnitType.COLORABLE_LIGHT);
 
             String serialNumber = "1234-5678-9100";
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_COLORABLE_LIGHT, serialNumber, colorableLightClass));
@@ -597,12 +601,12 @@ public class MockRegistry {
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_COLORABLE_LIGHT_HELL, serialNumber, colorableLightClass, ALIAS_LOCATION_HELL));
 
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
-            DeviceClass motionSensorClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_FIBARO_MOTION_SENSOR, "FGMS_001", COMPANY_FIBARO,
+            DeviceClass motionSensorClass = registerDeviceClass(LABEL_DEVICE_CLASS_FIBARO_MOTION_SENSOR, "FGMS_001", COMPANY_FIBARO,
                     UnitType.MOTION_DETECTOR,
                     UnitType.BATTERY,
                     UnitType.LIGHT_SENSOR,
                     UnitType.TEMPERATURE_SENSOR,
-                    UnitType.TAMPER_DETECTOR)).get();
+                    UnitType.TAMPER_DETECTOR);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR, serialNumber, motionSensorClass));
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY, serialNumber, motionSensorClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
@@ -610,49 +614,47 @@ public class MockRegistry {
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HELL, serialNumber, motionSensorClass, ALIAS_LOCATION_HELL));
 
             // button
-            DeviceClass buttonClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730210000, "429496730210000", COMPANY_GIRA,
-                    UnitType.BUTTON)).get();
+            DeviceClass buttonClass = registerDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730210000, "429496730210000", COMPANY_GIRA,
+                    UnitType.BUTTON);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_GI_429496730210000_DEVICE, serialNumber, buttonClass));
 
             // dimmableLight
-            DeviceClass dimmableLightClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HAGER_ABC, "ABC", COMPANY_HAGER,
-                    UnitType.DIMMABLE_LIGHT)).get();
+            DeviceClass dimmableLightClass = registerDeviceClass(LABEL_DEVICE_CLASS_HAGER_ABC, "ABC", COMPANY_HAGER,
+                    UnitType.DIMMABLE_LIGHT);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_HA_ABC, serialNumber, dimmableLightClass));
 
             // dimmer
-            DeviceClass dimmerClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HAGER_TYA_663_A1, "TYA663A", COMPANY_HAGER,
-                    UnitType.DIMMER)).get();
+            DeviceClass dimmerClass = registerDeviceClass(LABEL_DEVICE_CLASS_HAGER_TYA_663_A1, "TYA663A", COMPANY_HAGER,
+                    UnitType.DIMMER);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_HA_TYA_663_A, serialNumber, dimmerClass));
 
             // handle
-            DeviceClass handleClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HOMEMATIC_ROTARY_HANDLE_SENSOR, "Sec_RHS", COMPANY_HOMEMATIC,
-                    UnitType.HANDLE)).get();
+            DeviceClass handleClass = registerDeviceClass(LABEL_DEVICE_CLASS_HOMEMATIC_ROTARY_HANDLE_SENSOR, "Sec_RHS", COMPANY_HOMEMATIC,
+                    UnitType.HANDLE);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_HM_ROTARY_HANDLE_SENSOR, serialNumber, handleClass));
 
             // light
-            DeviceClass lightClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_FIBARO_FGS_221, "FGS_221", COMPANY_FIBARO,
-                    UnitType.LIGHT)).get();
+            DeviceClass lightClass = registerDeviceClass(LABEL_DEVICE_CLASS_FIBARO_FGS_221, "FGS_221", COMPANY_FIBARO,
+                    UnitType.LIGHT);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_F_FGS_221, serialNumber, lightClass));
 
             // powerConsumptionSensor, powerPlug
-            DeviceClass powerPlugClass = Registries.getClassRegistry().
-                    registerDeviceClass(generateDeviceClass(
+            DeviceClass powerPlugClass = registerDeviceClass(
                             LABEL_DEVICE_CLASS_PLUGWISE_POWER_PLUG,
                             "070140",
                             COMPANY_PLUGWISE,
                             UnitType.POWER_SWITCH,
-                            UnitType.POWER_CONSUMPTION_SENSOR)).get();
+                            UnitType.POWER_CONSUMPTION_SENSOR);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_POWER_PLUG, serialNumber, powerPlugClass));
 
             // reedSwitch
-            DeviceClass reedSwitchClass = Registries.getClassRegistry().registerDeviceClass(
-                    generateDeviceClass(LABEL_DEVICE_CLASS_HOMEMATIC_REED_SWITCH, "Sec_SC_2", COMPANY_HOMEMATIC, UnitType.REED_CONTACT)).get();
+            DeviceClass reedSwitchClass = registerDeviceClass(LABEL_DEVICE_CLASS_HOMEMATIC_REED_SWITCH, "Sec_SC_2", COMPANY_HOMEMATIC, UnitType.REED_CONTACT);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_REED_SWITCH_HOMEMATIC, serialNumber, reedSwitchClass));
 
@@ -672,20 +674,20 @@ public class MockRegistry {
                     ALIAS_REED_SWITCH_STAIRWAY_WINDOW);
 
             // roller shutter
-            DeviceClass rollerShutterClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_HAGER_TYA_628_C, "TYA628C", COMPANY_HAGER,
-                    UnitType.ROLLER_SHUTTER)).get();
+            DeviceClass rollerShutterClass = registerDeviceClass(LABEL_DEVICE_CLASS_HAGER_TYA_628_C, "TYA628C", COMPANY_HAGER,
+                    UnitType.ROLLER_SHUTTER);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_ROLLERSHUTTER, serialNumber, rollerShutterClass));
 
             // smoke detector
-            DeviceClass smokeDetector = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_FIBARO_FGSS_001, "FGSS_001", COMPANY_FIBARO,
-                    UnitType.SMOKE_DETECTOR)).get();
+            DeviceClass smokeDetector = registerDeviceClass(LABEL_DEVICE_CLASS_FIBARO_FGSS_001, "FGSS_001", COMPANY_FIBARO,
+                    UnitType.SMOKE_DETECTOR);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_SMOKE_DETECTOR, serialNumber, smokeDetector));
 
             // temperature controller
-            DeviceClass temperatureControllerClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730250000, "429496730250000", COMPANY_GIRA,
-                    UnitType.TEMPERATURE_CONTROLLER)).get();
+            DeviceClass temperatureControllerClass = registerDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730250000, "429496730250000", COMPANY_GIRA,
+                    UnitType.TEMPERATURE_CONTROLLER);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_TEMPERATURE_CONTROLLER, serialNumber, temperatureControllerClass));
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_TEMPERATURE_CONTROLLER_STAIRWAY_TO_HEAVEN, serialNumber, temperatureControllerClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
@@ -720,7 +722,13 @@ public class MockRegistry {
 
             // setup aliases
             for (int i = 0; i < alias.length; i++) {
-                Registries.getUnitRegistry().updateUnitConfig(dalUnits.get(i).toBuilder().addAlias(alias[i]).build()).get();
+                Builder builder = dalUnits.get(i).toBuilder();
+                Registries.getUnitRegistry().updateUnitConfig(builder.addAlias(alias[i]).setDescription(alias[i]).build()).get();
+                if (!Registries.getUnitRegistry().getUnitConfigById(dalUnits.get(i).getId()).getDescription().equals(alias[i])) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(
+                            new FatalImplementationErrorException("Sync error after update [" + alias[i] + "]", MockRegistry.class),
+                            LOGGER);
+                }
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup Alias[" + Arrays.toString(alias) + "] for DalUnit[" + unitType.name() + "] of Device[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel(), "?") + "]", ex);

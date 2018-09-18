@@ -38,7 +38,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureWrapper;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
@@ -121,8 +120,7 @@ public class TestWaitUntilReady {
         final String productNumber = "ReadyProductNumber";
         final String company = "ReadyCompany";
 
-        DeviceClass deviceClass = MockRegistry.generateDeviceClass(deviceClassLabel, productNumber, company, UnitType.POWER_SWITCH, UnitType.BUTTON, UnitType.HANDLE);
-        deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClass).get();
+        DeviceClass deviceClass = MockRegistry.registerDeviceClass(deviceClassLabel, productNumber, company, UnitType.POWER_SWITCH, UnitType.BUTTON, UnitType.HANDLE);
 
         Registries.getUnitRegistry().addDataObserver((DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
             if (waitedUntilReady) {

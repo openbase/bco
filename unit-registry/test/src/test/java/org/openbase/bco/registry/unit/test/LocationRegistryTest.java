@@ -285,7 +285,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      *
      * @throws Exception if any error occurs
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     public void testLocationTypeConsistency() throws Exception {
         System.out.println("testLocationTypeConsistency");
 

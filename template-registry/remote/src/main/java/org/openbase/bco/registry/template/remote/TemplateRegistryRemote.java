@@ -67,9 +67,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
     public TemplateRegistryRemote() throws InstantiationException {
         super(JPTemplateRegistryScope.class, TemplateRegistryData.class);
         try {
-            this.activityTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, TemplateRegistryData.ACTIVITY_TEMPLATE_FIELD_NUMBER);
-            this.serviceTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, TemplateRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER);
-            this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, TemplateRegistryData.UNIT_TEMPLATE_FIELD_NUMBER);
+            this.activityTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, TemplateRegistryData.ACTIVITY_TEMPLATE_FIELD_NUMBER);
+            this.serviceTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, TemplateRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER);
+            this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, TemplateRegistryData.UNIT_TEMPLATE_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

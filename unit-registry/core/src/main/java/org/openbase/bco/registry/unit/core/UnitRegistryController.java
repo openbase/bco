@@ -70,6 +70,8 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rst.storage.registry.consistency.TransformationFrameConsistencyHandler;
 import org.openbase.jul.pattern.ListFilter;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
