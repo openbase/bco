@@ -260,14 +260,14 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         }
 
         PowerState.Builder powerState = PowerState.newBuilder().setValue(State.ON);
-        ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
+        ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
 
         authenticatedValue = sessionManager.initializeRequest(actionDescription, null, token);
         colorableLightRemote.applyActionAuthenticated(authenticatedValue).get();
         assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
 
         powerState = PowerState.newBuilder().setValue(State.OFF);
-        actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
+        actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
 
         authenticatedValue = sessionManager.initializeRequest(actionDescription, authenticationToken, token);
         colorableLightRemote.applyActionAuthenticated(authenticatedValue).get();
