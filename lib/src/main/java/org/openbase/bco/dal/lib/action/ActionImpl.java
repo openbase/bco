@@ -143,7 +143,7 @@ public class ActionImpl implements Action {
                     LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId()).getLabel()));
 
             description = description.replace(SERVICE_ATTRIBUTE_KEY,
-                    StringProcessor.transformCollectionToString(Services.extractServiceStates(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
+                    StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
             actionDescriptionBuilder.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not update action description!", ex, LOGGER);

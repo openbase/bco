@@ -525,9 +525,11 @@ public class Services extends ServiceStateProcessor {
         return fieldDescriptor;
     }
 
-    public static List<String> extractServiceStates(Object serviceProvider, ServiceType serviceType) throws CouldNotPerformException {
+    public static List<String> generateServiceProviderStringRepresentation(Object serviceProvider, ServiceType serviceType) throws CouldNotPerformException {
+        return generateServiceStateStringRepresentation(Services.invokeProviderServiceMethod(serviceType, serviceProvider), serviceType);
+    }
 
-        Message serviceState = Services.invokeProviderServiceMethod(serviceType, serviceProvider);
+    public static List<String> generateServiceStateStringRepresentation(Message serviceState, ServiceType serviceType) throws CouldNotPerformException {
 
         final List<String> states = new ArrayList<>();
 

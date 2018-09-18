@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.printer;
  * #L%
  */
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -30,9 +29,7 @@ import org.openbase.bco.dal.remote.unit.CustomUnitPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.DefaultInitializable;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.Observer;
@@ -41,14 +38,9 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.vision.ColorType.Color;
-import rst.vision.HSBColorType.HSBColor;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 
 public class UnitStatePrinter implements DefaultInitializable {
 
@@ -90,7 +82,7 @@ public class UnitStatePrinter implements DefaultInitializable {
 
     private void print(Unit unit, ServiceType serviceType, Message data) {
         try {
-            final List<String> states = Services.extractServiceStates(data, serviceType);
+            final List<String> states = Services.generateServiceProviderStringRepresentation(data, serviceType);
             if (!states.isEmpty()) {
                 printStream.println("===========================================================================================================");
             }
