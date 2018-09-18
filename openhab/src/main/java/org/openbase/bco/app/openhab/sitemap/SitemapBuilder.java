@@ -41,7 +41,6 @@ public interface SitemapBuilder {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not serialize sitemap Element[" + this + "]", ex, LoggerFactory.getLogger(SitemapBuilder.class));
         }
-
         return this;
     }
 

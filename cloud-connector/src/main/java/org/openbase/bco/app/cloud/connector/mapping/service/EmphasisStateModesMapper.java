@@ -40,7 +40,7 @@ public class EmphasisStateModesMapper extends AbstractServiceStateModesMapper<Em
     private static final String SETTING_NAME_HIGH = "high";
 
     private static final String MODE_NAME_COMFORT = "comfort";
-    private static final String MODE_NAME_ENERGY = "energy";
+    private static final String MODE_NAME_ECONOMY = "economy";
     private static final String MODE_NAME_SECURITY = "security";
 
     private final List<Mode> modeList;
@@ -56,7 +56,7 @@ public class EmphasisStateModesMapper extends AbstractServiceStateModesMapper<Em
 
         this.comfort = new Mode(MODE_NAME_COMFORT, true, "comfort");
         this.comfort.getSettingList().addAll(Arrays.asList(low, medium, high));
-        this.energy = new Mode(MODE_NAME_ENERGY, true, "energie");
+        this.energy = new Mode(MODE_NAME_ECONOMY, true, "economy");
         this.energy.getSettingList().addAll(Arrays.asList(low, medium, high));
         this.security = new Mode(MODE_NAME_SECURITY, true, "sicherheit");
         this.security.getSettingList().addAll(Arrays.asList(low, medium, high));
@@ -73,12 +73,12 @@ public class EmphasisStateModesMapper extends AbstractServiceStateModesMapper<Em
             emphasisState.setComfort(getValueForSetting(modeNameSettingNameMap.get(MODE_NAME_COMFORT)));
         }
 
-        if (modeNameSettingNameMap.containsKey(MODE_NAME_ENERGY)) {
-            emphasisState.setComfort(getValueForSetting(modeNameSettingNameMap.get(MODE_NAME_ENERGY)));
+        if (modeNameSettingNameMap.containsKey(MODE_NAME_ECONOMY)) {
+            emphasisState.setEconomy(getValueForSetting(modeNameSettingNameMap.get(MODE_NAME_ECONOMY)));
         }
 
         if (modeNameSettingNameMap.containsKey(MODE_NAME_SECURITY)) {
-            emphasisState.setComfort(getValueForSetting(modeNameSettingNameMap.get(MODE_NAME_SECURITY)));
+            emphasisState.setSecurity(getValueForSetting(modeNameSettingNameMap.get(MODE_NAME_SECURITY)));
         }
 
         return emphasisState.build();
@@ -88,7 +88,7 @@ public class EmphasisStateModesMapper extends AbstractServiceStateModesMapper<Em
     public Map<String, String> getSettings(final EmphasisState emphasisState) {
         final Map<String, String> modeNameSettingMap = new HashMap<>();
         modeNameSettingMap.put(MODE_NAME_COMFORT, getSettingForValue(emphasisState.getComfort()));
-        modeNameSettingMap.put(MODE_NAME_ENERGY, getSettingForValue(emphasisState.getEnergy()));
+        modeNameSettingMap.put(MODE_NAME_ECONOMY, getSettingForValue(emphasisState.getEconomy()));
         modeNameSettingMap.put(MODE_NAME_SECURITY, getSettingForValue(emphasisState.getSecurity()));
         return modeNameSettingMap;
     }

@@ -719,7 +719,7 @@ public class FulfillmentHandler {
                 // parse trait param into service state
                 final Message serviceState = serviceStateTraitMapper.map(params, commandType);
 
-                final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(serviceState, serviceType, unitRemote).build();
+                final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, serviceType, unitRemote).build();
                 final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, authenticationToken, authorizationToken);
 
                 final AuthenticatedValueFuture<ActionFuture> actionFutureAuthenticatedValueFuture = new AuthenticatedValueFuture<>(unitRemote.applyActionAuthenticated(authenticatedValue), ActionFuture.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
