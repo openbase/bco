@@ -32,13 +32,11 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionParameterType.ActionParameter.Builder;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
@@ -434,11 +432,12 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     @Override
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(standbyState, ServiceType.STANDBY_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
+                .addCategory(Category.ECONOMY));
     }
 
     @Override
     public Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
     }
 }

@@ -24,13 +24,9 @@ package org.openbase.bco.dal.remote.unit;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
@@ -57,6 +53,6 @@ public class RollerShutterRemote extends AbstractUnitRemote<RollerShutterData> i
 
     @Override
     public Future<ActionFuture> setBlindState(BlindState blindState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(blindState, ServiceType.BLIND_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(blindState, ServiceType.BLIND_STATE_SERVICE, this));
     }
 }

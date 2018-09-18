@@ -34,7 +34,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -72,7 +72,7 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
         Collection<EmphasisStateOperationService> emphasisStateOperationServices = getServices(unitType);
         int serviceNumber = emphasisStateOperationServices.size();
         Double averageComfort = 0d;
-        Double averageEnergy = 0d;
+        Double averageEconomy = 0d;
         Double averageSecurity = 0d;
         long timestamp = 0;
         for (EmphasisStateOperationService service : emphasisStateOperationServices) {
@@ -81,14 +81,14 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
                 continue;
             }
             averageComfort += service.getEmphasisState().getComfort();
-            averageEnergy += service.getEmphasisState().getEnergy();
+            averageEconomy += service.getEmphasisState().getEconomy();
             averageSecurity += service.getEmphasisState().getSecurity();
             timestamp = Math.max(timestamp, service.getEmphasisState().getTimestamp().getTime());
         }
         averageComfort /= serviceNumber;
-        averageEnergy /= serviceNumber;
+        averageEconomy /= serviceNumber;
         averageSecurity /= serviceNumber;
-        return TimestampProcessor.updateTimestamp(timestamp, EmphasisState.newBuilder().setComfort(averageComfort).setEnergy(averageEnergy).setSecurity(averageSecurity), TimeUnit.MICROSECONDS, logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, EmphasisState.newBuilder().setComfort(averageComfort).setEconomy(averageEconomy).setSecurity(averageSecurity), TimeUnit.MICROSECONDS, logger).build();
     }
 
 }

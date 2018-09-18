@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
@@ -35,6 +36,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +46,17 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import rst.vision.ColorType.Color;
+import rst.vision.HSBColorType.HSBColor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
 
@@ -460,12 +468,11 @@ public class Services extends ServiceStateProcessor {
      * @throws NotAvailableException is thrown if the related action can not be determine.
      */
     public static ActionDescription getResponsibleAction(final MessageOrBuilder serviceState) throws NotAvailableException {
-        final Object actionDescription = serviceState.getField(ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME));
-        if (actionDescription instanceof ActionDescription) {
-            return (ActionDescription) actionDescription;
+        try {
+            return (ActionDescription) serviceState.getField(getResponsibleActionField(serviceState));
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("ActionDescription", ex);
         }
-
-        throw new NotAvailableException("ActionDescription");
     }
 
     /**
@@ -491,13 +498,83 @@ public class Services extends ServiceStateProcessor {
      * @return the modified builder instance.
      */
     public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) {
-        return (B) serviceStateBuilder.setField(ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME), responsibleAction);
+        serviceStateBuilder.setField(ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME), responsibleAction);
+        return serviceStateBuilder;
     }
 
     public static Class<?> loadOperationServiceClass(final ServiceType serviceType) throws ClassNotFoundException {
         final String className = StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replace("Service", "") + OperationService.class.getSimpleName();
         final String packageString = OperationService.class.getPackage().getName();
         return Services.class.getClassLoader().loadClass(packageString + "." + className);
+    }
+
+    public static boolean hasResponsibleAction(final MessageOrBuilder serviceState) throws NotAvailableException {
+        return serviceState.hasField(getResponsibleActionField(serviceState));
+    }
+
+    public static <B extends Message.Builder> B clearResponsibleAction(final B serviceStateBuilder) throws NotAvailableException {
+        serviceStateBuilder.clearField(getResponsibleActionField(serviceStateBuilder));
+        return serviceStateBuilder;
+    }
+
+    public static FieldDescriptor getResponsibleActionField(final MessageOrBuilder serviceState) throws NotAvailableException {
+        FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+        if (fieldDescriptor == null) {
+            throw new NotAvailableException("responsible action for " + serviceState.getClass().getSimpleName());
+        }
+        return fieldDescriptor;
+    }
+
+    public static List<String> extractServiceStates(Object serviceProvider, ServiceType serviceType) throws CouldNotPerformException {
+
+        Message serviceState = Services.invokeProviderServiceMethod(serviceType, serviceProvider);
+
+        final List<String> states = new ArrayList<>();
+
+        for (Entry<FieldDescriptor, Object> entry : serviceState.getAllFields().entrySet()) {
+
+            if (!entry.getKey().isRepeated() && !serviceState.hasField(entry.getKey()) || entry.getValue() == null) {
+                continue;
+            }
+
+            String stateName = entry.getKey().getName();
+            String stateValue = entry.getValue().toString();
+            if (stateName == null || entry.getValue() == null) {
+                continue;
+            }
+
+            String timestamp;
+            try {
+                timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS));
+            } catch (NotAvailableException ex) {
+                timestamp = "?";
+            }
+
+            switch (stateValue) {
+                case "":
+                case "NaN":
+                    continue;
+                default:
+                    break;
+            }
+
+            switch (stateName) {
+                case "":
+                case "last_value_occurrence":
+                case "timestamp":
+                case "responsible_action":
+                    continue;
+                case "color":
+                    final HSBColor hsbColor = ((Color) entry.getValue()).getHsbColor();
+                    stateValue = hsbColor.getHue() + " " + hsbColor.getSaturation() + " " + hsbColor.getBrightness();
+                    break;
+                case "value":
+                    stateName = "state";
+                    break;
+            }
+            states.add(serviceType.name().toLowerCase() + ", " + timestamp + ", " + stateName.toLowerCase() + ", " + stateValue.toLowerCase());
+        }
+        return states;
     }
 }
 

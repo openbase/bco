@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -36,6 +36,7 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.ActionImpl;
+import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -62,7 +63,6 @@ import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
@@ -70,6 +70,7 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
+import org.openbase.jul.schedule.WatchDog.ServiceState;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -92,8 +93,10 @@ import rst.timing.TimestampType.Timestamp;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
@@ -101,6 +104,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -114,10 +118,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
+    private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
     private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
-
     private String classDescription = "";
     private ArrayList<Action> scheduledActionList = new ArrayList<>();
     private Timeout scheduleTimeout;
@@ -261,6 +265,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
+     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -447,7 +452,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     public Future<ActionFuture> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
         // todo pleminoq: please authenticate action with middleware user token.
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(serviceAttribute, serviceType, this, false).build());
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(serviceAttribute, serviceType, this, false));
     }
 
     @Override
@@ -462,22 +467,31 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
             logger.info("================");
 
-            final ActionImpl action = new ActionImpl(this);
-            action.init(actionDescription);
-            scheduleAction(action);
-            return action.execute();
+            final ActionImpl action = new ActionImpl(actionDescription, this);
+
+            try {
+                if (JPService.getProperty(JPResourceAllocation.class).getValue()) {
+                    scheduleAction(action);
+                    return CompletableFuture.completedFuture(action.getActionFuture());
+                } else {
+                    return action.execute();
+                }
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Cold not execute action", ex);
+            }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
     }
 
-    private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
-
-    private Future<ActionFuture> scheduleAction(final Action action) {
-        synchronized (scheduledActionListLock) {
-            scheduledActionList.add(action);
-            reschedule();
-        }
+    private Future<Void> scheduleAction(final Action action) {
+        return GlobalCachedExecutorService.submit(() -> {
+            synchronized (scheduledActionListLock) {
+                scheduledActionList.add(action);
+                reschedule();
+                return null;
+            }
+        });
     }
 
     private void reschedule() {
@@ -489,19 +503,43 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 }
             }
 
+            // skip if no actions are avalable
+            if (scheduledActionList.isEmpty()) {
+                return;
+            }
+
             // sort valid actions by priority
-            Collections.sort(scheduledActionList, Comparator.comparingInt(Action::getPriority));
+            Collections.sort(scheduledActionList, Comparator.comparingInt(Action::getRanking));
+            Action scheduledAction = null;
+            for (int i = 0; i < scheduledActionList.size(); i++) {
 
-            // execute prioritized action
-            final Action scheduledAction = scheduledActionList.get(0);
+                // execute prioritized action
+                scheduledAction = scheduledActionList.get(i);
 
-            switch (scheduledAction.getActionDescription().getActionState().getValue()) {
-                case INITIALIZED:
-                    scheduledAction.execute();
+                try {
+                    switch (scheduledAction.getActionDescription().getActionState().getValue()) {
+                        case INITIALIZED:
+                            scheduledAction.execute();
+                            break;
+                    }
+                    break;
+                } catch (CouldNotPerformException ex) {
+                    scheduledAction = null;
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute " + scheduledAction + "!", ex), logger);
+                }
+            }
+
+            // skip if actions is not available e.g. the first action fails and no second is available.
+            if (scheduledAction == null) {
+                return;
             }
 
             // setup next schedule trigger
-            scheduledAction
+            try {
+                scheduleTimeout.restart(scheduledAction.getExecutionTimePeriod(TimeUnit.MILLISECONDS));
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
+            }
         }
     }
 
@@ -510,7 +548,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
             try {
                 final String authorityString = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
-                final String description = actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, authorityString);
+                final String description = actionDescription.getDescription().replace(ActionImpl.INITIATOR_KEY, authorityString);
                 // TODO: user string should be set in action description ... all authentication info should be updated here
                 try {
                     applyAction(actionDescription.toBuilder().setDescription(description).build()).get();
@@ -878,6 +916,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
+     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -911,6 +950,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override

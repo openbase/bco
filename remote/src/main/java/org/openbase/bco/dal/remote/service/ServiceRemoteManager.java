@@ -26,8 +26,8 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -38,12 +38,10 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.RSBRemote;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -51,10 +49,13 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator.Initiator;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.action.ActionParameterType.ActionParameter.Builder;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -389,28 +390,35 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
             final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
 
-            ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
-            // TODO: discuss if the responsible action shall be moved to the action chain, if yes a snapshot could already contain a list
-            // of action descriptions which are initialized accordingly, this way the deserialization does not have to be done here
-            // Furthermore restoring a snapshot itself should be have an action description which is the cause
-            Message.Builder serviceAttribute = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType()).toBuilder();
-            if (ActionDescriptionProcessor.hasResponsibleAction(serviceAttribute)) {
-                ActionDescription responsibleAction = ActionDescriptionProcessor.getResponsibleAction(serviceAttribute);
-                ActionDescriptionProcessor.clearResponsibleAction(serviceAttribute);
+            final Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateDescription);
+            final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder);
 
-                ActionDescriptionProcessor.updateActionChain(actionDescription, responsibleAction);
-            }
-            ActionDescriptionProcessor.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType(), unitRemote);
+            // todo: why is this needed?
+//            ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+//            ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+//
+//            // TODO: discuss if the responsible action shall be moved to the action chain, if yes a snapshot could already contain a list
+//            // of action descriptions which are initialized accordingly, this way the deserialization does not have to be done here
+//            // Furthermore restoring a snapshot itself should be have an action description which is the cause
+//            Message.Builder serviceAttribute = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType()).toBuilder();
+//            if (Services.hasResponsibleAction(serviceAttribute)) {
+//                ActionDescription responsibleAction = Services.getResponsibleAction(serviceAttribute);
+//                Services.clearResponsibleAction(serviceAttribute);
+//
+//                ActionDescriptionProcessor.updateActionChain(actionDescription, responsibleAction);
+//            }
+//            ActionDescriptionProcessor.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType(), unitRemote);
+
 
             if (ticketAuthenticatorWrapper != null) {
                 // prepare authenticated value to request action
                 AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
                 authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
-                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescription.build(), sessionKey));
+                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));
                 futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
             } else {
-                futureCollection.add(unitRemote.applyAction(actionDescription.build()));
+                futureCollection.add(unitRemote.applyAction(actionDescriptionBuilder.build()));
             }
         }
 

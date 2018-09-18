@@ -98,14 +98,6 @@ public class RemoteAction implements Action {
     @Override
     public Future<ActionFuture> execute() throws CouldNotPerformException {
         synchronized (executionSync) {
-            ResourceAllocation.Builder resourceAllocation = ResourceAllocation.newBuilder();
-            resourceAllocation.setPolicy(ResourceAllocation.Policy.FIRST);
-            resourceAllocation.setInitiator(ResourceAllocation.Initiator.SYSTEM);
-            resourceAllocation.setPriority(ResourceAllocation.Priority.NORMAL);
-            resourceAllocation.setId(UUID.randomUUID().toString());
-            resourceAllocation.setState(ResourceAllocation.State.REQUESTED);
-            resourceAllocation.setSlot(Interval.getDefaultInstance());
-            actionDescription = actionDescription.toBuilder().setResourceAllocation(resourceAllocation).build();
             return serviceRemote.applyAction(getActionDescription());
         }
     }
@@ -134,7 +126,7 @@ public class RemoteAction implements Action {
      * @throws NotAvailableException {@inheritDoc }
      */
     @Override
-    public ActionDescription getActionDescription() throws NotAvailableException {
+    public ActionDescription getActionDescription() {
         return actionDescription;
     }
 
