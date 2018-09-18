@@ -57,26 +57,26 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
 
     @Override
     public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE, this));
     }
 
     @Override
     public Future<ActionFuture> setUserTransitState(final UserTransitState userTransitState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE, this));
     }
 
     @Override
     public Future<ActionFuture> setPresenceState(final PresenceState presenceState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
     }
 
     @Override
     public Future<ActionFuture> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(globalPositionState, ServiceType.GLOBAL_POSITION_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(globalPositionState, ServiceType.GLOBAL_POSITION_STATE_SERVICE, this));
     }
 
     @Override
     public Future<ActionFuture> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, this));
     }
 }

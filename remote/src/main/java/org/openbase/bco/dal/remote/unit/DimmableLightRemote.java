@@ -26,13 +26,9 @@ import java.util.concurrent.Future;
 
 import org.openbase.bco.dal.lib.layer.unit.DimmableLight;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -56,11 +52,11 @@ public class DimmableLightRemote extends AbstractUnitRemote<DimmableLightData> i
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState, ServiceType.POWER_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
 
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
     }
 }

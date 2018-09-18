@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
@@ -32,6 +33,8 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.util.concurrent.Future;
@@ -55,6 +58,10 @@ public interface ServiceProvider<ST> {
 
     default Future<ActionFuture> applyAction(final ActionDescription.Builder actionDescriptioBuildern) throws CouldNotPerformException {
         return applyAction(actionDescriptioBuildern.build());
+    }
+
+    default Future<ActionFuture> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
     }
 
     void addServiceStateObserver(final ServiceType serviceType, final Observer<DataProvider<ST>, ST> observer);

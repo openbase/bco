@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -35,7 +34,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.configuration.LabelType.Label;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -64,21 +63,21 @@ public class ResourceBlockingTest {
 //        HSBColor.setSaturation(0);
 //        color.setType(Color.Type.HSB);
         
-        ActionDescription.Builder powerAction = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        ResourceAllocation.Builder resourceAllocation1 = powerAction.getResourceAllocationBuilder();
-        resourceAllocation1.setPolicy(ResourceAllocation.Policy.PRESERVE);
-        PowerState.Builder powerState = PowerState.newBuilder();
-        powerState.setValue(PowerState.State.ON);
-        updateActionDescription(powerAction, powerState.build(), ServiceType.POWER_STATE_SERVICE, remote);
-        
-        ActionDescription.Builder powerActionHigh = powerAction.clone();
-        ResourceAllocation.Builder resourceAllocation = powerActionHigh.getResourceAllocationBuilder();
-        resourceAllocation.setPriority(ResourceAllocation.Priority.URGENT);
-        powerActionHigh.setExecutionTimePeriod(10000);
-        ActionDescriptionProcessor.updateResourceAllocationSlot(powerActionHigh);
-        ActionDescriptionProcessor.updateResourceAllocationId(powerActionHigh);
-        
-        System.out.println("Result " + remote.applyAction(powerActionHigh.build()).get());
+//        ActionDescription.Builder powerAction = ActionDescriptionProcessor.generateActionDescriptionBuilder(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+//        ResourceAllocation.Builder resourceAllocation1 = powerAction.getResourceAllocationBuilder();
+//        resourceAllocation1.setPolicy(ResourceAllocation.Policy.PRESERVE);
+//        PowerState.Builder powerState = PowerState.newBuilder();
+//        powerState.setValue(PowerState.State.ON);
+//        updateActionDescription(powerAction, powerState.build(), ServiceType.POWER_STATE_SERVICE, remote);
+//
+//        ActionDescription.Builder powerActionHigh = powerAction.clone();
+//        ResourceAllocation.Builder resourceAllocation = powerActionHigh.getResourceAllocationBuilder();
+//        resourceAllocation.setPriority(ResourceAllocation.Priority.URGENT);
+//        powerActionHigh.setExecutionTimePeriod(10000);
+//        ActionDescriptionProcessor.updateResourceAllocationSlot(powerActionHigh);
+//        ActionDescriptionProcessor.updateResourceAllocationId(powerActionHigh);
+//
+//        System.out.println("Result " + remote.applyAction(powerActionHigh.build()).get());
         
 //        Thread.sleep(5000);
 //        
@@ -96,20 +95,20 @@ public class ResourceBlockingTest {
 //        }
     }
 
-    public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final Message serviceAttribute, final ServiceType serviceType, final UnitRemote unitRemote) throws CouldNotPerformException {
+//    public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final Message serviceAttribute, final ServiceType serviceType, final UnitRemote unitRemote) throws CouldNotPerformException {
         // 5 minute retaining:
-        actionDescriptionBuilder.setExecutionTimePeriod(1000 * 30);
-        
-        ServiceStateDescription.Builder serviceStateDescription = actionDescriptionBuilder.getServiceStateDescriptionBuilder();
-        ResourceAllocation.Builder resourceAllocation = actionDescriptionBuilder.getResourceAllocationBuilder();
-
-        serviceStateDescription.setUnitId((String) unitRemote.getId());
-        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
-
-        actionDescriptionBuilder.setDescription(actionDescriptionBuilder.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
-        //TODO: update USER key with authentication
-        actionDescriptionBuilder.setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, LabelProcessor.getBestMatch(actionDescriptionBuilder.getLabel()).replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel())));
-
-        return ActionDescriptionProcessor.updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
-    }
+//        actionDescriptionBuilder.setExecutionTimePeriod(1000 * 30);
+//
+//        ServiceStateDescription.Builder serviceStateDescription = actionDescriptionBuilder.getServiceStateDescriptionBuilder();
+//        ResourceAllocation.Builder resourceAllocation = actionDescriptionBuilder.getResourceAllocationBuilder();
+//
+//        serviceStateDescription.setUnitId((String) unitRemote.getId());
+//        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
+//
+//        actionDescriptionBuilder.setDescription(actionDescriptionBuilder.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+//        //TODO: update USER key with authentication
+//        actionDescriptionBuilder.setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, LabelProcessor.getBestMatch(actionDescriptionBuilder.getLabel()).replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel())));
+//
+//        return ActionDescriptionProcessor.updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
+//    }
 }

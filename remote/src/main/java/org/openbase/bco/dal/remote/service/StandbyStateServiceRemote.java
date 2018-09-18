@@ -29,7 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;

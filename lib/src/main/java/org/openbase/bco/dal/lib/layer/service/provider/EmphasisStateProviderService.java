@@ -44,8 +44,8 @@ public interface EmphasisStateProviderService extends ProviderService {
         if (emphasisState.hasComfort()) {
             OperationService.verifyValueRange("comfort", emphasisState.getComfort(), 0, 100);
             return;
-        } else if (emphasisState.hasEnergy()) {
-            OperationService.verifyValueRange("energy saving", emphasisState.getEnergy(), 0, 100);
+        } else if (emphasisState.hasEconomy()) {
+            OperationService.verifyValueRange("economy", emphasisState.getEconomy(), 0, 100);
             return;
         } else if (emphasisState.hasSecurity()) {
             OperationService.verifyValueRange("security", emphasisState.getSecurity(), 0, 100);

@@ -28,6 +28,8 @@ import org.openbase.jul.iface.Initializable;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
@@ -39,5 +41,18 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
      * @return the action description of this action.
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the action description is not available yet which means the Action was never initialized.
      */
-    ActionDescription getActionDescription() throws NotAvailableException;
+    ActionDescription getActionDescription();
+
+    default int getRanking() {
+        return 0;
+    }
+
+    default long getExecutionTimePeriod(final TimeUnit timeUnit) {
+        return timeUnit.convert(getActionDescription().getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
+    }
+
+    default boolean isValid() {
+        return true;
+    }
+
 }

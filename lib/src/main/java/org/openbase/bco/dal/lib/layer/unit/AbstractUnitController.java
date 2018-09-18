@@ -33,8 +33,10 @@ import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.ActionImpl;
+import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -61,12 +63,14 @@ import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.Timeout;
+import org.openbase.jul.schedule.WatchDog.ServiceState;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -89,8 +93,10 @@ import rst.timing.TimestampType.Timestamp;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
@@ -98,6 +104,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -111,11 +118,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
+    private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
     private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
-
     private String classDescription = "";
+    private ArrayList<Action> scheduledActionList = new ArrayList<>();
+    private Timeout scheduleTimeout;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
@@ -144,6 +153,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
+            }
+        };
+
+        this.scheduleTimeout = new Timeout(1000) {
+            @Override
+            public void expired() {
+                reschedule();
             }
         };
     }
@@ -249,6 +265,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
+     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -434,15 +451,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     public Future<ActionFuture> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-        // todo pleminoq: please authenticate action with rsb user token.
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(serviceAttribute, serviceType, this, false).build());
+        // todo pleminoq: please authenticate action with middleware user token.
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(serviceAttribute, serviceType, this, false));
     }
 
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         try {
             if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
-                // Fallback print in case the description is not available. 
+                // Fallback print in case the description is not available.
                 // Please make sure all action descriptions provide a description.
                 logger.info("Action[" + actionDescription.getServiceStateDescription().getServiceType() + "] for unit[" + ScopeGenerator.generateStringRep(getScope()) + "] is without a description");
             } else {
@@ -450,11 +467,79 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
             logger.info("================");
 
-            final ActionImpl action = new ActionImpl(this);
-            action.init(actionDescription);
-            return action.execute();
+            final ActionImpl action = new ActionImpl(actionDescription, this);
+
+            try {
+                if (JPService.getProperty(JPResourceAllocation.class).getValue()) {
+                    scheduleAction(action);
+                    return CompletableFuture.completedFuture(action.getActionFuture());
+                } else {
+                    return action.execute();
+                }
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Cold not execute action", ex);
+            }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
+        }
+    }
+
+    private Future<Void> scheduleAction(final Action action) {
+        return GlobalCachedExecutorService.submit(() -> {
+            synchronized (scheduledActionListLock) {
+                scheduledActionList.add(action);
+                reschedule();
+                return null;
+            }
+        });
+    }
+
+    private void reschedule() {
+        synchronized (scheduledActionListLock) {
+            // remove outdated actions
+            for (Action action : new ArrayList<>(scheduledActionList)) {
+                if (!action.isValid()) {
+                    scheduledActionList.remove(action);
+                }
+            }
+
+            // skip if no actions are avalable
+            if (scheduledActionList.isEmpty()) {
+                return;
+            }
+
+            // sort valid actions by priority
+            Collections.sort(scheduledActionList, Comparator.comparingInt(Action::getRanking));
+            Action scheduledAction = null;
+            for (int i = 0; i < scheduledActionList.size(); i++) {
+
+                // execute prioritized action
+                scheduledAction = scheduledActionList.get(i);
+
+                try {
+                    switch (scheduledAction.getActionDescription().getActionState().getValue()) {
+                        case INITIALIZED:
+                            scheduledAction.execute();
+                            break;
+                    }
+                    break;
+                } catch (CouldNotPerformException ex) {
+                    scheduledAction = null;
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute " + scheduledAction + "!", ex), logger);
+                }
+            }
+
+            // skip if actions is not available e.g. the first action fails and no second is available.
+            if (scheduledAction == null) {
+                return;
+            }
+
+            // setup next schedule trigger
+            try {
+                scheduleTimeout.restart(scheduledAction.getExecutionTimePeriod(TimeUnit.MILLISECONDS));
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
+            }
         }
     }
 
@@ -463,7 +548,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
             try {
                 final String authorityString = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
-                final String description = actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, authorityString);
+                final String description = actionDescription.getDescription().replace(ActionImpl.INITIATOR_KEY, authorityString);
                 // TODO: user string should be set in action description ... all authentication info should be updated here
                 try {
                     applyAction(actionDescription.toBuilder().setDescription(description).build()).get();
@@ -831,6 +916,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
+     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -864,6 +950,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override

@@ -33,9 +33,6 @@ import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceConfigType;
@@ -164,7 +161,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
 
     @Override
     public Future<ActionFutureType.ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(colorState, ServiceType.COLOR_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(colorState, ServiceType.COLOR_STATE_SERVICE, this));
     }
 
     @Override
@@ -174,11 +171,11 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
 
     @Override
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
     }
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState, ServiceType.POWER_STATE_SERVICE, this));
+        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
 }

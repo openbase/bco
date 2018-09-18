@@ -24,33 +24,37 @@ package org.openbase.bco.dal.lib.action;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
-import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator.Initiator;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.ActionStateType.ActionState;
-import rst.timing.IntervalType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -60,6 +64,13 @@ import java.util.concurrent.Future;
  */
 public class ActionImpl implements Action {
 
+    public static final String INITIATOR_KEY = "$INITIATOR";
+    public static final String SERVICE_TYPE_KEY = "$SERVICE_TYPE";
+    public static final String UNIT_LABEL_KEY = "$UNIT_LABEL";
+    public static final String SERVICE_ATTRIBUTE_KEY = "SERVICE_ATTRIBUTE";
+    public static final String GENERIC_ACTION_LABEL = UNIT_LABEL_KEY + "[" + SERVICE_ATTRIBUTE_KEY + "]";
+    public static final String GENERIC_ACTION_DESCRIPTION = INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of unit " + UNIT_LABEL_KEY + " to " + SERVICE_ATTRIBUTE_KEY;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
     protected final AbstractUnitController unit;
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
@@ -68,39 +79,79 @@ public class ActionImpl implements Action {
     private Message serviceState;
     private ServiceDescription serviceDescription;
 
-    public ActionImpl(final AbstractUnitController unit) {
-        this.unit = unit;
-        this.serviceJSonProcessor = new ServiceJSonProcessor();
+    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController unit) throws InstantiationException {
+        try {
+            this.unit = unit;
+            this.serviceJSonProcessor = new ServiceJSonProcessor();
+            this.init(actionDescription);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
     public void init(final ActionDescription actionDescription) throws InitializationException {
         try {
+
+            // generate missing fields
+            actionDescriptionBuilder = actionDescription.toBuilder();
+
+
+            // update initiator type
+            final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId());
+            if ((initiatorUnitConfig.getUnitType() == UnitType.USER && initiatorUnitConfig.getUserConfig().getIsSystemUser())) {
+                actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.HUMAN);
+            } else {
+                actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.SYSTEM);
+            }
+
             // verify
-            this.verifyActionDescription(actionDescription);
+            verifyActionDescription(actionDescriptionBuilder);
 
             // prepare
-            this.actionDescriptionBuilder = actionDescription.toBuilder();
-            this.serviceState = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
+            actionDescriptionBuilder.setId(UUID.randomUUID().toString());
+            LabelProcessor.addLabel(actionDescriptionBuilder.getLabelBuilder(), Locale.ENGLISH, GENERIC_ACTION_LABEL);
+            serviceState = serviceJSonProcessor.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute(), actionDescriptionBuilder.getServiceStateDescription().getServiceAttributeType());
 
             // verify service attribute
             serviceState = Services.verifyAndRevalidateServiceState(serviceState);
 
-            // since its an action it has to be an operation service pattern
-            this.serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
+            // generate or update action description
+            updateDescription(actionDescriptionBuilder, serviceState);
 
-            // set resource allocation interval if not defined yet
-            if (!actionDescription.getResourceAllocation().getSlot().hasBegin()) {
-                ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
-            }
+            // since its an action it has to be an operation service pattern
+            serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
+
+            // mark action as initialized.
+            actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(ActionState.State.INITIALIZED).build());
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    private void verifyActionDescription(final ActionDescription actionDescription) throws VerificationFailedException {
-        try {
+    private void updateDescription(Builder actionDescriptionBuilder, Message serviceState) {
+        String description = actionDescriptionBuilder.getDescription().isEmpty() ? GENERIC_ACTION_DESCRIPTION : actionDescriptionBuilder.getDescription();
 
+        try {
+            description = description.replace(UNIT_LABEL_KEY,
+                    unit.getLabel());
+
+            description = description.replace(SERVICE_TYPE_KEY,
+                    StringProcessor.transformToCamelCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
+
+            description = description.replace(INITIATOR_KEY,
+                    LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId()).getLabel()));
+
+            description = description.replace(SERVICE_ATTRIBUTE_KEY,
+                    StringProcessor.transformCollectionToString(Services.extractServiceStates(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
+            actionDescriptionBuilder.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not update action description!", ex, LOGGER);
+        }
+    }
+
+    private void verifyActionDescription(final ActionDescriptionOrBuilder actionDescription) throws VerificationFailedException {
+        try {
             if (actionDescription == null) {
                 throw new NotAvailableException("ActionDescription");
             }
@@ -121,95 +172,12 @@ public class ActionImpl implements Action {
         }
     }
 
+
     @Override
-    public Future<ActionFuture> execute() throws CouldNotPerformException {
-        try {
-            if (JPService.getProperty(JPResourceAllocation.class).getValue()) {
-                return internalExecute().getTaskExecutor().getFuture();
-            } else {
-                return internalExecuteWithoutResourceAllocation();
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Cold not execute action", ex);
-        }
-    }
-
-    protected UnitAllocation internalExecute() throws CouldNotPerformException {
-        try {
-            synchronized (executionSync) {
-
-                if (actionDescriptionBuilder == null) {
-                    throw new NotInitializedException("Action");
-                }
-
-                // Initiate
-                updateActionState(ActionState.State.INITIATING);
-                UnitAllocation unitAllocation;
-
-                try {
-                    // Verify authority
-//                    final ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder();
-
-//                    unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFutureBuilder.getTicketAuthenticatorWrapperBuilder());
-
-                    // Resource Allocation
-                    unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
-                        try {
-                            setRequestedState();
-                            ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
-
-                            // Execute
-                            updateActionState(ActionState.State.EXECUTING);
-
-                            try {
-                                waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
-//                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
-                            } catch (CouldNotPerformException ex) {
-                                if (ex.getCause() instanceof InterruptedException) {
-                                    updateActionState(ActionState.State.ABORTED);
-                                } else {
-                                    updateActionState(ActionState.State.EXECUTION_FAILED);
-                                }
-                                throw new ExecutionException(ex);
-                            }
-                            actionFuture.addActionDescription(actionDescriptionBuilder);
-                            updateActionState(ActionState.State.FINISHING);
-                            return actionFuture.build();
-                        } catch (final CancellationException ex) {
-                            updateActionState(ActionState.State.ABORTED);
-                            throw ex;
-                        }
-                    });
-
-                    // register allocation update handler
-                    unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
-                        try {
-                            LOGGER.info("Update Allocation - Scope:[" + ScopeGenerator.generateStringRep(unit.getScope()) + "] State: [" + allocation.getState() + "]");
-                        } catch (CouldNotPerformException ex) {
-                            LOGGER.info("Update Allocation - Scope[?] State[" + allocation.getState() + "]");
-                        }
-                        actionDescriptionBuilder.setResourceAllocation(allocation);
-                    });
-
-                    return unitAllocation;
-                } catch (CouldNotPerformException ex) {
-                    updateActionState(ActionState.State.REJECTED);
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-                }
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not execute action!", ex);
-        }
-    }
-
-    protected Future<ActionFuture> internalExecuteWithoutResourceAllocation() throws CouldNotPerformException {
+    public Future<ActionFuture> execute() {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 synchronized (executionSync) {
-
-                    if (actionDescriptionBuilder == null) {
-                        throw new NotInitializedException("Action");
-                    }
 
                     // Initiate
                     updateActionState(ActionState.State.INITIATING);
@@ -220,22 +188,11 @@ public class ActionImpl implements Action {
                         serviceState = Services.verifyAndRevalidateServiceState(serviceState);
 
                         // Verify authority
-                        final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+
 
 //                        unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFuture.getTicketAuthenticatorWrapperBuilder());
 
-                        // Resource Allocation
                         try {
-                            // fake resource if needed
-                            if (!actionDescriptionBuilder.hasResourceAllocation() || !actionDescriptionBuilder.getResourceAllocation().isInitialized()) {
-                                ResourceAllocationType.ResourceAllocation.Builder resourceAllocationBuilder = actionDescriptionBuilder.getResourceAllocationBuilder();
-                                resourceAllocationBuilder.setId(resourceAllocationBuilder.getId());
-                                resourceAllocationBuilder.setState(ResourceAllocationType.ResourceAllocation.State.REQUESTED);
-                                resourceAllocationBuilder.setPriority(ResourceAllocationType.ResourceAllocation.Priority.NORMAL);
-                                resourceAllocationBuilder.setInitiator(ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM);
-                                resourceAllocationBuilder.setSlot(IntervalType.Interval.getDefaultInstance());
-                                resourceAllocationBuilder.setPolicy(ResourceAllocationType.ResourceAllocation.Policy.PRESERVE);
-                            }
 
                             setRequestedState();
 
@@ -254,9 +211,7 @@ public class ActionImpl implements Action {
                                 throw new ExecutionException(ex);
                             }
                             updateActionState(ActionState.State.FINISHING);
-
-                            actionFuture.addActionDescription(actionDescriptionBuilder);
-                            return actionFuture.build();
+                            return getActionFuture();
                         } catch (final CancellationException ex) {
                             updateActionState(ActionState.State.ABORTED);
                             throw ex;
@@ -275,6 +230,12 @@ public class ActionImpl implements Action {
                 throw ex;
             }
         });
+    }
+
+    public ActionFuture getActionFuture() {
+        final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+        actionFuture.addActionDescription(actionDescriptionBuilder);
+        return actionFuture.build();
     }
 
     private void setRequestedState() throws CouldNotPerformException {
@@ -298,7 +259,7 @@ public class ActionImpl implements Action {
      * @throws NotAvailableException {@inheritDoc }
      */
     @Override
-    public ActionDescription getActionDescription() throws NotAvailableException {
+    public ActionDescription getActionDescription() {
         return actionDescriptionBuilder.build();
     }
 
@@ -320,6 +281,6 @@ public class ActionImpl implements Action {
         if (actionDescriptionBuilder == null) {
             return getClass().getSimpleName() + "[?]";
         }
-        return getClass().getSimpleName() + "[" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceType() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute() + "|" + actionDescriptionBuilder.getResourceAllocation().getId() + "]";
+        return getClass().getSimpleName() + "[" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceType() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute() + "|" + actionDescriptionBuilder.getPriority().name() + "|" + StringProcessor.transformCollectionToString(actionDescriptionBuilder.getCategoryList(), " | ") + "]";
     }
 }

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.printer;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -90,7 +90,7 @@ public class UnitStatePrinter implements DefaultInitializable {
 
     private void print(Unit unit, ServiceType serviceType, Message data) {
         try {
-            final List<String> states = extractServiceStates(data, serviceType);
+            final List<String> states = Services.extractServiceStates(data, serviceType);
             if (!states.isEmpty()) {
                 printStream.println("===========================================================================================================");
             }
@@ -102,56 +102,5 @@ public class UnitStatePrinter implements DefaultInitializable {
         }
     }
 
-    private List<String> extractServiceStates(Object serviceProvider, ServiceType serviceType) throws CouldNotPerformException {
 
-        Message serviceState = Services.invokeProviderServiceMethod(serviceType, serviceProvider);
-
-        final List<String> states = new ArrayList<>();
-
-        for (Entry<FieldDescriptor, Object> entry : serviceState.getAllFields().entrySet()) {
-
-
-            if (!entry.getKey().isRepeated() && !serviceState.hasField(entry.getKey()) || entry.getValue() == null) {
-                continue;
-            }
-
-            String stateName = entry.getKey().getName();
-            String stateValue = entry.getValue().toString();
-            if (stateName == null || entry.getValue() == null) {
-                continue;
-            }
-
-            String timestamp;
-            try {
-                timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS));
-            } catch (NotAvailableException ex) {
-                timestamp = "?";
-            }
-
-            switch (stateValue) {
-                case "":
-                case "NaN":
-                    continue;
-                default:
-                    break;
-            }
-
-            switch (stateName) {
-                case "":
-                case "last_value_occurrence":
-                case "timestamp":
-                case "responsible_action":
-                    continue;
-                case "color":
-                    final HSBColor hsbColor = ((Color) entry.getValue()).getHsbColor();
-                    stateValue = hsbColor.getHue() + " " + hsbColor.getSaturation() + " " + hsbColor.getBrightness();
-                    break;
-                case "value":
-                    stateName = "state";
-                    break;
-            }
-            states.add(serviceType.name().toLowerCase() + ", " + timestamp + ", " + stateName.toLowerCase() + ", " + stateValue.toLowerCase());
-        }
-        return states;
-    }
 }

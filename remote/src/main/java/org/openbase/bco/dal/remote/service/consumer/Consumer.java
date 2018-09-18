@@ -54,7 +54,7 @@ public class Consumer implements Manageable<ServiceConfig> {
         this.active = false;
         this.serviceStateObserver = (source, data) -> {
             try {
-                ActionDescription responsibleAction = ActionDescriptionProcessor.getResponsibleAction(((GeneratedMessage) data));
+                ActionDescription responsibleAction = Services.getResponsibleAction(((GeneratedMessage) data));
                 
                 // build consumer action out of responsible action
                 ActionDescription.Builder consumerActionBuilder = responsibleAction.toBuilder();
