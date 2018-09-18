@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -70,7 +70,6 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
-import org.openbase.jul.schedule.WatchDog.ServiceState;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -458,17 +457,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         try {
-            if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
-                // Fallback print in case the description is not available.
-                // Please make sure all action descriptions provide a description.
-                logger.info("Action[" + actionDescription.getServiceStateDescription().getServiceType() + "] for unit[" + ScopeGenerator.generateStringRep(getScope()) + "] is without a description");
-            } else {
-                logger.info(actionDescription.getDescription());
-            }
-            logger.info("================");
-
             final ActionImpl action = new ActionImpl(actionDescription, this);
-
             try {
                 if (JPService.getProperty(JPResourceAllocation.class).getValue()) {
                     scheduleAction(action);
@@ -477,24 +466,40 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     return action.execute();
                 }
             } catch (JPNotAvailableException ex) {
-                throw new CouldNotPerformException("Cold not execute action", ex);
+                throw new CouldNotPerformException("Could not check resource allocation flag.", ex);
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
     }
 
-    private Future<Void> scheduleAction(final Action action) {
+    private Future<Void> scheduleAction(final Action actionToSchedule) {
         return GlobalCachedExecutorService.submit(() -> {
             synchronized (scheduledActionListLock) {
-                scheduledActionList.add(action);
-                reschedule();
+                scheduledActionList.add(actionToSchedule);
+                Action executingAction = reschedule();
+                if (actionToSchedule != executingAction) {
+                    logger.info("================================================================================");
+                    logger.info("{} was rejected by {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+                }
                 return null;
             }
         });
     }
 
-    private void reschedule() {
+    private int getSchedulingIndex(Action action) {
+        synchronized (scheduledActionListLock) {
+            return scheduledActionList.indexOf(action);
+        }
+    }
+
+    /**
+     * Recalulate the action ranking and execute action with highest ranking if not executing or finished.
+     * If the current action was not finished but those will be rejected.
+     *
+     * @return the {@code action} which is ranked as highest one and which is currently blocking this unit.
+     */
+    private Action reschedule() {
         synchronized (scheduledActionListLock) {
             // remove outdated actions
             for (Action action : new ArrayList<>(scheduledActionList)) {
@@ -505,7 +510,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
             // skip if no actions are avalable
             if (scheduledActionList.isEmpty()) {
-                return;
+                return null;
             }
 
             // sort valid actions by priority
@@ -531,7 +536,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
             // skip if actions is not available e.g. the first action fails and no second is available.
             if (scheduledAction == null) {
-                return;
+                return null;
             }
 
             // setup next schedule trigger
@@ -540,6 +545,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
             }
+
+            return scheduledAction;
         }
     }
 

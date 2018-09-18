@@ -145,6 +145,7 @@ public class ActionImpl implements Action {
             description = description.replace(SERVICE_ATTRIBUTE_KEY,
                     StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
             actionDescriptionBuilder.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
+            LOGGER.warn("Generated action description: "+ description);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not update action description!", ex, LOGGER);
         }
@@ -178,6 +179,9 @@ public class ActionImpl implements Action {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 synchronized (executionSync) {
+
+                    LOGGER.info("================================================================================");
+                    LOGGER.info(actionDescriptionBuilder.getDescription());
 
                     // Initiate
                     updateActionState(ActionState.State.INITIATING);
