@@ -619,19 +619,16 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             final List<Future> actionFutureList = new ArrayList<>();
 
 
-            // todo: clarify: the deserialization is not needed because the actionDescriptionBuilder contains already the service attribute.
-            final Message serviceAttribute = new ServiceJSonProcessor().deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute(), actionDescriptionBuilder.getServiceStateDescription().getServiceAttributeType());
-
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
 
                 final Builder builder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
                 builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
                 // update action chain
-                actionDescriptionBuilder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
+                builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
 
                 // apply action on remote
-                actionFutureList.add(unitRemote.applyAction(actionDescriptionBuilder.build()));
+                actionFutureList.add(unitRemote.applyAction(builder.build()));
             }
             return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), actionFutureList);
         } catch (CouldNotPerformException ex) {
