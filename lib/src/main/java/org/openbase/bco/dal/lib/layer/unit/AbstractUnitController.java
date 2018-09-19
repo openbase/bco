@@ -31,7 +31,9 @@ import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
@@ -76,6 +78,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionParameterType.ActionParameter.Builder;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -458,6 +461,20 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+
+        // check if an existing action should just be canceled.
+//        if( actionDescription.hasId() && actionDescription.getCancel())  {
+//            Action actionToCancel;
+//            synchronized (scheduledActionListLock) {
+//
+//                actionToCancel = scheduledActionList.get(actionDescription.getId()).cancel();
+//                reschedule();
+//
+//            }
+//            actionToCancel.waitUntilFinish();
+//            return CompletableFuture.completedFuture(actionToCancel.getActionFuture());
+//        }
+
         try {
             final ActionImpl action = new ActionImpl(actionDescription, this);
             try {
@@ -503,6 +520,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      */
     private Action reschedule() {
         synchronized (scheduledActionListLock) {
+
             // remove outdated actions
             for (Action action : new ArrayList<>(scheduledActionList)) {
                 if (!action.isValid()) {
@@ -510,10 +528,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 }
             }
 
-            // skip if no actions are avalable
+            // skip if no actions are available
             if (scheduledActionList.isEmpty()) {
                 return null;
             }
+
+            // store current action
+            Action currentAction = scheduledActionList.get(0);
 
             // sort valid actions by priority
             Collections.sort(scheduledActionList, Comparator.comparingInt(Action::getRanking));
@@ -523,27 +544,36 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // execute prioritized action
                 scheduledAction = scheduledActionList.get(i);
 
+                // if the ranked action is still the same than we are finished
+                if (scheduledAction == currentAction) {
+                    return currentAction;
+                }
+
+                // cancel the current action
+                currentAction.cancel();
+
+                // if still valid than schedule again for later execution.
+                if (currentAction.isValid()) {
+                    currentAction.schedule();
+                }
+
+                // execute action with highest ranking
                 try {
-                    switch (scheduledAction.getActionDescription().getActionState().getValue()) {
-                        case INITIALIZED:
-                            scheduledAction.execute();
-                            break;
-                    }
-                    break;
+                    scheduledAction.execute();
                 } catch (CouldNotPerformException ex) {
-                    scheduledAction = null;
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute " + scheduledAction + "!", ex), logger);
+                    scheduledAction = null;
                 }
             }
 
-            // skip if actions is not available e.g. the first action fails and no second is available.
+            // skip if actions is not available e.g. the first action failed and no second one is available.
             if (scheduledAction == null) {
                 return null;
             }
 
             // setup next schedule trigger
             try {
-                scheduleTimeout.restart(scheduledAction.getExecutionTimePeriod(TimeUnit.MILLISECONDS));
+                scheduleTimeout.restart(scheduledAction.getExecutionTime());
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
             }

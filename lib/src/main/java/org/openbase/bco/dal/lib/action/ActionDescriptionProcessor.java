@@ -16,7 +16,6 @@ import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import rst.domotic.action.ActionReferenceType.ActionReference;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescriptionOrBuilder;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 

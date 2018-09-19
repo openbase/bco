@@ -131,6 +131,31 @@ public class RemoteAction implements Action {
     }
 
     @Override
+    public long getCreationTime() {
+        return 0;
+    }
+
+    @Override
+    public void cancel() {
+
+    }
+
+    @Override
+    public void schedule() {
+
+    }
+
+    @Override
+    public ActionFuture getActionFuture() {
+        return null;
+    }
+
+    @Override
+    public void waitUntilFinish() throws InterruptedException {
+
+    }
+
+    @Override
     public String toString() {
         if (actionDescription == null) {
             return getClass().getSimpleName() + "[?]";

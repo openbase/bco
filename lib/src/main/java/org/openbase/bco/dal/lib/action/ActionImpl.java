@@ -50,6 +50,7 @@ import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.ActionStateType.ActionState;
+import rst.domotic.state.ActionStateType.ActionState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -58,6 +59,8 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
@@ -75,12 +78,15 @@ public class ActionImpl implements Action {
     protected final AbstractUnitController unit;
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
     private final ServiceJSonProcessor serviceJSonProcessor;
+    private final long creationTime;
     protected ActionDescription.Builder actionDescriptionBuilder;
     private Message serviceState;
     private ServiceDescription serviceDescription;
+    private Future<ActionFuture> actionTask;
 
     public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController unit) throws InstantiationException {
         try {
+            this.creationTime = System.currentTimeMillis();
             this.unit = unit;
             this.serviceJSonProcessor = new ServiceJSonProcessor();
             this.init(actionDescription);
@@ -92,10 +98,8 @@ public class ActionImpl implements Action {
     @Override
     public void init(final ActionDescription actionDescription) throws InitializationException {
         try {
-
             // generate missing fields
             actionDescriptionBuilder = actionDescription.toBuilder();
-
 
             // update initiator type
             final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId());
@@ -123,7 +127,7 @@ public class ActionImpl implements Action {
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
 
             // mark action as initialized.
-            actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(ActionState.State.INITIALIZED).build());
+            updateActionState(State.INITIALIZED);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -145,7 +149,7 @@ public class ActionImpl implements Action {
             description = description.replace(SERVICE_ATTRIBUTE_KEY,
                     StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
             actionDescriptionBuilder.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
-            LOGGER.warn("Generated action description: "+ description);
+            LOGGER.warn("Generated action description: " + description);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not update action description!", ex, LOGGER);
         }
@@ -173,69 +177,102 @@ public class ActionImpl implements Action {
         }
     }
 
-
-    @Override
-    public Future<ActionFuture> execute() {
-        return GlobalCachedExecutorService.submit(() -> {
-            try {
-                synchronized (executionSync) {
-
-                    LOGGER.info("================================================================================");
-                    LOGGER.info(actionDescriptionBuilder.getDescription());
-
-                    // Initiate
-                    updateActionState(ActionState.State.INITIATING);
-
-                    try {
-
-                        // Verify service state
-                        serviceState = Services.verifyAndRevalidateServiceState(serviceState);
-
-                        // Verify authority
-
-
-//                        unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFuture.getTicketAuthenticatorWrapperBuilder());
-
-                        try {
-
-                            setRequestedState();
-
-                            // Execute
-                            updateActionState(ActionState.State.EXECUTING);
-
-                            try {
-                                waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
-//                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
-                            } catch (CouldNotPerformException ex) {
-                                if (ex.getCause() instanceof InterruptedException) {
-                                    updateActionState(ActionState.State.ABORTED);
-                                } else {
-                                    updateActionState(ActionState.State.EXECUTION_FAILED);
-                                }
-                                throw new ExecutionException(ex);
-                            }
-                            updateActionState(ActionState.State.FINISHING);
-                            return getActionFuture();
-                        } catch (final CancellationException ex) {
-                            updateActionState(ActionState.State.ABORTED);
-                            throw ex;
-                        }
-                    } catch (CouldNotPerformException ex) {
-                        updateActionState(ActionState.State.REJECTED);
-                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-                    }
-                }
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not execute action!", ex);
-            } catch (InterruptedException ex) {
-                if (JPService.debugMode()) {
-                    ExceptionPrinter.printHistory(ex, LOGGER);
-                }
-                throw ex;
-            }
-        });
+    /**
+     * returns if there is still an task operating this action.
+     *
+     * @return true if action is still in progress.
+     */
+    private boolean isExecuting() {
+        synchronized (executionSync) {
+            return actionTask != null && !actionTask.isDone();
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public long getCreationTime() {
+        return creationTime;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<ActionFuture> execute() {
+        synchronized (executionSync) {
+            if (isExecuting()) {
+                return actionTask;
+            }
+
+            actionTask = GlobalCachedExecutorService.submit(() -> {
+                try {
+                    synchronized (executionSync) {
+
+                        LOGGER.info("================================================================================");
+                        LOGGER.info(actionDescriptionBuilder.getDescription());
+
+                        // Initiate
+                        updateActionState(ActionState.State.INITIATING);
+
+                        try {
+                            try {
+
+                                setRequestedState();
+
+                                // Execute
+                                updateActionState(ActionState.State.EXECUTING);
+
+                                try {
+                                    waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
+                                } catch (CouldNotPerformException ex) {
+                                    if (ex.getCause() instanceof InterruptedException) {
+                                        updateActionState(ActionState.State.ABORTED);
+                                    } else {
+                                        updateActionState(ActionState.State.EXECUTION_FAILED);
+                                    }
+                                    throw new ExecutionException(ex);
+                                }
+                                updateActionState(ActionState.State.FINISHING);
+                                return getActionFuture();
+                            } catch (final CancellationException ex) {
+                                updateActionState(ActionState.State.REJECTED);
+                                throw ex;
+                            }
+                        } catch (CouldNotPerformException ex) {
+                            updateActionState(ActionState.State.ABORTED);
+                            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+                        }
+                    }
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not execute action!", ex);
+                } catch (InterruptedException ex) {
+                    updateActionState(ActionState.State.ABORTED);
+                    throw ex;
+                } finally {
+                    synchronized (executionSync) {
+                        actionTask = null;
+                        executionSync.notifyAll();
+                    }
+                }
+            });
+            return actionTask;
+        }
+    }
+
+    public void waitUntilFinish() throws InterruptedException {
+        synchronized (executionSync) {
+            if(!isExecuting()) {
+                return;
+            }
+            executionSync.wait();
+        }
+    }
+
+    @Override
     public ActionFuture getActionFuture() {
         final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
         actionFuture.addActionDescription(actionDescriptionBuilder);
@@ -267,16 +304,52 @@ public class ActionImpl implements Action {
         return actionDescriptionBuilder.build();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void cancel() {
+
+        // return if action is done
+        if (actionTask == null || actionTask.isDone()) {
+            return;
+        }
+
+        actionTask.cancel(true);
+    }
+
+    public void cancelAndWait() throws InterruptedException {
+        synchronized (executionSync) {
+            cancel();
+            waitUntilFinish();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void schedule() {
+        //todo
+    }
+
     private void updateActionState(ActionState.State state) {
         actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
-        LOGGER.debug("StateUpdate[" + state.name() + "] of " + this);
+        LOGGER.info(this + " State[" + state.name() + "]");
     }
 
     private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
         try {
-            result.get();
-        } catch (ExecutionException | CancellationException ex) {
+            result.get(getExecutionTime(), TimeUnit.MILLISECONDS);
+            if(isValid()) {
+                Thread.sleep(getExecutionTime());
+            }
+        } catch (CancellationException | ExecutionException | TimeoutException ex) {
             throw new CouldNotPerformException("Action execution aborted!", ex);
+        } finally {
+            if(!result.isDone()) {
+                result.cancel(true);
+            }
         }
     }
 

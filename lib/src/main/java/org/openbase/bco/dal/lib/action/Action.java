@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Initializable;
@@ -51,8 +52,41 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
         return timeUnit.convert(getActionDescription().getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
     }
 
-    default boolean isValid() {
-        return true;
+    /**
+     * Time passed since this action was initialized.
+     * @return time in milliseconds.
+     */
+    default long getLifetime() {
+        return System.currentTimeMillis() - getCreationTime();
     }
 
+    /**
+     * Time left until the execution time has passed.
+     * @return time in milliseconds.
+     */
+    default long getExecutionTime() {
+        return Math.max(getExecutionTimePeriod(TimeUnit.MILLISECONDS) - getLifetime(), 0);
+    }
+
+    /**
+     * Time when this action was created.
+     * @return time in milliseconds.
+     */
+    long getCreationTime();
+
+    /**
+     * Check if this action is still valid which means there is still some execution time left.
+     * @return true if this action is still valid, otherwise false.
+     */
+    default boolean isValid() {
+        return getLifetime() < getExecutionTimePeriod(TimeUnit.MILLISECONDS);
+    }
+
+    void cancel();
+
+    void schedule();
+
+    ActionFuture getActionFuture();
+
+    void waitUntilFinish() throws InterruptedException;
 }
