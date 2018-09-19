@@ -72,7 +72,7 @@ public class GenericUnitSimulator extends AbstractUnitSimulator {
                 }
             }
             try {
-                MultiException.checkAndThrow("Could not init all service simulators!", exceptionStack);
+                MultiException.checkAndThrow(() ->"Could not init all service simulators!", exceptionStack);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);
             }

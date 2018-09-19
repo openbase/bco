@@ -444,7 +444,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 if (!serviceInterfaceClass.isAssignableFrom(this.getClass())) {
                     // interface not supported dummy.
-                    throw new CouldNotPerformException("Could not register methods for serviceInterface [" + serviceInterfaceClass.getName() + "]");
+                    throw new CouldNotPerformException("Could not register methods for ServiceInterface [" + serviceInterfaceClass.getName() + "]");
                 }
 
                 RPCHelper.registerInterface((Class) serviceInterfaceClass, this, server);

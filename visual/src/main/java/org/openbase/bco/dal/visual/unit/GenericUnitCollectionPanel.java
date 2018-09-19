@@ -102,7 +102,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
-            MultiException.checkAndThrow("Could not add all units!", exceptionStack);
+            MultiException.checkAndThrow(() ->"Could not add all units!", exceptionStack);
         } catch (MultiException ex) {
             throw new InitializationException(this, ex);
         }
@@ -130,7 +130,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
                     }
                 }
             }
-            MultiException.checkAndThrow("Could not process all units!", exceptionStack);
+            MultiException.checkAndThrow(() ->"Could not process all units!", exceptionStack);
             return unitPanelList;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not add all matching units for Label[" + unitLabel + "]", ex);

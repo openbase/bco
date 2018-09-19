@@ -259,7 +259,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 }
 
                 try {
-                    MultiException.checkAndThrow("Could not request status of all internal remotes!", exceptionStack);
+                    MultiException.checkAndThrow(() ->"Could not request status of all internal remotes!", exceptionStack);
                 } catch (MultiException ex) {
                     if (failOnError || noResponse) {
                         throw ex;
@@ -425,7 +425,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
-            MultiException.checkAndThrow("Could not activate all service units!", exceptionStack);
+            MultiException.checkAndThrow(() ->"Could not activate all service units!", exceptionStack);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

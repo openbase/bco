@@ -176,7 +176,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                 }
 
                 try {
-                    MultiException.checkAndThrow("Could not snapshot all service provider!", exceptionStack);
+                    MultiException.checkAndThrow(() ->"Could not snapshot all service provider!", exceptionStack);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(Unit.class), LogLevel.WARN);
                 }

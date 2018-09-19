@@ -303,7 +303,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
                 }
             }
             try {
-                MultiException.checkAndThrow("Could not collect all unit remotes of " + this, exceptionStack);
+                MultiException.checkAndThrow(() ->"Could not collect all unit remotes of " + this, exceptionStack);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
             }
@@ -360,7 +360,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             }
         }
         try {
-            MultiException.checkAndThrow("Could not collect all unit remotes of " + this, exceptionStack);
+            MultiException.checkAndThrow(() ->"Could not collect all unit remotes of " + this, exceptionStack);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }

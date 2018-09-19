@@ -74,7 +74,7 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Gene
                     MultiException.push(this, ex, exceptionStack);
                 }
             });
-            MultiException.checkAndThrow("Could not generate all service values!", exceptionStack);
+            MultiException.checkAndThrow(() ->"Could not generate all service values!", exceptionStack);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate service states!", ex);
         }

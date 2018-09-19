@@ -96,7 +96,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                 }
             }
         }
-        MultiException.checkAndThrow("Could not activate all hosted units of " + this, exceptionStack);
+        MultiException.checkAndThrow(() ->"Could not activate all hosted units of " + this, exceptionStack);
     }
 
     @Override
@@ -112,7 +112,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                 }
             }
         }
-        MultiException.checkAndThrow("Could not deactivate all hosted units of " + this, exceptionStack);
+        MultiException.checkAndThrow(() ->"Could not deactivate all hosted units of " + this, exceptionStack);
     }
 
     @Override
@@ -148,7 +148,8 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                     } else {
                         counter = 0;
                     }
-                    MultiException.checkAndThrow("Could not remove " + counter + " unitController!", removeExceptionStack);
+                    final int internalCounter = counter;
+                    MultiException.checkAndThrow(() ->"Could not remove " + internalCounter + " unitController!", removeExceptionStack);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
@@ -158,11 +159,12 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                     } else {
                         counter = 0;
                     }
-                    MultiException.checkAndThrow("Could not register " + counter + " unitController!", registerExceptionStack);
+                    final int internalCounter = counter;
+                    MultiException.checkAndThrow(() ->"Could not register " + internalCounter + " unitController!", registerExceptionStack);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
-                MultiException.checkAndThrow("Could not update unitHostController!", exceptionStack);
+                MultiException.checkAndThrow(() ->"Could not update unitHostController!", exceptionStack);
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not applyConfigUpdate for UnitHost[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]", ex);
@@ -196,7 +198,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                 exceptionStack = MultiException.push(this, ex, exceptionStack);
             }
         }
-        MultiException.checkAndThrow("Could not register all hosted units of " + this, exceptionStack);
+        MultiException.checkAndThrow(() ->"Could not register all hosted units of " + this, exceptionStack);
     }
 
     public final void registerUnitsById(final Collection<String> unitIds) throws CouldNotPerformException, InterruptedException {
@@ -210,7 +212,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                 exceptionStack = MultiException.push(this, ex, exceptionStack);
             }
         }
-        MultiException.checkAndThrow("Could not register all hosted units of " + this, exceptionStack);
+        MultiException.checkAndThrow(() ->"Could not register all hosted units of " + this, exceptionStack);
     }
 
     //TODO mpohling: implement unit factory instead!
