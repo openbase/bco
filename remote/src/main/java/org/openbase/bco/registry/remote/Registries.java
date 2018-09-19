@@ -348,7 +348,7 @@ public class Registries {
                 exceptionStack = MultiException.push(Registries.class, ex, exceptionStack);
             }
         }
-        MultiException.checkAndThrow("Could not check if a message with id[" + id + "] is contained", exceptionStack);
+        MultiException.checkAndThrow(() ->"Could not check if a message with id[" + id + "] is contained", exceptionStack);
 
         return false;
     }
@@ -383,7 +383,7 @@ public class Registries {
                 exceptionStack = MultiException.push(Registries.class, ex, exceptionStack);
             }
         }
-        MultiException.checkAndThrow("Could not check for id[" + id + "]", exceptionStack);
+        MultiException.checkAndThrow(() ->"Could not check for id[" + id + "]", exceptionStack);
 
         throw new NotAvailableException("Could not find a message with id[" + id + "]");
     }
