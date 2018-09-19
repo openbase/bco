@@ -454,9 +454,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
+    private static final SessionManager MOCKUP_SESSION_MANAGER = new SessionManager();
+
     public Future<ActionFuture> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-        // todo pleminoq: please authenticate action with middleware user token.
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(serviceAttribute, serviceType, this, false));
+        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(ActionDescriptionProcessor.generateDefaultActionParameter(serviceAttribute, serviceType, this, false)).build();
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, MOCKUP_SESSION_MANAGER, this::applyActionAuthenticated);
     }
 
     @Override
