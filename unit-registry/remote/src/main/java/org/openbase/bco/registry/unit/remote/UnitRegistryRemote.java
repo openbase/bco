@@ -39,6 +39,8 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
@@ -88,6 +90,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     private final TreeMap<String, String> aliasIdMap;
     private final SyncObject aliasIdMapLock;
+    private final Observer<DataProvider<Map<String, IdentifiableMessage<String, UnitConfig, Builder>>>, Map<String, IdentifiableMessage<String, UnitConfig, Builder>>> aliasMapUpdateObserver;
 
     public UnitRegistryRemote() throws InstantiationException {
         super(JPUnitRegistryScope.class, UnitRegistryData.class);
@@ -131,7 +134,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
 
-            unitConfigRemoteRegistry.addDataObserver((source, data) -> {
+            aliasMapUpdateObserver = (source, data) -> {
                 synchronized (aliasIdMapLock) {
                     aliasIdMap.clear();
                     for (IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage : data.values()) {
@@ -139,10 +142,22 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                         unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias, unitConfig.getId()));
                     }
                 }
-            });
+            };
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        unitConfigRemoteRegistry.addDataObserver(aliasMapUpdateObserver);
+        super.activate();
+    }
+
+    @Override
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        unitConfigRemoteRegistry.removeDataObserver(aliasMapUpdateObserver);
+        super.deactivate();
     }
 
     /**
