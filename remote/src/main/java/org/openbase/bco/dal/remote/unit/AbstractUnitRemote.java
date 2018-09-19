@@ -25,7 +25,6 @@ package org.openbase.bco.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
 import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProcessor;
@@ -45,10 +44,10 @@ import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rsb.Scope;
@@ -69,8 +68,8 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
-import javax.xml.crypto.Data;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -87,6 +86,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
     }
 
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
@@ -145,7 +145,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 }
             });
         }
-
     }
 
     /**

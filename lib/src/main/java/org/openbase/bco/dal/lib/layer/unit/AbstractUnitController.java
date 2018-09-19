@@ -53,6 +53,7 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -112,6 +113,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
     }
 
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
