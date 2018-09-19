@@ -280,7 +280,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      *
      * @return {@inheritDoc}
      *
-     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public UnitConfig getUnitConfigByAlias(String unitAlias) throws NotAvailableException {
@@ -304,7 +304,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      *
      * @return {@inheritDoc}
      *
-     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException {

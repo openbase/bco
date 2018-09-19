@@ -220,7 +220,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @return the unit config referred by the alias.
      *
      * @throws NotAvailableException    is thrown if no unit is matching the given alias.
-     * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
      */
     @RPCMethod
     UnitConfig getUnitConfigByAlias(final String unitAlias) throws NotAvailableException;
@@ -237,7 +236,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @return the unit config referred by the alias.
      *
      * @throws NotAvailableException    is thrown if no unit is matching the given alias.
-     * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
      */
     UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException;
 

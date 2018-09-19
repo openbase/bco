@@ -67,6 +67,7 @@ public interface UnitConfigCollectionProvider {
      */
     @RPCMethod
     UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
+    //todo release: use NotAvailableException instead
 
     /**
      * Method returns the unit config which is registered with the given
@@ -80,6 +81,7 @@ public interface UnitConfigCollectionProvider {
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
+    //todo release: use NotAvailableException instead
     default UnitConfig getUnitConfigById(final String unitConfigId, final UnitType unitType) throws CouldNotPerformException {
         final UnitConfig unitConfig = getUnitConfigById(unitConfigId);
 
