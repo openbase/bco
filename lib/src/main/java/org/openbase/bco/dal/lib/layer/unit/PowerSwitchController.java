@@ -21,21 +21,16 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
-import rst.domotic.unit.UnitConfigType;
+
+import java.util.concurrent.Future;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
@@ -50,12 +45,10 @@ public class PowerSwitchController extends AbstractDALUnitController<PowerSwitch
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
     
-    private PowerStateOperationService powerService;
-    
     public PowerSwitchController(final UnitHost unitHost, final PowerSwitchData.Builder builder) throws InstantiationException {
         super(PowerSwitchController.class, unitHost, builder);
     }
-    
+
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, POWER_STATE_SERVICE);

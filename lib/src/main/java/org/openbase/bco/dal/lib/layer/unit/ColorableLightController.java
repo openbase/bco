@@ -22,30 +22,23 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
-import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
@@ -56,13 +49,11 @@ import rst.vision.RGBColorType.RGBColor;
 
 import java.util.concurrent.Future;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
 
 /**
- * * @author Tamino Huxohl
- * * @author Marian Pohling
+ * @author Tamino Huxohl
+ * @author Marian Pohling
  */
 public class ColorableLightController extends AbstractDALUnitController<ColorableLightData, ColorableLightData.Builder> implements ColorableLight {
 
