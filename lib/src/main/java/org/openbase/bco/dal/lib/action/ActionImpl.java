@@ -98,14 +98,18 @@ public class ActionImpl implements Action {
     @Override
     public void init(final ActionDescription actionDescription) throws InitializationException {
         try {
-            // generate missing fields
             actionDescriptionBuilder = actionDescription.toBuilder();
 
             // update initiator type
-            final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId());
-            if ((initiatorUnitConfig.getUnitType() == UnitType.USER && initiatorUnitConfig.getUserConfig().getIsSystemUser())) {
-                actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.HUMAN);
-            } else {
+            if (actionDescriptionBuilder.getInitiator().hasUnitId() && !actionDescriptionBuilder.getInitiator().getUnitId().isEmpty()) {
+                final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId());
+                if ((initiatorUnitConfig.getUnitType() == UnitType.USER && initiatorUnitConfig.getUserConfig().getIsSystemUser())) {
+                    actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.HUMAN);
+                } else {
+                    actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.SYSTEM);
+                }
+            } else if(!actionDescriptionBuilder.getInitiator().hasInitiator()) {
+                // if no initiator is defined than use the system as initiator.
                 actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.SYSTEM);
             }
 
@@ -143,8 +147,11 @@ public class ActionImpl implements Action {
             description = description.replace(SERVICE_TYPE_KEY,
                     StringProcessor.transformToCamelCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
 
-            description = description.replace(INITIATOR_KEY,
-                    LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId()).getLabel()));
+            if (actionDescriptionBuilder.getInitiator().hasUnitId() && !actionDescriptionBuilder.getInitiator().getUnitId().isEmpty()) {
+                description = description.replace(INITIATOR_KEY, LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId()).getLabel()));
+            } else {
+                description = description.replace(INITIATOR_KEY, "Other");
+            }
 
             description = description.replace(SERVICE_ATTRIBUTE_KEY,
                     StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
