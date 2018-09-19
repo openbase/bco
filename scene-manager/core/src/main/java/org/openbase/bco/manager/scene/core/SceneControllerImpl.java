@@ -175,7 +175,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         }
 
         try {
-            MultiException.checkAndThrow("Could not fully init units of " + this, exceptionStack);
+            MultiException.checkAndThrow(() ->"Could not fully init units of " + this, exceptionStack);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
@@ -236,7 +236,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                     MultiException.push(this, ex, exceptionStack);
                 }
             }
-            MultiException.checkAndThrow("Could not execute all actions!", exceptionStack);
+            MultiException.checkAndThrow(() ->"Could not execute all actions!", exceptionStack);
             logger.info("Deactivate Scene[" + getLabel() + "] because all actions are successfully executed.");
         } catch (CouldNotPerformException | CancellationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getLabel() + "] execution failed!", ex), logger);

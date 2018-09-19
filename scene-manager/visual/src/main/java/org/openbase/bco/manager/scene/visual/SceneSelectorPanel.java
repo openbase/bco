@@ -301,7 +301,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
             }
 
-            MultiException.checkAndThrow("Could not acquire all informations!", exceptionStack);
+            MultiException.checkAndThrow(() ->"Could not acquire all informations!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
         } finally {
