@@ -33,11 +33,17 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
 import rsb.Handler;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 import java.util.concurrent.*;
 
 public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMessage> extends RSBRemoteService<M> {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
+    }
 
     /**
      * Observer updating data on login changes.

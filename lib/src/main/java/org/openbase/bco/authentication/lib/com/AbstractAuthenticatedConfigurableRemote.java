@@ -27,22 +27,23 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
-import org.openbase.jul.extension.rsb.com.exception.RSBResolvedException;
-import org.openbase.jul.extension.rsb.iface.RSBFuture;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
 import rsb.Handler;
-import rsb.RSBException;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-import javax.crypto.BadPaddingException;
 import java.util.concurrent.*;
 
 public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage, CONFIG extends GeneratedMessage> extends AbstractConfigurableRemote<M, CONFIG> {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
+    }
 
     private final Observer<SessionManager, String> loginObserver;
     /**
