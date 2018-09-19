@@ -590,7 +590,7 @@ public class FulfillmentHandler {
                                 }
                             }
                             // throw exception if at least one internal task has failed
-                            MultiException.checkAndThrow("Could not execute one command for internal units of device[" + unitConfig.getAlias(0) + "]", exceptionStack);
+                            MultiException.checkAndThrow(() ->"Could not execute one command for internal units of device[" + unitConfig.getAlias(0) + "]", exceptionStack);
                         } catch (InterruptedException ex) {
                             // interrupted, so cancel all internal tasks and finish normally
                             for (final Future internalFuture : internalFutureSet) {
