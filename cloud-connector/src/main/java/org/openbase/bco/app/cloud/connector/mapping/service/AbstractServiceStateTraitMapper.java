@@ -30,25 +30,27 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
+ *
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public abstract class AbstractServiceStateTraitMapper<SERVICE_STATE extends Message> implements ServiceStateTraitMapper<SERVICE_STATE> {
 
     private final ServiceType serviceType;
 
-    public AbstractServiceStateTraitMapper(ServiceType serviceType) {
+    public AbstractServiceStateTraitMapper(final ServiceType serviceType) {
         this.serviceType = serviceType;
     }
 
     @Override
-    public SERVICE_STATE map(JsonObject jsonObject, Command command) throws CouldNotPerformException {
+    public SERVICE_STATE map(final JsonObject jsonObject, final Command command) throws CouldNotPerformException {
         return map(jsonObject);
     }
 
-    protected abstract SERVICE_STATE map(JsonObject jsonObject) throws CouldNotPerformException;
+    protected abstract SERVICE_STATE map(final JsonObject jsonObject) throws CouldNotPerformException;
 
     @Override
-    public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) throws CouldNotPerformException {
+    public void addAttributes(final UnitConfig unitConfig, final JsonObject jsonObject) throws CouldNotPerformException {
 
     }
 

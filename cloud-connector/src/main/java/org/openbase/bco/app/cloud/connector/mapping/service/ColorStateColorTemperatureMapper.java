@@ -105,7 +105,7 @@ public class ColorStateColorTemperatureMapper extends AbstractServiceStateTraitM
     /**
      * Convert color temperature given in Kelvin to RGB using
      * <a href=http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/>this algorithm</a>.
-     * It is an approximation which works between 1000 and 40000.
+     * It is an approximation which works between 1000K and 40000K.
      *
      * @param temperature the temperature for the color in Kelvin
      * @return an rgb color type converted from the temperature

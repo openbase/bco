@@ -44,7 +44,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -320,7 +319,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             UnitConfig.Builder currentUnit;
             final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
             if (data.has(CURRENT_LOCATION_KEY)) {
-                final String currentLocationLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+                final String currentLocationLabel = data.get(CURRENT_LOCATION_KEY).getAsString();
                 try {
                     currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
                 } catch (NotAvailableException ex) {
@@ -329,7 +328,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             } else {
                 try {
-                    currentUnit = getUnitByLabelE(currentLabel).toBuilder();
+                    currentUnit = getUnitByLabel(currentLabel).toBuilder();
                 } catch (NotAvailableException ex) {
                     ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
                     return;
@@ -358,17 +357,18 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         }
     }
 
-    private UnitConfig getUnitByLabelE(final String label) throws CouldNotPerformException {
+    private UnitConfig getUnitByLabel(final String label) throws CouldNotPerformException {
         return fromList(Registries.getUnitRegistry().getUnitConfigsByLabel(label));
     }
 
     private UnitConfig getUnitByLabelAndLocation(final String label, final String locationLabel) throws CouldNotPerformException {
         final List<UnitConfig> locationList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(locationLabel, UnitType.LOCATION);
         if (locationList.isEmpty()) {
-            return getUnitByLabelE(label);
+            return getUnitByLabel(label);
         }
         return fromList(Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(label, locationList.get(0).getId()));
     }
+
 
     private UnitConfig fromList(final List<UnitConfig> unitConfigList) throws CouldNotPerformException {
         if (unitConfigList.isEmpty()) {
@@ -398,7 +398,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             UnitConfig.Builder currentUnit;
             final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
             if (data.has(CURRENT_LOCATION_KEY)) {
-                final String currentLocationLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+                final String currentLocationLabel = data.get(CURRENT_LOCATION_KEY).getAsString();
                 try {
                     currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
                 } catch (NotAvailableException ex) {
@@ -407,7 +407,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             } else {
                 try {
-                    currentUnit = getUnitByLabelE(currentLabel).toBuilder();
+                    currentUnit = getUnitByLabel(currentLabel).toBuilder();
                 } catch (NotAvailableException ex) {
                     ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
                     return;
@@ -802,12 +802,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             // if the user is not logged the login process will trigger an update anyway
             if (isLoggedIn()) {
                 requestSync();
-
-                // debug print
-//                JsonObject test = new JsonObject();
-//                test.addProperty(FulfillmentHandler.REQUEST_ID_KEY, "12345678");
-//                test.add(FulfillmentHandler.PAYLOAD_KEY, syncResponse);
-//                LOGGER.debug("new sync[" + isLoggedIn() + "]:\n" + gson.toJson(test));
             }
         }
     }

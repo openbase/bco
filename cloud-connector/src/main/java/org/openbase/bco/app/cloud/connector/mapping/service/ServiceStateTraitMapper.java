@@ -29,14 +29,52 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+/**
+ * Interface defining methods for mapping from a service state to a trait and back.
+ *
+ * @param <SERVICE_STATE> the service state this mapper handles. E.g. PowerState.
+ */
 public interface ServiceStateTraitMapper<SERVICE_STATE extends Message> {
 
+    /**
+     * Map from a trait to a service state depending on the command of the trait triggered.
+     *
+     * @param jsonObject the json object defining the trait value.
+     * @param command    the command of the trait triggered.
+     *
+     * @return a mapped service state.
+     *
+     * @throws CouldNotPerformException if mapping fails.
+     */
     SERVICE_STATE map(final JsonObject jsonObject, final Command command) throws CouldNotPerformException;
 
+    /**
+     * Map from a service state to a trait. The values for the trait have to be added
+     * to the json object parameter.
+     *
+     * @param serviceState the service state mapped to a trait.
+     * @param jsonObject   the json object to which values according to the mapped trait are added.
+     *
+     * @throws CouldNotPerformException if mapping fails.
+     */
     void map(final SERVICE_STATE serviceState, final JsonObject jsonObject) throws CouldNotPerformException;
 
+    /**
+     * Get the service
+     *
+     * @return
+     */
     ServiceType getServiceType();
 
+    /**
+     * Add attributes to the json object depending on the provided unit config. This is required for
+     * configuring a trait. For example the color temperature trait requires a min and a max temperature.
+     *
+     * @param unitConfig the unit config of the unit for which the attributes have to be added.
+     * @param jsonObject the json object to which the attributes are added.
+     *
+     * @throws CouldNotPerformException if resolving the attributes fails.
+     */
     void addAttributes(final UnitConfig unitConfig, final JsonObject jsonObject) throws CouldNotPerformException;
 
 }
