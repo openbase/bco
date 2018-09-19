@@ -27,7 +27,6 @@ import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -50,11 +49,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator.Initiator;
-import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.action.ActionParameterType.ActionParameter.Builder;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
@@ -84,14 +79,14 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
     private final ServiceRemoteFactory serviceRemoteFactory;
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
     private final Observer<Unit, Message> serviceDataObserver;
-    private final DataProvider<D> responsibleInstance;
+    private final Unit<D> responsibleInstance;
     private boolean filterInfrastructureUnits;
 
-    public ServiceRemoteManager(final DataProvider<D> responsibleInstance) {
+    public ServiceRemoteManager(final Unit<D> responsibleInstance) {
         this(responsibleInstance, true);
     }
 
-    public ServiceRemoteManager(final DataProvider<D> responsibleInstance, final boolean filterInfrastructureUnits) {
+    public ServiceRemoteManager(final Unit<D> responsibleInstance, final boolean filterInfrastructureUnits) {
         this.responsibleInstance = responsibleInstance;
         this.filterInfrastructureUnits = filterInfrastructureUnits;
         this.serviceRemoteMap = new HashMap<>();
@@ -199,6 +194,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
      * Method checks if the given {@code ServiceType} is currently available by this {@code ServiceRemoteManager}
      *
      * @param serviceType the {@code ServiceType} to check.
+     *
      * @return returns true if the {@code ServiceType} is available, otherwise false.
      */
     public boolean isServiceAvailable(final ServiceType serviceType) {
@@ -477,7 +473,12 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         return connectionPing;
     }
 
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
+        if (actionDescription.getServiceStateDescription().getUnitType().equals(responsibleInstance.getUnitType())) {
+            ActionDescription.Builder builder = actionDescription.toBuilder();
+            builder.getServiceStateDescriptionBuilder().setUnitType(UnitType.UNKNOWN);
+            actionDescription = builder.build();
+        }
         return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
     }
 
