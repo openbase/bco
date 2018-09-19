@@ -123,7 +123,6 @@ public class RemoteAction implements Action {
      *
      * @return {@inheritDoc }
      *
-     * @throws NotAvailableException {@inheritDoc }
      */
     @Override
     public ActionDescription getActionDescription() {

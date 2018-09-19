@@ -349,8 +349,6 @@ public class ActionDescriptionProcessor {
      * Method detects if a human or the system is triggering this action.
      *
      * @return
-     *
-     * @throws NotAvailableException
      */
     @Experimental
     public static ActionInitiator detectActionInitiator(final boolean authorized) {

@@ -40,7 +40,6 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
      * Method returns the action description of this action.
      *
      * @return the action description of this action.
-     * @throws org.openbase.jul.exception.NotAvailableException is thrown if the action description is not available yet which means the Action was never initialized.
      */
     ActionDescription getActionDescription();
 

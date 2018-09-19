@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -29,7 +29,6 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -56,10 +55,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -108,7 +104,7 @@ public class ActionImpl implements Action {
                 } else {
                     actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.SYSTEM);
                 }
-            } else if(!actionDescriptionBuilder.getInitiator().hasInitiator()) {
+            } else if (!actionDescriptionBuilder.getInitiator().hasInitiator()) {
                 // if no initiator is defined than use the system as initiator.
                 actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.SYSTEM);
             }
@@ -197,6 +193,7 @@ public class ActionImpl implements Action {
 
     /**
      * {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -206,6 +203,7 @@ public class ActionImpl implements Action {
 
     /**
      * {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -272,7 +270,7 @@ public class ActionImpl implements Action {
 
     public void waitUntilFinish() throws InterruptedException {
         synchronized (executionSync) {
-            if(!isExecuting()) {
+            if (!isExecuting()) {
                 return;
             }
             executionSync.wait();
@@ -303,8 +301,6 @@ public class ActionImpl implements Action {
      * {@inheritDoc }
      *
      * @return {@inheritDoc }
-     *
-     * @throws NotAvailableException {@inheritDoc }
      */
     @Override
     public ActionDescription getActionDescription() {
@@ -348,13 +344,13 @@ public class ActionImpl implements Action {
     private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
         try {
             result.get(getExecutionTime(), TimeUnit.MILLISECONDS);
-            if(isValid()) {
+            if (isValid()) {
                 Thread.sleep(getExecutionTime());
             }
         } catch (CancellationException | ExecutionException | TimeoutException ex) {
             throw new CouldNotPerformException("Action execution aborted!", ex);
         } finally {
-            if(!result.isDone()) {
+            if (!result.isDone()) {
                 result.cancel(true);
             }
         }
