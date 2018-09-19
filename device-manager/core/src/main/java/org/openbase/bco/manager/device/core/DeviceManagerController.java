@@ -21,6 +21,7 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.mock.OperationServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
@@ -29,8 +30,8 @@ import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
-import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -46,9 +47,7 @@ import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
  */
 public class DeviceManagerController implements DeviceManager, Launchable<Void>, VoidInitializable {
 
@@ -104,7 +103,6 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
                 @Override
                 public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
                     try {
-
                         // verify device manager support.
                         if (!DeviceManagerController.this.isSupported(config)) {
                             return false;
@@ -187,7 +185,9 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
      * to changing this behavior.
      *
      * @param config
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     @Override

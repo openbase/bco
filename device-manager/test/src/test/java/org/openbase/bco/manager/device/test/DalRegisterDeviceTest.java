@@ -10,12 +10,12 @@ package org.openbase.bco.manager.device.test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -36,7 +36,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Remote.ConnectionState;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,6 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -79,18 +77,17 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     public void testRegisterDeviceWhileRunning() throws Exception {
         System.out.println("testRegisterDeviceWhileRunning");
 
         // create a device class, save and remove the second unit template config
-        DeviceClass.Builder deviceClassBuilder = MockRegistry.generateDeviceClass("TestRegisterDeviceWhileRunning", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG", UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
+        DeviceClass.Builder deviceClassBuilder = MockRegistry.registerDeviceClass("TestRegisterDeviceWhileRunning", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG", UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
         UnitTemplateConfig powerSwitchTemplateConfig = deviceClassBuilder.getUnitTemplateConfig(1);
         deviceClassBuilder.removeUnitTemplateConfig(1);
 
-        // register the device class
-        DeviceClass deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
-//        mockRegistry.waitForDeviceClass(deviceClass);
+        // update the device class
+        DeviceClass deviceClass = Registries.getClassRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
 
         // register a device with that class and retrieve the colorable light
         UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.generateDeviceConfig(DEVICE_CONFIG_LABEL, "DeviceManagerLauncherTestSerialNumber", deviceClass)).get();
@@ -109,9 +106,8 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 
         // update the device class
         deviceClass = Registries.getClassRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
-//        mockRegistry.waitForDeviceClass(deviceClass);
 
-        // wait up to half a second until the device is updated, is done in this way because it can fail but is a specific unit test failure
+        // wait until the change is published to the unit registry
         long currentTime = System.currentTimeMillis();
         while (Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getId()).getDeviceConfig().getUnitIdCount() != deviceClass.getUnitTemplateConfigCount() && (System.currentTimeMillis() - currentTime) < 500) {
             Thread.sleep(10);
@@ -136,9 +132,8 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         deviceClassBuilder.removeUnitTemplateConfig(1);
 
         deviceClass = Registries.getClassRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
-//        mockRegistry.waitForDeviceClass(deviceClass);
 
-        // wait up to half a second until the device is updated, is done in this way because it can fail but is a specific unit test failure
+        // wait until the change is published to the unit registry
         currentTime = System.currentTimeMillis();
         while (Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getId()).getDeviceConfig().getUnitIdCount() != deviceClass.getUnitTemplateConfigCount() && (System.currentTimeMillis() - currentTime) < 500) {
             Thread.sleep(10);
@@ -161,7 +156,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         assertEquals("Remote has not disconnected even though its config should have been removed!", ConnectionState.DISCONNECTED, powerSwitchRemote.getConnectionState());
     }
 
-    boolean running = true;
+    private boolean running = true;
 
     @Test(timeout = 60000)
     public void testRegisteringManyDevices() throws Exception {
@@ -170,50 +165,48 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         String deviceClassLabel = "SimpleDevice";
         String productNumber = "ab42-123g";
         String company = "SimpleManufacturing";
-        DeviceClass.Builder deviceClassBuilder = MockRegistry.generateDeviceClass(deviceClassLabel, productNumber, company, UnitType.COLORABLE_LIGHT, UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
-
-        DeviceClass deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
+        DeviceClass deviceClass = MockRegistry.registerDeviceClass(deviceClassLabel, productNumber, company, UnitType.COLORABLE_LIGHT, UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH);
         System.out.println("Registered deviceClass[" + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "]");
 //        mockRegistry.waitForDeviceClass(deviceClass);
 
         final List<UnitConfig> registeredUnitConfigs = new ArrayList<>();
         final SyncObject synchronizer = new SyncObject("synchronizer");
 
-        GlobalCachedExecutorService.submit(() -> {
-            Random random = new Random();
-            while (running) {
-                try {
-                    synchronized (synchronizer) {
-                        synchronizer.wait();
-                    }
-                    if (!running) {
-                        break;
-                    }
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-
-                try {
-                    UnitConfig.Builder toChange = registeredUnitConfigs.get(random.nextInt(registeredUnitConfigs.size())).toBuilder();
-//                    if (random.nextDouble() < 0.7) {
-                    Registries.getUnitRegistry().updateUnitConfig(toChange.setBoundToUnitHost(!toChange.getBoundToUnitHost()).build()).get();
-//                    } else {
-//                        Registries.getUnitRegistry().updateUnitConfig(toChange.setLabel(toChange.getLabel() + "-").build()).get();
+//        GlobalCachedExecutorService.submit(() -> {
+//            Random random = new Random();
+//            while (running) {
+//                try {
+//                    synchronized (synchronizer) {
+//                        synchronizer.wait();
 //                    }
-                } catch (CouldNotPerformException | ExecutionException ex) {
-                    ExceptionPrinter.printHistory(ex, LOGGER);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        });
+//                    if (!running) {
+//                        break;
+//                    }
+//                } catch (InterruptedException ex) {
+//                    Thread.currentThread().interrupt();
+//                }
+//
+//                try {
+//                    UnitConfig.Builder toChange = registeredUnitConfigs.get(random.nextInt(registeredUnitConfigs.size())).toBuilder();
+////                    if (random.nextDouble() < 0.7) {
+//                    Registries.getUnitRegistry().updateUnitConfig(toChange.setBoundToUnitHost(!toChange.getBoundToUnitHost()).build()).get();
+////                    } else {
+////                        Registries.getUnitRegistry().updateUnitConfig(toChange.setLabel(toChange.getLabel() + "-").build()).get();
+////                    }
+//                } catch (CouldNotPerformException | ExecutionException ex) {
+//                    ExceptionPrinter.printHistory(ex, LOGGER);
+//                } catch (InterruptedException ex) {
+//                    Thread.currentThread().interrupt();
+//                }
+//            }
+//        });
         String deviceConfigLabel = "SimpleDevice";
         try {
             for (int i = 0; i < 10; ++i) {
                 String serialNumber = productNumber + "-" + i;
                 System.out.println("Register device");
                 final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.generateDeviceConfig(deviceConfigLabel + "_" + i, serialNumber, deviceClass)).get();
-                assertTrue("DeviceUnitConfig[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel())+ "] is not available after registration!", Registries.getUnitRegistry().containsUnitConfigById(deviceUnitConfig.getId()));
+                assertTrue("DeviceUnitConfig[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + "] is not available after registration!", Registries.getUnitRegistry().containsUnitConfigById(deviceUnitConfig.getId()));
                 final UnitConfig colorableLightConfig1 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
                 final UnitConfig colorableLightConfig2 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(1));
                 final UnitConfig powerSwitchConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(2));
@@ -228,12 +221,18 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
                     synchronizer.notifyAll();
                 }
 
-                System.out.println("GetColorRemote1");
-                final ColorableLightRemote colorableLightRemote1 = Units.getUnit(colorableLightConfig1, true, ColorableLightRemote.class);
-                System.out.println("GetColorRemote2");
-                final ColorableLightRemote colorableLightRemote2 = Units.getUnit(colorableLightConfig2, true, ColorableLightRemote.class);
-                System.out.println("GetPowerRemote");
-                final PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
+                System.out.println("GetColorRemote1: " + colorableLightConfig1.getAlias(0));
+                final ColorableLightRemote colorableLightRemote1 = Units.getUnit(colorableLightConfig1, false, ColorableLightRemote.class);
+                colorableLightRemote1.addDataObserver((source, data) -> LOGGER.info("Received data update for CL1: " + data.getTransactionId()));
+                colorableLightRemote1.waitForData();
+                System.out.println("GetColorRemote2: " + colorableLightConfig2.getAlias(0));
+                final ColorableLightRemote colorableLightRemote2 = Units.getUnit(colorableLightConfig2, false, ColorableLightRemote.class);
+                colorableLightRemote2.addDataObserver((source, data) -> LOGGER.info("Received data update for CL2: " + data.getTransactionId()));
+                colorableLightRemote2.waitForData();
+                System.out.println("GetPowerRemote: " + powerSwitchConfig.getAlias(0));
+                final PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, false, PowerSwitchRemote.class);
+                powerSwitchRemote.addDataObserver((source, data) -> LOGGER.info("Received data update for PW: " + data.getTransactionId()));
+                powerSwitchRemote.waitForData();
 
                 System.out.println("SetPowerState1");
                 colorableLightRemote1.setPowerState(PowerState.State.ON).get();
