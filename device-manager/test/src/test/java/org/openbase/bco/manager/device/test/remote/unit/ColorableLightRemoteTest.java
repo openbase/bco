@@ -289,18 +289,27 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             colorableLightRemote.setPowerState(PowerState.State.ON).get();
         }
 
-        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, (Observer<DataProvider<PowerState>, PowerState>) (source, data) -> {
+        final Observer<DataProvider<PowerState>, PowerState> powerStateObserver = (source, data) -> {
+            if(!data.hasValue()) {
+                LOGGER.warn("Notification with empty value");
+                return;
+            }
+
             powerStateObserverUpdateNumber++;
             LOGGER.info("Power state update {} with {}", powerStateObserverUpdateNumber, data);
-        });
+        };
+        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, powerStateObserver);
 
-        colorableLightRemote.setPowerState(PowerState.State.OFF).get();
-        colorableLightRemote.setPowerState(PowerState.State.ON).get();
+        colorableLightRemote.setPowerState(PowerState.State.OFF).get(); // notification 1
+        colorableLightRemote.setPowerState(PowerState.State.ON).get(); // notification 2
         colorableLightRemote.setNeutralWhite().get();
         colorableLightRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(14).build());
         colorableLightRemote.setColor(HSBColor.newBuilder().setBrightness(12).setSaturation(10).build());
+        colorableLightRemote.setPowerState(PowerState.State.OFF).get(); // notification 3
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
-        colorableLightRemote.setPowerState(PowerState.State.OFF).get();
-        assertEquals("PowerStateObserver wasn't notified the correct amount of times!", 4, powerStateObserverUpdateNumber);
+
+        assertEquals("PowerStateObserver wasn't notified the correct amount of times!", 3, powerStateObserverUpdateNumber);
+
+        colorableLightRemote.removeServiceStateObserver(ServiceType.POWER_STATE_SERVICE, powerStateObserver);
     }
 }
