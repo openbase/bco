@@ -34,7 +34,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.Logger;
@@ -46,10 +45,7 @@ import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.HSBColorType.HSBColor;
 
-import java.awt.*;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -282,7 +278,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     /**
      * Deactivated because timestamps are not filtered anymore.
      *
-     * @throws Exception
+     * @throws Exception if something fails.
      */
     @Test(timeout = 15000)
     public void testPowerStateObserver() throws Exception {
@@ -293,14 +289,9 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             colorableLightRemote.setPowerState(PowerState.State.ON).get();
         }
 
-        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, new Observer<DataProvider<PowerState>, PowerState>() {
-
-            int updateNumber = 0;
-
-            @Override
-            public void update(DataProvider<PowerState> source, PowerState data) throws Exception {
-                powerStateObserverUpdateNumber++;
-            }
+        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, (Observer<DataProvider<PowerState>, PowerState>) (source, data) -> {
+            powerStateObserverUpdateNumber++;
+            LOGGER.info("Power state update {} with {}", powerStateObserverUpdateNumber, data);
         });
 
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
