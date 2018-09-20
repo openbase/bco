@@ -139,18 +139,22 @@ public class SynchronizationProcessor {
         if (classIdentifier.startsWith("zwave")) {
             classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + discoveryResult.properties.get(ZWAVE_DEVICE_TYPE_KEY);
         }
-        return getDeviceClassIdentifier(classIdentifier);
+        return getDeviceClassByIdentifier(classIdentifier);
     }
 
-    public static DeviceClass getDeviceClassIdentifier(final ThingDTO thingDTO) throws CouldNotPerformException {
+    public static DeviceClass getDeviceClassByIdentifier(final ThingDTO thingDTO) throws CouldNotPerformException {
         String classIdentifier = thingDTO.thingTypeUID;
         if (thingDTO.thingTypeUID.startsWith("zwave")) {
-            classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + thingDTO.properties.get(ZWAVE_DEVICE_TYPE_KEY);
+            final String deviceType = thingDTO.properties.get(ZWAVE_DEVICE_TYPE_KEY);
+            if(deviceType == null) {
+                throw new NotAvailableException("ZWave DeviceType");
+            }
+            classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + deviceType;
         }
-        return getDeviceClassIdentifier(classIdentifier);
+        return getDeviceClassByIdentifier(classIdentifier);
     }
 
-    private static DeviceClass getDeviceClassIdentifier(final String classIdentifier) throws CouldNotPerformException {
+    private static DeviceClass getDeviceClassByIdentifier(final String classIdentifier) throws CouldNotPerformException {
         // iterate over all device classes
         for (final DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
             // get the most global meta config
@@ -169,7 +173,7 @@ public class SynchronizationProcessor {
             }
         }
         // throw exception because device class could not be found
-        throw new NotAvailableException("DeviceClass for class identifier[" + classIdentifier + "]");
+        throw new NotAvailableException("DeviceClass for identifier[" + classIdentifier + "]");
     }
 
     public static Map<ServiceType, ServicePattern> generateServiceMap(final UnitConfig unitConfig) {
