@@ -149,6 +149,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        super.waitForData();
+        // TODO: test and fix this issue
+        while (getUnitConfigs(UnitType.USER).size() == 0) {
+            logger.error("Wait for data on unit registry returned but no user available!");
+            Thread.sleep(100);
+        }
+    }
+
+    @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         unitConfigRemoteRegistry.addDataObserver(aliasMapUpdateObserver);
         super.activate();
