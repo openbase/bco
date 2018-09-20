@@ -23,8 +23,10 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 
 import org.junit.*;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.unit.LightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -33,6 +35,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -42,6 +45,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.HSBColorType.HSBColor;
 
@@ -92,59 +96,43 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         assertEquals("Color has not been set in time!", color, colorableLightRemote.getData().getColorState().getColor().getHsbColor());
     }
 
-//    @Test//(timeout = 10000)
-//    public void testControllingColorableLightViaLightRemote() throws Exception {
-//        System.out.println("testControllingColorableLightViaLightRemote");
-//
-//        colorableLightRemote.setPowerState(PowerState.State.OFF).get();
-//
-//        UnitConfig colorableLightConfig = colorableLightRemote.getConfig();
-//        UnitConfig.Builder lightConfig = UnitConfig.newBuilder().setLabel("LightUnit").setScope(colorableLightConfig.getScope()).setId(colorableLightConfig.getId()).setType(UnitTemplateType.UnitTemplate.UnitType.LIGHT);
-//        lightConfig.getEnablingStateBuilder().setValue(EnablingState.State.ENABLED);
-//        try {
-//            LightRemote lightRemote = new LightRemote();
-//            lightRemote.setSessionManager(SessionManager.getInstance());
-//            lightRemote.init(lightConfig.build());
-//            lightRemote.activate();
-//            lightRemote.requestData().get();
-//            lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-//            int j = 0;
-//
-//            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
-//            colorableLightRemote.requestData().get();
-//            assertEquals("ColorableLightRemote and LightRemote don't have the same powerState!", colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
-//            Thread.sleep(200);
-//
-//            lightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, (Observer<PowerState>) (Observable<PowerState> source, PowerState data) -> {
-//                System.out.println("Received power update in lightRemote [" + data.getValue() + "]");
-//            });
-//            colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, (Observer<PowerState>) (Observable<PowerState> source, PowerState data) -> {
-//                System.out.println("Received power update in colorableLightRemote [" + data.getValue() + "]");
-//            });
-//
-//            PowerState.State powerState;
-//            for (int a = 0; a <= 15; a++) {
-//                System.out.println("Iteration [" + a + "]");
-//                if ((a % 2) == 0) {
-//                    powerState = PowerState.State.OFF;
-//                } else {
-//                    powerState = PowerState.State.ON;
-//                }
-//
-//                lightRemote.setPowerState(powerState).get();
-//                colorableLightRemote.requestData().get();
-//                System.out.println("Before test!");
-//                assertEquals("ColorableLightRemote and LightRemote don't have the same powerState!", colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
-//            }
-////            int i = 0;
-////            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()).get();
-////            colorableLightRemote.requestData().get();
-////            System.out.println("Before test!");
-////            assertEquals("ColorableLightRemote and LightRemote don't have the same powerState!", colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
-//        } catch (Exception ex) {
-//            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-//        }
-//    }
+    /**
+     * Test controlling a colorable light using a light remote.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test(timeout = 10000)
+    public void testControllingViaLightRemote() throws Exception {
+        System.out.println("testControllingViaLightRemote");
+
+        colorableLightRemote.setPowerState(State.OFF).get();
+        final LightRemote lightRemote = new LightRemote();
+        try {
+            // create a light remote from colorable light config and wait for data
+            lightRemote.setSessionManager(SessionManager.getInstance());
+            lightRemote.init(colorableLightRemote.getConfig());
+            lightRemote.activate();
+            lightRemote.waitForData();
+
+            // test if the initial state was synced correctly
+            assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
+
+            // test controlling vid light remote
+            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
+            colorableLightRemote.requestData().get();
+            assertEquals(lightRemote.getPowerState(), colorableLightRemote.getPowerState());
+
+            // test controlling via colorable light remote
+            colorableLightRemote.setPowerState(State.OFF).get();
+            lightRemote.requestData().get();
+            assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
+        } catch (Exception ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        } finally {
+            // custom remote not handled by shutdown hook so make sure to call shutdown
+            lightRemote.shutdown();
+        }
+    }
 
     /**
      * Test of setColor method, of class ColorableLightRemote.
@@ -290,7 +278,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         }
 
         final Observer<DataProvider<PowerState>, PowerState> powerStateObserver = (source, data) -> {
-            if(!data.hasValue()) {
+            if (!data.hasValue()) {
                 LOGGER.warn("Notification with empty value");
                 return;
             }
