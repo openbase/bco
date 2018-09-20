@@ -303,8 +303,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         colorableLightRemote.setPowerState(PowerState.State.OFF).get(); // notification 1
         colorableLightRemote.setPowerState(PowerState.State.ON).get(); // notification 2
         colorableLightRemote.setNeutralWhite().get();
-        colorableLightRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(14).build());
-        colorableLightRemote.setColor(HSBColor.newBuilder().setBrightness(12).setSaturation(10).build());
+        colorableLightRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(14).build()).get();
+        colorableLightRemote.setColor(HSBColor.newBuilder().setBrightness(12).setSaturation(10).build()).get();
         colorableLightRemote.setPowerState(PowerState.State.OFF).get(); // notification 3
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
 
