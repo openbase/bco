@@ -30,7 +30,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.EnablingStateType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -104,7 +103,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             verifyTransformations();
 
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
-                if ((unitConfig.getUnitType() == UnitType.USER || unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) && LabelProcessor.getBestMatch(unitConfig.getLabel()).equals("Admin")) {
+                if (unitConfig.getUnitType() == UnitType.USER || unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) {
                     // no permissions for change of admin user or group
                     continue;
                 }
@@ -126,7 +125,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
 //                    System.out.println("waiting for transformation of " + unitConfig.getLabel());
                     Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException ex) {
-                    LOGGER.error("transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel())+ " NOT AVAILABLE!");
+                    LOGGER.error("transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " NOT AVAILABLE!");
                     Units.getRootToUnitTransformationFuture(unitConfig).get();
                 }
 
@@ -160,7 +159,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
                 // System.out.println("waiting for transformation of " + unitConfig.getLabel());
                 Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
             } catch (TimeoutException ex) {
-                LOGGER.error("transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel())+ " NOT AVAILABLE!");
+                LOGGER.error("transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " NOT AVAILABLE!");
                 Units.getRootToUnitTransformationFuture(unitConfig).get();
             }
         }
