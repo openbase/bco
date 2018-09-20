@@ -47,7 +47,6 @@ import org.openbase.jul.extension.rst.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rsb.Scope;
@@ -69,7 +68,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -133,14 +131,16 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                         continue;
                     }
                     // check if already handled
-                    if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
-                        serviceTypeSet.add(serviceDescription.getServiceType());
-                        try {
-                            Object serviceData = Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
-                            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
-                        } catch (CouldNotPerformException ex) {
-                            logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this remote controller.", ex);
-                        }
+                    if (serviceTypeSet.contains(serviceDescription.getServiceType())) {
+                        continue;
+                    }
+                    serviceTypeSet.add(serviceDescription.getServiceType());
+                    
+                    try {
+                        Object serviceData = Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
+                        serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
+                    } catch (CouldNotPerformException ex) {
+                        logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this remote controller.", ex);
                     }
                 }
             });

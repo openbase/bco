@@ -23,33 +23,52 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.pattern.provider.DataProvider;
 
 /**
- * Observable for service data. It uses a custom hash generator that filters responsible actions
- * and timestamps from the service data type so that changes in these values do not trigger a notification.
+ * Observable for service data. It uses a custom hash generator that filters responsible actions, timestamps
+ * and last value occurrences from the service data type so that changes in these values do not trigger a notification.
  *
  * @param <M> the service data type handled by this observable
+ *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ServiceDataFilteredObservable<M extends Message> extends MessageObservable<M> {
 
-    private static final String RESPONSIBLE_ACTION_FIELD = "responsible_action";
 
+    /**
+     * Construct a service data filtered observable.
+     *
+     * @param source {@inheritDoc}
+     */
     public ServiceDataFilteredObservable(final DataProvider<M> source) {
         super(source);
-
-        this.setHashGenerator((M value) -> removeResponsibleAction(removeTimestamps(value.toBuilder())).build().hashCode());
+        this.setHashGenerator((M value) -> clearUnobservedField(value.toBuilder()).build().hashCode());
     }
 
-    private Builder removeResponsibleAction(final Builder builder) {
-        Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
-        descriptorForType.getFields().stream().filter((field) ->
-                (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE && field.getName().equals(RESPONSIBLE_ACTION_FIELD))).forEachOrdered(builder::clearField);
-        return builder;
-    }
+    /**
+     * Clear responsible action, timestamp and last value occurrence fields from a builder if they are available.
+     *
+     * @param builder the builder from which the fields will be cleared.
+     *
+     * @return the builder with cleared fields.
+     */
+    private Builder clearUnobservedField(final Builder builder) {
+        final Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
+        for (final FieldDescriptor field : descriptorForType.getFields()) {
+            if (field.getType() == Type.MESSAGE && field.getName().equals(Service.RESPONSIBLE_ACTION_FIELD_NAME)) {
+                builder.clearField(field);
+            }
 
+            if (field.isRepeated() && field.getName().equals(ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE)) {
+                builder.clearField(field);
+            }
+        }
+        return removeTimestamps(builder);
+    }
 }
