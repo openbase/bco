@@ -25,6 +25,7 @@ package org.openbase.bco.app.openhab;
 import com.google.gson.*;
 import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
 import org.eclipse.smarthome.core.items.dto.ItemDTO;
+import org.eclipse.smarthome.core.thing.dto.ThingDTO;
 import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
@@ -207,8 +208,8 @@ public class OpenHABRestCommunicator implements Shutdownable {
     // THINGS
     // ==========================================================================================================================================
 
-    public EnrichedThingDTO registerThing(final EnrichedThingDTO enrichedThingDTO) throws CouldNotPerformException {
-        return jsonToClass(jsonParser.parse(postJson(THINGS_TARGET, enrichedThingDTO)), EnrichedThingDTO.class);
+    public EnrichedThingDTO registerThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+        return jsonToClass(jsonParser.parse(postJson(THINGS_TARGET, thingDTO)), EnrichedThingDTO.class);
     }
 
     public EnrichedThingDTO updateThing(final EnrichedThingDTO enrichedThingDTO) throws CouldNotPerformException {
@@ -419,7 +420,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
     private String validateResponse(final Response response) throws CouldNotPerformException, ProcessingException {
         final String result = response.readEntity(String.class);
 
-        if (response.getStatus() == 200 || response.getStatus() == 202) {
+        if (response.getStatus() == 200 || response.getStatus() == 201 || response.getStatus() == 202) {
             return result;
         } else if (response.getStatus() == 404) {
             throw new NotAvailableException("URL");

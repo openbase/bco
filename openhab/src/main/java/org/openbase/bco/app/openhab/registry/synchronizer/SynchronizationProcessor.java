@@ -212,11 +212,6 @@ public class SynchronizationProcessor {
                 continue;
             }
 
-            if (OpenHABRestCommunicator.getInstance().hasItem(OpenHABItemProcessor.generateItemName(unitConfig, serviceType))) {
-                // item is already registered
-                continue;
-            }
-
             for (final ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
                 if (serviceTemplateConfig.getServiceType() != serviceType) {
                     continue;
