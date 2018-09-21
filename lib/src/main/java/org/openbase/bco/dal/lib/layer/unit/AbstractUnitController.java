@@ -88,6 +88,7 @@ import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import rst.domotic.state.ActionStateType.ActionState.State;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -540,19 +541,25 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 return null;
             }
 
-            // store current action
-            Action currentAction = scheduledActionList.get(0);
+            // detect and store current action
+            Action currentAction = null;
+            for (int i = 0; i < scheduledActionList.size(); i++) {
+                if(scheduledActionList.get(i).getActionDescription().getActionState().getValue() == State.EXECUTING) {
+                    currentAction = scheduledActionList.get(i);
+                }
+            }
 
             // sort valid actions by priority
             Collections.sort(scheduledActionList, Comparator.comparingInt(Action::getRanking));
-            Action scheduledAction = null;
+
+            // detect action with highest ranking
+            Action nextAction = null;
             for (int i = 0; i < scheduledActionList.size(); i++) {
 
-                // execute prioritized action
-                scheduledAction = scheduledActionList.get(i);
+                nextAction = scheduledActionList.get(i);
 
-                // if the ranked action is still the same than we are finished
-                if (scheduledAction == currentAction) {
+                // if the next action is still the same than we are finished
+                if (nextAction == currentAction) {
                     return currentAction;
                 }
 
@@ -566,26 +573,26 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 // execute action with highest ranking
                 try {
-                    scheduledAction.execute();
+                    nextAction.execute();
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute " + scheduledAction + "!", ex), logger);
-                    scheduledAction = null;
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute " + nextAction + "!", ex), logger);
+                    nextAction = null;
                 }
             }
 
             // skip if actions is not available e.g. the first action failed and no second one is available.
-            if (scheduledAction == null) {
+            if (nextAction == null) {
                 return null;
             }
 
             // setup next schedule trigger
             try {
-                scheduleTimeout.restart(scheduledAction.getExecutionTime());
+                scheduleTimeout.restart(nextAction.getExecutionTime());
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
             }
 
-            return scheduledAction;
+            return nextAction;
         }
     }
 
