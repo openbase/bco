@@ -36,6 +36,7 @@ import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -73,11 +74,29 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
     }
 
-    private boolean serviceDescriptionListContainsDescription(List<ServiceDescription> serviceDescriptionList, ServiceDescription serviceDescription) {
-        return serviceDescriptionList.stream().anyMatch((description) -> (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == serviceDescription.getPattern()));
+    private boolean serviceDescriptionListContainsDescription(final List<ServiceDescription> serviceDescriptionList, final ServiceDescription serviceDescription) {
+        for (final ServiceDescription description : serviceDescriptionList) {
+            boolean patternMatch = description.getPattern() == serviceDescription.getPattern();
+            if (!patternMatch) {
+                continue;
+            }
+
+            if (description.getServiceTemplateId().equals(serviceDescription.getServiceTemplateId())) {
+                return true;
+            }
+
+            if (description.getServiceType() == serviceDescription.getServiceType()) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private boolean unitConfigContainsServiceDescription(UnitConfig.Builder unitConfig, ServiceDescription serviceDescription) {
-        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((description) -> (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == serviceDescription.getPattern()));
+    private boolean unitConfigContainsServiceDescription(final UnitConfig.Builder unitConfig, final ServiceDescription serviceDescription) {
+        final List<ServiceDescription> serviceDescriptionList = new ArrayList<>();
+        for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            serviceDescriptionList.add(serviceConfig.getServiceDescription());
+        }
+        return serviceDescriptionListContainsDescription(serviceDescriptionList, serviceDescription);
     }
 }

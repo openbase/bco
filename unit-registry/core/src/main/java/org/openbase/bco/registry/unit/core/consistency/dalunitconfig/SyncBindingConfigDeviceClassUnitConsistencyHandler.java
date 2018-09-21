@@ -82,7 +82,7 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
         boolean modification = false;
         List<ServiceConfig.Builder> serviceConfigList = new ArrayList<>(dalUnitConfig.getServiceConfigBuilderList());
         dalUnitConfig.clearServiceConfig();
-        for (ServiceConfig.Builder serviceConfig : serviceConfigList) {
+        for (final ServiceConfig.Builder serviceConfig : serviceConfigList) {
             BindingConfig bindingConfig;
             if (!serviceConfig.hasBindingConfig()) {
                 bindingConfig = BindingConfig.getDefaultInstance();
@@ -90,7 +90,7 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
                 bindingConfig = serviceConfig.getBindingConfig();
             }
 
-            String bindingId = deviceClass.getBindingConfig().getBindingId();
+            final String bindingId = deviceClass.getBindingConfig().getBindingId();
 
             if (!bindingConfig.hasBindingId() || !bindingConfig.getBindingId().equals(bindingId)) {
                 serviceConfig.setBindingConfig(bindingConfig.toBuilder().setBindingId(bindingId).build()).build();
