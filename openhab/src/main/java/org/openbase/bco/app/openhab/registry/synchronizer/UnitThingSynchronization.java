@@ -144,7 +144,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
         }
 
         // ignore system users
-        if (unitConfig.getUnitType() == UnitType.USER && unitConfig.getUserConfig().getIsSystemUser()) {
+        if (unitConfig.getUnitType() == UnitType.USER && unitConfig.getUserConfig().getSystemUser()) {
             return false;
         }
 
