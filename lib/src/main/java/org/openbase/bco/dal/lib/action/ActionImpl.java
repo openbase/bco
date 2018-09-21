@@ -176,7 +176,7 @@ public class ActionImpl implements Action {
                 throw new InvalidStateException("Referred unit is not compatible with the registered unit controller!");
             }
         } catch (CouldNotPerformException ex) {
-            throw new VerificationFailedException("Given ActionDescription[" + actionDescription.getLabel() + "] is invalid!", ex);
+            throw new VerificationFailedException("Given ActionDescription[" + actionDescription + "] is invalid!", ex);
         }
     }
 

@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.concurrent.*;
 
 import com.google.protobuf.Message;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroup;
@@ -104,11 +106,11 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitGroupRemote.class);
     private final ServiceRemoteManager<UnitGroupData> serviceRemoteManager;
 
-    public UnitGroupRemote() throws InstantiationException {
+    public UnitGroupRemote() {
         super(UnitGroupData.class);
         this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this, false) {
             @Override
-            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
+            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException {
                 return getSupportedServiceTypes();
             }
 
@@ -198,6 +200,11 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return serviceRemoteManager.applyAction(actionDescription);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return serviceRemoteManager.applyActionAuthenticated(authenticatedValue);
     }
 
     @Override

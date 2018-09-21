@@ -193,7 +193,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException;
 
     @RPCMethod
-    Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException, InterruptedException;
+    Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
 
     /**

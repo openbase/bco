@@ -26,6 +26,8 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -480,6 +482,21 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
             actionDescription = builder.build();
         }
         return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
+    }
+
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        if (!SessionManager.getInstance().isLoggedIn()) {
+            throw new CouldNotPerformException("Could not apply authenticated action because default session manager not logged in");
+        }
+
+        ActionDescription actionDescription;
+        try {
+            actionDescription = EncryptionHelper.decrypt(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class, SessionManager.getInstance().getUserId() == null);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
+        }
+
+        return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescription);
     }
 
     protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
