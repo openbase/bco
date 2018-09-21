@@ -168,7 +168,7 @@ public class BCOLogin {
             try {
                 // check if value is a valid user
                 final UnitConfig unitConfigById = Registries.getUnitRegistry(true).getUnitConfigById(userId);
-                if (unitConfigById.getUnitType() == UnitType.USER && (includeSystemUser || !unitConfigById.getUserConfig().getIsSystemUser())) {
+                if (unitConfigById.getUnitType() == UnitType.USER && (includeSystemUser || !unitConfigById.getUserConfig().getSystemUser())) {
                     return userId;
                 }
             } catch (NotAvailableException ex) {
@@ -178,7 +178,7 @@ public class BCOLogin {
             try {
                 // check if value is valid user
                 userId = Registries.getUnitRegistry().getUserUnitIdByUserName(userId);
-                if (!includeSystemUser && Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getIsSystemUser()) {
+                if (!includeSystemUser && Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getSystemUser()) {
                     throw new NotAvailableException("AutoLoginUser");
                 }
                 return userId;

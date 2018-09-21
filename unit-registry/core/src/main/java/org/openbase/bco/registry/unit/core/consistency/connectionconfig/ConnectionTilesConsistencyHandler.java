@@ -77,7 +77,7 @@ public class ConnectionTilesConsistencyHandler extends AbstractProtoBufRegistryC
         connectionConfig.addAllTileId(new ArrayList<>(tileIds.keySet()));
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(connectionUnitConfig), this);
+            throw new EntryModification(entry.setMessage(connectionUnitConfig, this), this);
         }
     }
 }

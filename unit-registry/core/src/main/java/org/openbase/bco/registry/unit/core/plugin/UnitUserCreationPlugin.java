@@ -108,7 +108,7 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
     public static UnitConfig findUser(final String unitId, final ProtoBufRegistry<String, UnitConfig, Builder> userRegistry) throws CouldNotPerformException {
         for (final UnitConfig userUnitConfig : userRegistry.getMessages()) {
             // skip users that are not system user
-            if (!userUnitConfig.getUserConfig().getIsSystemUser()) {
+            if (!userUnitConfig.getUserConfig().getSystemUser()) {
                 continue;
             }
             MetaConfigPool metaConfigPool = new MetaConfigPool();
@@ -138,7 +138,7 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
         final Entry.Builder entry = userUnitConfig.getMetaConfigBuilder().addEntryBuilder();
         entry.setKey(UNIT_ID_KEY).setValue(unitConfig.getId());
         final UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
-        userConfig.setIsSystemUser(true);
+        userConfig.setSystemUser(true);
         userConfig.setUserName(getUsername(unitConfig));
         registerUserAtAuthenticator(userRegistry.register(userUnitConfig.build()).getId());
     }
