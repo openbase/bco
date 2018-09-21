@@ -38,6 +38,7 @@ import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionParameterType.ActionParameter.Builder;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -439,5 +440,10 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     @Override
     public Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
+    }
+
+    @Override
+    public Future<AuthenticatedValue> applyActionAuthenticated(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return serviceRemoteManager.applyActionAuthenticated(authenticatedValue);
     }
 }

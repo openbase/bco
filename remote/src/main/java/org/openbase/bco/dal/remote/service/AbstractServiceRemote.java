@@ -22,23 +22,27 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.ProtocolMessageEnum;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.*;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.iface.Processable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
@@ -47,11 +51,11 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.ActionReferenceType.ActionReference;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
@@ -70,6 +74,7 @@ import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.*;
 /**
  * @param <S>  generic definition of the overall service type for this remote.
  * @param <ST> the corresponding state for the service type of this remote.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements ServiceRemote<S, ST> {
@@ -146,6 +151,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * service changes.
      *
      * @return the computed server state is returned.
+     *
      * @throws CouldNotPerformException if an underlying service throws an
      *                                  exception
      */
@@ -167,6 +173,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     /**
      * @return the current service state
+     *
      * @throws NotAvailableException if the service state data has not been set at
      *                               least once.
      */
@@ -231,7 +238,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * Method request the data of all internal unit remotes.
      *
      * @param failOnError flag decides if an exception should be thrown in case one data request fails.
+     *
      * @return the recalculated server state data based on the newly requested data.
+     *
      * @throws CouldNotPerformException is thrown if non of the request was successful. In case the failOnError is set to true any request error throws an CouldNotPerformException.
      */
     @Override
@@ -259,7 +268,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 }
 
                 try {
-                    MultiException.checkAndThrow(() ->"Could not request status of all internal remotes!", exceptionStack);
+                    MultiException.checkAndThrow(() -> "Could not request status of all internal remotes!", exceptionStack);
                 } catch (MultiException ex) {
                     if (failOnError || noResponse) {
                         throw ex;
@@ -279,6 +288,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * {@inheritDoc}
      *
      * @param unitConfig {@inheritDoc}
+     *
      * @throws InitializationException {@inheritDoc}
      * @throws InterruptedException    {@inheritDoc}
      */
@@ -337,6 +347,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * This includes the unitRemoteMap, the serviceMap, to the unitRemoteTypeMap for each unit type and super type.
      *
      * @param unitRemote the unit remote added to the internal maps
+     *
      * @throws CouldNotPerformException thrown if the unit does not implement the service specified by this service remote
      */
     private void addUnitRemoteToActiveMaps(final UnitRemote<?> unitRemote) throws CouldNotPerformException {
@@ -358,7 +369,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * This includes the unitRemoteMap, the serviceMap, to the unitRemoteTypeMap for each unit type and super type.
      *
      * @param unitId the id of the unit remote to be removed
+     *
      * @return the removed unit remote
+     *
      * @throws CouldNotPerformException thrown if the super unit types of the remote could not be resolved
      */
     private UnitRemote<?> removeUnitRemoteFromActiveMaps(final String unitId) throws CouldNotPerformException {
@@ -384,6 +397,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @param unitId               the id of the unit tested
      * @param ignoredUnitRemoteMap the map containing ignored units
      * @param ignored              flag determining if the unit should now be ignored
+     *
      * @throws CouldNotPerformException
      */
     private void updateIgnoredUnitMaps(final String unitId, final Map<String, UnitRemote<?>> ignoredUnitRemoteMap, final boolean ignored) throws CouldNotPerformException {
@@ -408,6 +422,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * service type of this service remote.
      *
      * @param configs a set of unit configurations.
+     *
      * @throws InitializationException is thrown if the service remote could not
      *                                 be initialized.
      * @throws InterruptedException    is thrown if the current thread is
@@ -425,7 +440,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
-            MultiException.checkAndThrow(() ->"Could not activate all service units!", exceptionStack);
+            MultiException.checkAndThrow(() -> "Could not activate all service units!", exceptionStack);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -648,13 +663,71 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         return unitActionDescription.build();
     }
 
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        if (!SessionManager.getInstance().isLoggedIn()) {
+            throw new CouldNotPerformException("Could not apply authenticated action because default session manager not logged in");
+        }
+
+        ActionDescription actionDescription;
+        try {
+            actionDescription = EncryptionHelper.decrypt(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class, SessionManager.getInstance().getUserId() == null);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
+        }
+
+        return applyActionAuthenticated(authenticatedValue, actionDescription);
+    }
+
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription actionDescription) throws CouldNotPerformException {
+        if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
+            throw new VerificationFailedException("Service type is not compatible to given action config!");
+        }
+
+        final List<Future<AuthenticatedValue>> actionFutureList = new ArrayList<>();
+
+        logger.info("ServiceRemote apply action authenticated");
+
+        for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
+            final Builder builder = ActionDescription.newBuilder(actionDescription);
+            builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
+
+            // update action chain
+            builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescription));
+
+            // encrypt action description again
+            final byte[] encrypt = EncryptionHelper.encrypt(builder.build(), SessionManager.getInstance().getSessionKey(), SessionManager.getInstance().getUserId() == null);
+            final AuthenticatedValue authValue = authenticatedValue.toBuilder().setValue(ByteString.copyFrom(encrypt)).build();
+
+            // apply action on remote
+            actionFutureList.add(unitRemote.applyActionAuthenticated(authValue));
+        }
+
+        return GlobalCachedExecutorService.allOf(input -> {
+            for (final Future<AuthenticatedValue> future : input) {
+                final TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
+                try {
+                    ticketAuthenticatorWrapper = AuthenticationClientHandler.
+                            handleServiceServerResponse(SessionManager.getInstance().getSessionKey(),
+                                    authenticatedValue.getTicketAuthenticatorWrapper(),
+                                    future.get().getTicketAuthenticatorWrapper());
+                    SessionManager.getInstance().updateTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+                } catch (ExecutionException ex) {
+                    throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+                }
+            }
+            return authenticatedValue.toBuilder().setTicketAuthenticatorWrapper(SessionManager.getInstance().getTicketAuthenticatorWrapper()).build();
+        }, actionFutureList);
+    }
+
     /**
      * Method generates a new service state out of the compatible service providers provided the units referred by the {@code unitType}.
      *
      * @param unitType       the unit type to filter the service provider collection. Use UNKNOWN as wildcard.
      * @param neutralState   the neutral state which is only used if all other instances are in the neutral state.
      * @param effectiveState the effective state which is set if at least one provider is referring this state.
+     *
      * @return a new generated service state builder containing all fused states.
+     *
      * @throws CouldNotPerformException is thrown in case the fusion fails.
      */
     protected Message.Builder generateFusedState(final UnitType unitType, final ProtocolMessageEnum neutralState, final ProtocolMessageEnum effectiveState) throws CouldNotPerformException {
@@ -758,6 +831,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @param timeout  maximal time to wait for the main controller data. After
      *                 the timeout is reached a TimeoutException is thrown.
      * @param timeUnit the time unit of the timeout.
+     *
      * @throws CouldNotPerformException is thrown in case the any error occurs,
      *                                  or if the given timeout is reached. In this case a TimeoutException is
      *                                  thrown.
@@ -850,6 +924,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * Method unlocks this instance.
      *
      * @param maintainer the instance which currently holds the lock.
+     *
      * @throws CouldNotPerformException is thrown if the instance could not be
      *                                  unlocked.
      */
@@ -968,7 +1043,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Override
     public Message getServiceState(ServiceType serviceType) throws NotAvailableException {
         if (serviceType != this.serviceType) {
-            throw new NotAvailableException("ServiceState", new InvalidStateException("ServiceType["+serviceType.name()+"] not compatible with "+ this));
+            throw new NotAvailableException("ServiceState", new InvalidStateException("ServiceType[" + serviceType.name() + "] not compatible with " + this));
         }
         return getData();
     }
