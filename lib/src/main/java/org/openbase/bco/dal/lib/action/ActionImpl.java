@@ -99,7 +99,7 @@ public class ActionImpl implements Action {
             // update initiator type
             if (actionDescriptionBuilder.getInitiator().hasUnitId() && !actionDescriptionBuilder.getInitiator().getUnitId().isEmpty()) {
                 final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId());
-                if ((initiatorUnitConfig.getUnitType() == UnitType.USER && initiatorUnitConfig.getUserConfig().getIsSystemUser())) {
+                if ((initiatorUnitConfig.getUnitType() == UnitType.USER && initiatorUnitConfig.getUserConfig().getSystemUser())) {
                     actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.HUMAN);
                 } else {
                     actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.SYSTEM);
