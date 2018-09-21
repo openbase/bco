@@ -26,6 +26,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -41,12 +44,16 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.LoggerFactory;
 import rst.configuration.LabelType.Label;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
@@ -203,5 +210,33 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
             assertEquals("BrightnessState  has not been set in time or the return value from the unit data is different!", brightness, unitGroupRemote.getData().getBrightnessState().getBrightness(), 0.1d);
         } catch (CouldNotPerformException ex) {
         }
+    }
+
+    /**
+     * Test the applyActionAuthenticated method of the unit group remote.
+     *
+     * @throws Exception if something fails.
+     */
+    @Test
+    public void testApplyActionAuthenticated() throws Exception {
+        System.out.println("testApplyActionAuthenticated");
+
+        // wait for data
+        unitGroupRemote.waitForData();
+        // init power to off
+        unitGroupRemote.setPowerState(State.OFF).get();
+
+        // init authenticated value
+        final PowerState serviceState = PowerState.newBuilder().setValue(State.ON).build();
+        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.POWER_STATE_SERVICE, unitGroupRemote).build();
+        final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, null, null);
+
+        // perform request
+        final AuthenticatedValueFuture<ActionFuture> future = new AuthenticatedValueFuture<>(unitGroupRemote.applyActionAuthenticated(authenticatedValue), ActionFuture.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+        // wait for request
+        future.get();
+
+        // test if new value has been set
+        assertEquals(serviceState.getValue(), unitGroupRemote.getPowerState().getValue());
     }
 }

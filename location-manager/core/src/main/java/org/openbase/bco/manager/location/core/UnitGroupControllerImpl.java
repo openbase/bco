@@ -103,7 +103,7 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
         super(UnitGroupControllerImpl.class, UnitGroupData.newBuilder());
         this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this, false) {
             @Override
-            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
+            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException {
                 return getSupportedServiceTypes();
             }
 

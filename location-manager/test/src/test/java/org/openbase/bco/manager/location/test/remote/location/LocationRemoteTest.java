@@ -21,45 +21,39 @@ package org.openbase.bco.manager.location.test.remote.location;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import org.junit.After;
+
 import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.LightSensorController;
-import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
-import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
-import org.openbase.bco.dal.lib.layer.unit.TemperatureControllerController;
-import org.openbase.bco.dal.lib.layer.unit.TemperatureSensorController;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.lib.layer.unit.*;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -67,11 +61,17 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
+public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LocationRemoteTest.class);
 
@@ -129,7 +129,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
         }
     }
 
-    private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException{
+    private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException {
         for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getUnitType()).getServiceDescriptionList()) {
             if (serviceDescription.getServiceType() == serviceType && serviceDescription.getPattern() == servicePattern) {
                 return true;
@@ -397,5 +397,32 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
+    }
+
+    /**
+     * Test the applyActionAuthenticated method of the location remote.
+     *
+     * @throws Exception if something fails.
+     */
+    @Test
+    public void testApplyActionAuthenticated() throws Exception {
+        System.out.println("testApplyActionAuthenticated");
+
+        // wait for data
+        locationRemote.waitForData();
+        locationRemote.setPowerState(State.OFF).get();
+
+        // init authenticated value
+        final PowerState serviceState = PowerState.newBuilder().setValue(State.ON).build();
+        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.POWER_STATE_SERVICE, locationRemote).build();
+        final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, null, null);
+
+        // perform request
+        final AuthenticatedValueFuture<ActionFuture> future = new AuthenticatedValueFuture<>(locationRemote.applyActionAuthenticated(authenticatedValue), ActionFuture.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+        // wait for request
+        future.get();
+
+        // test if new value has been set
+        assertEquals(serviceState.getValue(), locationRemote.getPowerState().getValue());
     }
 }
