@@ -131,15 +131,8 @@ public class SceneServiceStateConsistencyHandler extends AbstractProtoBufRegistr
                 continue;
             }
 
-            if (unitConfig.getUnitType() != builder.getUnitType() &&
-                    !CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(builder.getUnitType()).contains(unitConfig.getUnitType())) {
-                logger.debug("Update unitType of serviceStateDescription to {}", unitConfig.getUnitType().name());
-                builder.setUnitType(unitConfig.getUnitType());
-                modification = true;
-            }
-
             boolean validServiceTypeForUnit = false;
-            final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(builder.getUnitType());
+            final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitConfig.getUnitType());
             for (final ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
                 if (serviceDescription.getPattern() != ServicePattern.OPERATION) {
                     continue;
