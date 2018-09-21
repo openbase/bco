@@ -28,6 +28,7 @@ import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Initializable;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.state.ActionStateType.ActionState;
 
 import java.util.concurrent.TimeUnit;
 
@@ -68,6 +69,14 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
     }
 
     /**
+     * Returns true if there is still some execution time left.
+     * @return true execution time is not zero.
+     */
+    default boolean hasExecutionTimeLeft() {
+        return getExecutionTime() > 0;
+    }
+
+    /**
      * Time when this action was created.
      * @return time in milliseconds.
      */
@@ -78,7 +87,33 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
      * @return true if this action is still valid, otherwise false.
      */
     default boolean isValid() {
-        return getLifetime() < getExecutionTimePeriod(TimeUnit.MILLISECONDS);
+
+        // is valid if never executed and no valid
+        if (getExecutionTimePeriod(TimeUnit.MILLISECONDS) == 0 && !isDone()) {
+            return true;
+        }
+
+        // is valid if some execution time is still left.
+        return hasExecutionTimeLeft();
+    }
+
+    default boolean isDone() {
+        switch (getActionState()) {
+            case ABORTED:
+            case EXECUTION_FAILED:
+            case REJECTED:
+            case FINISHED:
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Return the current state of this action.
+     * @return the action state
+     */
+    default ActionState.State getActionState() {
+        return getActionDescription().getActionState().getValue();
     }
 
     void cancel();
@@ -88,4 +123,13 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
     ActionFuture getActionFuture();
 
     void waitUntilFinish() throws InterruptedException;
+
+    /**
+     * Action needs:
+     *
+     * Validy time.
+     * Direct action state.
+     * cancel.
+     *
+     */
 }

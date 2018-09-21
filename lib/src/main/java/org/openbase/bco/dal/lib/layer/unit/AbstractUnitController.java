@@ -481,8 +481,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             final ActionImpl action = new ActionImpl(actionDescription, this);
             try {
                 if (JPService.getProperty(JPResourceAllocation.class).getValue()) {
-                    scheduleAction(action);
-                    return CompletableFuture.completedFuture(action.getActionFuture());
+                    return scheduleAction(action);
                 } else {
                     return action.execute();
                 }
@@ -494,16 +493,22 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    private Future<Void> scheduleAction(final Action actionToSchedule) {
+    private Future<ActionFuture> scheduleAction(final Action actionToSchedule) {
         return GlobalCachedExecutorService.submit(() -> {
             synchronized (scheduledActionListLock) {
                 scheduledActionList.add(actionToSchedule);
                 Action executingAction = reschedule();
+
                 if (actionToSchedule != executingAction) {
                     logger.info("================================================================================");
-                    logger.info("{} was rejected by {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+
+                    if(executingAction == null) {
+                        logger.error("{} seems not to be valid an was excluded from execution of {}." , actionToSchedule, getLabel());
+                    }
+
+                    logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, getLabel(), getSchedulingIndex(actionToSchedule));
                 }
-                return null;
+                return actionToSchedule.getActionFuture();
             }
         });
     }
@@ -515,7 +520,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     /**
-     * Recalulate the action ranking and execute action with highest ranking if not executing or finished.
+     * Recalculate the action ranking and execute action with highest ranking if not executing or finished.
      * If the current action was not finished but those will be rejected.
      *
      * @return the {@code action} which is ranked as highest one and which is currently blocking this unit.

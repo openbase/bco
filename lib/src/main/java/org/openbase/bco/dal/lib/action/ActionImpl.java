@@ -218,10 +218,11 @@ public class ActionImpl implements Action {
                     synchronized (executionSync) {
 
                         LOGGER.info("================================================================================");
-                        LOGGER.info(actionDescriptionBuilder.getDescription());
 
                         // Initiate
                         updateActionState(ActionState.State.INITIATING);
+
+
 
                         try {
                             try {
@@ -244,6 +245,7 @@ public class ActionImpl implements Action {
                                 updateActionState(ActionState.State.FINISHING);
                                 return getActionFuture();
                             } catch (final CancellationException ex) {
+
                                 updateActionState(ActionState.State.REJECTED);
                                 throw ex;
                             }
@@ -344,6 +346,7 @@ public class ActionImpl implements Action {
     private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
         try {
             result.get(getExecutionTime(), TimeUnit.MILLISECONDS);
+            LOGGER.info(actionDescriptionBuilder.getDescription());
             if (isValid()) {
                 Thread.sleep(getExecutionTime());
             }
