@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -33,7 +33,6 @@ import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
@@ -55,7 +54,6 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -78,7 +76,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.ActionParameterType.ActionParameter.Builder;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -97,10 +94,8 @@ import rst.timing.TimestampType.Timestamp;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
@@ -112,6 +107,8 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
+
+    private static final SessionManager MOCKUP_SESSION_MANAGER = new SessionManager();
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
@@ -455,8 +452,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    private static final SessionManager MOCKUP_SESSION_MANAGER = new SessionManager();
-
     public Future<ActionFuture> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
         final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(ActionDescriptionProcessor.generateDefaultActionParameter(serviceAttribute, serviceType, this, false)).build();
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, MOCKUP_SESSION_MANAGER, this::applyActionAuthenticated);
@@ -466,17 +461,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
 
         // check if an existing action should just be canceled.
-//        if( actionDescription.hasId() && actionDescription.getCancel())  {
-//            Action actionToCancel;
-//            synchronized (scheduledActionListLock) {
-//
-//                actionToCancel = scheduledActionList.get(actionDescription.getId()).cancel();
-//                reschedule();
-//
-//            }
-//            actionToCancel.waitUntilFinish();
-//            return CompletableFuture.completedFuture(actionToCancel.getActionFuture());
-//        }
+        if (actionDescription.hasId() && !actionDescription.getId().isEmpty() && actionDescription.getCancel()) {
+            cancelAction(actionDescription);
+        }
 
         try {
             final ActionImpl action = new ActionImpl(actionDescription, this);
@@ -494,6 +481,37 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
+
+    private Future<ActionFuture> cancelAction(final ActionDescription actionDescription) {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                Action actionToCancel = null;
+                synchronized (scheduledActionListLock) {
+
+                    // lookup action to cancel
+                    for (Action action : scheduledActionList) {
+                        if (action.getId().equals(actionDescription.getId())) {
+                            actionToCancel = action;
+                            break;
+                        }
+                    }
+
+                    if (actionToCancel == null) {
+                        throw new NotAvailableException("action");
+                    }
+
+                    actionToCancel.cancel();
+                    actionToCancel.waitUntilFinish();
+                    reschedule();
+
+                }
+                return actionToCancel.getActionFuture();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex);
+            }
+        });
+    }
+
     private Future<ActionFuture> scheduleAction(final Action actionToSchedule) {
         return GlobalCachedExecutorService.submit(() -> {
             synchronized (scheduledActionListLock) {
@@ -503,8 +521,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 if (actionToSchedule != executingAction) {
                     logger.info("================================================================================");
 
-                    if(executingAction == null) {
-                        logger.error("{} seems not to be valid an was excluded from execution of {}." , actionToSchedule, getLabel());
+                    if (executingAction == null) {
+                        logger.error("{} seems not to be valid an was excluded from execution of {}.", actionToSchedule, getLabel());
                     }
 
                     logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, getLabel(), getSchedulingIndex(actionToSchedule));
@@ -544,7 +562,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // detect and store current action
             Action currentAction = null;
             for (int i = 0; i < scheduledActionList.size(); i++) {
-                if(scheduledActionList.get(i).getActionDescription().getActionState().getValue() == State.EXECUTING) {
+                if (scheduledActionList.get(i).getActionDescription().getActionState().getValue() == State.EXECUTING) {
                     currentAction = scheduledActionList.get(i);
                 }
             }

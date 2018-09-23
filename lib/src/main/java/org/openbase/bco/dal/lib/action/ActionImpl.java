@@ -59,7 +59,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
 
 /**
- * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
+ * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public class ActionImpl implements Action {
 

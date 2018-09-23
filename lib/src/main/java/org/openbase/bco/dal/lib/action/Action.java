@@ -25,6 +25,7 @@ package org.openbase.bco.dal.lib.action;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Executable;
+import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Initializable;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
@@ -35,7 +36,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture> {
+public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture>, Identifiable<String> {
+
+    @Override
+    default String getId() {
+        return getActionDescription().getId();
+    }
 
     /**
      * Method returns the action description of this action.
