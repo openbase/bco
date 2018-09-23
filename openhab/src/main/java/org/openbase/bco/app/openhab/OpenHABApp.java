@@ -24,6 +24,8 @@ package org.openbase.bco.app.openhab;
 
 import org.openbase.bco.app.openhab.manager.OpenHABDeviceManagerLauncher;
 import org.openbase.bco.app.openhab.registry.OpenHABConfigSynchronizerLauncher;
+import org.openbase.bco.app.openhab.sitemap.OpenHABSitemapSynchronizerLauncher;
+import org.openbase.bco.app.openhab.sitemap.SitemapSynchronizer;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPVerbose;
@@ -39,7 +41,8 @@ public class OpenHABApp {
         JPService.registerProperty(JPVerbose.class, true);
         AbstractLauncher.main(args, OpenHABApp.class,
                 OpenHABConfigSynchronizerLauncher.class,
-                OpenHABDeviceManagerLauncher.class
+                OpenHABDeviceManagerLauncher.class,
+                OpenHABSitemapSynchronizerLauncher.class
         );
     }
 }
