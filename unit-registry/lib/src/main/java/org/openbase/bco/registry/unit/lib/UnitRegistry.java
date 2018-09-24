@@ -44,7 +44,7 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import org.slf4j.LoggerFactory;
-import rst.configuration.LabelType.Label;
+import rst.language.LabelType.Label;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;

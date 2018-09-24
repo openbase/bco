@@ -32,7 +32,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.configuration.LabelType.Label;
+import rst.language.LabelType.Label;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.HashMap;

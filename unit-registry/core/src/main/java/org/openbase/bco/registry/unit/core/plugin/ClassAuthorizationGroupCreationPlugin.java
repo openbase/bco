@@ -36,7 +36,7 @@ import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
-import rst.configuration.LabelType.Label;
+import rst.language.LabelType.Label;
 import rst.configuration.MetaConfigType.MetaConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;

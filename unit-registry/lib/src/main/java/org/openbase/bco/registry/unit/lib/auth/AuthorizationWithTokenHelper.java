@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.lib.auth;
  */
 
 import com.google.protobuf.ProtocolStringList;
+import org.openbase.bco.authentication.lib.AuthPair;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
@@ -116,7 +117,7 @@ public class AuthorizationWithTokenHelper {
      *
      * @throws CouldNotPerformException thrown if the user does not have permissions or if the check fails
      */
-    public static String canDo(
+    public static AuthPair canDo(
             final AuthenticationBaseData authenticationBaseData,
             final UnitConfig unitConfig,
             final PermissionType permissionType,
@@ -142,7 +143,7 @@ public class AuthorizationWithTokenHelper {
      *
      * @throws CouldNotPerformException thrown if the user does not have permissions or if the check fails
      */
-    public static String canDo(
+    public static AuthPair canDo(
             final AuthenticationBaseData authenticationBaseData,
             final UnitConfig unitConfig,
             final PermissionType permissionType,
@@ -167,7 +168,7 @@ public class AuthorizationWithTokenHelper {
 
             // check if authenticated user has needed permissions
             if (AuthorizationHelper.canDo(unitConfig, userId, unitRegistry.getAuthorizationGroupMap(), unitRegistry.getLocationMap(), permissionType)) {
-                return resolveUsername(userId, unitRegistry);
+                return new AuthPair(userId);
             }
 
             try {
@@ -176,7 +177,7 @@ public class AuthorizationWithTokenHelper {
                     final ProtocolStringList memberIdList = unitRegistry.getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList();
                     for (final String id : userId.split("@")) {
                         if (memberIdList.contains(id)) {
-                            return resolveUsername(userId, unitRegistry);
+                            return new AuthPair(userId);
                         }
                     }
                 }
@@ -199,7 +200,7 @@ public class AuthorizationWithTokenHelper {
         }
     }
 
-    private static String authorizedByToken(
+    private static AuthPair authorizedByToken(
             final AuthorizationToken authorizationToken,
             final String userId,
             final UnitConfig unitConfig,
@@ -239,11 +240,8 @@ public class AuthorizationWithTokenHelper {
             }
         }
 
-        // build authorization string: x authorized by y
-        String result = resolveUsername(userId, unitRegistry);
-        result += " authorized by ";
-        result += resolveUsername(authorizationToken.getUserId(), unitRegistry);
-        return result;
+        // build the auth pair
+        return new AuthPair(userId, authorizationToken.getUserId());
     }
 
     private static boolean permitted(final UnitConfig unitConfig,
@@ -286,28 +284,5 @@ public class AuthorizationWithTokenHelper {
             return false;
         }
         return true;
-    }
-
-    private static String resolveUsername(final String userId, final UnitRegistry unitRegistry) throws CouldNotPerformException {
-        if (userId == null || userId.isEmpty()) {
-            return "Other";
-        } else {
-            final String[] split = userId.split("@");
-            if (split.length > 1) {
-                String result = "";
-                if (!split[0].isEmpty()) {
-                    result += unitRegistry.getUnitConfigById(split[0]).getUserConfig().getUserName();
-                }
-                if (!split[1].isEmpty()) {
-                    if (!result.isEmpty()) {
-                        result += "@";
-                    }
-                    result += unitRegistry.getUnitConfigById(split[1]).getUserConfig().getUserName();
-                }
-                return result;
-            } else {
-                return unitRegistry.getUnitConfigById(userId.replace("@", "")).getUserConfig().getUserName();
-            }
-        }
     }
 }

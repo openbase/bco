@@ -45,6 +45,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rst.processing.DescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -723,7 +724,8 @@ public class MockRegistry {
             // setup aliases
             for (int i = 0; i < alias.length; i++) {
                 Builder builder = dalUnits.get(i).toBuilder();
-                Registries.getUnitRegistry().updateUnitConfig(builder.addAlias(alias[i]).setDescription(alias[i]).build()).get();
+
+                Registries.getUnitRegistry().updateUnitConfig(builder.addAlias(alias[i]).setDescription( DescriptionProcessor.buildDescription(alias[i])).build()).get();
                 if (!Registries.getUnitRegistry().getUnitConfigById(dalUnits.get(i).getId()).getDescription().equals(alias[i])) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(
                             new FatalImplementationErrorException("Sync error after update [" + alias[i] + "]", MockRegistry.class),

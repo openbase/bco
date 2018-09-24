@@ -32,6 +32,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.language.DescriptionType.Description.MapFieldEntry;
 
 import java.util.*;
 
@@ -169,8 +170,10 @@ public class BCOUnitQueryPrinter {
             // print by description
             unitConfigs.clear();
             for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
-                if (unitConfig.getDescription().toLowerCase().contains(args[0].toLowerCase())) {
-                    unitConfigs.add(unitConfig);
+                for (MapFieldEntry mapFieldEntry : unitConfig.getDescription().getEntryList()) {
+                    if (mapFieldEntry.getValue().toLowerCase().contains(args[0].toLowerCase())) {
+                        unitConfigs.add(unitConfig);
+                    }
                 }
             }
             if (!unitConfigs.isEmpty()) {
