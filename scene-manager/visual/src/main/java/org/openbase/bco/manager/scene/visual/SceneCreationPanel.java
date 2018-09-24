@@ -47,7 +47,7 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.LoggerFactory;
-import rst.configuration.LabelType.Label;
+import rst.language.LabelType.Label;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
