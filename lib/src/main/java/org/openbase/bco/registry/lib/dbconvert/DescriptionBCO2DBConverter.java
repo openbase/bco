@@ -33,44 +33,49 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Converter which is able to convert json object from the label string
- * to the new label data type.
+ * Converter which is able to convert json object from the description string
+ * to the new description data type.
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class LabelDBConverter extends AbstractDBVersionConverter {
+public class DescriptionBCO2DBConverter extends AbstractDBVersionConverter {
 
-    public static final String LABEL_KEY = "label";
+    public static final String DESCRIPTION_KEY = "description";
     public static final String ENTRY_KEY = "entry";
     public static final String KEY_KEY = "key";
     public static final String VALUE_KEY = "value";
 
     public static final String LANGUAGE_CODE = Locale.getDefault().getLanguage();
 
-    public LabelDBConverter(DBVersionControl versionControl) {
+    public DescriptionBCO2DBConverter(DBVersionControl versionControl) {
         super(versionControl);
     }
 
     @Override
     public JsonObject upgrade(JsonObject outdatedDBEntry, Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
-        return updateLabel(outdatedDBEntry);
+        return updateDescription(outdatedDBEntry);
     }
 
-    protected JsonObject updateLabel(final JsonObject jsonObject) {
-        if (jsonObject.has(LABEL_KEY)) {
-            final String labelString = jsonObject.get(LABEL_KEY).getAsString();
+    protected JsonObject updateDescription(final JsonObject jsonObject) {
+        if (jsonObject.has(DESCRIPTION_KEY)) {
+            final String descriptionString = jsonObject.get(DESCRIPTION_KEY).getAsString();
 
-            final JsonObject label = new JsonObject();
+            if (descriptionString.trim().isEmpty()) {
+                jsonObject.remove(DESCRIPTION_KEY);
+                return jsonObject;
+            }
+
+            final JsonObject description = new JsonObject();
             final JsonArray entryList = new JsonArray();
             final JsonObject entry = new JsonObject();
 
             entry.addProperty(KEY_KEY, LANGUAGE_CODE);
-            entry.addProperty(VALUE_KEY, labelString);
+            entry.addProperty(VALUE_KEY, descriptionString);
 
             entryList.add(entry);
-            label.add(ENTRY_KEY, entryList);
+            description.add(ENTRY_KEY, entryList);
 
-            jsonObject.add(LABEL_KEY, label);
+            jsonObject.add(DESCRIPTION_KEY, description);
         }
 
         return jsonObject;
