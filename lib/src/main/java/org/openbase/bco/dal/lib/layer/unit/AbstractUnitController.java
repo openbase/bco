@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -27,11 +27,8 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthenticationBaseData;
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
-import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.Action;
@@ -75,6 +72,7 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
@@ -618,18 +616,18 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
             try {
-                final String authorityString = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
-                final String description = actionDescription.getDescription().replace(ActionImpl.INITIATOR_KEY, authorityString);
+                final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
+                final Builder actionDescriptionBuilder = actionDescription.toBuilder();
+                actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy()).setAuthorizedBy(authPair.getAuthorizedBy());
                 // TODO: user string should be set in action description ... all authentication info should be updated here
                 try {
-                    applyAction(actionDescription.toBuilder().setDescription(description).build()).get();
+                    applyAction(actionDescriptionBuilder.build()).get();
                 } catch (ExecutionException ex) {
                     throw new CouldNotPerformException("Could not restore snapshot authenticated", ex);
                 }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
-
             return null;
         }));
     }
@@ -670,7 +668,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             unitDataObservableMap.get(serviceTempus).shutdown();
         }
     }
-
 
     @Override
     public void applyDataUpdate(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException {
@@ -913,12 +910,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }));
     }
 
-    private String verifyAccessPermission(final AuthenticationBaseData authenticationBaseData, final ServiceType serviceType) throws CouldNotPerformException {
+    private AuthPair verifyAccessPermission(final AuthenticationBaseData authenticationBaseData, final ServiceType serviceType) throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 return AuthorizationWithTokenHelper.canDo(authenticationBaseData, getConfig(), PermissionType.ACCESS, Registries.getUnitRegistry(), getUnitType(), serviceType);
             } else {
-                return "Other";
+                return new AuthPair();
             }
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);

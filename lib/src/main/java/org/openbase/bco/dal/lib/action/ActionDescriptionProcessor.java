@@ -89,7 +89,7 @@ public class ActionDescriptionProcessor {
         actionParameter.setServiceStateDescription(serviceStateDescription);
         actionParameter.setPriority(Priority.NORMAL);
         actionParameter.setExecutionTimePeriod(0);
-        actionParameter.setInitiator(detectActionInitiator(authenticated));
+        actionParameter.setActionInitiator(detectActionInitiator(authenticated));
         return actionParameter;
     }
 
@@ -103,7 +103,7 @@ public class ActionDescriptionProcessor {
     public static ActionReference generateActionReference(final ActionDescriptionOrBuilder actionDescription) {
         ActionReference.Builder actionReference = ActionReference.newBuilder();
         actionReference.setActionId(actionDescription.getId());
-        actionReference.setInitiator(actionDescription.getInitiator());
+        actionReference.setActionInitiator(actionDescription.getActionInitiator());
         actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
         return actionReference.build();
     }
@@ -117,8 +117,8 @@ public class ActionDescriptionProcessor {
      */
     public static ActionReference generateActionReference(final ActionParameterOrBuilder actionParameter) {
         ActionReference.Builder actionReference = ActionReference.newBuilder();
-        actionReference.setActionId(actionParameter.getInitiator().getUnitId());
-        actionReference.setInitiator(actionParameter.getInitiator());
+        actionReference.setActionId(actionParameter.getActionInitiator().getInitiatorId());
+        actionReference.setActionInitiator(actionParameter.getActionInitiator());
         actionReference.setServiceStateDescription(actionParameter.getServiceStateDescription());
         return actionReference.build();
     }
@@ -176,7 +176,7 @@ public class ActionDescriptionProcessor {
 //     */
 //    public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceAttribute, final ServiceType serviceType, final boolean authorized) throws CouldNotPerformException {
 //        final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceAttribute, serviceType);
-//        actionDescriptionBuilder.setInitiator(detectActionInitiator(authorized));
+//        actionDescriptionBuilder.setActionInitiator(detectActionInitiator(authorized));
 //        return updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
 //    }
 //
@@ -295,7 +295,7 @@ public class ActionDescriptionProcessor {
         // add values from ActionParameter
         actionDescription.addAllCategory(actionParameter.getCategoryList());
         actionDescription.setLabel(actionParameter.getLabel());
-        actionDescription.setInitiator(actionParameter.getInitiator());
+        actionDescription.setActionInitiator(actionParameter.getActionInitiator());
         actionDescription.setServiceStateDescription(actionParameter.getServiceStateDescription());
         actionDescription.setExecutionTimePeriod(actionParameter.getExecutionTimePeriod());
         actionDescription.setPriority(actionParameter.getPriority());
@@ -355,12 +355,12 @@ public class ActionDescriptionProcessor {
         final ActionInitiator.Builder actionInitiatorBuilder = ActionInitiator.newBuilder();
         if (authorized && SessionManager.getInstance().isLoggedIn()) {
             if (SessionManager.getInstance().getUserId() != null) {
-                actionInitiatorBuilder.setUnitId(SessionManager.getInstance().getUserId());
+                actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getUserId());
             } else {
-                actionInitiatorBuilder.setUnitId(SessionManager.getInstance().getClientId());
+                actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getClientId());
             }
         } else {
-            actionInitiatorBuilder.clearUnitId();
+            actionInitiatorBuilder.clearInitiatorId();
         }
         return actionInitiatorBuilder.build();
     }

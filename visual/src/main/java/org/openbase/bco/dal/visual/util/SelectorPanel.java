@@ -29,6 +29,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
+import org.openbase.jul.extension.rst.processing.DescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -884,10 +885,11 @@ public class SelectorPanel extends javax.swing.JPanel {
                 locationLabel = "?";
             }
 
+            final String description = DescriptionProcessor.getBestMatch(unitConfig.getDescription(), "");
             return StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name())
                     + " = " + label + ""
                     + " @ " + locationLabel
-                    + (unitConfig.getDescription().isEmpty() ? "" : " (" + unitConfig.getDescription() + ")");
+                    + (description.isEmpty() ? "" : " (" + description + ")");
         }
 
         public boolean isNotSpecified() {

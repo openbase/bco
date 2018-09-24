@@ -33,7 +33,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.configuration.LabelType.Label;
+import rst.language.LabelType.Label;
 
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;

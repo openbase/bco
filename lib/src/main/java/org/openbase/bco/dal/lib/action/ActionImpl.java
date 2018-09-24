@@ -44,7 +44,7 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator.Initiator;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -52,8 +52,13 @@ import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.ActionStateType.ActionState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.language.DescriptionType.Description;
+import rst.language.DescriptionType.Description.MapFieldEntry;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
@@ -68,7 +73,14 @@ public class ActionImpl implements Action {
     public static final String UNIT_LABEL_KEY = "$UNIT_LABEL";
     public static final String SERVICE_ATTRIBUTE_KEY = "SERVICE_ATTRIBUTE";
     public static final String GENERIC_ACTION_LABEL = UNIT_LABEL_KEY + "[" + SERVICE_ATTRIBUTE_KEY + "]";
-    public static final String GENERIC_ACTION_DESCRIPTION = INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of unit " + UNIT_LABEL_KEY + " to " + SERVICE_ATTRIBUTE_KEY;
+
+
+
+    public static final Map<String, String> GENERIC_ACTION_DESCRIPTION_MAP = new HashMap<>();
+    static {
+        GENERIC_ACTION_DESCRIPTION_MAP.put("en", INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of " + UNIT_LABEL_KEY + " to " + SERVICE_ATTRIBUTE_KEY + ".");
+        GENERIC_ACTION_DESCRIPTION_MAP.put("de", INITIATOR_KEY + " hat " + SERVICE_TYPE_KEY + "  von " + UNIT_LABEL_KEY + " zu " + SERVICE_ATTRIBUTE_KEY + " geändert.");
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
     protected final AbstractUnitController unit;
@@ -97,16 +109,16 @@ public class ActionImpl implements Action {
             actionDescriptionBuilder = actionDescription.toBuilder();
 
             // update initiator type
-            if (actionDescriptionBuilder.getInitiator().hasUnitId() && !actionDescriptionBuilder.getInitiator().getUnitId().isEmpty()) {
-                final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId());
+            if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
+                final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId());
                 if ((initiatorUnitConfig.getUnitType() == UnitType.USER && initiatorUnitConfig.getUserConfig().getSystemUser())) {
-                    actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.HUMAN);
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
                 } else {
-                    actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.SYSTEM);
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
                 }
-            } else if (!actionDescriptionBuilder.getInitiator().hasInitiator()) {
+            } else if (!actionDescriptionBuilder.getActionInitiator().hasInitiatorType()) {
                 // if no initiator is defined than use the system as initiator.
-                actionDescriptionBuilder.getInitiatorBuilder().setInitiator(Initiator.SYSTEM);
+                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
             }
 
             // verify
@@ -121,7 +133,7 @@ public class ActionImpl implements Action {
             serviceState = Services.verifyAndRevalidateServiceState(serviceState);
 
             // generate or update action description
-            updateDescription(actionDescriptionBuilder, serviceState);
+            generateDescription(actionDescriptionBuilder, serviceState);
 
             // since its an action it has to be an operation service pattern
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
@@ -133,28 +145,39 @@ public class ActionImpl implements Action {
         }
     }
 
-    private void updateDescription(Builder actionDescriptionBuilder, Message serviceState) {
-        String description = actionDescriptionBuilder.getDescription().isEmpty() ? GENERIC_ACTION_DESCRIPTION : actionDescriptionBuilder.getDescription();
+    private void generateDescription(Builder actionDescriptionBuilder, Message serviceState) {
 
-        try {
-            description = description.replace(UNIT_LABEL_KEY,
-                    unit.getLabel());
+        final Description.Builder descriptionBuilder = Description.newBuilder();
+        for (Entry<String, String> languageDescriptionEntry : GENERIC_ACTION_DESCRIPTION_MAP.entrySet()) {
+            String description =  languageDescriptionEntry.getValue();
+            try {
+                // setup unit label
+                description = description.replace(UNIT_LABEL_KEY, unit.getLabel());
 
-            description = description.replace(SERVICE_TYPE_KEY,
-                    StringProcessor.transformToCamelCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
+                // setup service type
+                description = description.replace(SERVICE_TYPE_KEY,
+                        StringProcessor.transformToCamelCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
 
-            if (actionDescriptionBuilder.getInitiator().hasUnitId() && !actionDescriptionBuilder.getInitiator().getUnitId().isEmpty()) {
-                description = description.replace(INITIATOR_KEY, LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getInitiator().getUnitId()).getLabel()));
-            } else {
-                description = description.replace(INITIATOR_KEY, "Other");
+                // setup initiator
+                if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
+                    description = description.replace(INITIATOR_KEY, LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId()).getLabel()));
+                } else {
+                    description = description.replace(INITIATOR_KEY, "Other");
+                }
+
+                // setup service attribute
+                description = description.replace(SERVICE_ATTRIBUTE_KEY,
+                        StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
+
+                // format
+                description = StringProcessor.formatHumanReadable(description);
+
+                // generate
+                descriptionBuilder.addEntry(MapFieldEntry.newBuilder().setKey(languageDescriptionEntry.getKey()).setValue(description).build());
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not generate action description!", ex, LOGGER);
             }
-
-            description = description.replace(SERVICE_ATTRIBUTE_KEY,
-                    StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
-            actionDescriptionBuilder.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
-            LOGGER.warn("Generated action description: " + description);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not update action description!", ex, LOGGER);
+            actionDescriptionBuilder.setDescription(descriptionBuilder);
         }
     }
 
@@ -346,7 +369,6 @@ public class ActionImpl implements Action {
     private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
         try {
             result.get(getExecutionTime(), TimeUnit.MILLISECONDS);
-            LOGGER.info(actionDescriptionBuilder.getDescription());
             if (isValid()) {
                 Thread.sleep(getExecutionTime());
             }
