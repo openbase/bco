@@ -27,7 +27,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
-import rst.configuration.LabelType.Label;
+import rst.language.LabelType.Label;
 
 import static org.openbase.bco.app.openhab.sitemap.SitemapBuilder.SitemapElementType.*;
 

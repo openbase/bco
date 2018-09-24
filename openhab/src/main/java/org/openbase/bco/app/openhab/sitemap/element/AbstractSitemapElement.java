@@ -25,7 +25,7 @@ package org.openbase.bco.app.openhab.sitemap.element;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.LoggerFactory;
-import rst.configuration.LabelType.Label;
+import rst.language.LabelType.Label;
 
 public abstract class AbstractSitemapElement implements SitemapElement {
 
