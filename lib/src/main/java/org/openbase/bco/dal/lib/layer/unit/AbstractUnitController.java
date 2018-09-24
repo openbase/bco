@@ -618,7 +618,18 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             try {
                 final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
                 final Builder actionDescriptionBuilder = actionDescription.toBuilder();
-                actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy()).setAuthorizedBy(authPair.getAuthorizedBy());
+
+                // clear auth fields
+                actionDescriptionBuilder.getActionInitiatorBuilder().clearAuthenticatedBy().clearAuthorizedBy();
+
+                // setup auth fields
+                if(authPair.getAuthenticatedBy() != null) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
+                }
+                if(authPair.getAuthorizedBy() != null) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
+                }
+
                 // TODO: user string should be set in action description ... all authentication info should be updated here
                 try {
                     applyAction(actionDescriptionBuilder.build()).get();
