@@ -24,7 +24,6 @@ package org.openbase.bco.dal.lib.action;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import com.sun.org.glassfish.gmbal.Description;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
