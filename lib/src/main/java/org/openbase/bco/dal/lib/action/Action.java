@@ -29,14 +29,20 @@ import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Initializable;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.state.ActionStateType.ActionState;
 
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture>, Identifiable<String> {
+public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture>, Identifiable<String>, Comparable<Action> {
 
     @Override
     default String getId() {
@@ -130,12 +136,19 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
 
     void waitUntilFinish() throws InterruptedException;
 
-    /**
-     * Action needs:
-     *
-     * Validy time.
-     * Direct action state.
-     * cancel.
-     *
-     */
+    @Override
+    default int compareTo(Action o) {
+        // compute ranking via priority
+        // the priority of this action by subtracting the priority of the given action. If this action is initiated by a human it gets an extra point.
+        int priority = getActionDescription().getPriority().getNumber() + ((getActionDescription().getActionInitiator().getInitiatorType() == InitiatorType.HUMAN) ? 1 : 0) - o.getActionDescription().getPriority().getNumber();
+
+        // if no conflict is detected than just return the priority as ranking
+//        if (priority != 0) {
+            return priority;
+//        }
+
+//        // compute ranking by emphasis
+//        ActionDescription.
+//        return 0;
+    }
 }

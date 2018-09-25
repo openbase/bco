@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.action;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import com.sun.org.glassfish.gmbal.Description;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -52,8 +53,8 @@ import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.ActionStateType.ActionState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.language.DescriptionType.Description;
-import rst.language.DescriptionType.Description.MapFieldEntry;
+import rst.language.MultiLanguageTextType.MultiLanguageText;
+import rst.language.MultiLanguageTextType.MultiLanguageText.MapFieldEntry;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -147,7 +148,7 @@ public class ActionImpl implements Action {
 
     private void generateDescription(Builder actionDescriptionBuilder, Message serviceState) {
 
-        final Description.Builder descriptionBuilder = Description.newBuilder();
+        final MultiLanguageText.Builder multiLanguageTextBuilder = MultiLanguageText.newBuilder();
         for (Entry<String, String> languageDescriptionEntry : GENERIC_ACTION_DESCRIPTION_MAP.entrySet()) {
             String description =  languageDescriptionEntry.getValue();
             try {
@@ -173,11 +174,11 @@ public class ActionImpl implements Action {
                 description = StringProcessor.formatHumanReadable(description);
 
                 // generate
-                descriptionBuilder.addEntry(MapFieldEntry.newBuilder().setKey(languageDescriptionEntry.getKey()).setValue(description).build());
+                multiLanguageTextBuilder.addEntry(MapFieldEntry.newBuilder().setKey(languageDescriptionEntry.getKey()).setValue(description).build());
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory("Could not generate action description!", ex, LOGGER);
             }
-            actionDescriptionBuilder.setDescription(descriptionBuilder);
+            actionDescriptionBuilder.setDescription(multiLanguageTextBuilder);
         }
     }
 

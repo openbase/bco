@@ -36,9 +36,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.DescriptionProcessor;
+import org.openbase.jul.extension.rst.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
@@ -136,7 +135,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                         + " (" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name()) + ")"
                         + " @ " + locationLabel
                         + (unitHostLabel.isEmpty() ? "" : "of " + unitHostLabel)
-                        + (unitConfig.getDescription().getEntryList().isEmpty() ? "" : "[" + DescriptionProcessor.getBestMatch(unitConfig.getDescription()) + "]");
+                        + (unitConfig.getDescription().getEntryList().isEmpty() ? "" : "[" + MultiLanguageTextProcessor.getBestMatch(unitConfig.getDescription()) + "]");
             } catch (CouldNotPerformException ex) {
                 remoteLabel = "";
             }
