@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -50,6 +50,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.ActionStateType.ActionState.State;
+import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.language.MultiLanguageTextType.MultiLanguageText;
@@ -75,15 +76,15 @@ public class ActionImpl implements Action {
     public static final String GENERIC_ACTION_LABEL = UNIT_LABEL_KEY + "[" + SERVICE_ATTRIBUTE_KEY + "]";
 
 
-
     public static final Map<String, String> GENERIC_ACTION_DESCRIPTION_MAP = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
+
     static {
         GENERIC_ACTION_DESCRIPTION_MAP.put("en", INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of " + UNIT_LABEL_KEY + " to " + SERVICE_ATTRIBUTE_KEY + ".");
         GENERIC_ACTION_DESCRIPTION_MAP.put("de", INITIATOR_KEY + " hat " + SERVICE_TYPE_KEY + "  von " + UNIT_LABEL_KEY + " zu " + SERVICE_ATTRIBUTE_KEY + " geändert.");
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
-    protected final AbstractUnitController unit;
+    protected final AbstractUnitController<?, ?> unit;
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
     private final ServiceJSonProcessor serviceJSonProcessor;
     private final long creationTime;
@@ -92,7 +93,7 @@ public class ActionImpl implements Action {
     private ServiceDescription serviceDescription;
     private Future<ActionFuture> actionTask;
 
-    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController unit) throws InstantiationException {
+    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit) throws InstantiationException {
         try {
             this.creationTime = System.currentTimeMillis();
             this.unit = unit;
@@ -149,7 +150,7 @@ public class ActionImpl implements Action {
 
         final MultiLanguageText.Builder multiLanguageTextBuilder = MultiLanguageText.newBuilder();
         for (Entry<String, String> languageDescriptionEntry : GENERIC_ACTION_DESCRIPTION_MAP.entrySet()) {
-            String description =  languageDescriptionEntry.getValue();
+            String description = languageDescriptionEntry.getValue();
             try {
                 // setup unit label
                 description = description.replace(UNIT_LABEL_KEY, unit.getLabel());
@@ -244,7 +245,6 @@ public class ActionImpl implements Action {
 
                         // Initiate
                         updateActionState(ActionState.State.INITIATING);
-
 
 
                         try {
@@ -379,6 +379,40 @@ public class ActionImpl implements Action {
                 result.cancel(true);
             }
         }
+    }
+
+    @Override
+    public int compareTo(Action anotherAction) {
+        // compute ranking via priority
+        // the priority of this action by subtracting the priority of the given action. If this action is initiated by a human it gets an extra point.
+        int priority = getActionDescription().getPriority().getNumber() + ((getActionDescription().getActionInitiator().getInitiatorType() == InitiatorType.HUMAN) ? 1 : 0) - anotherAction.getActionDescription().getPriority().getNumber();
+
+        // if no conflict is detected than just return the priority as ranking
+        if (priority != 0) {
+            return priority;
+        }
+
+
+        EmphasisState emphasisState;
+
+        try {
+            emphasisState = unit.getBaseLocationRemote().getEmphasisState();
+        } catch (CouldNotPerformException ex) {
+            // create mockup to guarantee safety operations
+            emphasisState = EmphasisState.newBuilder().setEconomy(1d / 3d).setSecurity(1d / 3d).setComfort(1d / 3d).build();
+        }
+
+        double emphasis = getEmphasisValue(emphasisState) - anotherAction.getEmphasisValue(emphasisState);
+
+        // if no conflict is detected than just return the emphasis as ranking
+        if (emphasis != 0) {
+            // multiply with 100 to project 0-1 scale to valid in value
+            return (int) (emphasis * 100);
+        }
+
+        // todo implement individual action scheduling to avoid conflicts.
+        LOGGER.warn("Conflict between {} and {} detected!", this, anotherAction);
+        return 0;
     }
 
     @Override

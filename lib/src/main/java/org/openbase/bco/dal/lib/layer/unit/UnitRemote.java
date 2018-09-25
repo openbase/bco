@@ -25,6 +25,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
 import rst.domotic.unit.UnitConfigType.UnitConfig;

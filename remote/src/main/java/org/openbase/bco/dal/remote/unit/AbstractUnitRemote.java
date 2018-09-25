@@ -518,23 +518,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     /**
-     * This method returns the base location config of this unit.
-     * If this unit is a location, than its parent location config is returned,
-     * otherwise the base location config is returned which refers the location where this unit is placed in.
-     *
-     * @return a unit config of the base location.
-     *
-     * @throws NotAvailableException is thrown if the location config is currently not available.
-     */
-    public UnitConfig getBaseLocationConfig() throws NotAvailableException {
-        try {
-            return Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId(), UnitType.LOCATION);
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("LocationConfig", ex);
-        }
-    }
-
-    /**
      * This method returns the base location remote of this unit.
      * If this unit is a location, than its parent location remote is returned,
      * otherwise the base location remote is returned which refers the location where this unit is placed in.

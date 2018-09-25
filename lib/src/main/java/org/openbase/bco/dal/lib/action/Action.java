@@ -22,15 +22,18 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Initializable;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.state.ActionStateType.ActionState;
+import rst.domotic.state.EmphasisStateType.EmphasisState;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -136,19 +139,25 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
 
     void waitUntilFinish() throws InterruptedException;
 
-    @Override
-    default int compareTo(Action o) {
-        // compute ranking via priority
-        // the priority of this action by subtracting the priority of the given action. If this action is initiated by a human it gets an extra point.
-        int priority = getActionDescription().getPriority().getNumber() + ((getActionDescription().getActionInitiator().getInitiatorType() == InitiatorType.HUMAN) ? 1 : 0) - o.getActionDescription().getPriority().getNumber();
-
-        // if no conflict is detected than just return the priority as ranking
-//        if (priority != 0) {
-            return priority;
-//        }
-
-//        // compute ranking by emphasis
-//        ActionDescription.
-//        return 0;
+    default double getEmphasisValue(final EmphasisState emphasisState) {
+        double emphasisValue = 0;
+        for (Category category : getActionDescription().getCategoryList()) {
+            switch (category) {
+                case ECONOMY:
+                    emphasisValue += Math.max(emphasisValue, emphasisState.getEconomy());
+                    break;
+                case COMFORT:
+                    emphasisValue += Math.max(emphasisValue, emphasisState.getComfort());
+                    break;
+                case SECURITY:
+                    emphasisValue += Math.max(emphasisValue, emphasisState.getSecurity());
+                    break;
+                case SAVETY:
+                    // because {@code emphasisValue} is max 1.0 we add 10 to force the safety category.
+                    emphasisValue += 10;
+                    break;
+            }
+        }
+        return emphasisValue;
     }
 }
