@@ -45,7 +45,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rst.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -646,11 +645,11 @@ public class MockRegistry {
 
             // powerConsumptionSensor, powerPlug
             DeviceClass powerPlugClass = registerDeviceClass(
-                            LABEL_DEVICE_CLASS_PLUGWISE_POWER_PLUG,
-                            "070140",
-                            COMPANY_PLUGWISE,
-                            UnitType.POWER_SWITCH,
-                            UnitType.POWER_CONSUMPTION_SENSOR);
+                    LABEL_DEVICE_CLASS_PLUGWISE_POWER_PLUG,
+                    "070140",
+                    COMPANY_PLUGWISE,
+                    UnitType.POWER_SWITCH,
+                    UnitType.POWER_CONSUMPTION_SENSOR);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_POWER_PLUG, serialNumber, powerPlugClass));
 
@@ -723,13 +722,27 @@ public class MockRegistry {
 
             // setup aliases
             for (int i = 0; i < alias.length; i++) {
-                Builder builder = dalUnits.get(i).toBuilder();
+                final Builder builder = dalUnits.get(i).toBuilder();
 
-                Registries.getUnitRegistry().updateUnitConfig(builder.addAlias(alias[i]).setDescription( MultiLanguageTextProcessor.buildMultiLanguageText(alias[i])).build()).get();
-                if (!Registries.getUnitRegistry().getUnitConfigById(dalUnits.get(i).getId()).getDescription().equals(alias[i])) {
+                // add alias
+                builder.addAlias(alias[i]);
+
+                // update unit config
+                Registries.getUnitRegistry().updateUnitConfig(builder.build()).get();
+
+                // validate that get on the unit registry returns the updated config by validating if it contains the alias
+                final UnitConfig unitConfigById = Registries.getUnitRegistry().getUnitConfigById(builder.getId());
+                boolean containsNewAlias = false;
+                for (String ali : unitConfigById.getAliasList()) {
+                    if (ali.equals(alias[i])) {
+                        containsNewAlias = true;
+                        break;
+                    }
+                }
+                if (!containsNewAlias) {
+                    LOGGER.error("Unit [" + unitConfigById + "] does not contain new alias [" + alias[i] + "]");
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(
-                            new FatalImplementationErrorException("Sync error after update [" + alias[i] + "]", MockRegistry.class),
-                            LOGGER);
+                            new FatalImplementationErrorException("Sync error after adding alias [" + alias[i] + "]", MockRegistry.class), LOGGER);
                 }
             }
         } catch (CouldNotPerformException ex) {
