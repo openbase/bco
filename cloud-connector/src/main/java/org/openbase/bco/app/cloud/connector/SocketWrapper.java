@@ -37,9 +37,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Launchable;
@@ -49,8 +47,6 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.language.LabelType.Label;
-import rst.language.LabelType.Label.MapFieldEntry;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -60,9 +56,12 @@ import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+import rst.language.LabelType.Label;
+import rst.language.LabelType.Label.MapFieldEntry;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -85,6 +84,9 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private static final String TOKEN_KEY = "accessToken";
     private static final String SUCCESS_KEY = "success";
     private static final String ERROR_KEY = "error";
+
+    private static final String RESPONSE_GENERIC_ERROR = "Entschuldige, es ist ein Fehler aufgetreten.";
+//    private static final String
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketWrapper.class);
 
@@ -315,9 +317,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         LOGGER.info("Received relocation data:\n" + gson.toJson(data));
 
         String response = "";
+        String currentLabel;
+        String newLocationLabel;
         try {
             UnitConfig.Builder currentUnit;
-            final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+            currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
             if (data.has(CURRENT_LOCATION_KEY)) {
                 final String currentLocationLabel = data.get(CURRENT_LOCATION_KEY).getAsString();
                 try {
@@ -334,7 +338,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     return;
                 }
             }
-            final String newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().replace(" ", "");
+            newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().replace(" ", "");
             final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(newLocationLabel, UnitType.LOCATION);
             if (locations.isEmpty()) {
                 ack.call("Ich kann die Location " + newLocationLabel + " nicht finden.");
@@ -343,14 +347,23 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             response = currentLabel + " wurde in die Location " + newLocationLabel + " verschoben.";
             currentUnit.getPlacementConfigBuilder().setLocationId(locations.get(0).getId());
-            Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
+            try {
+                Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
+            } catch (ExecutionException ex) {
+                if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
+                    ack.call("Du besitzt nicht die benötigten Rechte um die Unit " + currentLabel + " in die Location " + newLocationLabel + " zu verschieben.");
+                    return;
+                }
+                ack.call(RESPONSE_GENERIC_ERROR);
+                return;
+            }
             ack.call(response);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            ack.call(RESPONSE_GENERIC_ERROR);
             ExceptionPrinter.printHistory(ex, LOGGER);
-        } catch (ExecutionException | CouldNotPerformException ex) {
-            ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+        } catch (CouldNotPerformException ex) {
+            ack.call(RESPONSE_GENERIC_ERROR);
             ExceptionPrinter.printHistory(ex, LOGGER);
         } catch (TimeoutException ex) {
             ack.call(response.replace("wurde", "wird"));
@@ -394,9 +407,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         LOGGER.info("Received renaming data:\n" + gson.toJson(data));
 
         String response = "";
+        String currentLabel;
+        String newLabel;
         try {
             UnitConfig.Builder currentUnit;
-            final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+            currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
             if (data.has(CURRENT_LOCATION_KEY)) {
                 final String currentLocationLabel = data.get(CURRENT_LOCATION_KEY).getAsString();
                 try {
@@ -414,17 +429,26 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
 
-            final String newLabel = data.get(NEW_LABEL_KEY).getAsString().replace(" ", "");
+            newLabel = data.get(NEW_LABEL_KEY).getAsString().replace(" ", "");
             LabelProcessor.replace(currentUnit.getLabelBuilder(), currentLabel, newLabel);
 
             response = currentLabel + " wurde zu " + newLabel + " umbenannt.";
-            Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
+            try {
+                Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
+            } catch (ExecutionException ex) {
+                if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
+                    ack.call("Du besitzt nicht die benötigten Rechte um " + currentLabel + " in " + newLabel + " umzubenennen.");
+                    return;
+                }
+                ack.call(RESPONSE_GENERIC_ERROR);
+                return;
+            }
             ack.call(response);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
             ExceptionPrinter.printHistory(ex, LOGGER);
-        } catch (ExecutionException | CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
             ExceptionPrinter.printHistory(ex, LOGGER);
         } catch (TimeoutException ex) {
@@ -724,7 +748,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     sceneConfig.addRequiredServiceStateDescription(serviceStateDescription);
                 }
             } catch (ExecutionException | TimeoutException ex) {
-                acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
+                if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
+                    acknowledgement.call("Du besitzt nicht die Rechte eine Szene auf der Location " + locationRemote.getLabel() + " aufzunehmen.");
+                    return;
+                }
+                acknowledgement.call(RESPONSE_GENERIC_ERROR);
                 ExceptionPrinter.printHistory(ex, LOGGER);
                 return;
             }
@@ -739,17 +767,21 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
                 acknowledgement.call("Die Szene " + label + " wurde erfolgreich registriert.");
             } catch (ExecutionException ex) {
-                acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
+                if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
+                    acknowledgement.call("Du besitzt nicht die Rechte eine Szene zu registrieren.");
+                    return;
+                }
+                acknowledgement.call(RESPONSE_GENERIC_ERROR);
                 ExceptionPrinter.printHistory(ex, LOGGER);
             } catch (TimeoutException e) {
                 acknowledgement.call("Die Szene wird gerade registriert");
             }
         } catch (InterruptedException ex) {
-            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
+            acknowledgement.call(RESPONSE_GENERIC_ERROR);
             Thread.currentThread().interrupt();
             ExceptionPrinter.printHistory(ex, LOGGER);
         } catch (CouldNotPerformException ex) {
-            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten");
+            acknowledgement.call(RESPONSE_GENERIC_ERROR);
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
     }
