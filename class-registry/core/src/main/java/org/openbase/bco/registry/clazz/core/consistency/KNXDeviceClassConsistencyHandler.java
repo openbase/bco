@@ -65,7 +65,7 @@ public class KNXDeviceClassConsistencyHandler extends AbstractProtoBufRegistryCo
         }
 
         final DeviceClass.Builder deviceClass = entry.getMessage().toBuilder();
-        final String separator = "_";
+        final String separator = "-";
 
         // count number of same service types in device class
         final Map<ServiceType, Integer> serviceTypeNumberMap = new HashMap<>();
@@ -103,6 +103,13 @@ public class KNXDeviceClassConsistencyHandler extends AbstractProtoBufRegistryCo
                 try {
                     // extract channel parameter
                     channelTypeUID = variableProvider.getValue(OPENHAB_THING_CHANNEL_TYPE_UID_KEY);
+                    // underscore is not a supported character in openHAB so remove the channel type id,
+                    // this is a fix because these configurations where created this way initially
+                    if (channelTypeUID.contains("_")) {
+                        serviceTemplateConfig.clearMetaConfig();
+                        serviceWithoutChannel.add(serviceTemplateConfig);
+                        continue;
+                    }
                     // split at separator
                     final String[] split = channelTypeUID.split(separator);
                     // extract number at the end of the channelTypeUID
@@ -129,7 +136,7 @@ public class KNXDeviceClassConsistencyHandler extends AbstractProtoBufRegistryCo
             Entry.Builder metaConfigEntry = builder.getMetaConfigBuilder().addEntryBuilder();
             // add key and value for channel
             metaConfigEntry.setKey(OPENHAB_THING_CHANNEL_TYPE_UID_KEY);
-            metaConfigEntry.setValue(builder.getServiceType().name().toLowerCase() + "_" + number);
+            metaConfigEntry.setValue(builder.getServiceType().name().toLowerCase().replaceAll("_", separator) + separator + number);
         }
 
         // test if there were any services without configured channel, and if there were update the device class
