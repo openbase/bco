@@ -57,7 +57,13 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
     }
 
     @Override
+    protected void afterInternalSync() {
+        logger.info("Internal sync finished!");
+    }
+
+    @Override
     public void update(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
+        logger.info("Update {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         final EnrichedThingDTO updatedThing = identifiableEnrichedThingDTO.getDTO();
 
         // get device unit config for the thing
@@ -79,6 +85,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     @Override
     public void register(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
+        logger.info("Register {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         final ThingDTO thingDTO = identifiableEnrichedThingDTO.getDTO();
 
         // handle initial sync
@@ -95,10 +102,14 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             }
         }
 
-        GlobalCachedExecutorService.submit(() -> {
-            registerDevice(thingDTO);
-            return null;
-        });
+        try {
+            SynchronizationProcessor.getDeviceForThing(thingDTO);
+        } catch (NotAvailableException ex) {
+            GlobalCachedExecutorService.submit(() -> {
+                registerDevice(thingDTO);
+                return null;
+            });
+        }
     }
 
     private void registerDevice(ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
@@ -149,6 +160,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     @Override
     public void remove(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
+        logger.info("Remove {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         final EnrichedThingDTO enrichedThingDTO = identifiableEnrichedThingDTO.getDTO();
 
         // get device unit config for thing

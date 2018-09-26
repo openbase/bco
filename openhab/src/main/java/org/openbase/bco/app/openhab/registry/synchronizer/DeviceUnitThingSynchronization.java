@@ -22,20 +22,41 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
  * #L%
  */
 
+import org.eclipse.smarthome.core.thing.ChannelUID;
+import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.dto.ChannelDTO;
+import org.eclipse.smarthome.core.thing.dto.ThingDTO;
+import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
+import rst.configuration.EntryType.Entry;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Class managing the synchronization from BCO device units to openHAB things.
@@ -44,11 +65,22 @@ import java.util.List;
  */
 public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 
+    private static final String BINDING_ID_KNX = "knx";
+    private static final String THING_TYPE_KNX = "device";
+    private static final String CHANNEL_KIND = "STATE";
+    private static final String KEY_GROUP_ADDRESS = "ga";
+    private static final String KEY_POSITION = "position";
+    private static final String KEY_SWITCH = "switch";
+    private static final String KEY_STOP_MOVE = "stopMove";
+    private static final String KEY_UP_DOWN = "upDown";
+    private static final String KEY_OPENHAB_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
+
     /**
      * Create a new synchronization manager from BCO device units to openHAB things.
      *
      * @param synchronizationLock a lock used during a synchronization. This is lock should be shared with
      *                            other synchronization managers so that they will not interfere with each other.
+     *
      * @throws InstantiationException if instantiation fails
      * @throws NotAvailableException  if the unit registry is not available
      */
@@ -60,16 +92,21 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * Update the label and location of a thing belonging to the device unit.
      *
      * @param identifiableMessage the device unit updated
+     *
      * @throws CouldNotPerformException if the thing could not be updated
      */
     @Override
     public void update(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+        logger.info("Update {} ...", identifiableMessage);
         // update thing label and location if needed
         final UnitConfig deviceUnitConfig = identifiableMessage.getMessage();
-        final EnrichedThingDTO thing = SynchronizationProcessor.getThingForDevice(deviceUnitConfig);
-
-        if (SynchronizationProcessor.updateThingToUnit(deviceUnitConfig, thing)) {
-            OpenHABRestCommunicator.getInstance().updateThing(thing);
+        try {
+            final EnrichedThingDTO thing = SynchronizationProcessor.getThingForDevice(deviceUnitConfig);
+            if (SynchronizationProcessor.updateThingToUnit(deviceUnitConfig, thing)) {
+                OpenHABRestCommunicator.getInstance().updateThing(thing);
+            }
+        } catch (NotAvailableException ex) {
+            // do nothing because thing for device could not be found
         }
     }
 
@@ -78,16 +115,29 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * if its the initial sync.
      *
      * @param identifiableMessage the device unit initially registered
+     *
      * @throws CouldNotPerformException if the initial update could not be performed.
      */
     @Override
-    public void register(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+    public void register(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException, InterruptedException {
+        logger.info("Register {} ..." + identifiableMessage);
         // if this is the initial sync make sure that things and devices are synced
         if (isInitialSync()) {
             update(identifiableMessage);
         }
 
-        // devices for openHAB are only registered via openHAB itself
+        // register thing for knx device
+        final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(identifiableMessage.getMessage().getDeviceConfig().getDeviceClassId());
+        if (!KNXDeviceClassConsistencyHandler.isKNXDeviceClass(deviceClass)) {
+            return;
+        }
+        try {
+            // validate if thing already registered
+            SynchronizationProcessor.getThingForDevice(identifiableMessage.getMessage());
+        } catch (NotAvailableException ex) {
+            // thing not yet registered
+            registerKNXThings(identifiableMessage.getMessage());
+        }
     }
 
     /**
@@ -97,10 +147,12 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * synchronization with an old BCO registry.
      *
      * @param identifiableMessage the removed device unit
+     *
      * @throws CouldNotPerformException if the thing could not be removed or updated
      */
     @Override
     public void remove(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+        logger.info("Remove {} ...", identifiableMessage);
         // remove thing belonging to the device
         final UnitConfig deviceUnitConfig = identifiableMessage.getMessage();
 
@@ -141,6 +193,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * {@inheritDoc}
      *
      * @return a list of device units managed by the unit registry
+     *
      * @throws CouldNotPerformException it the device units are not available
      */
     @Override
@@ -152,16 +205,179 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * Verify that the device is managed by openHAB.
      *
      * @param identifiableMessage the device unit checked
+     *
      * @return if the device managed by openHAB
      */
     @Override
     public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
         // validate that the device is configured via openHAB
+//        try {
+//            SynchronizationProcessor.getThingIdFromDevice(identifiableMessage.getMessage());
+//            return true;
+//        } catch (NotAvailableException ex) {
+//            return false;
+//        }
         try {
-            SynchronizationProcessor.getThingIdFromDevice(identifiableMessage.getMessage());
-            return true;
-        } catch (NotAvailableException ex) {
-            return false;
+            DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(identifiableMessage.getMessage().getDeviceConfig().getDeviceClassId());
+            if (deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("openhab")) {
+                return true;
+            }
+        } catch (CouldNotPerformException e) {
+            ExceptionPrinter.printHistory(e, logger);
         }
+        return false;
+    }
+
+    @Override
+    protected void afterInternalSync() {
+        logger.info("Internal sync finished!");
+    }
+
+    private void registerKNXThings(final UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException {
+        String bridgeUID = null;
+        for (final EnrichedThingDTO thing : OpenHABRestCommunicator.getInstance().getThings()) {
+            if (thing.UID.startsWith(BINDING_ID_KNX) && thing.bridgeUID == null || thing.bridgeUID.isEmpty()) {
+                bridgeUID = thing.UID;
+                break;
+            }
+        }
+
+        if (bridgeUID == null) {
+            throw new NotAvailableException("Thing for knx bridge");
+        }
+
+        final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+
+        logger.info("Create thing for knx device {}", deviceUnitConfig.getAlias(0));
+        final UnitConfig.Builder device = deviceUnitConfig.toBuilder();
+
+        final ThingTypeUID thingTypeUID = new ThingTypeUID(BINDING_ID_KNX, THING_TYPE_KNX);
+        final ThingUID thingUID = new ThingUID(thingTypeUID, device.getId());
+
+        final ThingDTO thingDTO = new ThingDTO();
+        thingDTO.bridgeUID = bridgeUID;
+        thingDTO.thingTypeUID = thingTypeUID.toString();
+        thingDTO.UID = thingUID.toString();
+        thingDTO.label = LabelProcessor.getBestMatch(device.getLabel());
+        thingDTO.location = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(device.getPlacementConfig().getLocationId()).getLabel());
+        thingDTO.channels = new ArrayList<>();
+        thingDTO.properties = new HashMap<>();
+        thingDTO.configuration = new HashMap<>();
+
+        for (final String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+            final UnitConfig dalUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+            UnitTemplateConfig templateConfig = null;
+            for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+                if (dalUnitConfig.getUnitTemplateConfigId().equals(unitTemplateConfig.getId())) {
+                    templateConfig = unitTemplateConfig;
+                    break;
+                }
+            }
+
+            if (templateConfig == null) {
+                logger.error("Could not find unit template config {} of unit {} in device class {}", dalUnitConfig.getUnitTemplateConfigId(), dalUnitConfig.getAlias(0), LabelProcessor.getBestMatch(deviceClass.getLabel()));
+                continue;
+            }
+
+            for (final ServiceTemplateConfig serviceTemplateConfig : templateConfig.getServiceTemplateConfigList()) {
+                ServiceConfig service = null;
+                for (final ServiceConfig serviceConfig : dalUnitConfig.getServiceConfigList()) {
+                    if (serviceConfig.getServiceDescription().getServiceType() == serviceTemplateConfig.getServiceType()) {
+                        if (service == null || serviceConfig.getServiceDescription().getPattern() == ServicePattern.OPERATION) {
+                            service = serviceConfig;
+                        }
+                    }
+                }
+
+                if (service == null) {
+                    logger.error("Could find service matching template {}", serviceTemplateConfig.getServiceType().name());
+                    continue;
+                }
+
+                final MetaConfigVariableProvider serviceConfigVariableProvider = new MetaConfigVariableProvider("ServiceConfigBindingConfigMetaConfig", service.getBindingConfig().getMetaConfig());
+                final MetaConfigVariableProvider serviceTemplateVariableProvier = new MetaConfigVariableProvider("ServiceTemplateMetaConfig", serviceTemplateConfig.getMetaConfig());
+
+                final String channelId;
+                try {
+                    channelId = serviceTemplateVariableProvier.getValue(SynchronizationProcessor.OPENHAB_THING_CHANNEL_TYPE_UID_KEY);
+                } catch (NotAvailableException e) {
+                    logger.error("Skip service {} of unit {} because channel type not defined", service.getServiceDescription().getServiceType(), dalUnitConfig.getAlias(0));
+                    continue;
+                }
+
+                final String bindingConfig;
+                try {
+                    bindingConfig = serviceConfigVariableProvider.getValue(KEY_OPENHAB_BINDING_CONFIG);
+                } catch (NotAvailableException e) {
+                    logger.error("Skip channel {} because binding config for service {} of unit {} not available", channelId, service.getServiceDescription().getServiceType(), dalUnitConfig.getAlias(0));
+                    continue;
+                }
+
+                final String itemType;
+                try {
+                    itemType = OpenHABItemProcessor.getItemType(serviceTemplateConfig.getServiceType());
+                } catch (NotAvailableException e) {
+                    logger.warn("Skip service type {} because item type not available", service.getServiceDescription().getServiceType());
+                    continue;
+                }
+
+                final ChannelDTO channelDTO = new ChannelDTO();
+                ChannelTypeUID channelTypeUID = new ChannelTypeUID(BINDING_ID_KNX, channelId);
+                ChannelUID channelUID = new ChannelUID(thingUID, channelId);
+                channelDTO.id = channelId;
+                channelDTO.uid = channelUID.toString();
+                channelDTO.channelTypeUID = channelTypeUID.toString();
+                channelDTO.label = StringProcessor.transformToCamelCase(channelId);
+                channelDTO.itemType = itemType;
+                channelDTO.kind = CHANNEL_KIND;
+                channelDTO.configuration = new HashMap<>();
+                channelDTO.properties = new HashMap<>();
+
+                switch (dalUnitConfig.getUnitType()) {
+                    case DIMMABLE_LIGHT:
+                    case DIMMER:
+                        switch (serviceTemplateConfig.getServiceType()) {
+                            case BRIGHTNESS_STATE_SERVICE:
+                                channelDTO.configuration.put(KEY_POSITION, bindingConfig);
+                                break;
+                            case POWER_STATE_SERVICE:
+                                channelDTO.configuration.put(KEY_SWITCH, bindingConfig);
+                                break;
+                        }
+                        break;
+                    default:
+                        switch (serviceTemplateConfig.getServiceType()) {
+                            case BLIND_STATE_SERVICE:
+                                String[] configs = bindingConfig.replace(" ", "").split(",");
+                                if (configs.length != 3) {
+                                    logger.warn("Cannot interpret config {} for blind state. Expected three group addresses separated by comma, e.g.: 2/2/0, 2/2/1, 2/2/2+2/2/3");
+                                    continue;
+                                }
+                                channelDTO.configuration.put(KEY_UP_DOWN, configs[0]);
+                                channelDTO.configuration.put(KEY_STOP_MOVE, configs[1]);
+                                channelDTO.configuration.put(KEY_POSITION, configs[2]);
+                                break;
+                            default:
+                                channelDTO.configuration.put(KEY_GROUP_ADDRESS, bindingConfig);
+                                break;
+                        }
+                }
+
+                channelDTO.defaultTags = new HashSet<>();
+                channelDTO.description = "";
+                thingDTO.channels.add(channelDTO);
+            }
+        }
+
+        Entry.Builder entry = device.getMetaConfigBuilder().addEntryBuilder();
+        entry.setKey(SynchronizationProcessor.OPENHAB_THING_UID_KEY);
+        entry.setValue(thingDTO.UID);
+        try {
+            Registries.getUnitRegistry().updateUnitConfig(device.build()).get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not update knx device " + device.getAlias(0), ex);
+        }
+
+        OpenHABRestCommunicator.getInstance().registerThing(thingDTO);
     }
 }

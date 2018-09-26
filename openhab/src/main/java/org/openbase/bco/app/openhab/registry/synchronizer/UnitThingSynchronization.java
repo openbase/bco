@@ -60,6 +60,11 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
         super(Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), synchronizationLock);
     }
 
+    @Override
+    protected void afterInternalSync() {
+        logger.info("Internal sync finished!");
+    }
+
     /**
      * Do nothing.
      *
@@ -69,6 +74,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
      */
     @Override
     public void update(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+        logger.info("Update {} ...", identifiableMessage);
         // do nothing because the binding itself updates the according thing configuration
     }
 
@@ -81,6 +87,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
      */
     @Override
     public void register(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+        logger.info("Register {} ...", identifiableMessage);
         // do nothing because the binding itself updates the according thing configuration
     }
 
@@ -93,6 +100,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
      */
     @Override
     public void remove(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+        logger.info("Remove {} ...", identifiableMessage);
         final UnitConfig unitConfig = identifiableMessage.getMessage();
 
         // retrieve thing

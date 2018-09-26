@@ -50,17 +50,20 @@ public class ItemUnitSynchronization extends AbstractSynchronizer<String, Identi
 
     @Override
     public void update(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
+        logger.info("Update {} ...", identifiableEnrichedItemDTO.getDTO().name);
         validateAndUpdateItem(identifiableEnrichedItemDTO.getDTO());
     }
 
     @Override
     public void register(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
+        logger.info("Register {} ...", identifiableEnrichedItemDTO.getDTO().name);
         // do nothing because items are registers by the thing synchronization
         validateAndUpdateItem(identifiableEnrichedItemDTO.getDTO());
     }
 
     @Override
     public void remove(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
+        logger.info("Remove {} ...", identifiableEnrichedItemDTO.getDTO().name);
         final OpenHABItemNameMetaData metaData = new OpenHABItemNameMetaData(identifiableEnrichedItemDTO.getId());
 
         try {
@@ -71,6 +74,11 @@ public class ItemUnitSynchronization extends AbstractSynchronizer<String, Identi
         } catch (NotAvailableException ex) {
             // unit does not exist so removal is okay
         }
+    }
+
+    @Override
+    protected void afterInternalSync() {
+        logger.info("Internal sync finished!");
     }
 
     @Override

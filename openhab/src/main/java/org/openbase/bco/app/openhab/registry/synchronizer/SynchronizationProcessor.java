@@ -163,10 +163,11 @@ public class SynchronizationProcessor {
 
             try {
                 // get the value for the openHAB thing class key
-                String thingUID = metaConfigPool.getValue(OPENHAB_THING_CLASS_KEY);
-                // if the uid starts with that return the according device class
-                if (classIdentifier.equalsIgnoreCase(thingUID)) {
-                    return deviceClass;
+                final String[] thingClassKeys = metaConfigPool.getValue(OPENHAB_THING_CLASS_KEY).split(",");
+                for (final String thingClassKey : thingClassKeys) {
+                    if(classIdentifier.equalsIgnoreCase(thingClassKey)) {
+                        return deviceClass;
+                    }
                 }
             } catch (NotAvailableException ex) {
                 // value for device not available so continue
