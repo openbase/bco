@@ -212,12 +212,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.exception</artifactId>
-            <version>${dependency.jul.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.dal.remote</artifactId>
+            <artifactId>bco.dal.control</artifactId>
             <version>${dependency.bco.dal.version}</version>
         </dependency>
     </dependencies>

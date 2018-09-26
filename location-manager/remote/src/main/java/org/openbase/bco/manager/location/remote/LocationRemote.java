@@ -25,8 +25,8 @@ package org.openbase.bco.manager.location.remote;
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @deprecated please user org.openbase.bco.dal.remote.unit.location.LocationRemote
+ * @deprecated please user org.openbase.bco.dal.remote.layer.unit.location.LocationRemote
  */
-public class LocationRemote extends org.openbase.bco.dal.remote.unit.location.LocationRemote {
+public class LocationRemote extends org.openbase.bco.dal.remote.layer.unit.location.LocationRemote {
 
 }

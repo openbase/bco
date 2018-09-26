@@ -22,10 +22,10 @@ package org.openbase.bco.manager.scene.core;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.remote.action.RemoteAction;
-import org.openbase.bco.dal.remote.unit.ButtonRemote;
-import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
@@ -33,7 +33,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
@@ -52,7 +51,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;

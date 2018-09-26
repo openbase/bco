@@ -22,8 +22,8 @@ package org.openbase.bco.manager.agent.binding.openhab;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
 import org.openbase.bco.manager.agent.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
@@ -31,7 +31,6 @@ import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.I
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;

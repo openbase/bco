@@ -22,7 +22,7 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -33,9 +33,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
-import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,6 @@ import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
 import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.PresenceStateType.PresenceState.Builder;
 import rst.domotic.state.PresenceStateType.PresenceState.State;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;

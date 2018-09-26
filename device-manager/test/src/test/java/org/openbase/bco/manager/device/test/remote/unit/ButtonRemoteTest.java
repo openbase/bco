@@ -24,8 +24,8 @@ package org.openbase.bco.manager.device.test.remote.unit;
 
 import org.junit.*;
 import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.remote.unit.ButtonRemote;
-import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;

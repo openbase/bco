@@ -24,7 +24,7 @@ package org.openbase.bco.manager.agent.core.preset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
+import org.openbase.bco.dal.remote.layer.service.ColorStateServiceRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;

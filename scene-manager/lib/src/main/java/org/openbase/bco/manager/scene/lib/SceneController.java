@@ -23,7 +23,6 @@ package org.openbase.bco.manager.scene.lib;
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.jul.iface.Enableable;
-import org.openbase.jul.iface.Identifiable;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**

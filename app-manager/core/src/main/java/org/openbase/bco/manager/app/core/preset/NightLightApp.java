@@ -22,8 +22,8 @@ package org.openbase.bco.manager.app.core.preset;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.manager.app.core.AbstractAppController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;

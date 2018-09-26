@@ -23,9 +23,9 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 
 import org.junit.*;
-import org.openbase.bco.dal.lib.layer.unit.TemperatureControllerController;
-import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
-import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.control.layer.unit.TemperatureControllerController;
+import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;

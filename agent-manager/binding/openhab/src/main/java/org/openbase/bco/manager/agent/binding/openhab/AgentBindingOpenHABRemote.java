@@ -27,7 +27,7 @@ package org.openbase.bco.manager.agent.binding.openhab;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
+import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
 import org.openbase.bco.manager.agent.binding.openhab.transform.ActivationStateTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;

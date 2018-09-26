@@ -23,11 +23,11 @@ package org.openbase.bco.manager.agent.test.preset;
  */
 
 import org.junit.Test;
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.unit.DimmerRemote;
-import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
-import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
+import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.DimmerRemote;
+import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
 
 import org.openbase.bco.registry.mock.MockRegistry;

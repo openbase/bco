@@ -23,7 +23,7 @@ package org.openbase.bco.manager.device.core;
  */
 import java.util.ArrayList;
 import java.util.List;
-import org.openbase.bco.dal.lib.layer.unit.AbstractHostUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.registry.remote.Registries;

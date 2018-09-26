@@ -24,12 +24,12 @@ package org.openbase.bco.manager.agent.test.preset;
 
 import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
-import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
-import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
+import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
+import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.MotionDetectorRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;

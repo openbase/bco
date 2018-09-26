@@ -23,9 +23,9 @@ package org.openbase.bco.manager.location.binding.openhab;
  */
 import org.openbase.bco.manager.location.binding.openhab.unitgroup.UnitGroupRemoteFactoryImpl;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
-import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
+import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
+import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;

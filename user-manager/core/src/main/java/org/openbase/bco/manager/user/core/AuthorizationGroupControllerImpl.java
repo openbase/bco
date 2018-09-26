@@ -22,26 +22,19 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.manager.user.lib.AuthorizationGroupController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData.Builder;
-import rst.domotic.unit.user.UserDataType.UserData;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.USER_TRANSIT_STATE_SERVICE;
 
 public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController<AuthorizationGroupData, AuthorizationGroupData.Builder> implements AuthorizationGroupController {
 

@@ -24,7 +24,7 @@ package org.openbase.bco.manager.agent.remote;
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @deprecated please use org.openbase.bco.dal.remote.unit.agent.AgentRemote
+ * @deprecated please use org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote
  */
-public class AgentRemote extends org.openbase.bco.dal.remote.unit.agent.AgentRemote {
+public class AgentRemote extends org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote {
 }

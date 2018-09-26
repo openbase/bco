@@ -27,5 +27,5 @@ package org.openbase.bco.manager.scene.remote;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @deprecated please user org.openbase.bco.dal.lib.layer.unit.scene.Scene
  */
-public class SceneRemote extends org.openbase.bco.dal.remote.unit.scene.SceneRemote {
+public class SceneRemote extends org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote {
 }

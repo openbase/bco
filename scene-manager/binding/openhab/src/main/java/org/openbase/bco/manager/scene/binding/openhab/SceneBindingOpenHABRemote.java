@@ -27,7 +27,7 @@ package org.openbase.bco.manager.scene.binding.openhab;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.manager.scene.binding.openhab.transform.ActivationStateTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;

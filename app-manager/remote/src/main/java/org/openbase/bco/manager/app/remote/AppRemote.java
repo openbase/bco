@@ -25,7 +25,7 @@ package org.openbase.bco.manager.app.remote;
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @deprecated please use org.openbase.bco.dal.remote.unit.agent.AppRemote
+ * @deprecated please use org.openbase.bco.dal.remote.layer.unit.agent.AppRemote
  */
-public class AppRemote extends org.openbase.bco.dal.remote.unit.app.AppRemote {
+public class AppRemote extends org.openbase.bco.dal.remote.layer.unit.app.AppRemote {
 }

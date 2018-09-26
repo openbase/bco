@@ -22,28 +22,16 @@ package org.openbase.bco.manager.agent.core;
  * #L%
  */
 
-import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.calendar.DateTimeType;
-import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.MultiResourceAllocationStrategyType;
-import rst.domotic.service.ServiceStateDescriptionType;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
-import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 
