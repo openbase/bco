@@ -24,7 +24,7 @@ package org.openbase.bco.dal.visual.unit;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
+import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.visual.service.AbstractServicePanel;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.dal.visual.util.StatusPanel.StatusType;

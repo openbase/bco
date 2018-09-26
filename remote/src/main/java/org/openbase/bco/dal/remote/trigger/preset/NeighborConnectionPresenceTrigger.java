@@ -21,15 +21,13 @@ package org.openbase.bco.dal.remote.trigger.preset;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.Message;
-import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
-import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
+import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
@@ -37,7 +35,6 @@ import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.DoorStateType.DoorState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.WindowStateType.WindowState;
-import rst.domotic.unit.location.LocationDataType.LocationData;
 
 /**
  *

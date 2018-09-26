@@ -175,6 +175,7 @@
     </profiles>
 
     <modules>
+	<module>control</module>
         <module>remote</module>
         <module>lib</module>
         <module>task</module>

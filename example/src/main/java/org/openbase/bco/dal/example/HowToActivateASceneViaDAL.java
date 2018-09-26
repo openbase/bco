@@ -21,8 +21,8 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;

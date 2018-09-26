@@ -26,7 +26,6 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.iface.Snapshotable;

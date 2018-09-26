@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
+import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;

@@ -24,13 +24,11 @@ package org.openbase.bco.dal.remote.trigger;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
+import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;

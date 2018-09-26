@@ -22,30 +22,22 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.unit.location.Location;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Initializable;
+import org.openbase.jul.pattern.provider.Provider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.ToIntFunction;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture>, Identifiable<String>, Comparable<Action> {
+public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture>, Identifiable<String> {
 
     @Override
     default String getId() {
@@ -58,10 +50,6 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
      * @return the action description of this action.
      */
     ActionDescription getActionDescription();
-
-    default int getRanking() {
-        return 0;
-    }
 
     default long getExecutionTimePeriod(final TimeUnit timeUnit) {
         return timeUnit.convert(getActionDescription().getExecutionTimePeriod(), TimeUnit.MICROSECONDS);

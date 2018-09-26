@@ -23,7 +23,7 @@ package org.openbase.bco.dal.remote.trigger.preset;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.remote.trigger.GenericValueDualBoundaryBCOTrigger;
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
+import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.InstantiationException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 

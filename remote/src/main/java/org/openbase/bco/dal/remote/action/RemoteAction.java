@@ -23,9 +23,10 @@ package org.openbase.bco.dal.remote.action;
  */
 
 import org.openbase.bco.dal.lib.action.Action;
-import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
-import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
-import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
+import org.openbase.bco.dal.remote.layer.service.AbstractServiceRemote;
+import org.openbase.bco.dal.remote.layer.service.ServiceRemoteFactory;
+import org.openbase.bco.dal.remote.layer.service.ServiceRemoteFactoryImpl;
+import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -35,14 +36,11 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.timing.IntervalType.Interval;
 
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 

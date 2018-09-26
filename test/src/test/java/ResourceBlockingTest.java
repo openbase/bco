@@ -21,24 +21,11 @@
  */
 
 import java.util.List;
-import java.util.Locale;
 
-import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.language.LabelType.Label;
 
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 

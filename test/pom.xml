@@ -68,5 +68,10 @@
             <artifactId>bco.dal.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.dal.control</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
