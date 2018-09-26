@@ -1,8 +1,8 @@
 package org.openbase.bco.registry.clazz.core;
 
 import org.openbase.bco.registry.clazz.core.consistency.DeviceClassRequiredFieldConsistencyHandler;
-import org.openbase.bco.registry.clazz.core.consistency.UnitTemplateConfigIdConsistencyHandler;
-import org.openbase.bco.registry.clazz.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
+import org.openbase.bco.registry.clazz.core.consistency.DeviceClassUnitTemplateConfigConsistencyHandler;
+import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
 import org.openbase.bco.registry.clazz.lib.ClassRegistry;
 import org.openbase.bco.registry.clazz.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.clazz.lib.jp.JPAppClassDatabaseDirectory;
@@ -102,9 +102,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
 
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
-        deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
-        deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
+        deviceClassRegistry.registerConsistencyHandler(new DeviceClassUnitTemplateConfigConsistencyHandler());
         deviceClassRegistry.registerConsistencyHandler(new DeviceClassRequiredFieldConsistencyHandler());
+        deviceClassRegistry.registerConsistencyHandler(new KNXDeviceClassConsistencyHandler());
     }
 
     @Override
@@ -132,7 +132,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
+    public final void syncRegistryFlags() throws CouldNotPerformException {
         setDataField(ClassRegistryData.AGENT_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, agentClassRegistry.isReadOnly());
         setDataField(ClassRegistryData.AGENT_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, agentClassRegistry.isConsistent());
 
@@ -152,6 +152,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param server {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -191,7 +192,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param deviceClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -203,7 +206,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param deviceClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -220,7 +225,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param deviceClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -232,7 +239,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param deviceClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -244,7 +253,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param deviceClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -261,7 +272,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param deviceClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -278,6 +291,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -289,6 +303,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -300,6 +315,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -311,7 +327,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param agentClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -328,7 +346,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param agentClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -340,7 +360,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param agentClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -352,7 +374,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param agentClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -369,7 +393,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param agentClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -386,6 +412,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -397,6 +424,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -408,7 +436,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param agentClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -420,6 +450,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -431,7 +462,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param appClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -448,7 +481,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param appClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -460,7 +495,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param appClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -472,7 +509,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param appClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -489,7 +528,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param appClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -506,7 +547,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @param appClassId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -518,6 +561,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -529,6 +573,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -540,6 +585,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
