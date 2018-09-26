@@ -23,10 +23,9 @@ package org.openbase.bco.app.cloud.connector;
  */
 
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.app.App;
-import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.app.AppRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.app.AppRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;

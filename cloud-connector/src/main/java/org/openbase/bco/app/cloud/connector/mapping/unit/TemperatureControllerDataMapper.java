@@ -24,7 +24,7 @@ package org.openbase.bco.app.cloud.connector.mapping.unit;
 
 import com.google.gson.JsonObject;
 import org.openbase.bco.app.cloud.connector.mapping.service.TemperatureStateTemperatureSettingMapper;
-import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
+import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 
 /**
