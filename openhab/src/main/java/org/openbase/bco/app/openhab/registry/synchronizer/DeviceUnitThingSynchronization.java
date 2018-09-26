@@ -236,7 +236,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
     private void registerKNXThings(final UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException {
         String bridgeUID = null;
         for (final EnrichedThingDTO thing : OpenHABRestCommunicator.getInstance().getThings()) {
-            if (thing.UID.startsWith(BINDING_ID_KNX) && thing.bridgeUID == null || thing.bridgeUID.isEmpty()) {
+            if (thing.UID != null && thing.UID.startsWith(BINDING_ID_KNX) && (thing.bridgeUID == null || thing.bridgeUID.isEmpty())) {
                 bridgeUID = thing.UID;
                 break;
             }
@@ -322,10 +322,31 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
                 }
 
                 final ChannelDTO channelDTO = new ChannelDTO();
-                ChannelTypeUID channelTypeUID = new ChannelTypeUID(BINDING_ID_KNX, channelId);
+
                 ChannelUID channelUID = new ChannelUID(thingUID, channelId);
                 channelDTO.id = channelId;
                 channelDTO.uid = channelUID.toString();
+                ChannelTypeUID channelTypeUID;
+                switch (serviceTemplateConfig.getServiceType()) {
+                    case BRIGHTNESS_STATE_SERVICE:
+                        channelTypeUID = new ChannelTypeUID(BINDING_ID_KNX, "dimmer");
+                        break;
+                    case POWER_STATE_SERVICE:
+                    case BUTTON_STATE_SERVICE:
+                        channelTypeUID = new ChannelTypeUID(BINDING_ID_KNX, "switch");
+                        break;
+                    case BLIND_STATE_SERVICE:
+                        channelTypeUID = new ChannelTypeUID(BINDING_ID_KNX, "rollershutter");
+                        break;
+                    case POWER_CONSUMPTION_STATE_SERVICE:
+                    case TEMPERATURE_STATE_SERVICE:
+                    case TARGET_TEMPERATURE_STATE_SERVICE:
+                        channelTypeUID = new ChannelTypeUID(BINDING_ID_KNX, "number");
+                        break;
+                    default:
+                        logger.warn("Skip service type {} because knx channel type unknown", service.getServiceDescription().getServiceType());
+                        continue;
+                }
                 channelDTO.channelTypeUID = channelTypeUID.toString();
                 channelDTO.label = StringProcessor.transformToCamelCase(channelId);
                 channelDTO.itemType = itemType;
