@@ -144,12 +144,18 @@ public class SynchronizationProcessor {
 
     public static DeviceClass getDeviceClassByIdentifier(final ThingDTO thingDTO) throws CouldNotPerformException {
         String classIdentifier = thingDTO.thingTypeUID;
-        if (thingDTO.thingTypeUID.startsWith("zwave")) {
+        if (thingDTO.UID.startsWith("zwave")) {
             final String deviceType = thingDTO.properties.get(ZWAVE_DEVICE_TYPE_KEY);
-            if(deviceType == null) {
+            if (deviceType == null) {
                 throw new NotAvailableException("ZWave DeviceType");
             }
             classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + deviceType;
+        } else if (thingDTO.UID.startsWith("hue")) {
+            final String modelId = thingDTO.properties.get("modelId");
+            if (modelId == null) {
+                throw new NotAvailableException("hue modelId");
+            }
+            classIdentifier = modelId + ":" + modelId;
         }
         return getDeviceClassByIdentifier(classIdentifier);
     }
@@ -165,7 +171,7 @@ public class SynchronizationProcessor {
                 // get the value for the openHAB thing class key
                 final String[] thingClassKeys = metaConfigPool.getValue(OPENHAB_THING_CLASS_KEY).split(",");
                 for (final String thingClassKey : thingClassKeys) {
-                    if(classIdentifier.equalsIgnoreCase(thingClassKey)) {
+                    if (classIdentifier.equalsIgnoreCase(thingClassKey)) {
                         return deviceClass;
                     }
                 }
