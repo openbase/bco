@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture>, Identifiable<String> {
+public interface Action extends Identifiable<String> {
 
     @Override
     default String getId() {

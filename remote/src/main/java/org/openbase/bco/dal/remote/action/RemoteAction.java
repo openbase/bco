@@ -33,6 +33,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,29 +48,29 @@ import java.util.concurrent.Future;
 /**
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class RemoteAction implements Action {
+public class RemoteAction implements Action, Initializable<ActionFuture> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAction.class);
     private final SyncObject executionSync = new SyncObject(RemoteAction.class);
-    private ActionDescription actionDescription;
+    private ActionFuture actionFuture;
     private UnitConfig unitConfig;
     private ServiceRemoteFactory serviceRemoteFactory;
     private AbstractServiceRemote<?, ?> serviceRemote;
     private Future<ActionFuture> executionFuture;
 
     @Override
-    public void init(final ActionDescription actionDescription) throws InitializationException, InterruptedException {
-        this.actionDescription = actionDescription;
+    public void init(final ActionFuture actionFuture) throws InitializationException, InterruptedException {
+        this.actionFuture = actionFuture;
         try {
-            if (actionDescription.getServiceStateDescription().getUnitId().isEmpty()) {
-                throw new InvalidStateException(actionDescription.getLabel() + " has no valid unit id!");
+            if (getActionDescription().getServiceStateDescription().getUnitId().isEmpty()) {
+                throw new InvalidStateException(getActionDescription().getLabel() + " has no valid unit id!");
             }
 
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
             Registries.waitForData();
-            this.unitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescription.getServiceStateDescription().getUnitId());
+            this.unitConfig = Registries.getUnitRegistry().getUnitConfigById(getActionDescription().getServiceStateDescription().getUnitId());
             this.verifyUnitConfig(unitConfig);
-            this.serviceRemote = serviceRemoteFactory.newInstance(actionDescription.getServiceStateDescription().getServiceType());
+            this.serviceRemote = serviceRemoteFactory.newInstance(getActionDescription().getServiceStateDescription().getServiceType());
             this.serviceRemote.setInfrastructureFilter(false);
             this.serviceRemote.init(unitConfig);
             serviceRemote.activate();
@@ -124,7 +125,7 @@ public class RemoteAction implements Action {
      */
     @Override
     public ActionDescription getActionDescription() {
-        return actionDescription;
+        return actionFuture.getActionDescription(0);
     }
 
     @Override
@@ -134,7 +135,7 @@ public class RemoteAction implements Action {
 
     @Override
     public void cancel() {
-
+        Units.getUnit(getActionDescription().getServiceStateDescription().getUnitId(), false).cancelAction(getActionDescription().toBuilder().setCancel(true).build());
     }
 
     @Override
@@ -154,9 +155,9 @@ public class RemoteAction implements Action {
 
     @Override
     public String toString() {
-        if (actionDescription == null) {
+        if (getActionDescription() == null) {
             return getClass().getSimpleName() + "[?]";
         }
-        return getClass().getSimpleName() + "[" + actionDescription.getServiceStateDescription().getUnitId() + "|" + actionDescription.getServiceStateDescription().getServiceType() + "|" + actionDescription.getServiceStateDescription().getServiceAttribute() + "|" + actionDescription.getServiceStateDescription().getUnitId() + "]";
+        return getClass().getSimpleName() + "[" + getActionDescription().getServiceStateDescription().getUnitId() + "|" + getActionDescription().getServiceStateDescription().getServiceType() + "|" + getActionDescription().getServiceStateDescription().getServiceAttribute() + "|" + getActionDescription().getServiceStateDescription().getUnitId() + "]";
     }
 }

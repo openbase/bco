@@ -26,6 +26,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.action.Action;
+import org.openbase.bco.dal.lib.action.ExecutableAction;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -66,7 +67,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class ActionImpl implements Action {
+public class ActionImpl implements ExecutableAction {
 
     public static final String INITIATOR_KEY = "$INITIATOR";
     public static final String SERVICE_TYPE_KEY = "$SERVICE_TYPE";

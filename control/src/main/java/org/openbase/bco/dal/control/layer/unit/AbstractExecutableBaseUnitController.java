@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -52,6 +52,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable, ActivationStateProviderService {
@@ -137,8 +138,13 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        stop();
-        super.deactivate();
+        try {
+            activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
+        } catch (ExecutionException ex) {
+            ExceptionPrinter.printHistory("Could not inform remote about deactivation.", ex, logger, LogLevel.WARN);
+        } finally {
+            super.deactivate();
+        }
     }
 
     public void cancelExecution() {
@@ -152,9 +158,9 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     protected abstract boolean isAutostartEnabled() throws CouldNotPerformException;
 
-    protected abstract void execute() throws CouldNotPerformException, InterruptedException;
+    protected abstract void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException;
 
-    protected abstract void stop() throws CouldNotPerformException, InterruptedException;
+    protected abstract void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException;
 
     public class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
 
@@ -165,7 +171,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         }
 
         @Override
-        public Future<ActionFuture> setActivationState(ActivationStateType.ActivationState activationState) throws CouldNotPerformException {
+        public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
             synchronized (executionLock) {
                 // filter events that do not change anything
                 if (activationState.getValue() == getActivationState().getValue()) {
@@ -181,7 +187,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
                     executionFuture = GlobalCachedExecutorService.submit(() -> {
                         try {
-                            execute();
+                            execute(activationState);
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
                         }
@@ -194,7 +200,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                     // call stop even if execution has already finished
                     // many components just register observer etc. in execute and this it is done quickly
                     try {
-                        stop();
+                        stop(activationState);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                     }
