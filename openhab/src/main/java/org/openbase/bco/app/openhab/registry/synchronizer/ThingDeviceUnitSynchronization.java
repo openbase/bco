@@ -119,7 +119,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         try {
             deviceClass = SynchronizationProcessor.getDeviceClassByIdentifier(thingDTO);
         } catch (NotAvailableException ex) {
-            logger.warn("Ignore thing {} because: ", thingDTO.UID, ex.getMessage());
+            logger.warn("Ignore thing {} because: {}", thingDTO.UID, ex.getMessage());
             return;
         }
 

@@ -37,7 +37,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,12 +115,16 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             Command command = null;
             for (Class<? extends Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
                 try {
+                    LOGGER.info("Test transformatino for {} to {}", serviceType.name(), commandClass.getSimpleName());
                     command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString);
                     break;
-                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                } catch (IllegalAccessException | NoSuchMethodException ex) {
                     LOGGER.error("Command class[" + commandClass.getSimpleName() + "] does not posses a valueOf(String) method", ex);
                 } catch (IllegalArgumentException ex) {
                     // continue with the next command class, exception will be thrown if none is found
+                } catch (InvocationTargetException ex) {
+                    // ignore because the value of method threw an exception, this can happen if e.g. 0 is returned for
+                    // a roller shutter as the opening ratio and the stopMoveType is tested
                 }
             }
 

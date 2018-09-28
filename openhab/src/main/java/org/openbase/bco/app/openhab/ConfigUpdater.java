@@ -132,7 +132,7 @@ public class ConfigUpdater {
     }
 
     private static UnitConfig getOldDevice(final String thingUID, final String company, final List<UnitConfig> devices) throws NotAvailableException {
-        if (company.equalsIgnoreCase("fibaro") || company.equalsIgnoreCase("philips")) {
+        if (company.equalsIgnoreCase("fibaro") || company.equalsIgnoreCase("philips") || company.equalsIgnoreCase("homematic")) {
             final String nodeId = getNodeId(thingUID);
             for (final UnitConfig deviceUnitConfig : devices) {
                 String deviceId;

@@ -65,6 +65,7 @@ public class SynchronizationProcessor {
     public static final String OPENHAB_THING_UID_KEY = "OPENHAB_THING_UID";
     public static final String OPENHAB_THING_CLASS_KEY = "OPENHAB_THING_CLASS";
     public static final String OPENHAB_THING_CHANNEL_TYPE_UID_KEY = "OPENHAB_THING_CHANNEL_TYPE_UID";
+    public static final String OPENHAB_ITEM_TYPE_KEY = "OPENHAB_ITEM_TYPE";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SynchronizationProcessor.class);
 
@@ -155,6 +156,10 @@ public class SynchronizationProcessor {
                 throw new NotAvailableException("Hue modelId");
             }
             return HUE_MODEL_ID_KEY + ":" + modelId;
+        }
+        String[] split = thingTypeUID.split(":");
+        if (split.length >= 2) {
+            return split[1];
         }
         return thingTypeUID;
     }
@@ -288,14 +293,53 @@ public class SynchronizationProcessor {
             ItemDTO itemDTO = new ItemDTO();
             itemDTO.label = generateItemLabel(unitConfig, serviceType);
             itemDTO.name = itemName;
-            try {
-                itemDTO.type = OpenHABItemProcessor.getItemType(serviceType);
-            } catch (NotAvailableException ex) {
-                LOGGER.warn("Skip service[" + serviceType.name() + "] of unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] because no item type available");
-                continue;
+
+            // try to resolve item type from meta config
+            final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
+            final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+            outer:
+            for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+                if (!unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
+                    continue;
+                }
+
+                for (ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
+                    if (serviceTemplateConfig.getServiceType() != entry.getKey()) {
+                        continue;
+                    }
+
+                    MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("ServiceTemplateConfigMetaConfig", serviceTemplateConfig.getMetaConfig());
+                    try {
+                        itemDTO.type = variableProvider.getValue(OPENHAB_ITEM_TYPE_KEY);
+                        LOGGER.warn("Found special item type for service {} {}", serviceType.name(), itemDTO.type);
+                        break outer;
+                    } catch (NotAvailableException ex) {
+                        // do nothing because default type will be chosen
+                    }
+                }
             }
+            // get default item type for service type
+            if (itemDTO.type == null || itemDTO.type.isEmpty()) {
+                try {
+                    itemDTO.type = OpenHABItemProcessor.getItemType(serviceType);
+                } catch (NotAvailableException ex) {
+                    LOGGER.warn("Skip service[" + serviceType.name() + "] of unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] because no item type available");
+                    continue;
+                }
+            }
+
+            final String labelBefore = itemDTO.label;
             itemDTO = OpenHABRestCommunicator.getInstance().registerItem(itemDTO);
-            LOGGER.debug("Successfully registered item[" + itemDTO.name + "] for dal unit");
+            LOGGER.info("Successfully registered item[" + itemDTO.name + "] for dal unit");
+
+            if(!labelBefore.equals(itemDTO.label)) {
+                LOGGER.warn("Item label {} changed label from {} to {}", itemDTO.name, labelBefore, itemDTO.label);
+            }
+            if (deviceClass.getCompany().equalsIgnoreCase("homematic")) {
+                itemDTO.label = itemDTO.label + " test";
+                itemDTO = OpenHABRestCommunicator.getInstance().updateItem(itemDTO);
+                LOGGER.warn("Updated item {} to label {}", itemDTO.label);
+            }
 
             // link item to thing channel
             OpenHABRestCommunicator.getInstance().registerItemChannelLink(itemDTO.name, channelUID);

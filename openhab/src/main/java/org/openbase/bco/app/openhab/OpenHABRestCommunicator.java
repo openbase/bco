@@ -255,10 +255,12 @@ public class OpenHABRestCommunicator implements Shutdownable {
     }
 
     public ItemDTO deleteItem(final ItemDTO itemDTO) throws CouldNotPerformException {
+        LOGGER.error("Delete item {}", itemDTO.name);
         return deleteItem(itemDTO.name);
     }
 
     public ItemDTO deleteItem(final String itemName) throws CouldNotPerformException {
+        LOGGER.error("Delete item {}", itemName);
         return jsonToClass(jsonParser.parse(delete(ITEMS_TARGET + SEPARATOR + itemName)), ItemDTO.class);
     }
 
