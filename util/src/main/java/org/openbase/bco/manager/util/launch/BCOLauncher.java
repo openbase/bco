@@ -45,6 +45,8 @@ public class BCOLauncher {
      */
     public static void main(final String[] args) {
         BCO.printLogo();
+
+
         AbstractLauncher.main(args, BCO.class,
                 /**
                  * Authenticator *
@@ -63,7 +65,6 @@ public class BCOLauncher {
                  */
                 AgentManagerLauncher.class,
                 AppManagerLauncher.class,
-                DeviceManagerLauncher.class,
                 LocationManagerLauncher.class,
                 SceneManagerLauncher.class,
                 UserManagerLauncher.class

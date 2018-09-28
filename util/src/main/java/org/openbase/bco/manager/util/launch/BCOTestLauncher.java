@@ -29,6 +29,8 @@ import org.openbase.bco.manager.app.binding.openhab.AppBindingOpenHABLauncher;
 import org.openbase.bco.manager.app.core.AppManagerLauncher;
 import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGeneratorLauncher;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.manager.location.binding.openhab.LocationBindingOpenHABLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.manager.scene.binding.openhab.SceneBindingOpenHABLauncher;
@@ -44,7 +46,7 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class BCOBindingOpenhabLauncher {
+public class BCOTestLauncher {
 
     /**
      * @param args the command line arguments
@@ -66,18 +68,10 @@ public class BCOBindingOpenhabLauncher {
                  */
                 AgentManagerLauncher.class,
                 AppManagerLauncher.class,
+                DeviceManagerLauncher.class,
                 LocationManagerLauncher.class,
                 SceneManagerLauncher.class,
-                UserManagerLauncher.class,
-                /**
-                 * Bindings *
-                 */
-                AppBindingOpenHABLauncher.class,
-                AgentBindingOpenHABLauncher.class,
-                LocationBindingOpenHABLauncher.class,
-                SceneBindingOpenHABLauncher.class,
-                DeviceBindingOpenHABLauncher.class,
-                OpenHABConfigGeneratorLauncher.class
+                UserManagerLauncher.class
         );
     }
 }

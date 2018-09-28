@@ -70,8 +70,8 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.manager.util.launch.BCOBindingOpenhabLauncher</mainClass>
-                            <id>bco-openhab</id>
+                            <mainClass>org.openbase.bco.manager.util.launch.BCOTestLauncher</mainClass>
+                            <id>bco-test</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
