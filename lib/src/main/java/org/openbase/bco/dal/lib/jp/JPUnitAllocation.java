@@ -29,11 +29,11 @@ import org.openbase.jps.preset.AbstractJPBoolean;
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class JPResourceAllocation extends AbstractJPBoolean {
+public class JPUnitAllocation extends AbstractJPBoolean {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--resource-allocation"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--unit-allocation"};
 
-    public JPResourceAllocation() {
+    public JPUnitAllocation() {
         super(COMMAND_IDENTIFIERS);
     }
 

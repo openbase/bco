@@ -30,6 +30,6 @@ import rst.domotic.unit.agent.AgentDataType.AgentData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Agent extends BaseUnit<AgentData>, ActivationStateOperationService, EmphasisStateOperationService {
+public interface Agent extends BaseUnit<AgentData>, ActivationStateOperationService {
 
 }

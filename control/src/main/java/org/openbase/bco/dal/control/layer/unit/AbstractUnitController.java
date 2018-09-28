@@ -35,7 +35,7 @@ import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionComparator;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.control.action.ActionImpl;
-import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
+import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -475,7 +475,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         try {
             final ActionImpl action = new ActionImpl(actionDescription, this);
             try {
-                if (JPService.getProperty(JPResourceAllocation.class).getValue()) {
+                if (JPService.getProperty(JPUnitAllocation.class).getValue()) {
                     return scheduleAction(action);
                 } else {
                     return action.execute();
