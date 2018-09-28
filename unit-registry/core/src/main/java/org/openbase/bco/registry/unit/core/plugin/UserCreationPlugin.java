@@ -149,7 +149,10 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
             LOGGER.error("The initial registration password is not available even though no initial admin was registered at the authenticator." +
                     "This means that either the authenticator has not been started in the same process or that a user is already registered which could not be identified as the default admin." +
                     "Please verify that you used to bco launcher and reset all credentials with '--reset-credentials'");
-            System.exit(1);
+
+            // init shutdown
+            new Thread(() -> System.exit(1)).start();
+
             throw new NotAvailableException("initial registration password");
         }
 
