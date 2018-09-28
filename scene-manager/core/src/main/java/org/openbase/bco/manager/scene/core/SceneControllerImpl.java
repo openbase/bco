@@ -202,7 +202,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     }
 
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
+    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Activate Scene[" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
 
         final Map<Future<ActionFuture>, RemoteAction> executionFutureList = new HashMap<>();
@@ -231,7 +231,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                     }
                     futureActionEntry.getKey().get(timeout, TimeUnit.MILLISECONDS);
                 } catch (ExecutionException | TimeoutException ex) {
-                    MultiException.push(this, ex, exceptionStack);
+                    exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
             MultiException.checkAndThrow(() ->"Could not execute all actions!", exceptionStack);
