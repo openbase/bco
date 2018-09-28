@@ -82,6 +82,13 @@
                             </platforms>
                         </program>
                         <program>
+                            <mainClass>org.openbase.bco.app.openhab.ConfigUpdater</mainClass>
+                            <id>bco-app-openhab-config-updater</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
                             <mainClass>org.openbase.bco.app.openhab.registry.OpenHABConfigSynchronizerLauncher
                             </mainClass>
                             <id>bco-app-openhab-config-synchronizer</id>

@@ -60,6 +60,7 @@ import java.util.Map.Entry;
 public class SynchronizationProcessor {
 
     public static final String ZWAVE_DEVICE_TYPE_KEY = "zwave_devicetype";
+    public static final String HUE_MODEL_ID_KEY = "modelId";
 
     public static final String OPENHAB_THING_UID_KEY = "OPENHAB_THING_UID";
     public static final String OPENHAB_THING_CLASS_KEY = "OPENHAB_THING_CLASS";
@@ -130,34 +131,32 @@ public class SynchronizationProcessor {
     }
 
     public static String getThingIdForUnit(final UnitConfig unitConfig) {
-        //TODO: resolving the thing type uid from the unit type
         return new ThingUID("bco", unitConfig.getUnitType().name().toLowerCase(), unitConfig.getId()).toString();
     }
 
     public static DeviceClass getDeviceClassByDiscoveryResult(final DiscoveryResultDTO discoveryResult) throws CouldNotPerformException {
-        String classIdentifier = discoveryResult.thingTypeUID;
-        if (classIdentifier.startsWith("zwave")) {
-            classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + discoveryResult.properties.get(ZWAVE_DEVICE_TYPE_KEY);
-        }
-        return getDeviceClassByIdentifier(classIdentifier);
+        return getDeviceClassByIdentifier(getClassIdentifierForBinding(discoveryResult.thingTypeUID, discoveryResult.properties));
     }
 
     public static DeviceClass getDeviceClassByIdentifier(final ThingDTO thingDTO) throws CouldNotPerformException {
-        String classIdentifier = thingDTO.thingTypeUID;
-        if (thingDTO.UID.startsWith("zwave")) {
-            final String deviceType = thingDTO.properties.get(ZWAVE_DEVICE_TYPE_KEY);
+        return getDeviceClassByIdentifier(getClassIdentifierForBinding(thingDTO.thingTypeUID, thingDTO.properties));
+    }
+
+    private static String getClassIdentifierForBinding(final String thingTypeUID, final Map<String, ?> properties) throws NotAvailableException {
+        if (thingTypeUID.startsWith("zwave")) {
+            final String deviceType = (String) properties.get(ZWAVE_DEVICE_TYPE_KEY);
             if (deviceType == null) {
-                throw new NotAvailableException("ZWave DeviceType");
+                throw new NotAvailableException("ZWave deviceType");
             }
-            classIdentifier = ZWAVE_DEVICE_TYPE_KEY + ":" + deviceType;
-        } else if (thingDTO.UID.startsWith("hue")) {
-            final String modelId = thingDTO.properties.get("modelId");
+            return ZWAVE_DEVICE_TYPE_KEY + ":" + deviceType;
+        } else if (thingTypeUID.startsWith("hue")) {
+            final String modelId = (String) properties.get(HUE_MODEL_ID_KEY);
             if (modelId == null) {
-                throw new NotAvailableException("hue modelId");
+                throw new NotAvailableException("Hue modelId");
             }
-            classIdentifier = modelId + ":" + modelId;
+            return HUE_MODEL_ID_KEY + ":" + modelId;
         }
-        return getDeviceClassByIdentifier(classIdentifier);
+        return thingTypeUID;
     }
 
     private static DeviceClass getDeviceClassByIdentifier(final String classIdentifier) throws CouldNotPerformException {

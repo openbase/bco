@@ -120,7 +120,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      */
     @Override
     public void register(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException, InterruptedException {
-        logger.info("Register {} ..." + identifiableMessage);
+        logger.info("Register {} ...", identifiableMessage);
         // if this is the initial sync make sure that things and devices are synced
         if (isInitialSync()) {
             update(identifiableMessage);

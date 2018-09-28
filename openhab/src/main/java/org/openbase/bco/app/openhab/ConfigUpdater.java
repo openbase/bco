@@ -24,6 +24,7 @@ package org.openbase.bco.app.openhab;
 
 import org.openbase.bco.app.openhab.registry.synchronizer.SynchronizationProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -56,6 +57,11 @@ public class ConfigUpdater {
 
             final Map<String, List<UnitConfig>> companyDeviceClassMap = new HashMap<>();
             for (final DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
+                // ignore knx device classes
+                if (KNXDeviceClassConsistencyHandler.isKNXDeviceClass(deviceClass)) {
+                    continue;
+                }
+
                 if (!companyDeviceClassMap.containsKey(deviceClass.getCompany())) {
                     companyDeviceClassMap.put(deviceClass.getCompany(), new ArrayList<>());
                 }
@@ -68,7 +74,9 @@ public class ConfigUpdater {
             }
 
             for (final String company : companyDeviceClassMap.keySet()) {
+                LOGGER.info("Check company {}", company);
                 for (final UnitConfig unitConfig : companyDeviceClassMap.get(company)) {
+                    LOGGER.info("Check device {}", unitConfig.getAlias(0));
                     final MetaConfigPool metaConfigPool = new MetaConfigPool();
                     metaConfigPool.register(new MetaConfigVariableProvider(unitConfig.getAlias(0) + "MetaConfig", unitConfig.getMetaConfig()));
 
@@ -150,7 +158,11 @@ public class ConfigUpdater {
         return metaConfigPool.getValue("OPENHAB_BINDING_DEVICE_ID");
     }
 
-    private static String getNodeId(String thingUID) {
-        return thingUID.split(":")[3].replace("node", "");
+    private static String getNodeId(String thingUID) throws NotAvailableException {
+        final String[] split = thingUID.split(":");
+        if (split.length < 4) {
+            throw new NotAvailableException("node id of thin " + thingUID);
+        }
+        return split[3].replace("node", "");
     }
 }
