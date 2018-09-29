@@ -56,9 +56,4 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
     public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
-
-    @Override
-    public Future<ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
-    }
 }
