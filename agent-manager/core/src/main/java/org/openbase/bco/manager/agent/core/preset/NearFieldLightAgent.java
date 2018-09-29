@@ -29,10 +29,10 @@ import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.preset.NeighborConnectionPresenceTrigger;
 import org.openbase.jul.pattern.trigger.Trigger;
-import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -44,23 +44,13 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class NearFieldLightAgent extends AbstractResourceAllocationAgent {
+public class NearFieldLightAgent extends AbstractTriggerableAgent {
 
     private LocationRemote locationRemote;
     private List<LocationRemote> neighborRemotes;
 
     public NearFieldLightAgent() throws InstantiationException {
         super(NearFieldLightAgent.class);
-
-//        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
-
-        triggerHolderObserver = (Trigger source, ActivationState data) -> {
-            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                dimmLights();
-            } else {
-//                actionRescheduleHelper.stopExecution();
-            }
-        };
     }
 
     @Override
@@ -73,24 +63,25 @@ public class NearFieldLightAgent extends AbstractResourceAllocationAgent {
             throw new InitializationException("LocationRemote not available", ex);
         }
 
-        try {
-            for (LocationRemote neighborRemote : neighborRemotes) {
-                if (locationRemote.hasDirectConnection(neighborRemote.getId(), ConnectionType.PASSAGE, true)) {
-                    GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> trigger = new GenericBCOTrigger<>(neighborRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE);
-                    agentTriggerHolder.addTrigger(trigger, TriggerPool.TriggerOperation.OR);
-                } else {
-                    for (ConnectionRemote relatedConnection : locationRemote.getDirectConnectionList(neighborRemote.getId(), false)) {
-                        NeighborConnectionPresenceTrigger trigger = new NeighborConnectionPresenceTrigger(neighborRemote, relatedConnection);
-                        agentTriggerHolder.addTrigger(trigger, TriggerPool.TriggerOperation.OR);
-                    }
-                }
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException("Could not initialize trigger", ex);
-        }
+//        try {
+//            for (LocationRemote neighborRemote : neighborRemotes) {
+//                if (locationRemote.hasDirectConnection(neighborRemote.getId(), ConnectionType.PASSAGE, true)) {
+//                    GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> trigger = new GenericBCOTrigger<>(neighborRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE);
+//                    agentTriggerHolder.addTrigger(trigger, TriggerAggregation.OR);
+//                } else {
+//                    for (ConnectionRemote relatedConnection : locationRemote.getDirectConnectionList(neighborRemote.getId(), false)) {
+//                        NeighborConnectionPresenceTrigger trigger = new NeighborConnectionPresenceTrigger(neighborRemote, relatedConnection);
+//                        agentTriggerHolder.addTrigger(trigger, TriggerAggregation.OR);
+//                    }
+//                }
+//            }
+//        } catch (CouldNotPerformException ex) {
+//            throw new InitializationException("Could not initialize trigger", ex);
+//        }
     }
 
-    private void dimmLights() {
+    @Override
+    void trigger(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
 //        try {
 //            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
 //                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,

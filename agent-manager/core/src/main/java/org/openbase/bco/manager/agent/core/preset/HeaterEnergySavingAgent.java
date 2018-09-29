@@ -23,6 +23,7 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
@@ -30,11 +31,11 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.jul.pattern.trigger.Trigger;
-import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
@@ -47,7 +48,7 @@ import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class HeaterEnergySavingAgent extends AbstractResourceAllocationAgent {
+public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
 
     private LocationRemote locationRemote;
     private final Map<TemperatureControllerRemote, TemperatureState> previousTemperatureState;
@@ -60,14 +61,14 @@ public class HeaterEnergySavingAgent extends AbstractResourceAllocationAgent {
 
 //        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
-        triggerHolderObserver = (Trigger source, ActivationState data) -> {
-            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                regulateHeater();
-            } else {
-//                actionRescheduleHelper.stopExecution();
-                restoreTemperatureState();
-            }
-        };
+//        triggerHolderObserver = (Trigger source, ActivationState data) -> {
+//            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
+//                regulateHeater();
+//            } else {
+////                actionRescheduleHelper.stopExecution();
+//                restoreTemperatureState();
+//            }
+//        };
     }
 
     @Override
@@ -80,17 +81,17 @@ public class HeaterEnergySavingAgent extends AbstractResourceAllocationAgent {
             } catch (NotAvailableException ex) {
                 throw new InitializationException("LocationRemote not available.", ex);
             }
-
-            for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(false)) {
-                if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
-                    try {
-                        GenericBCOTrigger<ConnectionRemote, ConnectionData, WindowState.State> trigger = new GenericBCOTrigger(connectionRemote, triggerState, ServiceType.WINDOW_STATE_SERVICE);
-                        agentTriggerHolder.addTrigger(trigger, TriggerPool.TriggerOperation.OR);
-                    } catch (CouldNotPerformException ex) {
-                        throw new InitializationException("Could not add agent to agentpool", ex);
-                    }
-                }
-            }
+//
+//            for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(false)) {
+//                if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
+//                    try {
+//                        GenericBCOTrigger<ConnectionRemote, ConnectionData, WindowState.State> trigger = new GenericBCOTrigger(connectionRemote, triggerState, ServiceType.WINDOW_STATE_SERVICE);
+//                        agentTriggerHolder.addTrigger(trigger, TriggerAggregation.OR);
+//                    } catch (CouldNotPerformException ex) {
+//                        throw new InitializationException("Could not add agent to agentpool", ex);
+//                    }
+//                }
+//            }
 
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not initialize Agent.", ex);
@@ -147,5 +148,10 @@ public class HeaterEnergySavingAgent extends AbstractResourceAllocationAgent {
 //            }
 //        });
 //        previousTemperatureState.clear();
+    }
+
+    @Override
+    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+
     }
 }

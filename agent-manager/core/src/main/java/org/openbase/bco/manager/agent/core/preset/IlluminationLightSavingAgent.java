@@ -26,22 +26,24 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.preset.IlluminanceDualBoundaryTrigger;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.trigger.Trigger;
-import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.location.LocationDataType;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class IlluminationLightSavingAgent extends AbstractResourceAllocationAgent {
+public class IlluminationLightSavingAgent extends AbstractTriggerableAgent {
 
     private static final int SLEEP_MILLI = 1000;
     public static final String MINIMUM_NEEDED_KEY = "MINIMUM_ILLUMINATION";
@@ -56,13 +58,13 @@ public class IlluminationLightSavingAgent extends AbstractResourceAllocationAgen
 
 //        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
-        triggerHolderObserver = (Trigger source, ActivationState data) -> {
-            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                regulateLightIntensity();
-            } else {
-//                actionRescheduleHelper.stopExecution();
-            }
-        };
+//        triggerHolderObserver = (Trigger source, ActivationState data) -> {
+//            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
+//                regulateLightIntensity();
+//            } else {
+////                actionRescheduleHelper.stopExecution();
+//            }
+//        };
     }
 
     @Override
@@ -100,12 +102,12 @@ public class IlluminationLightSavingAgent extends AbstractResourceAllocationAgen
             throw new InitializationException("LocationRemote not available.", ex);
         }
 
-        try {
-            IlluminanceDualBoundaryTrigger<LocationRemote, LocationDataType.LocationData> agentTrigger = new IlluminanceDualBoundaryTrigger(locationRemote, MAXIMUM_WANTED_ILLUMINATION, MINIMUM_NEEDED_ILLUMINATION, IlluminanceDualBoundaryTrigger.TriggerOperation.HIGH_ACTIVE);
-            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException("Could not add agent to agentpool", ex);
-        }
+//        try {
+//            IlluminanceDualBoundaryTrigger<LocationRemote, LocationDataType.LocationData> agentTrigger = new IlluminanceDualBoundaryTrigger(locationRemote, MAXIMUM_WANTED_ILLUMINATION, MINIMUM_NEEDED_ILLUMINATION, IlluminanceDualBoundaryTrigger.TriggerOperation.HIGH_ACTIVE);
+//            agentTriggerHolder.addTrigger(agentTrigger, TriggerAggregation.OR);
+//        } catch (CouldNotPerformException ex) {
+//            throw new InitializationException("Could not add agent to agentpool", ex);
+//        }
     }
 
     private void regulateLightIntensity() throws CouldNotPerformException {
@@ -147,5 +149,10 @@ public class IlluminationLightSavingAgent extends AbstractResourceAllocationAgen
 //        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
 //            logger.error("Could not set light intensity.", ex);
 //        }
+    }
+
+    @Override
+    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+
     }
 }

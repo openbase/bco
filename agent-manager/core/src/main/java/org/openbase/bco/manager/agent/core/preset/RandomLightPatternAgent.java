@@ -25,24 +25,27 @@ import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.jul.pattern.trigger.Trigger;
-import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PresenceStateType;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.location.LocationDataType;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class RandomLightPatternAgent extends AbstractResourceAllocationAgent {
+public class RandomLightPatternAgent extends AbstractTriggerableAgent {
 
     private LocationRemote locationRemote;
     private Thread thread;
@@ -53,16 +56,16 @@ public class RandomLightPatternAgent extends AbstractResourceAllocationAgent {
 
 //        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
-        triggerHolderObserver = (Trigger source, ActivationStateType.ActivationState data) -> {
-            GlobalCachedExecutorService.submit(() -> {
-                if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
-                    makeRandomLightPattern();
-                } else {
-                    stopRandomLightPattern();
-                }
-                return null;
-            });
-        };
+//        triggerHolderObserver = (Trigger source, ActivationStateType.ActivationState data) -> {
+//            GlobalCachedExecutorService.submit(() -> {
+//                if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
+//                    makeRandomLightPattern();
+//                } else {
+//                    stopRandomLightPattern();
+//                }
+//                return null;
+//            });
+//        };
     }
 
     @Override
@@ -74,13 +77,13 @@ public class RandomLightPatternAgent extends AbstractResourceAllocationAgent {
         } catch (NotAvailableException ex) {
             throw new InitializationException("LocationRemote not available.", ex);
         }
-
-        try {
-            GenericBCOTrigger<LocationRemote, LocationDataType.LocationData, PresenceStateType.PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException("Could not add agent to agentpool", ex);
-        }
+//
+//        try {
+//            GenericBCOTrigger<LocationRemote, LocationDataType.LocationData, PresenceStateType.PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+//            agentTriggerHolder.addTrigger(agentTrigger, TriggerAggregation.OR);
+//        } catch (CouldNotPerformException ex) {
+//            throw new InitializationException("Could not add agent to agentpool", ex);
+//        }
     }
 
     @Override
@@ -88,6 +91,11 @@ public class RandomLightPatternAgent extends AbstractResourceAllocationAgent {
         stopRandomLightPattern();
 
         super.stop();
+    }
+
+    @Override
+    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+
     }
 
     private void makeRandomLightPattern() {

@@ -44,8 +44,6 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  */
 public abstract class AbstractAgentController extends AbstractExecutableBaseUnitController<AgentData, AgentData.Builder> implements AgentController {
 
-    protected TriggerPool agentTriggerHolder;
-
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
@@ -53,16 +51,10 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
 
     public AbstractAgentController(final Class unitClass) throws InstantiationException {
         super(unitClass, AgentDataType.AgentData.newBuilder());
-        agentTriggerHolder = new TriggerPool();
     }
 
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
         return getConfig().getAgentConfig().getAutostart();
-    }
-
-    @Override
-    public Future<ActionFuture> setEmphasisState(EmphasisState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, EMPHASIS_STATE_SERVICE);
     }
 }

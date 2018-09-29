@@ -25,11 +25,11 @@ import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.jul.pattern.trigger.Trigger;
-import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 
 import rst.domotic.service.ServiceTemplateType;
@@ -42,28 +42,13 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class PresenceLightAgent extends AbstractResourceAllocationAgent {
+public class PresenceLightAgent extends AbstractTriggerableAgent {
 
     private LocationRemote locationRemote;
     private final PresenceState.State triggerState = PresenceState.State.PRESENT;
 
     public PresenceLightAgent() throws InstantiationException {
         super(PresenceLightAgent.class);
-
-//        actionRescheduleHelper = new ActionRescheduler(RescheduleOption.EXTEND, 30);
-
-        triggerHolderObserver = (Trigger source, ActivationState data) -> {
-            logger.warn("New trigger state: " + data.getValue());
-            GlobalCachedExecutorService.submit(() -> {
-                if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                    switchlightsOn();
-                } else {
-                    logger.warn("Stop execution");
-//                    actionRescheduleHelper.stopExecution();
-                }
-                return null;
-            });
-        };
     }
 
     @Override
@@ -75,15 +60,16 @@ public class PresenceLightAgent extends AbstractResourceAllocationAgent {
             throw new InitializationException("LocationRemote not available.", ex);
         }
 
-        try {
-            GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException("Could not add agent to agentpool", ex);
-        }
+//        try {
+//            GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+//            agentTriggerHolder.addTrigger(agentTrigger, TriggerAggregation.OR);
+//        } catch (CouldNotPerformException ex) {
+//            throw new InitializationException("Could not add agent to agentpool", ex);
+//        }
     }
 
-    private void switchlightsOn() {
+    @Override
+    void trigger(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
 //        try {
 //            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
 //                    ResourceAllocation.Initiator.SYSTEM,

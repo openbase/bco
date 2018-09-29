@@ -10,97 +10,111 @@ package org.openbase.bco.manager.agent.core.preset;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
+
+import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.jul.pattern.trigger.Trigger;
-import org.openbase.jul.pattern.trigger.TriggerPool;
+import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.state.ActivationStateType;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
+import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.location.LocationDataType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
 /**
- *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class AbsenceEnergySavingAgent extends AbstractResourceAllocationAgent {
+public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
 
+    private final ActionParameter actionParameter;
     private LocationRemote locationRemote;
-    private final PresenceState.State triggerState = PresenceState.State.ABSENT;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(AbsenceEnergySavingAgent.class);
-
-//        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
-
-        triggerHolderObserver = (Trigger source, ActivationStateType.ActivationState data) -> {
-            GlobalCachedExecutorService.submit(() -> {
-                if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
-                    switchlightsOff();
-                    switchMultimediaOff();
-                } else {
-//                    actionRescheduleHelper.stopExecution();
-                }
-                return null;
-            });
-        };
+            this.actionParameter = ActionParameter.newBuilder()
+                    .setInterruptible(true)
+                    .setSchedulable(true)
+                    .addCategory(Category.ECONOMY)
+                    .setPriority(Priority.LOW)
+                    .setActionInitiator(ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM)).build();
     }
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
-
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-        } catch (NotAvailableException ex) {
-            throw new InitializationException("LocationRemote not available.", ex);
-        }
-
-        try {
-            GenericBCOTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
+            registerTrigger(new GenericBCOTrigger(locationRemote, PresenceState.State.ABSENT, ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
-            throw new InitializationException("Could not add agent to agentpool", ex);
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    ActionFuture actionFuture;
+
+    @Override
+    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+        switch (activationState.getValue()) {
+            case ACTIVE:
+                actionFuture = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF))).get();
+                break;
+            case DEACTIVE:
+                if(actionFuture != null) {
+                    actionFuture = locationRemote.cancelAction(actionFuture).get();
+                }
+                break;
         }
     }
 
     private void switchlightsOff() {
-//        try {
-//            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-//                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-//                    1000 * 30,
-//                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-//                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-//                    locationRemote,
-//                    PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
-//                    UnitType.LIGHT,
-//                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-//                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-//            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-//            logger.error("Could not switch on Lights.", ex);
-//        }
+
     }
 
-    private void switchMultimediaOff() {
+    protected ActionDescription generateAction(UnitType unitType, ServiceType serviceType, Message.Builder serviceArgument) {
+        return ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter.toBuilder()
+                .setServiceStateDescription(ServiceStateDescription.newBuilder()
+                        .setServiceType(serviceType)
+                        .setUnitType(unitType)
+                        .setServiceAttribute(serviceArgument.build().toString()))).build();
+    }
+
+//    private void switchMultimediaOff() {
+//        try {
+//            locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(PowerState.State.OFF))).get();
+//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//            logger.error("Could not switch off Lights.", ex);
+//        }
+//
 //        try {
 //            List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
 //            if (!unitsByLabel.isEmpty()) {
@@ -126,5 +140,5 @@ public class AbsenceEnergySavingAgent extends AbstractResourceAllocationAgent {
 //        } catch (ExecutionException ex) {
 //            logger.error("Could not set Powerstate of MultimediaGroup!");
 //        }
-    }
+//    }
 }
