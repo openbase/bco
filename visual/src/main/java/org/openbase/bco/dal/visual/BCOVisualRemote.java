@@ -44,26 +44,26 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DalVisualRemote extends javax.swing.JFrame {
+public class BCOVisualRemote extends javax.swing.JFrame {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(DalVisualRemote.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(BCOVisualRemote.class);
 
-    private static DalVisualRemote instance;
+    private static BCOVisualRemote instance;
 
-    public synchronized static DalVisualRemote getInstance() throws NotAvailableException {
+    public synchronized static BCOVisualRemote getInstance() throws NotAvailableException {
         if (instance == null) {
-            throw new NotAvailableException(DalVisualRemote.class.getSimpleName());
+            throw new NotAvailableException(BCOVisualRemote.class.getSimpleName());
         }
         return instance;
     }
 
     /**
-     * Creates new form DalVisualRemote
+     * Creates new form BCOVisualRemote
      *
      * @throws org.openbase.jul.exception.InstantiationException
      * @throws java.lang.InterruptedException
      */
-    public DalVisualRemote() throws InstantiationException, InterruptedException {
+    public BCOVisualRemote() throws InstantiationException, InterruptedException {
         try {
             instance = this;
 
@@ -252,7 +252,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         //</editor-fold>
 
         //</editor-fold>
-        JPService.setApplicationName(DalVisualRemote.class);
+        JPService.setApplicationName(BCOVisualRemote.class);
         JPService.registerProperty(JPAuthentication.class);
         JPService.registerProperty(JPBCOAutoLoginUser.class);
         JPService.parseAndExitOnError(args);
@@ -262,7 +262,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeAndWait(() -> {
             try {
-                new DalVisualRemote().setVisible(true);
+                new BCOVisualRemote().setVisible(true);
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);
                 System.exit(1);
