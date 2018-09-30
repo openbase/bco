@@ -594,12 +594,12 @@ public class SessionManager implements Shutdownable {
     /**
      * Changes the login credentials for a given user.
      *
-     * @param clientId       ID of the user / client whose credentials should be changed.
+     * @param userId       ID of the user / client whose credentials should be changed.
      * @param oldCredentials Old credentials, needed for verification.
      * @param newCredentials New credentials to be set.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public synchronized void changeCredentials(String clientId, String oldCredentials, String newCredentials) throws CouldNotPerformException {
+    public synchronized void changeCredentials(String userId, String oldCredentials, String newCredentials) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
