@@ -113,7 +113,7 @@ public class MockRegistry {
     public static final String ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS_DOOR = "Reed_Heaven_Stairs";
     public static final String ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS_DOOR = "Reed_Hell_Stairs";
     public static final String ALIAS_DEVICE_REED_SWITCH_HOMEMATIC = "HM_ReedSwitch_Device";
-    public static final String ALIAS_DEVICE_REED_SWITCH_STAIRWAY_WINDOW = "Reed_Stairway_Window";
+    public static final String ALIAS_DEVICE_REED_SWITCH_STAIRWAY_WINDOW = "Reed_Stairway_Window_Device";
     public static final String ALIAS_DEVICE_ROLLERSHUTTER = "HA_TYA628C_Device";
     public static final String ALIAS_DEVICE_SMOKE_DETECTOR = "Fibaro_SmokeDetector_Device";
     public static final String ALIAS_DEVICE_TEMPERATURE_CONTROLLER = "Gire_TemperatureController_Device";

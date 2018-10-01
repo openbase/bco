@@ -24,12 +24,9 @@ package org.openbase.bco.registry.unit.core.plugin;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
@@ -51,22 +48,22 @@ public class AliasMapUpdatePlugin extends ProtobufRegistryPluginAdapter<String, 
     }
 
     @Override
-    public void afterRegister(IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+    public void afterRegister(IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
         final UnitConfig unitConfig = identifiableMessage.getMessage();
 
         // add all aliases of the registered unit config
         synchronized (aliasIdMapLock) {
-            unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias, unitConfig.getId()));
+            unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias.toLowerCase(), unitConfig.getId()));
         }
     }
 
     @Override
-    public void beforeRemove(IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws RejectedException {
+    public void beforeRemove(IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
         final UnitConfig unitConfig = identifiableMessage.getMessage();
 
         // remove all aliases of the removed unit config
         synchronized (aliasIdMapLock) {
-            unitConfig.getAliasList().forEach(alias -> aliasIdMap.remove(alias));
+            unitConfig.getAliasList().forEach(alias -> aliasIdMap.remove(alias.toLowerCase()));
         }
     }
 
@@ -81,21 +78,21 @@ public class AliasMapUpdatePlugin extends ProtobufRegistryPluginAdapter<String, 
     }
 
     @Override
-    public void afterUpdate(IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+    public void afterUpdate(IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
         final UnitConfig unitConfig = identifiableMessage.getMessage();
 
         synchronized (aliasIdMapLock) {
             // add all new aliases
             unitConfig.getAliasList().forEach(alias -> {
                 if (!temporaryAliasList.contains(alias)) {
-                    aliasIdMap.put(alias, unitConfig.getId());
+                    aliasIdMap.put(alias.toLowerCase(), unitConfig.getId());
                 }
             });
 
             // remove all removed aliases
             temporaryAliasList.forEach(alias -> {
                 if (!unitConfig.getAliasList().contains(alias)) {
-                    aliasIdMap.remove(alias);
+                    aliasIdMap.remove(alias.toLowerCase());
                 }
             });
         }

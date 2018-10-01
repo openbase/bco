@@ -139,7 +139,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     aliasIdMap.clear();
                     for (IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage : data.values()) {
                         final UnitConfig unitConfig = identifiableMessage.getMessage();
-                        unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias, unitConfig.getId()));
+                        unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias.toLowerCase(), unitConfig.getId()));
                     }
                 }
             };
@@ -293,11 +293,11 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(String unitAlias) throws NotAvailableException {
+    public UnitConfig getUnitConfigByAlias(final String unitAlias) throws NotAvailableException {
         try {
             synchronized (aliasIdMapLock) {
-                if (aliasIdMap.containsKey(unitAlias)) {
-                    return getUnitConfigById(aliasIdMap.get(unitAlias));
+                if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
+                    return getUnitConfigById(aliasIdMap.get(unitAlias.toLowerCase()));
                 }
             }
             throw new NotAvailableException("Alias", unitAlias);
@@ -320,8 +320,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException {
         try {
             synchronized (aliasIdMapLock) {
-                if (aliasIdMap.containsKey(unitAlias)) {
-                    return getUnitConfigById(aliasIdMap.get(unitAlias), unitType);
+                if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
+                    return getUnitConfigById(aliasIdMap.get(unitAlias.toLowerCase()), unitType);
                 }
             }
             throw new NotAvailableException("Alias", unitAlias);

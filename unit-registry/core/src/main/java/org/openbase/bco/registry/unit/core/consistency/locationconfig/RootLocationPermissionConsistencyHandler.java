@@ -76,7 +76,7 @@ public class RootLocationPermissionConsistencyHandler extends AbstractProtoBufRe
         }
 
         // the consistency handler can only apply the following changes if the needed authorization groups are already registered
-        if (!aliasIdMap.containsKey(UnitRegistry.ADMIN_USER_ALIAS) || !aliasIdMap.containsKey(UnitRegistry.BCO_GROUP_ALIAS)) {
+        if (!aliasIdMap.containsKey(UnitRegistry.ADMIN_USER_ALIAS.toLowerCase()) || !aliasIdMap.containsKey(UnitRegistry.BCO_GROUP_ALIAS.toLowerCase())) {
             if (modification) {
                 throw new EntryModification(entry.setMessage(unitConfig), this);
             } else {
@@ -86,7 +86,7 @@ public class RootLocationPermissionConsistencyHandler extends AbstractProtoBufRe
 
         // make sure default admin/first user is the owner of the root location
         if (!unitConfig.getPermissionConfig().hasOwnerId()) {
-            final String adminId = aliasIdMap.get(UnitRegistry.ADMIN_USER_ALIAS);
+            final String adminId = aliasIdMap.get(UnitRegistry.ADMIN_USER_ALIAS.toLowerCase());
             unitConfig.getPermissionConfigBuilder().setOwnerId(adminId);
             modification = true;
         }
@@ -99,8 +99,8 @@ public class RootLocationPermissionConsistencyHandler extends AbstractProtoBufRe
         }
 
         final Map<String, Boolean> entryFoundMap = new HashMap<>();
-        entryFoundMap.put(aliasIdMap.get(UnitRegistry.ADMIN_GROUP_ALIAS), false);
-        entryFoundMap.put(aliasIdMap.get(UnitRegistry.BCO_GROUP_ALIAS), false);
+        entryFoundMap.put(aliasIdMap.get(UnitRegistry.ADMIN_GROUP_ALIAS.toLowerCase()), false);
+        entryFoundMap.put(aliasIdMap.get(UnitRegistry.BCO_GROUP_ALIAS.toLowerCase()), false);
         // make sure bco user has access and read permission and admin group all permissions
         unitConfig.getPermissionConfigBuilder().clearGroupPermission();
         for (MapFieldEntry mapFieldEntry : entry.getMessage().getPermissionConfig().getGroupPermissionList()) {

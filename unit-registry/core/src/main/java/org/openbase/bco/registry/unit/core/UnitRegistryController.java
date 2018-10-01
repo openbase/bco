@@ -211,7 +211,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         synchronized (aliasIdMapLock) {
             try {
                 for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
-                    registry.getMessages().forEach((unitConfig) -> unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias, unitConfig.getId())));
+                    registry.getMessages().forEach((unitConfig) -> unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias.toLowerCase(), unitConfig.getId())));
                 }
             } catch (CouldNotPerformException ex) {
                 throw new InitializationException(this, ex);
@@ -572,11 +572,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(String unitAlias) throws NotAvailableException {
+    public UnitConfig getUnitConfigByAlias(final String unitAlias) throws NotAvailableException {
         try {
             synchronized (aliasIdMapLock) {
-                if (aliasIdMap.containsKey(unitAlias)) {
-                    return getUnitConfigById(aliasIdMap.get(unitAlias));
+                if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
+                    return getUnitConfigById(aliasIdMap.get(unitAlias.toLowerCase()));
                 }
             }
             throw new NotAvailableException("Alias", unitAlias);
@@ -596,11 +596,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException {
+    public UnitConfig getUnitConfigByAlias(final String unitAlias, final UnitType unitType) throws NotAvailableException {
         try {
             synchronized (aliasIdMapLock) {
-                if (aliasIdMap.containsKey(unitAlias)) {
-                    return getUnitConfigById(aliasIdMap.get(unitAlias), unitType);
+                if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
+                    return getUnitConfigById(aliasIdMap.get(unitAlias.toLowerCase()), unitType);
                 }
             }
             throw new NotAvailableException("Alias", unitAlias);
