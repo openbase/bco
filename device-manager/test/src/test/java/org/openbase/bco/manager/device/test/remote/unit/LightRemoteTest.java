@@ -31,7 +31,7 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -72,11 +72,11 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        ActionFuture actionFuture = lightRemote.setPowerState(state).get();
+        ActionDescription ActionDescription = lightRemote.setPowerState(state).get();
         lightRemote.requestData().get();
         assertEquals("Power has not been set in time!", state.getValue(), lightRemote.getData().getPowerState().getValue());
         //TODO: adapt when changed to using authenticated value
-//        assertEquals("TransactionId has not been set correctly", actionFuture.generateActionDescriptionBuilder(0).getTransactionId(), lightRemote.getTransactionId());
+//        assertEquals("TransactionId has not been set correctly", ActionDescription.generateActionDescriptionBuilder(0).getTransactionId(), lightRemote.getTransactionId());
     }
 
     /**

@@ -30,7 +30,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.BlindStateType.BlindState;
 
 /**
@@ -47,7 +47,7 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
     }
 
     @Override
-    public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setBlindState(final BlindState state) throws CouldNotPerformException {
         switch (state.getValue()) {
             case UP:
                 return executeCommand(OpenHABCommandFactory.newUpDownCommand(state));

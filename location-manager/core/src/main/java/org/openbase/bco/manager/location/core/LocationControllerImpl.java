@@ -51,7 +51,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.*;
@@ -235,7 +235,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         switch (actionDescription.getServiceStateDescription().getServiceType()) {
             case STANDBY_STATE_SERVICE:
                 return super.applyAction(actionDescription);
@@ -250,7 +250,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
+    public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return applyUnauthorizedAction(standbyState, STANDBY_STATE_SERVICE);
     }
 
@@ -278,7 +278,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         }
 
         @Override
-        public Future<ActionFuture> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
+        public Future<ActionDescription> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
             LOGGER.info("Standby[" + standbyState.getValue() + "]" + this);
             return GlobalScheduledExecutorService.submit(() -> {
                 try (ClosableDataBuilder<Builder> dataBuilder = locationController.getDataBuilder(this)) {

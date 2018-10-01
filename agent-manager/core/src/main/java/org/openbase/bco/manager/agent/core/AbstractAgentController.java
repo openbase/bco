@@ -29,7 +29,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.agent.AgentDataType;

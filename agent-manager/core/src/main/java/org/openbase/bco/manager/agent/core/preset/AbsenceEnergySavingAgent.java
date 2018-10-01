@@ -34,7 +34,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionInitiatorType.ActionInitiator;
 import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.action.ActionParameterType.ActionParameter;
@@ -80,17 +80,17 @@ public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
         }
     }
 
-    ActionFuture actionFuture;
+    ActionDescription ActionDescription;
 
     @Override
     void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                actionFuture = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF))).get();
+                ActionDescription = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF))).get();
                 break;
             case DEACTIVE:
-                if(actionFuture != null) {
-                    actionFuture = locationRemote.cancelAction(actionFuture).get();
+                if(ActionDescription != null) {
+                    ActionDescription = locationRemote.cancelAction(ActionDescription).get();
                 }
                 break;
         }

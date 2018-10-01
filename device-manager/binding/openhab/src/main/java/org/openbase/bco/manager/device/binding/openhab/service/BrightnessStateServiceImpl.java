@@ -30,7 +30,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
@@ -55,7 +55,7 @@ public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationSer
     }
 
     @Override
-    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         lastCommand = OpenHABCommandFactory.newPercentCommand(brightnessState.getBrightness());
         final Future future = executeCommand(lastCommand);
         if (autoRepeat) {

@@ -32,7 +32,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ColorStateType.ColorState;
 
 import java.util.concurrent.Future;
@@ -59,7 +59,7 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
     }
 
     @Override
-    public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
         lastCommand = OpenHABCommandFactory.newHSBCommand(colorState.getColor().getHsbColor());
         final Future future = executeCommand(lastCommand);
         if (autoRepeat) {
