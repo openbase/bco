@@ -37,7 +37,7 @@ import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -61,7 +61,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     private final SyncObject enablingLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
-    private Future<ActionFuture> executionFuture;
+    private Future<ActionDescription> executionFuture;
     private boolean enabled;
     private final ActivationStateOperationServiceImpl activationStateOperationService;
 
@@ -80,7 +80,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         super.init(config);
     }
 
-    public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
         return applyUnauthorizedAction(activationState, ACTIVATION_STATE_SERVICE);
     }
 
@@ -165,7 +165,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         }
 
         @Override
-        public Future<ActionFuture> setActivationState(ActivationStateType.ActivationState activationState) throws CouldNotPerformException {
+        public Future<ActionDescription> setActivationState(ActivationStateType.ActivationState activationState) throws CouldNotPerformException {
             synchronized (executionLock) {
                 // filter events that do not change anything
                 if (activationState.getValue() == getActivationState().getValue()) {

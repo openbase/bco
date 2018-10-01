@@ -25,7 +25,7 @@ package org.openbase.bco.dal.lib.layer.service.operation;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.PresenceStateType.PresenceState;
 
 import java.util.concurrent.Future;
@@ -36,11 +36,11 @@ import java.util.concurrent.Future;
  */
 public interface PresenceStateOperationService extends OperationService, PresenceStateProviderService {
 
-    default Future<ActionFuture> setPresenceState(final PresenceState.State presence) throws CouldNotPerformException {
+    default Future<ActionDescription> setPresenceState(final PresenceState.State presence) throws CouldNotPerformException {
         return setPresenceState(PresenceState.newBuilder().setValue(presence).build());
     }
 
     @RPCMethod(legacy = true)
-    Future<ActionFuture> setPresenceState(final PresenceState PresenceState) throws CouldNotPerformException;
+    Future<ActionDescription> setPresenceState(final PresenceState PresenceState) throws CouldNotPerformException;
 
 }

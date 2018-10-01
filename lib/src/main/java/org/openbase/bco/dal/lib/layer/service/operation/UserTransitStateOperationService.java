@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.UserTransitStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 
 /**
@@ -36,9 +36,9 @@ import rst.domotic.state.UserTransitStateType.UserTransitState;
 public interface UserTransitStateOperationService extends OperationService, UserTransitStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException;
+    Future<ActionDescription> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException;
 
-    default Future<ActionFuture> setUserTransitState(UserTransitState.State userTransitState) throws CouldNotPerformException {
+    default Future<ActionDescription> setUserTransitState(UserTransitState.State userTransitState) throws CouldNotPerformException {
         return setUserTransitState(UserTransitState.newBuilder().setValue(userTransitState).build());
     }
 }

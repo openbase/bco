@@ -25,7 +25,7 @@ package org.openbase.bco.dal.lib.layer.service.operation;
 import org.openbase.bco.dal.lib.layer.service.provider.LocalPositionStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 
 import java.util.concurrent.Future;
@@ -36,5 +36,5 @@ import java.util.concurrent.Future;
 public interface LocalPositionStateOperationService extends OperationService, LocalPositionStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionFuture> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException;
+    Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException;
 }

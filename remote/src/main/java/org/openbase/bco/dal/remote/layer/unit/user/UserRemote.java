@@ -28,7 +28,7 @@ import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
@@ -56,27 +56,27 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setUserTransitState(final UserTransitState userTransitState) throws CouldNotPerformException {
+    public Future<ActionDescription> setUserTransitState(final UserTransitState userTransitState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setPresenceState(final PresenceState presenceState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPresenceState(final PresenceState presenceState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
+    public Future<ActionDescription> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(globalPositionState, ServiceType.GLOBAL_POSITION_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException {
+    public Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, this));
     }
 }

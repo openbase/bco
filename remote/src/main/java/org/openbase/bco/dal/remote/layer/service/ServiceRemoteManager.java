@@ -50,7 +50,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionParameterType.ActionParameter.Builder;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
@@ -353,13 +353,16 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 
                     return GlobalCachedExecutorService.allOf(input -> {
                         if (authenticationBaseData != null) {
-                            try {
-                                for (Future<ActionFuture> actionFuture : input) {
-                                    AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, actionFuture.get().getTicketAuthenticatorWrapper());
-                                }
-                            } catch (ExecutionException ex) {
-                                throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
-                            }
+                            //todo release tamino: how to deal with it after removing the ActionFuture?
+                            // openbase/bco.dal#132 how to restore snapshot authenticated after removing the ActionFuture type?
+//                            try {
+//                                for (Future<ActionDescription> ActionDescription : input) {
+//
+//                                    AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, ActionDescription.get().getTicketAuthenticatorWrapper());
+//                                }
+//                            } catch (ExecutionException ex) {
+//                                throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+//                            }
                         }
                         return null;
                     }, generateSnapshotActions(snapshot, initializedTicket, authenticationBaseData.getSessionKey()));
@@ -374,7 +377,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         }
     }
 
-    private Collection<Future<ActionFuture>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final byte[] sessionKey) throws CouldNotPerformException, InterruptedException {
+    private Collection<Future<ActionDescription>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final byte[] sessionKey) throws CouldNotPerformException, InterruptedException {
         final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
         for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
             for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
@@ -383,7 +386,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         }
 
         final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
-        final Collection<Future<ActionFuture>> futureCollection = new ArrayList<>();
+        final Collection<Future<ActionDescription>> futureCollection = new ArrayList<>();
         for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
             final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
 
@@ -474,7 +477,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         return connectionPing;
     }
 
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
         if (actionDescription.getServiceStateDescription().getUnitType().equals(responsibleInstance.getUnitType())) {
             ActionDescription.Builder builder = actionDescription.toBuilder();
             builder.getServiceStateDescriptionBuilder().setUnitType(UnitType.UNKNOWN);

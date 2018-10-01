@@ -25,7 +25,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
  */
 public interface StandbyStateOperationServiceCollection extends StandbyStateOperationService {
 
-    public Future<ActionFuture> setStandbyState(final StandbyState state, final UnitType unitType) throws CouldNotPerformException;
+    public Future<ActionDescription> setStandbyState(final StandbyState state, final UnitType unitType) throws CouldNotPerformException;
 
     /**
      * Returns running if at least one of the standbyServices is running and

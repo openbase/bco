@@ -26,7 +26,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.pattern.Observer;
 import rsb.Handler;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.dal.ObjectDataType.ObjectData;
@@ -55,7 +55,7 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, RejectedException {
+    public Future<ActionDescription> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, RejectedException {
         throw new NotSupportedException("Method[applyAction]", this);
     }
 

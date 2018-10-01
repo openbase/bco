@@ -31,7 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -60,12 +60,12 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
     }
 
     @Override
-    public Future<ActionFuture> setBrightnessState(final BrightnessState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setBrightnessState(final BrightnessState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, BRIGHTNESS_STATE_SERVICE);
     }
 

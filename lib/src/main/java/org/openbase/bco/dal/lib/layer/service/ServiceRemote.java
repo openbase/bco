@@ -39,7 +39,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -269,7 +269,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      *
      * @throws CouldNotPerformException is thrown if the action could not be applied.
      */
-    Future<ActionFuture> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException;
+    Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException;
 
     /**
      * {@inheritDoc}
@@ -281,7 +281,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    default Future<ActionFuture> applyAction(final ActionDescription actionDescriptionBuilder) throws CouldNotPerformException {
+    default Future<ActionDescription> applyAction(final ActionDescription actionDescriptionBuilder) throws CouldNotPerformException {
         return applyAction(actionDescriptionBuilder.toBuilder());
     }
 }

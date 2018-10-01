@@ -30,7 +30,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -101,12 +101,12 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     }
 
     @Override
-    public Future<ActionFuture> setBlindState(final BlindState blindState) throws CouldNotPerformException {
+    public Future<ActionDescription> setBlindState(final BlindState blindState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(blindState, getServiceType()));
     }
 
     @Override
-    public Future<ActionFuture> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionDescription> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(blindState, getServiceType(), unitType));
     }
 }

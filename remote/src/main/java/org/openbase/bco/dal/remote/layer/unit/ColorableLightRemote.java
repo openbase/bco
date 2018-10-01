@@ -33,8 +33,8 @@ import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceTemplateConfigType;
 import rst.domotic.service.ServiceTemplateType;
@@ -160,22 +160,22 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public Future<ActionFutureType.ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionDescriptionType.ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(colorState, ServiceType.COLOR_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+    public Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
         return setColor(neutralWhite);
     }
 
     @Override
-    public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionDescription> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
 }

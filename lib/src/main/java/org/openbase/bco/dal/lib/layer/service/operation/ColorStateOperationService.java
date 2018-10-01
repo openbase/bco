@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType.Color;
 import rst.vision.ColorType.Color.Type;
@@ -44,23 +44,23 @@ public interface ColorStateOperationService extends OperationService, ColorState
     Color DEFAULT_NEUTRAL_WHITE_COLOR = Color.newBuilder().setType(Type.HSB).setHsbColor(DEFAULT_NEUTRAL_WHITE).build();
 
     @RPCMethod(legacy = true)
-    Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException;
+    Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException;
 
     @RPCMethod(legacy = true)
-    default Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+    default Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
         return setColor(DEFAULT_NEUTRAL_WHITE);
     }
 
     @RPCMethod(legacy = true)
-    default Future<ActionFuture> setColor(final HSBColor color) throws CouldNotPerformException {
+    default Future<ActionDescription> setColor(final HSBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(color).build());
     }
 
-    default Future<ActionFuture> setColor(final Color color) throws CouldNotPerformException {
+    default Future<ActionDescription> setColor(final Color color) throws CouldNotPerformException {
         return setColorState(ColorState.newBuilder().setColor(color).build());
     }
 
-    default Future<ActionFuture> setColor(final RGBColor color) throws CouldNotPerformException {
+    default Future<ActionDescription> setColor(final RGBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.RGB).setRgbColor(color).build());
     }
 
@@ -72,7 +72,7 @@ public interface ColorStateOperationService extends OperationService, ColorState
      * @deprecated Please use the org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer or org.openbase.jul.visual.javafx.transform.JFXColorToHSBColorTransformer to tranform colors into compatible types.
      */
     @Deprecated
-    default Future<ActionFuture> setColor(final java.awt.Color color) throws CouldNotPerformException {
+    default Future<ActionDescription> setColor(final java.awt.Color color) throws CouldNotPerformException {
         try {
             float[] hsb = new float[3];
             java.awt.Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);

@@ -25,7 +25,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
  */
 public interface TargetTemperatureStateOperationServiceCollection extends TargetTemperatureStateOperationService {
 
-    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException;
+    public Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException;
 
     /**
      * Returns the average target temperature value for a collection of target

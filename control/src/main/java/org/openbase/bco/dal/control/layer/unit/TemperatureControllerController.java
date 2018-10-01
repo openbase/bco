@@ -29,7 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 
@@ -53,7 +53,7 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
     }
 
     @Override
-    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setTargetTemperatureState(final TemperatureState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, TARGET_TEMPERATURE_STATE_SERVICE);
     }
 }

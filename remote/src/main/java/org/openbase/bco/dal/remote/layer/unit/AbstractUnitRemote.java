@@ -54,7 +54,7 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -82,7 +82,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     public static final String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
@@ -551,7 +551,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
-    public Future<ActionFuture> applyAction(ActionDescription.Builder actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(ActionDescription.Builder actionDescription) throws CouldNotPerformException {
         return applyAction(actionDescription.build());
     }
 
@@ -565,13 +565,13 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, this.getSessionManager(), this::applyActionAuthenticated);
+    public Future<ActionDescription> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), this::applyActionAuthenticated);
     }
 
-    public Future<ActionFuture> cancelAction(final ActionFuture actionFuture) {
+    public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
         try {
-            return applyAction(ActionDescription.newBuilder().setId(actionFuture.getActionDescription(0).getId()).setCancel(true));
+            return applyAction(actionDescription.toBuilder().setCancel(true));
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ex);
         }

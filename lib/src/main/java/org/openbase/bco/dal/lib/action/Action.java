@@ -28,7 +28,7 @@ import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.pattern.provider.Provider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 
@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture>, Identifiable<String> {
+public interface Action extends Initializable<ActionDescription>, Executable<ActionDescription>, Identifiable<String> {
 
     @Override
     default String getId() {
@@ -122,8 +122,6 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
     void cancel();
 
     void schedule();
-
-    ActionFuture getActionFuture();
 
     void waitUntilFinish() throws InterruptedException;
 

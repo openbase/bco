@@ -29,7 +29,7 @@ import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -53,7 +53,7 @@ public class AuthorizationGroupRemote extends AbstractUnitRemote<AuthorizationGr
     }
 
     @Override
-    public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
     }
 }

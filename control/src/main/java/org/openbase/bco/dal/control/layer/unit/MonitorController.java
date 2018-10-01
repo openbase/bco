@@ -31,7 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.dal.MonitorDataType.MonitorData;
@@ -59,12 +59,12 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
     }
     
     @Override
-    public Future<ActionFuture> setStandbyState(final StandbyState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setStandbyState(final StandbyState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, STANDBY_STATE_SERVICE);
     }
 }

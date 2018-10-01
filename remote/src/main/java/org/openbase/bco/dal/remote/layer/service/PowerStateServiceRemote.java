@@ -28,7 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServ
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PowerStateType.PowerState.State;
@@ -62,12 +62,12 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState, getServiceType()));
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState, getServiceType(), unitType));
     }
 

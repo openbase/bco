@@ -27,7 +27,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.LightDataType.LightData;
@@ -49,7 +49,7 @@ public class LightRemote extends AbstractUnitRemote<LightData> implements Light 
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(PowerState powerState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
 }

@@ -79,7 +79,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -115,7 +115,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private static final SessionManager MOCKUP_SESSION_MANAGER = new SessionManager();
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
@@ -459,13 +459,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    public Future<ActionFuture> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+    public Future<ActionDescription> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
         final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(ActionDescriptionProcessor.generateDefaultActionParameter(serviceAttribute, serviceType, this, false)).build();
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, MOCKUP_SESSION_MANAGER, this::applyActionAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, MOCKUP_SESSION_MANAGER, this::applyActionAuthenticated);
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
 
         // check if an existing action should just be canceled.
         if (actionDescription.hasId() && !actionDescription.getId().isEmpty() && actionDescription.getCancel()) {
@@ -489,7 +489,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
 
-    private Future<ActionFuture> cancelAction(final ActionDescription actionDescription) {
+    private Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 Action actionToCancel = null;
@@ -512,14 +512,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     reschedule();
 
                 }
-                return actionToCancel.getActionFuture();
+                return actionToCancel.getActionDescription();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex);
             }
         });
     }
 
-    private Future<ActionFuture> scheduleAction(final Action actionToSchedule) {
+    private Future<ActionDescription> scheduleAction(final Action actionToSchedule) {
         return GlobalCachedExecutorService.submit(() -> {
             synchronized (scheduledActionListLock) {
                 scheduledActionList.add(actionToSchedule);
@@ -532,7 +532,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     }
                     logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, getLabel(), getSchedulingIndex(actionToSchedule));
                 }
-                return actionToSchedule.getActionFuture();
+                return actionToSchedule.getActionDescription();
             }
         });
     }
@@ -880,7 +880,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return restoreSnapshot(snapshot);
         //TODO: implementation has to be fixed like in ServiceRemoteManager
         //        try {
-//            Collection<Future<ActionFuture>> futureCollection = new ArrayList<>();
+//            Collection<Future<ActionDescription>> futureCollection = new ArrayList<>();
 //            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
 //                ActionDescription.Builder actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription);
 //
@@ -893,8 +893,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 //            return GlobalCachedExecutorService.allOf(input -> {
 //                if (ticketEvaluationWrapper != null) {
 //                    try {
-//                        for (Future<ActionFuture> actionFuture : input) {
-//                            AuthenticationClientHandler.handleServiceServerResponse(ticketEvaluationWrapper.getSessionKey(), ticketEvaluationWrapper.getTicketAuthenticatorWrapper(), actionFuture.get().getTicketAuthenticatorWrapper());
+//                        for (Future<ActionDescription> ActionDescription : input) {
+//                            AuthenticationClientHandler.handleServiceServerResponse(ticketEvaluationWrapper.getSessionKey(), ticketEvaluationWrapper.getTicketAuthenticatorWrapper(), ActionDescription.get().getTicketAuthenticatorWrapper());
 //                        }
 //                    } catch (IOException | BadPaddingException ex) {
 //                        throw new CouldNotPerformException("Could not validate response because it could not be decrypted", ex);

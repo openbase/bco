@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivationStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
@@ -34,11 +34,11 @@ import rst.domotic.state.ActivationStateType.ActivationState;
  */
 public interface ActivationStateOperationService extends OperationService, ActivationStateProviderService {
 
-    default Future<ActionFuture> setActivationState(final ActivationState.State activation) throws CouldNotPerformException {
+    default Future<ActionDescription> setActivationState(final ActivationState.State activation) throws CouldNotPerformException {
         return setActivationState(ActivationState.newBuilder().setValue(activation).build());
     }
 
     @RPCMethod(legacy = true)
-    Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException;
+    Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException;
 
 }

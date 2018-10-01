@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -35,7 +35,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface ActivationStateOperationServiceCollection extends ActivationStateOperationService {
 
-    public Future<ActionFuture> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException;
+    public Future<ActionDescription> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException;
 
     /**
      * Returns on if at least one of the power services is on and else off.

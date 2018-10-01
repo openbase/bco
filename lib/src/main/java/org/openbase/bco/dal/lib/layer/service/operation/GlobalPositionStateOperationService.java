@@ -25,7 +25,7 @@ package org.openbase.bco.dal.lib.layer.service.operation;
 import org.openbase.bco.dal.lib.layer.service.provider.GlobalPositionStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
 
 import java.util.concurrent.Future;
@@ -36,5 +36,5 @@ import java.util.concurrent.Future;
 public interface GlobalPositionStateOperationService extends OperationService, GlobalPositionStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionFuture> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException;
+    Future<ActionDescription> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException;
 }

@@ -33,7 +33,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -49,12 +49,12 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
     }
 
     @Override
-    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
+    public Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(temperatureState, getServiceType()));
     }
 
     @Override
-    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(temperatureState, getServiceType(), unitType));
     }
 
