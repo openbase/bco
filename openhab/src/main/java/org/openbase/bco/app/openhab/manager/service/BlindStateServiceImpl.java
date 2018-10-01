@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.BlindStateType.BlindState;
 
 import java.util.concurrent.Future;
@@ -39,7 +39,7 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
     }
 
     @Override
-    public Future<ActionFuture> setBlindState(BlindState blindState) throws CouldNotPerformException {
+    public Future<ActionDescription> setBlindState(BlindState blindState) throws CouldNotPerformException {
         return setState(blindState);
     }
 

@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.StandbyStateType.StandbyState;
 
 import java.util.concurrent.Future;
@@ -39,7 +39,7 @@ public class StandbyStateServiceImpl<ST extends StandbyStateOperationService & U
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
+    public Future<ActionDescription> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
         return setState(standbyState);
     }
 

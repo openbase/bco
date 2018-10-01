@@ -31,7 +31,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -67,7 +67,7 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
         return appRemote.setActivationState(activationState);
     }
 
@@ -117,7 +117,7 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return appRemote.applyAction(actionDescription);
     }
 

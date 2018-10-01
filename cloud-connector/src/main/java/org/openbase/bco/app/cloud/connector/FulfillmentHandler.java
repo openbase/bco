@@ -54,7 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.language.LabelType.Label;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
@@ -722,14 +722,14 @@ public class FulfillmentHandler {
                 final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, serviceType, unitRemote).build();
                 final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, authenticationToken, authorizationToken);
 
-                final AuthenticatedValueFuture<ActionFuture> actionFutureAuthenticatedValueFuture = new AuthenticatedValueFuture<>(unitRemote.applyActionAuthenticated(authenticatedValue), ActionFuture.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+                final AuthenticatedValueFuture<ActionDescription> ActionDescriptionAuthenticatedValueFuture = new AuthenticatedValueFuture<>(unitRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
 
                 // wait for result
                 try {
-                    actionFutureAuthenticatedValueFuture.get(UNIT_TASK_TIMEOUT, TimeUnit.SECONDS);
+                    ActionDescriptionAuthenticatedValueFuture.get(UNIT_TASK_TIMEOUT, TimeUnit.SECONDS);
                 } catch (InterruptedException ex) {
                     // cancel internal task and finish normally
-                    actionFutureAuthenticatedValueFuture.cancel(true);
+                    ActionDescriptionAuthenticatedValueFuture.cancel(true);
                 } catch (ExecutionException ex) {
                     // throw exception to inform task waiting for this one
                     throw new CouldNotPerformException("Invoking service[" + serviceType.name() + "] " +

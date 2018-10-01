@@ -29,7 +29,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 
@@ -42,7 +42,7 @@ public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(PowerState powerState) throws CouldNotPerformException {
         return setState(powerState);
     }
 
