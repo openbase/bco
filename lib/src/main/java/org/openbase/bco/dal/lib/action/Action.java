@@ -32,6 +32,7 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -119,7 +120,7 @@ public interface Action extends Initializable<ActionDescription>, Executable<Act
         return getActionDescription().getActionState().getValue();
     }
 
-    void cancel();
+    Future<ActionDescription> cancel();
 
     void schedule();
 

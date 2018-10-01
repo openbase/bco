@@ -34,10 +34,10 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Initializable;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -48,19 +48,19 @@ import java.util.concurrent.Future;
 /**
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class RemoteAction implements Action, Initializable<ActionFuture> {
+public class RemoteAction implements Action, Initializable<ActionDescription> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAction.class);
     private final SyncObject executionSync = new SyncObject(RemoteAction.class);
-    private ActionFuture actionFuture;
+    private ActionDescription actionDescription;
     private UnitConfig unitConfig;
     private ServiceRemoteFactory serviceRemoteFactory;
     private AbstractServiceRemote<?, ?> serviceRemote;
     private Future<ActionDescription> executionFuture;
 
     @Override
-    public void init(final ActionFuture actionFuture) throws InitializationException, InterruptedException {
-        this.actionFuture = actionFuture;
+    public void init(final ActionDescription actionDescription) throws InitializationException, InterruptedException {
+        this.actionDescription = actionDescription;
         try {
             if (getActionDescription().getServiceStateDescription().getUnitId().isEmpty()) {
                 throw new InvalidStateException(getActionDescription().getLabel() + " has no valid unit id!");
@@ -125,7 +125,7 @@ public class RemoteAction implements Action, Initializable<ActionFuture> {
      */
     @Override
     public ActionDescription getActionDescription() {
-        return actionFuture.getActionDescription(0);
+        return actionDescription;
     }
 
     @Override
@@ -134,8 +134,12 @@ public class RemoteAction implements Action, Initializable<ActionFuture> {
     }
 
     @Override
-    public void cancel() {
-        Units.getUnit(getActionDescription().getServiceStateDescription().getUnitId(), false).cancelAction(getActionDescription().toBuilder().setCancel(true).build());
+    public Future<ActionDescription> cancel() {
+        try {
+            return Units.getUnit(getActionDescription().getServiceStateDescription().getUnitId(), false).cancelAction(getActionDescription().toBuilder().setCancel(true).build());
+        } catch (CouldNotPerformException | InterruptedException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
     }
 
     @Override

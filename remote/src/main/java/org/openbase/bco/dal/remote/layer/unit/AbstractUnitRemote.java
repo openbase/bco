@@ -569,6 +569,12 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), this::applyActionAuthenticated);
     }
 
+    /**
+     * {@inheritDoc}
+     * @param actionDescription {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
     public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
         try {
             return applyAction(actionDescription.toBuilder().setCancel(true));

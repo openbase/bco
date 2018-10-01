@@ -329,21 +329,18 @@ public class ActionImpl implements ExecutableAction {
      * {@inheritDoc}
      */
     @Override
-    public void cancel() {
+    public Future<ActionDescription> cancel() {
 
         // return if action is done
         if (actionTask == null || actionTask.isDone()) {
-            return;
+            return CompletableFuture.completedFuture(getActionDescription());
         }
 
-        actionTask.cancel(true);
-    }
-
-    public void cancelAndWait() throws InterruptedException {
-        synchronized (executionSync) {
-            cancel();
+        return GlobalCachedExecutorService.submit(() -> {
+            actionTask.cancel(true);
             waitUntilFinish();
-        }
+            return null;
+        });
     }
 
     /**
