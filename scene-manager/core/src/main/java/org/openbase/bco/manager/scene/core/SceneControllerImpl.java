@@ -249,7 +249,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     }
 
     @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
+    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Finished scene: " + getLabel());
     }
 

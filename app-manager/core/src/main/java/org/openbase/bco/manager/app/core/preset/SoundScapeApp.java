@@ -34,6 +34,7 @@ import org.openbase.jul.schedule.WatchDog;
 import rsb.Event;
 import rsb.Scope;
 import rst.domotic.state.ActivationStateType;
+import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
  *
@@ -81,7 +82,7 @@ public class SoundScapeApp extends AbstractAppController {
     }
 
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
+    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         try {
             agentBathAmbientColorBeachCeiling = Units.getUnit("BathAmbientColorBeachCeiling", false, Units.UNIT_BASE_AGENT);
             agentBathAmbientColorForest = Units.getUnit("BathAmbientColorForest", false, Units.UNIT_BASE_AGENT);
@@ -94,7 +95,7 @@ public class SoundScapeApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
+    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         try {
             if (agentBathAmbientColorBeachCeiling != null) {
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);

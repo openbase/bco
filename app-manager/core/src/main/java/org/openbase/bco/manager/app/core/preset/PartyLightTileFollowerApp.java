@@ -31,6 +31,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -86,7 +87,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
             HSBColor.newBuilder().setHue(30).setSaturation(100).setBrightness(brightness).build(),};
 
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
+    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Execute PartyLightTileFollowerApp[" + getLabel() + "]");
         // verify
         if (!Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
@@ -97,7 +98,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop() {
+    protected void stop(final ActivationState activationState) {
     }
 
     public class TileFollower implements Callable<Void> {

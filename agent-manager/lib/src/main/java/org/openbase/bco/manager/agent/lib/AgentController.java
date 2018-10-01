@@ -34,6 +34,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public interface AgentController extends Identifiable<String>, Enableable, org.openbase.bco.dal.lib.layer.unit.agent.Agent, MessageController<AgentData, AgentData.Builder> {
 
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
+    void init(final UnitConfig config) throws InitializationException, InterruptedException;
 
 }

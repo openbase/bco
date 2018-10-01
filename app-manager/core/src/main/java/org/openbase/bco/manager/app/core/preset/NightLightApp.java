@@ -203,7 +203,6 @@ public class NightLightApp extends AbstractAppController {
 
     @Override
     public void shutdown() {
-        stop();
         synchronized (locationMapLock) {
             locationMap.clear();
         }
@@ -211,7 +210,7 @@ public class NightLightApp extends AbstractAppController {
     }
 
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
+    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         synchronized (locationMapLock) {
             locationMap.forEach((remote, observer) -> {
                 remote.addDataObserver(observer);
@@ -228,7 +227,7 @@ public class NightLightApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop() {
+    protected void stop(final ActivationState activationState) {
         synchronized (locationMapLock) {
             locationMap.forEach((remote, observer) -> {
                 remote.removeDataObserver(observer);

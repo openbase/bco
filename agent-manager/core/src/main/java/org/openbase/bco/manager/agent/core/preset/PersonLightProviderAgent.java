@@ -62,7 +62,7 @@ public class PersonLightProviderAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
+    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
         locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
         locationRemote.addDataObserver(locationObserver);
@@ -70,7 +70,7 @@ public class PersonLightProviderAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
+    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         locationRemote.removeDataObserver(locationObserver);
     }

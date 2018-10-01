@@ -80,7 +80,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
+    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
         
         // do not activate agents that need the resource allocation to work properly if the resource allocation is turned off
@@ -96,7 +96,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
+    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
         agentTriggerHolder.deactivate();
     }

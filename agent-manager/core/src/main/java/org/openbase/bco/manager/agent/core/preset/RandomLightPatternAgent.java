@@ -87,7 +87,7 @@ public class RandomLightPatternAgent extends AbstractTriggerableAgent {
     }
 
     @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
+    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         stopRandomLightPattern();
 
         super.stop();

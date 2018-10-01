@@ -44,6 +44,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ActivationStateType.ActivationState.State;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.EnablingStateType.EnablingState;
@@ -411,7 +412,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
+    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Executing PowerStateSynchroniser agent");
 
         String targetIds = "";
@@ -461,7 +462,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void stop() {
+    protected void stop(final ActivationState activationState) {
         try {
             logger.debug("Stopping PowerStateSynchroniserAgent[" + getLabel() + "]");
         } catch (NotAvailableException ex) {
