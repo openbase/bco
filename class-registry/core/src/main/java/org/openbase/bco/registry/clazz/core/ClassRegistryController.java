@@ -129,7 +129,6 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @throws CouldNotPerformException       {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public final void syncRegistryFlags() throws CouldNotPerformException {
