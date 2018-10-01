@@ -39,7 +39,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
@@ -168,17 +168,17 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    public Future<ActionFuture> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
         return applyUnauthorizedAction(activityMultiState, ACTIVITY_MULTI_STATE_SERVICE);
     }
 
     @Override
-    public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
         return applyUnauthorizedAction(presenceState, PRESENCE_STATE_SERVICE);
     }
 
     @Override
-    public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
+    public Future<ActionDescription> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
         return applyUnauthorizedAction(userTransitState, USER_TRANSIT_STATE_SERVICE);
     }
 
@@ -243,12 +243,12 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    public Future<ActionFuture> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
+    public Future<ActionDescription> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
         return applyUnauthorizedAction(globalPositionState, GLOBAL_POSITION_STATE_SERVICE);
     }
 
     @Override
-    public Future<ActionFuture> setLocalPositionState(LocalPositionState localPositionState) throws CouldNotPerformException {
+    public Future<ActionDescription> setLocalPositionState(LocalPositionState localPositionState) throws CouldNotPerformException {
         return applyUnauthorizedAction(localPositionState, LOCAL_POSITION_STATE_SERVICE);
     }
 

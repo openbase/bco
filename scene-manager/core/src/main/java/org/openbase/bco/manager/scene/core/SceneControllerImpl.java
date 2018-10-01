@@ -40,7 +40,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -205,7 +205,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Activate Scene[" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
 
-        final Map<Future<ActionFuture>, RemoteAction> executionFutureList = new HashMap<>();
+        final Map<Future<ActionDescription>, RemoteAction> executionFutureList = new HashMap<>();
 
         synchronized (actionListSync) {
             for (final RemoteAction action : remoteActionList) {
@@ -219,7 +219,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
             long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
             long timeout;
-            for (Entry<Future<ActionFuture>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
+            for (Entry<Future<ActionDescription>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
                 if (futureActionEntry.getKey().isDone()) {
                     continue;
                 }
@@ -239,7 +239,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         } catch (CouldNotPerformException | CancellationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getLabel() + "] execution failed!", ex), logger);
         } finally {
-            for (Entry<Future<ActionFuture>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
+            for (Entry<Future<ActionDescription>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
                 if (!futureActionEntry.getKey().isDone()) {
                     futureActionEntry.getKey().cancel(true);
                 }

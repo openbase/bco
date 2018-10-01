@@ -23,17 +23,18 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.jul.pattern.trigger.Trigger;
-import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -45,7 +46,7 @@ import rst.domotic.unit.location.LocationDataType;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class TemperatureControllerAgent extends AbstractResourceAllocationAgent {
+public class TemperatureControllerAgent extends AbstractTriggerableAgent {
 
     private LocationRemote locationRemote;
     private final Map<TemperatureControllerRemote, TemperatureState> previousTemperatureState;
@@ -58,14 +59,14 @@ public class TemperatureControllerAgent extends AbstractResourceAllocationAgent 
 
 //        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
-        triggerHolderObserver = (Trigger source, ActivationState data) -> {
-            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                regulateTemperature();
-            } else {
-//                actionRescheduleHelper.stopExecution();
-                restoreTemperature();
-            }
-        };
+//        triggerHolderObserver = (Trigger source, ActivationState data) -> {
+//            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
+//                regulateTemperature();
+//            } else {
+////                actionRescheduleHelper.stopExecution();
+//                restoreTemperature();
+//            }
+//        };
     }
 
     @Override
@@ -79,12 +80,12 @@ public class TemperatureControllerAgent extends AbstractResourceAllocationAgent 
                 throw new InitializationException("LocationRemote not available.", ex);
             }
 
-            try {
-                GenericBCOTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceType.PRESENCE_STATE_SERVICE);
-                agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
-            } catch (CouldNotPerformException ex) {
-                throw new InitializationException("Could not add agent to agentpool", ex);
-            }
+//            try {
+//                GenericBCOTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceType.PRESENCE_STATE_SERVICE);
+//                agentTriggerHolder.addTrigger(agentTrigger, TriggerAggregation.OR);
+//            } catch (CouldNotPerformException ex) {
+//                throw new InitializationException("Could not add agent to agentpool", ex);
+//            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not initialize Agent.", ex);
         }
@@ -141,5 +142,10 @@ public class TemperatureControllerAgent extends AbstractResourceAllocationAgent 
 //            }
 //        });
 //        previousTemperatureState.clear();
+    }
+
+    @Override
+    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+
     }
 }

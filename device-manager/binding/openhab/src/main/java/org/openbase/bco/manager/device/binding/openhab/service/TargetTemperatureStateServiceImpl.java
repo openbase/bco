@@ -30,7 +30,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
@@ -47,7 +47,7 @@ public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureState
     }
 
     @Override
-    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
+    public Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         return executeCommand(OpenHABCommandFactory.newDecimalCommand(temperatureState.getTemperature()));
     }
 

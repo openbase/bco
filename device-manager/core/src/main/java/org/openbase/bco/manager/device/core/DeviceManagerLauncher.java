@@ -23,7 +23,7 @@ package org.openbase.bco.manager.device.core;
  */
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
+import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
@@ -49,7 +49,7 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerControl
         JPService.registerProperty(JPBenchmarkMode.class);
         JPService.registerProperty(JPUnitRegistryScope.class);
         JPService.registerProperty(JPClassRegistryScope.class);
-        JPService.registerProperty(JPResourceAllocation.class);
+        JPService.registerProperty(JPUnitAllocation.class);
     }
 
     public static void main(String args[]) throws Throwable {

@@ -28,7 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 
@@ -47,7 +47,7 @@ public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController
     }
 
     @Override
-    public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
         return applyUnauthorizedAction(presenceState, PRESENCE_STATE_SERVICE);
     }
 }

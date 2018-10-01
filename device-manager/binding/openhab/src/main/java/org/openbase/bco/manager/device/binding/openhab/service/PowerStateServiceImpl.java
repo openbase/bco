@@ -30,7 +30,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.PowerStateType.PowerState;
 
 import java.util.concurrent.Future;
@@ -57,7 +57,7 @@ public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
         lastCommand = OpenHABCommandFactory.newOnOffCommand(state.getValue());
         final Future future = executeCommand(lastCommand);
         if (autoRepeat) {

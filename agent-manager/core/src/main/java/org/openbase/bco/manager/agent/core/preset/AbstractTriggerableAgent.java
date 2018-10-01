@@ -22,36 +22,61 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
+import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.trigger.Trigger;
+import org.openbase.jul.pattern.trigger.TriggerPool;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.ActivationStateType.ActivationState;
+
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public abstract class AbstractResourceAllocationAgent extends AbstractAgentController {
+public abstract class AbstractTriggerableAgent extends AbstractAgentController {
 
-//    protected ActionRescheduler actionRescheduleHelper;
-    protected Observer<Trigger, ActivationState> triggerHolderObserver;
+    private TriggerPool agentTriggerHolder;
+    private Observer<Trigger, ActivationState> triggerHolderObserver;
 
-    public AbstractResourceAllocationAgent(final Class unitClass) throws InstantiationException {
+    public AbstractTriggerableAgent(final Class unitClass) throws InstantiationException {
         super(unitClass);
+        this.agentTriggerHolder = new TriggerPool();
+        this.triggerHolderObserver = (Trigger source, ActivationState data) -> {
+            GlobalCachedExecutorService.submit(() -> {
+                try {
+                    trigger(data);
+                } catch (CouldNotPerformException | CancellationException ex) {
+                    ExceptionPrinter.printHistory("Could no trigger agent!", ex, logger);
+                }
+                return null;
+            });
+        };
     }
 
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
-        
         agentTriggerHolder.addObserver(triggerHolderObserver);
+    }
+
+    public void registerTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException{
+        try {
+            agentTriggerHolder.addTrigger(trigger, aggregation);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException("Could not add agent to agent pool", ex);
+        }
     }
 
     @Override
@@ -60,29 +85,28 @@ public abstract class AbstractResourceAllocationAgent extends AbstractAgentContr
         
         // do not activate agents that need the resource allocation to work properly if the resource allocation is turned off
         try {
-            if (!JPService.getProperty(JPResourceAllocation.class).getValue()) {
-                logger.info("Skip activatio of agent [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "] because resource allocation is disabled");
+            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
+                logger.info("Skip activation of agent [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "] because unit allocation is disabled.");
                 return;
             }
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
         }
-        
         agentTriggerHolder.activate();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-//        logger.info("Deactivating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
-//        actionRescheduleHelper.stopExecution();
-//        agentTriggerHolder.deactivate();
+        logger.info("Deactivating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
+        agentTriggerHolder.deactivate();
     }
 
     @Override
     public void shutdown() {
-//        actionRescheduleHelper.stopExecution();
-//        agentTriggerHolder.removeObserver(triggerHolderObserver);
-//        agentTriggerHolder.shutdown();
-//        super.shutdown();
+        agentTriggerHolder.removeObserver(triggerHolderObserver);
+        agentTriggerHolder.shutdown();
+        super.shutdown();
     }
+
+    abstract void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException;
 }

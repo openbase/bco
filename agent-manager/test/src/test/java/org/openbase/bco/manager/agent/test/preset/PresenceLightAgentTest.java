@@ -23,7 +23,7 @@ package org.openbase.bco.manager.agent.test.preset;
  */
 
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
+import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.MotionDetectorRemote;
@@ -75,7 +75,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
     public void testPreseceLightAgent() throws Exception {
         // TODO: turn back on when resource allocation is integrated for unit tests
         try {
-            if (!JPService.getProperty(JPResourceAllocation.class).getValue()) {
+            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
                 return;
             }
         } catch (JPNotAvailableException ex) {

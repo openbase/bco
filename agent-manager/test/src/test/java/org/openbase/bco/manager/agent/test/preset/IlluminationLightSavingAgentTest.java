@@ -23,7 +23,7 @@ package org.openbase.bco.manager.agent.test.preset;
  */
 
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
+import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
 import org.openbase.bco.dal.control.layer.unit.LightSensorController;
@@ -76,7 +76,7 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
     public void testIlluminationLightSavingAgent() throws Exception {
         // TODO: turn back on when resource allocation is integrated for unit tests
         try {
-            if (!JPService.getProperty(JPResourceAllocation.class).getValue()) {
+            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
                 return;
             }
         } catch (JPNotAvailableException ex) {
