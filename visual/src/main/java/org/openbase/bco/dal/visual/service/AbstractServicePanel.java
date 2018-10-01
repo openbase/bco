@@ -83,7 +83,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
     private final SyncObject executerSync = new SyncObject("ExecuterSync");
     private String unitId = "";
     private ServiceTemplateType.ServiceTemplate.ServiceType serviceType;
-    private Future lastActionFuture;
+    private Future lastActionDescription;
 //    private final RecurrenceEventFilter<Future> recurrenceActionFilter;
 
     /**
@@ -154,11 +154,11 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
     }
 
     public synchronized void notifyActionProcessing(final Future future) {
-        if (lastActionFuture != null && lastActionFuture.isDone()) {
-            lastActionFuture.cancel(true);
+        if (lastActionDescription != null && lastActionDescription.isDone()) {
+            lastActionDescription.cancel(true);
         }
         statusPanel.setStatus("Process " + getServiceName() + " action.", StatusPanel.StatusType.INFO, future);
-        lastActionFuture = future;
+        lastActionDescription = future;
     }
 
     public PS getProviderService() throws NotAvailableException {

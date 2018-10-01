@@ -33,7 +33,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -50,12 +50,12 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
     }
 
     @Override
-    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(brightnessState, getServiceType()));
     }
 
     @Override
-    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(brightnessState, getServiceType(), unitType));
     }
 

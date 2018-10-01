@@ -29,7 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
@@ -49,7 +49,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     }
 
     @Override
-    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
+    public Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, this));
     }
 }

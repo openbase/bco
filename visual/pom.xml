@@ -48,7 +48,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.dal.visual.DalVisualRemote</mainClass>
+                            <mainClass>org.openbase.bco.dal.visual.BCOVisualRemote</mainClass>
                             <id>bco-visual-remote</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -64,7 +64,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.openbase.bco.dal.visual.DalVisualRemote</mainClass>
+                            <mainClass>org.openbase.bco.dal.visual.BCOVisualRemote</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -38,7 +38,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -56,7 +56,7 @@ public class RemoteAction implements Action, Initializable<ActionFuture> {
     private UnitConfig unitConfig;
     private ServiceRemoteFactory serviceRemoteFactory;
     private AbstractServiceRemote<?, ?> serviceRemote;
-    private Future<ActionFuture> executionFuture;
+    private Future<ActionDescription> executionFuture;
 
     @Override
     public void init(final ActionFuture actionFuture) throws InitializationException, InterruptedException {
@@ -95,7 +95,7 @@ public class RemoteAction implements Action, Initializable<ActionFuture> {
     }
 
     @Override
-    public Future<ActionFuture> execute() throws CouldNotPerformException {
+    public Future<ActionDescription> execute() throws CouldNotPerformException {
         synchronized (executionSync) {
             return serviceRemote.applyAction(getActionDescription());
         }
@@ -141,11 +141,6 @@ public class RemoteAction implements Action, Initializable<ActionFuture> {
     @Override
     public void schedule() {
 
-    }
-
-    @Override
-    public ActionFuture getActionFuture() {
-        return null;
     }
 
     @Override

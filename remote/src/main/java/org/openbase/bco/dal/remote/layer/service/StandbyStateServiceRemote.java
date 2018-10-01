@@ -29,7 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.StandbyStateType.StandbyState.State;
@@ -47,12 +47,12 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
+    public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(standbyState, getServiceType()));
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(final StandbyState standbyState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionDescription> setStandbyState(final StandbyState standbyState, final UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(standbyState, getServiceType(), unitType));
     }
 

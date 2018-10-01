@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationServi
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -38,7 +38,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface ColorStateOperationServiceCollection extends ColorStateOperationService {
 
-    public Future<ActionFuture> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException;
+    public Future<ActionDescription> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException;
 
     /**
      * Computes the average RGB color for the underlying services.

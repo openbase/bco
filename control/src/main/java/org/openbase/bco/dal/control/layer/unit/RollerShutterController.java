@@ -29,7 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
 
@@ -51,13 +51,13 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     }
 
     @Override
-    public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setBlindState(final BlindState state) throws CouldNotPerformException {
 //        logger.debug("Setting [" + getLabel() + "] to BlindState [" + state + "]");
 //
 //        try {
 //            Services.verifyServiceState(state);
 //        } catch (VerificationFailedException ex) {
-//            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
+//            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
 //        }
 //
 //        // stop before moving in any direction.

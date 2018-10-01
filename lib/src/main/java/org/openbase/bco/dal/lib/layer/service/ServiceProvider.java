@@ -25,15 +25,12 @@ package org.openbase.bco.dal.lib.layer.service;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
@@ -54,13 +51,13 @@ public interface ServiceProvider<ST> {
      * @throws CouldNotPerformException is thrown if the action could not be applied.
      */
     @RPCMethod(legacy = true)
-    Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
+    Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
 
-    default Future<ActionFuture> applyAction(final ActionDescription.Builder actionDescriptioBuildern) throws CouldNotPerformException {
+    default Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptioBuildern) throws CouldNotPerformException {
         return applyAction(actionDescriptioBuildern.build());
     }
 
-    default Future<ActionFuture> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+    default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
     }
 

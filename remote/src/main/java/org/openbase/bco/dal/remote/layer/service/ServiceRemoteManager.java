@@ -50,7 +50,6 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionParameterType.ActionParameter.Builder;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
@@ -345,21 +344,19 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         return restoreSnapshotAuthenticated(snapshot, null);
     }
 
-    public Future<Void> restoreSnapshotAuthenticated(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshotAuthenticated(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
         try {
             if (authenticationBaseData != null) {
                 try {
                     final TicketAuthenticatorWrapper initializedTicket = AuthenticationClientHandler.initServiceServerRequest(authenticationBaseData.getSessionKey(), authenticationBaseData.getTicketAuthenticatorWrapper());
 
                     return GlobalCachedExecutorService.allOf(input -> {
-                        if (authenticationBaseData != null) {
-                            try {
-                                for (Future<ActionFuture> actionFuture : input) {
-                                    AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, actionFuture.get().getTicketAuthenticatorWrapper());
-                                }
-                            } catch (ExecutionException ex) {
-                                throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+                        try {
+                            for (Future<AuthenticatedValue> authenticatedValueFuture : input) {
+                                AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, authenticatedValueFuture.get().getTicketAuthenticatorWrapper());
                             }
+                        } catch (ExecutionException ex) {
+                            throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                         }
                         return null;
                     }, generateSnapshotActions(snapshot, initializedTicket, authenticationBaseData.getSessionKey()));
@@ -374,7 +371,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         }
     }
 
-    private Collection<Future<ActionFuture>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final byte[] sessionKey) throws CouldNotPerformException, InterruptedException {
+    private Collection<Future<AuthenticatedValue>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final byte[] sessionKey) throws CouldNotPerformException {
         final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
         for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
             for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
@@ -383,7 +380,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         }
 
         final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
-        final Collection<Future<ActionFuture>> futureCollection = new ArrayList<>();
+        final Collection<Future<AuthenticatedValue>> futureCollection = new ArrayList<>();
         for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
             final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
 
@@ -407,16 +404,15 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 //            }
 //            ActionDescriptionProcessor.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType(), unitRemote);
 
-
+            AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
             if (ticketAuthenticatorWrapper != null) {
                 // prepare authenticated value to request action
-                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
                 authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
                 authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));
-                futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
             } else {
-                futureCollection.add(unitRemote.applyAction(actionDescriptionBuilder.build()));
+                authenticatedValue.setValue(actionDescriptionBuilder.build().toByteString());
             }
+            futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
         }
 
         return futureCollection;
@@ -474,7 +470,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         return connectionPing;
     }
 
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
         if (actionDescription.getServiceStateDescription().getUnitType().equals(responsibleInstance.getUnitType())) {
             ActionDescription.Builder builder = actionDescription.toBuilder();
             builder.getServiceStateDescriptionBuilder().setUnitType(UnitType.UNKNOWN);

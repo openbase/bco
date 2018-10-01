@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -91,7 +91,7 @@ public class ActionImpl implements ExecutableAction {
     protected ActionDescription.Builder actionDescriptionBuilder;
     private Message serviceState;
     private ServiceDescription serviceDescription;
-    private Future<ActionFuture> actionTask;
+    private Future<ActionDescription> actionTask;
 
     public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit) throws InstantiationException {
         try {
@@ -231,7 +231,7 @@ public class ActionImpl implements ExecutableAction {
      * @return {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> execute() {
+    public Future<ActionDescription> execute() {
         synchronized (executionSync) {
             if (isExecuting()) {
                 return actionTask;
@@ -266,7 +266,7 @@ public class ActionImpl implements ExecutableAction {
                                     throw new ExecutionException(ex);
                                 }
                                 updateActionState(ActionState.State.FINISHING);
-                                return getActionFuture();
+                                return getActionDescription();
                             } catch (final CancellationException ex) {
 
                                 updateActionState(ActionState.State.REJECTED);
@@ -300,13 +300,6 @@ public class ActionImpl implements ExecutableAction {
             }
             executionSync.wait();
         }
-    }
-
-    @Override
-    public ActionFuture getActionFuture() {
-        final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
-        actionFuture.addActionDescription(actionDescriptionBuilder);
-        return actionFuture.build();
     }
 
     private void setRequestedState() throws CouldNotPerformException {

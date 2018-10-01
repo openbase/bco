@@ -35,7 +35,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -431,13 +431,13 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
+    public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
                 .addCategory(Category.ECONOMY));
     }
 
     @Override
-    public Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
+    public Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
     }
 

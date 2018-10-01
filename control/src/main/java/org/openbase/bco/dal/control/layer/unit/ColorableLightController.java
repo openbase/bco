@@ -34,7 +34,7 @@ import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -151,7 +151,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+    public Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
         return setColor(neutralWhite);
     }
 
@@ -175,7 +175,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 //        }
 //    }
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
     }
 
@@ -194,7 +194,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 //        }
 //    }
     @Override
-    public Future<ActionFuture> setColorState(final ColorState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setColorState(final ColorState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, COLOR_STATE_SERVICE);
     }
 
@@ -219,7 +219,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 //        }
 //    }
     @Override
-    public Future<ActionFuture> setBrightnessState(final BrightnessState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setBrightnessState(final BrightnessState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, BRIGHTNESS_STATE_SERVICE);
     }
 

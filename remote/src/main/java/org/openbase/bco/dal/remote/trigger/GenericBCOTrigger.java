@@ -65,11 +65,11 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Gen
         this.targetState = targetState;
         this.serviceType = serviceType;
 
-        dataObserver = (DataProvider<DT> source, DT data) -> {
+        this.dataObserver = (DataProvider<DT> source, DT data) -> {
             verifyCondition(data);
         };
 
-        connectionObserver = (Remote source, ConnectionState data) -> {
+        this.connectionObserver = (Remote source, ConnectionState data) -> {
             if (data.equals(ConnectionState.CONNECTED)) {
                 verifyCondition((DT) unitRemote.getData());
             } else {
@@ -88,18 +88,8 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Gen
             } else {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
             }
-        } catch (CouldNotPerformException ex) {
+        } catch (Exception ex) {
             ExceptionPrinter.printHistory("Could not verify condition " + this, ex, LOGGER);
-        } catch (NoSuchMethodException ex) {
-            ExceptionPrinter.printHistory("Method not known " + this, ex, LOGGER);
-        } catch (SecurityException ex) {
-            ExceptionPrinter.printHistory("Security Exception " + this, ex, LOGGER);
-        } catch (IllegalAccessException ex) {
-            ExceptionPrinter.printHistory("Illegal Access Exception " + this, ex, LOGGER);
-        } catch (IllegalArgumentException ex) {
-            ExceptionPrinter.printHistory("Illegal Argument Exception " + this, ex, LOGGER);
-        } catch (InvocationTargetException ex) {
-            ExceptionPrinter.printHistory("Could not invoke method " + this, ex, LOGGER);
         }
     }
 

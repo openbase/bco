@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.*;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.*;
@@ -69,12 +69,12 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     Future<SnapshotType.Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
 
     @Override
-    default Future<ActionFuture> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException {
         return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState, unitType);
     }
 
     @Override
-    default Future<ActionFuture> setBlindState(final BlindState blindState) throws CouldNotPerformException {
+    default Future<ActionDescription> setBlindState(final BlindState blindState) throws CouldNotPerformException {
         return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState);
     }
 
@@ -89,12 +89,12 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     }
 
     @Override
-    default Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
+    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         return ((BrightnessStateOperationServiceCollection) getServiceRemote(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState);
     }
 
     @Override
-    default Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
         return ((BrightnessStateOperationServiceCollection) getServiceRemote(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState, unitType);
     }
 
@@ -109,12 +109,12 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     }
 
     @Override
-    default Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
+    default Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState);
     }
 
     @Override
-    default Future<ActionFuture> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
         return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState, unitType);
     }
 
@@ -129,22 +129,22 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     }
 
     @Override
-    default Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
+    default Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState);
     }
 
     @Override
-    default Future<ActionFuture> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
         return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
     }
 
     @Override
-    default Future<ActionFuture> setPowerState(final PowerState.State state) throws CouldNotPerformException {
+    default Future<ActionDescription> setPowerState(final PowerState.State state) throws CouldNotPerformException {
         return setPowerState(PowerState.newBuilder().setValue(state).build());
     }
 
     @Override
-    default Future<ActionFuture> setPowerState(final PowerState.State state, final UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setPowerState(final PowerState.State state, final UnitType unitType) throws CouldNotPerformException {
         return setPowerState(PowerState.newBuilder().setValue(state).build(), unitType);
     }
 
@@ -159,12 +159,12 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     }
 
     @Override
-    default Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
+    default Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return ((StandbyStateOperationServiceCollection) getServiceRemote(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(standbyState);
     }
 
     @Override
-    default Future<ActionFuture> setStandbyState(final StandbyState state, UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setStandbyState(final StandbyState state, UnitType unitType) throws CouldNotPerformException {
         return ((StandbyStateOperationServiceCollection) getServiceRemote(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(state, unitType);
     }
 
@@ -179,12 +179,12 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     }
 
     @Override
-    default Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
+    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         return ((TargetTemperatureStateOperationServiceCollection) getServiceRemote(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState);
     }
 
     @Override
-    default Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
         return ((TargetTemperatureStateOperationServiceCollection) getServiceRemote(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState, unitType);
     }
 
@@ -269,7 +269,7 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     }
 
     @Override
-    default Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+    default Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
         return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setNeutralWhite();
     }
 
@@ -284,12 +284,12 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     }
 
     @Override
-    default Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
+    default Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
         return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).setEmphasisState(emphasisState);
     }
 
     @Override
-    default Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState, final UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState, final UnitType unitType) throws CouldNotPerformException {
         return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).setEmphasisState(emphasisState, unitType);
     }
 }

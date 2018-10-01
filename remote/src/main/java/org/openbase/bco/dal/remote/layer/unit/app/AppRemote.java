@@ -29,7 +29,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.app.AppDataType.AppData;
@@ -50,7 +50,7 @@ public class AppRemote extends AbstractUnitRemote<AppData> implements App {
     }
 
     @Override
-    public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
 }

@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceTemplateType;
@@ -191,7 +191,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return serviceRemoteManager.applyAction(actionDescription);
     }
 

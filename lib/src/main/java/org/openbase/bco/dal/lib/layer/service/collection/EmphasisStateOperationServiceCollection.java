@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationServi
 import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -37,7 +37,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface EmphasisStateOperationServiceCollection extends EmphasisStateOperationService {
 
-    public Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState, final UnitType unitType) throws CouldNotPerformException;
+    public Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState, final UnitType unitType) throws CouldNotPerformException;
 
     /**
      * Returns the average emphasis value for a collection of brightnessServices.

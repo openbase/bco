@@ -38,7 +38,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -69,12 +69,12 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     }
 
     @Override
-    public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(colorState, getServiceType()));
     }
 
     @Override
-    public Future<ActionFuture> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionDescription> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(colorState, getServiceType(), unitType));
     }
 
@@ -111,11 +111,11 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     }
 
     @Override
-    public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+    public Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
         List<Future> futureList = new ArrayList<>();
         for(ColorStateOperationService colorStateOperationService : getServices()) {
             futureList.add(colorStateOperationService.setNeutralWhite());
         }
-        return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), futureList);
+        return GlobalCachedExecutorService.allOf(ActionDescription.getDefaultInstance(), futureList);
     }
 }

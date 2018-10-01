@@ -31,7 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ActivationStateType.ActivationState.State;
@@ -68,12 +68,12 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
     }
 
     @Override
-    public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(activationState, getServiceType()));
     }
 
     @Override
-    public Future<ActionFuture> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(activationState, getServiceType(), unitType));
     }
 }

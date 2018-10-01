@@ -52,7 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -619,18 +619,18 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
 
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return applyAction(actionDescription.toBuilder());
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
         try {
             if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            final List<Future> actionFutureList = new ArrayList<>();
+            final List<Future> ActionDescriptionList = new ArrayList<>();
 
 
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
@@ -642,9 +642,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
 
                 // apply action on remote
-                actionFutureList.add(unitRemote.applyAction(builder.build()));
+                ActionDescriptionList.add(unitRemote.applyAction(builder.build()));
             }
-            return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), actionFutureList);
+            return GlobalCachedExecutorService.allOf(ActionDescription.getDefaultInstance(), ActionDescriptionList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
@@ -682,7 +682,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             throw new VerificationFailedException("Service type is not compatible to given action config!");
         }
 
-        final List<Future<AuthenticatedValue>> actionFutureList = new ArrayList<>();
+        final List<Future<AuthenticatedValue>> ActionDescriptionList = new ArrayList<>();
 
         logger.info("ServiceRemote apply action authenticated");
 
@@ -698,7 +698,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             final AuthenticatedValue authValue = authenticatedValue.toBuilder().setValue(ByteString.copyFrom(encrypt)).build();
 
             // apply action on remote
-            actionFutureList.add(unitRemote.applyActionAuthenticated(authValue));
+            ActionDescriptionList.add(unitRemote.applyActionAuthenticated(authValue));
         }
 
         return GlobalCachedExecutorService.allOf(input -> {
@@ -715,7 +715,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 }
             }
             return authenticatedValue.toBuilder().setTicketAuthenticatorWrapper(SessionManager.getInstance().getTicketAuthenticatorWrapper()).build();
-        }, actionFutureList);
+        }, ActionDescriptionList);
     }
 
     /**

@@ -28,7 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
 
@@ -52,7 +52,7 @@ public class PowerSwitchController extends AbstractDALUnitController<PowerSwitch
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
         return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
     }
 }

@@ -32,7 +32,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
@@ -53,7 +53,7 @@ public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene 
     }
 
     @Override
-    public Future<ActionFuture> setActivationState(ActivationState activationState) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivationState(ActivationState activationState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
 }

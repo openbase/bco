@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.StandbyStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.StandbyStateType.StandbyState;
 
 /**
@@ -36,9 +36,9 @@ import rst.domotic.state.StandbyStateType.StandbyState;
 public interface StandbyStateOperationService extends OperationService, StandbyStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException;
+    Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException;
 
-    default Future<ActionFuture> setStandbyState(final StandbyState.State standbyState) throws CouldNotPerformException {
+    default Future<ActionDescription> setStandbyState(final StandbyState.State standbyState) throws CouldNotPerformException {
         return setStandbyState(StandbyState.newBuilder().setValue(standbyState).build());
     }
 }

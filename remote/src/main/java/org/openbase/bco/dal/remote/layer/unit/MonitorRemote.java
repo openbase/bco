@@ -31,7 +31,7 @@ import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.dal.MonitorDataType.MonitorData;
 import org.openbase.bco.dal.lib.layer.unit.Monitor;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 
 /**
  *
@@ -50,12 +50,12 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
+    public Future<ActionDescription> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this));
     }
 }

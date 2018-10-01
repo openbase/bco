@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.EmphasisStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 
 /**
@@ -36,6 +36,6 @@ import rst.domotic.state.EmphasisStateType.EmphasisState;
 public interface EmphasisStateOperationService extends OperationService, EmphasisStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException;
+    Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException;
 
 }
