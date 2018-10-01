@@ -138,7 +138,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
      * @throws InterruptedException     if the activation is interrupted
      */
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
+    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Execute Cloud Connector");
         //TODO activate check again if service server key is static
 //        if (!tokenStore.hasCloudConnectorToken()) {
@@ -161,7 +161,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
      * @throws CouldNotPerformException if a socket connections could not be deactivated
      */
     @Override
-    protected void stop() throws CouldNotPerformException {
+    protected void stop(final ActivationState activationState) throws CouldNotPerformException {
         logger.info("Stop Cloud Connector");
         for (SocketWrapper socketWrapper : userIdSocketMap.values()) {
             socketWrapper.deactivate();
