@@ -31,10 +31,10 @@ import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.dal.control.action.ActionImpl;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionComparator;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.control.action.ActionImpl;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
@@ -79,7 +79,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -125,13 +124,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
     private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
+    private final ActionComparator actionComparator;
     private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
     private String classDescription = "";
     private ArrayList<Action> scheduledActionList = new ArrayList<>();
     private Timeout scheduleTimeout;
-    private final ActionComparator actionComparator;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
@@ -469,7 +468,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
         // check if an existing action should just be canceled.
         if (actionDescription.hasId() && !actionDescription.getId().isEmpty() && actionDescription.getCancel()) {
-            cancelAction(actionDescription);
+            return cancelAction(actionDescription);
         }
 
         try {
@@ -481,42 +480,37 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     return action.execute();
                 }
             } catch (JPNotAvailableException ex) {
-                throw new CouldNotPerformException("Could not check resource allocation flag.", ex);
+                throw new CouldNotPerformException("Could not check unit allocation flag.", ex);
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
     }
 
-
     private Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
-        return GlobalCachedExecutorService.submit(() -> {
-            try {
-                Action actionToCancel = null;
-                synchronized (scheduledActionListLock) {
+        try {
+            Action actionToCancel = null;
+            synchronized (scheduledActionListLock) {
 
-                    // lookup action to cancel
-                    for (Action action : scheduledActionList) {
-                        if (action.getId().equals(actionDescription.getId())) {
-                            actionToCancel = action;
-                            break;
-                        }
+                // lookup action to cancel
+                for (Action action : scheduledActionList) {
+                    if (action.getId().equals(actionDescription.getId())) {
+                        actionToCancel = action;
+                        break;
                     }
-
-                    if (actionToCancel == null) {
-                        throw new NotAvailableException("action");
-                    }
-
-                    actionToCancel.cancel();
-                    actionToCancel.waitUntilFinish();
-                    reschedule();
-
                 }
-                return actionToCancel.getActionDescription();
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex);
+
+                // handle if action was not found
+                if (actionToCancel == null) {
+                    throw new NotAvailableException("action");
+                }
+
+                // cancel the action which triggers automatically a reschedule.
+                return actionToCancel.cancel();
             }
-        });
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex));
+        }
     }
 
     private Future<ActionDescription> scheduleAction(final Action actionToSchedule) {
@@ -549,74 +543,86 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      *
      * @return the {@code action} which is ranked as highest one and which is currently blocking this unit.
      */
-    private Action reschedule() {
+    public Action reschedule() {
         synchronized (scheduledActionListLock) {
-
-            // remove outdated actions
-            for (Action action : new ArrayList<>(scheduledActionList)) {
-                if (!action.isValid()) {
-                    scheduledActionList.remove(action);
-                }
-            }
-
-            // skip if no actions are available
-            if (scheduledActionList.isEmpty()) {
-                return null;
-            }
-
-            // detect and store current action
-            Action currentAction = null;
-            for (int i = 0; i < scheduledActionList.size(); i++) {
-                if (scheduledActionList.get(i).getActionDescription().getActionState().getValue() == State.EXECUTING) {
-                    currentAction = scheduledActionList.get(i);
-                    continue;
-                }
-            }
-
-            // sort valid actions by priority
-            Collections.sort(scheduledActionList, actionComparator);
-
-            // detect action with highest ranking
-            Action nextAction = null;
-            for (int i = 0; i < scheduledActionList.size(); i++) {
-
-                nextAction = scheduledActionList.get(i);
-
-                // if the next action is still the same than we are finished
-                if (nextAction == currentAction) {
-                    return currentAction;
-                }
-
-                // cancel the current action
-                currentAction.cancel();
-
-                // if still valid than schedule again for later execution.
-                if (currentAction.isValid()) {
-                    currentAction.schedule();
-                }
-
-                // execute action with highest ranking
-                try {
-                    nextAction.execute();
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute " + nextAction + "!", ex), logger);
-                    nextAction = null;
-                }
-            }
-
-            // skip if actions is not available e.g. the first action failed and no second one is available.
-            if (nextAction == null) {
-                return null;
-            }
-
-            // setup next schedule trigger
             try {
-                scheduleTimeout.restart(nextAction.getExecutionTime());
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
-            }
+                // remove outdated actions
+                for (Action action : new ArrayList<>(scheduledActionList)) {
+                    if (!action.isValid()) {
+                        scheduledActionList.remove(action);
+                    }
+                }
 
-            return nextAction;
+                // skip if no actions are available
+                if (scheduledActionList.isEmpty()) {
+                    return null;
+                }
+
+                // detect and store current action
+                Action currentAction = null;
+                for (int i = 0; i < scheduledActionList.size(); i++) {
+                    if (scheduledActionList.get(i).getActionDescription().getActionState().getValue() == State.EXECUTING) {
+                        currentAction = scheduledActionList.get(i);
+                        continue;
+                    }
+                }
+
+                // sort valid actions by priority
+                Collections.sort(scheduledActionList, actionComparator);
+
+                // detect action with highest ranking
+                Action nextAction = null;
+                for (int i = 0; i < scheduledActionList.size(); i++) {
+
+                    nextAction = scheduledActionList.get(i);
+
+                    // if the next action is still the same than we are finished
+                    if (nextAction == currentAction) {
+                        return currentAction;
+                    }
+
+                    // cancel the current action
+                    currentAction.cancel();
+
+                    // if still valid than schedule again for later execution.
+                    if (currentAction.isValid()) {
+                        currentAction.schedule();
+                    }
+
+                    // execute action with highest ranking
+                    try {
+                        nextAction.execute();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute " + nextAction + "!", ex), logger);
+                        nextAction = null;
+                    }
+                }
+
+                // skip if actions is not available e.g. the first action failed and no second one is available.
+                if (nextAction == null) {
+                    return null;
+                }
+
+                // setup next schedule trigger
+                try {
+                    scheduleTimeout.restart(nextAction.getExecutionTime());
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
+                }
+
+                return nextAction;
+            } finally {
+                // update action description list in unit builder
+                try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+                    final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
+                    dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
+                    for (Action action : scheduledActionList) {
+                        dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, action.getActionDescription());
+                    }
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
+                }
+            }
         }
     }
 
@@ -631,10 +637,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 actionDescriptionBuilder.getActionInitiatorBuilder().clearAuthenticatedBy().clearAuthorizedBy();
 
                 // setup auth fields
-                if(authPair.getAuthenticatedBy() != null) {
+                if (authPair.getAuthenticatedBy() != null) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
                 }
-                if(authPair.getAuthorizedBy() != null) {
+                if (authPair.getAuthorizedBy() != null) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
                 }
 
@@ -961,8 +967,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-
-
     /**
      * This method returns the base location remote of this unit.
      * If this unit is a location, than its parent location remote is returned,
@@ -1009,6 +1013,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                         dataBuilder.clearField(fieldDescriptor);
                     }
                 }
+                // filter executing or scheduled action list
+                dataBuilder.clearField(ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder, Action.TYPE_FIELD_NAME_ACTION));
                 return (D) dataBuilder.build();
             }
         } catch (CouldNotPerformException ex) {

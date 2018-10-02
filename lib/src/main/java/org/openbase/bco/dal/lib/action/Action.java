@@ -40,6 +40,8 @@ import java.util.concurrent.TimeUnit;
  */
 public interface Action extends Initializable<ActionDescription>, Executable<ActionDescription>, Identifiable<String> {
 
+    String TYPE_FIELD_NAME_ACTION = "action";
+
     @Override
     default String getId() {
         return getActionDescription().getId();

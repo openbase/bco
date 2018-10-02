@@ -246,7 +246,6 @@ public class ActionImpl implements ExecutableAction {
                         // Initiate
                         updateActionState(ActionState.State.INITIATING);
 
-
                         try {
                             try {
 
@@ -339,6 +338,7 @@ public class ActionImpl implements ExecutableAction {
         return GlobalCachedExecutorService.submit(() -> {
             actionTask.cancel(true);
             waitUntilFinish();
+            unit.reschedule();
             return null;
         });
     }

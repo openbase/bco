@@ -160,7 +160,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public Future<ActionDescriptionType.ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(colorState, ServiceType.COLOR_STATE_SERVICE, this));
     }
 
