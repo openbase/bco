@@ -39,7 +39,7 @@ public class JPUnitAllocation extends AbstractJPBoolean {
 
     @Override
     protected Boolean getPropertyDefaultValue() throws JPNotAvailableException {
-        return false;
+        return true;
     }
     
     @Override
