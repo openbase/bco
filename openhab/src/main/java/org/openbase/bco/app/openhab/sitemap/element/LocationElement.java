@@ -24,6 +24,7 @@ package org.openbase.bco.app.openhab.sitemap.element;
 
 import org.openbase.bco.app.openhab.sitemap.SitemapBuilder;
 import org.openbase.bco.app.openhab.sitemap.SitemapBuilder.SitemapIconType;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -46,6 +47,22 @@ public class LocationElement extends AbstractUnitSitemapElement {
 
     @Override
     public void serialize(SitemapBuilder sitemap) throws CouldNotPerformException {
+
+        // add sublocations
+        if (!unitConfig.getLocationConfig().getChildIdList().isEmpty()) {
+            sitemap.openFrameContext("Bereiche");
+            final Map<String, UnitConfig> labelSortedUnitConfigMap = new TreeMap<>();
+            for (String childId : unitConfig.getLocationConfig().getChildIdList()) {
+                final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
+                labelSortedUnitConfigMap.put(label(locationUnitConfig.getLabel()), locationUnitConfig);
+            }
+            for (Entry<String, UnitConfig> labelUnitConfigEntry : labelSortedUnitConfigMap.entrySet()) {
+                sitemap.openTextContext(labelUnitConfigEntry.getKey(), SitemapIconType.CORRIDOR);
+                sitemap.append(new LocationElement(labelUnitConfigEntry.getValue().getId()));
+                sitemap.closeContext();
+            }
+            sitemap.closeContext();
+        }
 
         sitemap.openFrameContext("Übersicht");
         sitemap.addTextElement(getItem(ServiceType.TEMPERATURE_STATE_SERVICE), "Raumtemperatur [%.1f °C]");
@@ -85,18 +102,6 @@ public class LocationElement extends AbstractUnitSitemapElement {
             sitemap.openFrameContext("Apps");
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.APP, unitConfig.getId())) {
                 sitemap.append(new GenericUnitSitemapElement(unitConfig));
-            }
-            sitemap.closeContext();
-        }
-
-        // add sublocations
-        if (!unitConfig.getLocationConfig().getChildIdList().isEmpty()) {
-            sitemap.openFrameContext("Bereiche");
-            for (String childId : unitConfig.getLocationConfig().getChildIdList()) {
-                final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
-                sitemap.openTextContext(label(locationUnitConfig.getLabel()), SitemapIconType.CORRIDOR);
-                sitemap.append(new LocationElement(childId));
-                sitemap.closeContext();
             }
             sitemap.closeContext();
         }
