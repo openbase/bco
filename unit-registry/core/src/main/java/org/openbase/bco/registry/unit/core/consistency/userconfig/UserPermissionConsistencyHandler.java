@@ -29,28 +29,78 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig.Builder;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
+ * Consistency handler which makes sure that if users do not have a permission config a default one is generated.
+ * Additionally it guarantees that users always own themselves and that they have all permissions for themselves.
+ *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UserPermissionConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param id       {@inheritDoc}
+     * @param entry    {@inheritDoc}
+     * @param entryMap {@inheritDoc}
+     * @param registry {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws EntryModification        {@inheritDoc}
+     */
     @Override
-    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig UserUnitConfig = entry.getMessage();
+    public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+        final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        if (!UserUnitConfig.hasPermissionConfig()) {
-            entry.setMessage(UserUnitConfig.toBuilder().setPermissionConfig(generateDefaultPermissionConfig(UserUnitConfig)));
-            throw new EntryModification(entry, this);
+        // if no permission config is available generate a default one
+        if (!unitConfig.hasPermissionConfig()) {
+            unitConfig.setPermissionConfig(generateDefaultUserPermissionConfig(unitConfig.getId()));
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
+        }
+
+        boolean modification = false;
+        // set owner id to the id of the user
+        if (!unitConfig.getPermissionConfig().getOwnerId().equals(unitConfig.getId())) {
+            unitConfig.getPermissionConfigBuilder().setOwnerId(unitConfig.getId());
+            modification = true;
+        }
+
+        // guarantee read permissions
+        if (!unitConfig.getPermissionConfig().getOwnerPermission().getRead()) {
+            unitConfig.getPermissionConfigBuilder().getOwnerPermissionBuilder().setRead(true);
+            modification = true;
+        }
+
+        // guarantee write permissions
+        if (!unitConfig.getPermissionConfig().getOwnerPermission().getWrite()) {
+            unitConfig.getPermissionConfigBuilder().getOwnerPermissionBuilder().setWrite(true);
+            modification = true;
+        }
+
+        // guarantee access permissions
+        if (!unitConfig.getPermissionConfig().getOwnerPermission().getAccess()) {
+            unitConfig.getPermissionConfigBuilder().getOwnerPermissionBuilder().setAccess(true);
+            modification = true;
+        }
+
+        if (modification) {
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 
-    public PermissionConfig generateDefaultPermissionConfig(final UnitConfig UserUnitConfig) {
-        Builder permissionConfigBuilder = PermissionConfig.newBuilder();
-        permissionConfigBuilder.setOwnerId(UserUnitConfig.getId());
+    /**
+     * Generate a default permission config for a user. This permission config is owned by the user and gives
+     * the user all permissions while denying other everything.
+     *
+     * @param userId the id of the user for whom the permission config is generated.
+     *
+     * @return a default permission config tailored to a user.
+     */
+    private PermissionConfig generateDefaultUserPermissionConfig(final String userId) {
+        final PermissionConfig.Builder permissionConfigBuilder = PermissionConfig.newBuilder();
+        permissionConfigBuilder.setOwnerId(userId);
         permissionConfigBuilder.getOwnerPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
         permissionConfigBuilder.getOtherPermissionBuilder().setWrite(false).setAccess(false).setRead(false);
         return permissionConfigBuilder.build();
