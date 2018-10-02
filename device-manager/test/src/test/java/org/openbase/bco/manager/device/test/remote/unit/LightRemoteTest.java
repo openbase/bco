@@ -72,7 +72,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        ActionDescription ActionDescription = lightRemote.setPowerState(state).get();
+        ActionDescription actionDescription = lightRemote.setPowerState(state).get();
         lightRemote.requestData().get();
         assertEquals("Power has not been set in time!", state.getValue(), lightRemote.getData().getPowerState().getValue());
         //TODO: adapt when changed to using authenticated value

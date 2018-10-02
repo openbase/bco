@@ -22,24 +22,14 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 
-import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
-import rst.domotic.action.ActionParameterType.ActionParameter;
-import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -48,7 +38,6 @@ import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -56,17 +45,10 @@ import java.util.concurrent.ExecutionException;
  */
 public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
 
-    private final ActionParameter actionParameter;
     private LocationRemote locationRemote;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(AbsenceEnergySavingAgent.class);
-            this.actionParameter = ActionParameter.newBuilder()
-                    .setInterruptible(true)
-                    .setSchedulable(true)
-                    .addCategory(Category.ECONOMY)
-                    .setPriority(Priority.LOW)
-                    .setActionInitiator(ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM)).build();
     }
 
     @Override
@@ -80,17 +62,17 @@ public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
         }
     }
 
-    ActionDescription ActionDescription;
+    ActionDescription actionDescription;
 
     @Override
     void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                ActionDescription = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF))).get();
+                actionDescription = locationRemote.applyAction(generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF))).get();
                 break;
             case DEACTIVE:
-                if(ActionDescription != null) {
-                    ActionDescription = locationRemote.cancelAction(ActionDescription).get();
+                if(actionDescription != null) {
+                    actionDescription = locationRemote.cancelAction(actionDescription).get();
                 }
                 break;
         }
@@ -98,14 +80,6 @@ public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
 
     private void switchlightsOff() {
 
-    }
-
-    protected ActionDescription generateAction(UnitType unitType, ServiceType serviceType, Message.Builder serviceArgument) {
-        return ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter.toBuilder()
-                .setServiceStateDescription(ServiceStateDescription.newBuilder()
-                        .setServiceType(serviceType)
-                        .setUnitType(unitType)
-                        .setServiceAttribute(serviceArgument.build().toString()))).build();
     }
 
 //    private void switchMultimediaOff() {

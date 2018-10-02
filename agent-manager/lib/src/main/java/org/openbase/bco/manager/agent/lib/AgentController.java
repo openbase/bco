@@ -25,6 +25,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -35,5 +37,4 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 public interface AgentController extends Identifiable<String>, Enableable, org.openbase.bco.dal.lib.layer.unit.agent.Agent, MessageController<AgentData, AgentData.Builder> {
 
     void init(final UnitConfig config) throws InitializationException, InterruptedException;
-
 }

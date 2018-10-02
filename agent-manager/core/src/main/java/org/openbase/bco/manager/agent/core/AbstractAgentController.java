@@ -22,22 +22,26 @@ package org.openbase.bco.manager.agent.core;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.manager.agent.lib.AgentController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.trigger.TriggerPool;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
-
-import java.util.concurrent.Future;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -49,8 +53,38 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
+    private ActionParameter defaultActionParameter;
+
     public AbstractAgentController(final Class unitClass) throws InstantiationException {
         super(unitClass, AgentDataType.AgentData.newBuilder());
+    }
+
+    @Override
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        // update default action parameter
+        final AgentClass agentClass = Registries.getClassRegistry(true).getAgentClassById(config.getAgentConfig().getAgentClassId());
+        defaultActionParameter = ActionParameter.newBuilder()
+                .addAllCategory(agentClass.getCategoryList())
+                .setPriority(agentClass.getPriority())
+                .setSchedulable(agentClass.getSchedulable())
+                .setInterruptible(agentClass.getInterruptible())
+                .setActionInitiator(ActionInitiator.newBuilder().setInitiatorId(getId()))
+                .build();
+        return super.applyConfigUpdate(config);
+    }
+
+    protected ActionDescription generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceArgument) {
+        return ActionDescriptionProcessor.generateActionDescriptionBuilder(getDefaultActionParameter().toBuilder()
+                .setServiceStateDescription(ServiceStateDescription.newBuilder()
+                        .setServiceType(serviceType)
+                        .setUnitType(unitType)
+                        .setServiceAttribute(serviceArgument.build().toString())))
+                .build();
+    }
+
+
+    protected ActionParameter getDefaultActionParameter() {
+        return defaultActionParameter;
     }
 
     @Override

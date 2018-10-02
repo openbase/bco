@@ -152,11 +152,11 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
 
         // save if the agent is active before this update
-        boolean active = getActivationState().getValue() == State.ACTIVE;
+        final ActivationState prevousActivationState = getActivationState();
 
         // deactivate before applying update if active
-        if (active) {
-            stop();
+        if (prevousActivationState.getValue() == State.ACTIVE) {
+            stop(ActivationState.newBuilder().setValue(State.DEACTIVE).build());
         }
 
         try {
@@ -212,8 +212,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
 
         // reactivate if active before
-        if (active) {
-            execute();
+        if (prevousActivationState.getValue() == State.ACTIVE) {
+            execute(prevousActivationState);
         }
 
         return unitConfig;
