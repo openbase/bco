@@ -66,6 +66,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.rst.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -360,7 +361,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
             return tmpConfig.getId();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("id", ex);
+            throw new NotAvailableException("Unit", "id", ex);
         }
     }
 
@@ -377,7 +378,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
             return LabelProcessor.getBestMatch(getConfig().getLabel());
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("label", ex);
+            throw new NotAvailableException("Unit", "label", ex);
         }
     }
 
@@ -576,17 +577,21 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                     nextAction = scheduledActionList.get(i);
 
-                    // if the next action is still the same than we are finished
-                    if (nextAction == currentAction) {
-                        return currentAction;
-                    }
+                    // handle current action
+                    if (currentAction != null) {
 
-                    // cancel the current action
-                    currentAction.cancel();
+                        // if the next action is still the same than we are finished
+                        if (nextAction == currentAction) {
+                            return currentAction;
+                        }
 
-                    // if still valid than schedule again for later execution.
-                    if (currentAction.isValid()) {
-                        currentAction.schedule();
+                        // cancel the current action
+                        currentAction.cancel();
+
+                        // if still valid than schedule again for later execution.
+                        if (currentAction.isValid()) {
+                            currentAction.schedule();
+                        }
                     }
 
                     // execute action with highest ranking
@@ -622,6 +627,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
                 }
+//                logger.warn("=== Current Action List ============================================");
+//                // print action list
+//                for (Action action : new ArrayList<>(scheduledActionList)) {
+//                    logger.warn("{}: [{}] {}", getLabel("?"), action.getActionState().name(), MultiLanguageTextProcessor.getBestMatch(action.getActionDescription().getDescription(), "?"));
+//                }
+//                logger.warn("====================================================================");
             }
         }
     }
