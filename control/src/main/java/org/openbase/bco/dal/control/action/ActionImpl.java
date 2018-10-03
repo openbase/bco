@@ -376,6 +376,6 @@ public class ActionImpl implements ExecutableAction {
         if (actionDescriptionBuilder == null) {
             return getClass().getSimpleName() + "[?]";
         }
-        return getClass().getSimpleName() + "[" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceType() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute() + "|" + actionDescriptionBuilder.getPriority().name() + "|" + StringProcessor.transformCollectionToString(actionDescriptionBuilder.getCategoryList(), " | ") + "]";
+        return getClass().getSimpleName() + "[" + unit.getLabel("?") + "|" + getId() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceType() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute() + "|" + actionDescriptionBuilder.getPriority().name() + "|" + StringProcessor.transformCollectionToString(actionDescriptionBuilder.getCategoryList(), " | ") + "]";
     }
 }
