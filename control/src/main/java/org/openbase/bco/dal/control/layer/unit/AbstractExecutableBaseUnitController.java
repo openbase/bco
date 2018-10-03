@@ -139,9 +139,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         try {
-            activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
-        } catch (ExecutionException ex) {
-            ExceptionPrinter.printHistory("Could not inform remote about deactivation.", ex, logger, LogLevel.WARN);
+            stop(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
         } finally {
             super.deactivate();
         }
@@ -178,7 +176,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                     return CompletableFuture.completedFuture(null);
                 }
 
-                if (activationState.getValue() == ActivationStateType.ActivationState.State.ACTIVE) {
+                if (activationState.getValue() == ActivationState.State.ACTIVE) {
 
                     // filter duplicated execution
                     if (isExecuting()) {
