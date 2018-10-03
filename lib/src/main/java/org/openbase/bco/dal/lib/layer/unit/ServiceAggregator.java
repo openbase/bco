@@ -38,6 +38,7 @@ import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Set;
@@ -46,7 +47,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceCollection,
+public interface ServiceAggregator extends BrightnessStateOperationServiceCollection,
         ColorStateOperationServiceCollection,
         PowerStateOperationServiceCollection,
         BlindStateOperationServiceCollection,
@@ -60,8 +61,6 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
         TamperStateProviderServiceCollection,
         IlluminanceStateProviderServiceCollection,
         EmphasisStateOperationServiceCollection {
-
-    Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException;
 
     ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException;
 

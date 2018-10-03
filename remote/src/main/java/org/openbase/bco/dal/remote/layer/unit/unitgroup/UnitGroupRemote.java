@@ -47,6 +47,7 @@ import rst.domotic.action.SnapshotType;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
 import rst.domotic.state.BrightnessStateType;
@@ -173,6 +174,11 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
+    }
+
+    @Override
+    public boolean isServiceAvailable(ServiceType serviceType) {
+        return serviceRemoteManager.isServiceAvailable(serviceType);
     }
 
     @Override

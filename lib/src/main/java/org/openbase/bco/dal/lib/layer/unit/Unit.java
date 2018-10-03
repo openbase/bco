@@ -30,17 +30,20 @@ import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
-import org.openbase.jul.extension.rst.iface.TransactionIdProvider;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.extension.rst.iface.TransactionIdProvider;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
-import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -71,6 +74,8 @@ import rst.spatial.ShapeType.Shape;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
@@ -99,6 +104,22 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * @throws NotAvailableException in case the unit template is not available.
      */
     UnitTemplate getUnitTemplate() throws NotAvailableException;
+
+    /**
+     * Method returns the unit template of this unit containing all service templates of available units.
+     *
+     * Note: The amount of supported and available services only varies for {@code MultiUnits} (e.g. {@code Location}, {@code UnitGroup}).
+     *
+     * @param onlyAvailableServices if the filter flag is set to true, only service templates are included which are available for the current instance.
+     *
+     * @return the {@code UnitTemplate} of this unit.
+     *
+     * @throws NotAvailableException is thrown if the {@code UnitTemplate} is currently not available.
+     */
+    default UnitTemplate getUnitTemplate(final boolean onlyAvailableServices) throws NotAvailableException {
+        // return the unfiltered unit template. Only MultiUnits must overwrite this method.
+        return getUnitTemplate();
+    }
 
     /**
      * Returns the related template for this unit.
@@ -131,6 +152,59 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitShape", ex);
         }
+    }
+
+    /**
+     * Method returns a list of all supported services provided by this unit.
+     * "Supported" in this context means that the unit can handle those services.
+     * In most cases this means the supported services are also available and fully provided through the unit.
+     * Only MultiUnits of the type Location and UnitGroup support mostly more units than actually available.
+     * In this case you can use the method getAvailableServiceTypes() to check which services are aggregated by the unit.
+     *
+     * @return a set of supported service types.
+     *
+     * @throws NotAvailableException
+     */
+    default Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException {
+        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+        try {
+            for (final ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
+                serviceTypeSet.add(serviceConfig.getServiceDescription().getServiceType());
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("SupportedServiceTypes", new CouldNotPerformException("Could not generate supported service type list!", ex));
+        }
+        return serviceTypeSet;
+    }
+
+    /**
+     * Method returns a set of all currently available service types of this unit instance.
+     *
+     * @return a set of {@code ServiceTypes}.
+     *
+     * @throws NotAvailableException is thrown if the service types can not be detected.
+     */
+    default Set<ServiceType> getAvailableServiceTypes() throws NotAvailableException {
+        final Set<ServiceType> serviceTypeList = new HashSet<>();
+        for (final ServiceDescription serviceDescription : getUnitTemplate(true).getServiceDescriptionList()) {
+            serviceTypeList.add(serviceDescription.getServiceType());
+        }
+        return serviceTypeList;
+    }
+
+    /**
+     * Method returns a set of all currently available service descriptions of this unit instance.
+     *
+     * @return a set of {@code ServiceDescription}.
+     *
+     * @throws NotAvailableException is thrown if the service types can not be detected.
+     */
+    default Set<ServiceDescription> getAvailableServiceDescriptions() throws NotAvailableException {
+        final Set<ServiceDescription> serviceDescriptionList = new HashSet<>();
+        for (final ServiceDescription serviceDescription : getUnitTemplate(true).getServiceDescriptionList()) {
+            serviceDescriptionList.add(serviceDescription);
+        }
+        return serviceDescriptionList;
     }
 
     @RPCMethod(legacy = true)
@@ -176,7 +250,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                 }
 
                 try {
-                    MultiException.checkAndThrow(() ->"Could not snapshot all service provider!", exceptionStack);
+                    MultiException.checkAndThrow(() -> "Could not snapshot all service provider!", exceptionStack);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(Unit.class), LogLevel.WARN);
                 }

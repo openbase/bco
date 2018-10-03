@@ -22,7 +22,8 @@ package org.openbase.bco.dal.lib.layer.unit.unitgroup;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
+import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
+import org.openbase.bco.dal.lib.layer.unit.ServiceAggregator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -36,18 +37,6 @@ import java.util.Set;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UnitGroup extends BaseUnit<UnitGroupData>, MultiUnitServiceFusion {
+public interface UnitGroup extends BaseUnit<UnitGroupData>, MultiUnit<UnitGroupData> {
 
-    @Override
-    default Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException {
-        final Set<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
-        try {
-            for (final ServiceDescription serviceDescription : getConfig().getUnitGroupConfig().getServiceDescriptionList()) {
-                serviceTypeSet.add(serviceDescription.getServiceType());
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("SupportedServiceTypes", new CouldNotPerformException("Could not generate supported service type list!", ex));
-        }
-        return serviceTypeSet;
-    }
 }

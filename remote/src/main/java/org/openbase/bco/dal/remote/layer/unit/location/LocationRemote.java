@@ -150,6 +150,18 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
+    public boolean isServiceAvailable(ServiceType serviceType) {
+        switch (serviceType) {
+            //todo: introduce inherited service flag in unit template to define which services are provided by the serviceRemoteManager and which are always available.
+            case PRESENCE_STATE_SERVICE:
+            case STANDBY_STATE_SERVICE:
+                return true;
+            default:
+                return serviceRemoteManager.isServiceAvailable(serviceType);
+        }
+    }
+
+    @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return serviceRemoteManager.recordSnapshot();
     }
@@ -223,7 +235,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             throw new CouldNotPerformException("Location is not a Tile!");
         }
 
-        List<ConnectionRemote> connectionList = new ArrayList<>();
+        final List<ConnectionRemote> connectionList = new ArrayList<>();
         try {
             for (UnitConfig connectionUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.CONNECTION)) {
                 ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
@@ -249,7 +261,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
      */
     public boolean hasDirectConnection(final String locationID, final ConnectionType connectionType, final boolean waitForData) throws CouldNotPerformException {
-        // todo do not interrate over instances if configs providing all needed informations.
+        // todo do not iterate over instances if configs providing all needed informations.
         for (ConnectionRemote relatedConnection : getDirectConnectionList(locationID, true)) {
             if (relatedConnection.getConfig().getConnectionConfig().getType().equals(connectionType)) {
                 return true;
@@ -367,68 +379,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return unitRemote;
     }
 
-    /**
-     * Method returns the unit template of this unit containing all provided service templates.
-     *
-     * @param onlyAvailableServices if the filter flag is set to true, only service templates are included which are available for the current instance.
-     *
-     * @return the {@code UnitTemplate} of this unit.
-     *
-     * @throws NotAvailableException is thrown if the {@code UnitTemplate} is currently not available.
-     */
-    public UnitTemplate getTemplate(final boolean onlyAvailableServices) throws NotAvailableException {
 
-        // todo release: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
-        // return the unfiltered unit template if filter is not active.
-        if (!onlyAvailableServices) {
-            return super.getUnitTemplate();
-        }
-        final UnitTemplate.Builder unitTemplateBuilder = super.getUnitTemplate().toBuilder();
-
-        unitTemplateBuilder.clearServiceDescription();
-        for (final ServiceDescription serviceDescription : super.getUnitTemplate().getServiceDescriptionList()) {
-            if (serviceRemoteManager.isServiceAvailable(serviceDescription.getServiceType())) {
-                unitTemplateBuilder.addServiceDescription(serviceDescription);
-            }
-        }
-        return unitTemplateBuilder.build();
-    }
-
-    /**
-     * Method returns a set of all currently available service types of this unit instance.
-     *
-     * @return a set of {@code ServiceTypes}.
-     *
-     * @throws NotAvailableException is thrown if the service types can not be detected.
-     */
-    public Set<ServiceType> getAvailableServiceTypes() throws NotAvailableException {
-
-        // todo release: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
-        final Set<ServiceType> serviceTypeList = new HashSet<>();
-
-        for (final ServiceDescription serviceDescription : getTemplate(true).getServiceDescriptionList()) {
-            serviceTypeList.add(serviceDescription.getServiceType());
-        }
-        return serviceTypeList;
-    }
-
-    /**
-     * Method returns a set of all currently available service descriptions of this unit instance.
-     *
-     * @return a set of {@code ServiceDescription}.
-     *
-     * @throws NotAvailableException is thrown if the service types can not be detected.
-     */
-    public Set<ServiceDescription> getAvailableServiceDescriptions() throws NotAvailableException {
-
-        // todo release: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
-        final Set<ServiceDescription> serviceDescriptionList = new HashSet<>();
-
-        for (final ServiceDescription serviceDescription : getTemplate(true).getServiceDescriptionList()) {
-            serviceDescriptionList.add(serviceDescription);
-        }
-        return serviceDescriptionList;
-    }
 
     @Override
     public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {

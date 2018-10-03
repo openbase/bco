@@ -24,68 +24,28 @@ package org.openbase.bco.dal.lib.layer.unit.location;
 
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
-import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
+import org.openbase.bco.dal.lib.layer.unit.ServiceAggregator;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Snapshotable;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Location extends BaseUnit<LocationData>, PresenceStateProviderService, Snapshotable<Snapshot>, MultiUnitServiceFusion {
-
-    @Override
-    default Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException {
-        final Set<ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
-        try {
-            final Map<ServiceType, Boolean> serviceTypeActiveMap = new HashMap<>();
-            for (final ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
-//                serviceTypeSet.add(serviceConfig.getServiceDescription().getServiceType());
-                serviceTypeActiveMap.put(serviceConfig.getServiceDescription().getServiceType(), false);
-            }
-
-            for (final String unitId : getConfig().getLocationConfig().getUnitIdList()) {
-                UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
-                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    ServiceType serviceType = serviceConfig.getServiceDescription().getServiceType();
-                    if (serviceTypeActiveMap.containsKey(serviceType)) {
-                        serviceTypeActiveMap.put(serviceType, true);
-                    }
-                }
-            }
-
-            if (serviceTypeActiveMap.get(ServiceType.MOTION_STATE_SERVICE)) {
-                serviceTypeActiveMap.put(ServiceType.PRESENCE_STATE_SERVICE, true);
-            }
-
-            for (Entry<ServiceType, Boolean> entry : serviceTypeActiveMap.entrySet()) {
-                if (entry.getValue()) {
-                    serviceTypeSet.add(entry.getKey());
-                }
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("SupportedServiceTypes", new CouldNotPerformException("Could not generate supported service type list!", ex));
-        }
-
-
-        return serviceTypeSet;
-    }
+public interface Location extends BaseUnit<LocationData>, MultiUnit<LocationData>, PresenceStateProviderService, Snapshotable<Snapshot> {
 
     @RPCMethod(legacy = true)
     @Override
