@@ -68,7 +68,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
                 .setPriority(agentClass.getPriority())
                 .setSchedulable(agentClass.getSchedulable())
                 .setInterruptible(agentClass.getInterruptible())
-                .setActionInitiator(ActionInitiator.newBuilder().setInitiatorId(getId()))
+                .setActionInitiator(ActionInitiator.newBuilder().setInitiatorId(config.getId()))
                 .build();
         return super.applyConfigUpdate(config);
     }

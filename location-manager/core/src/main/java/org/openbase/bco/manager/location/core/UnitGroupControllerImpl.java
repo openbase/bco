@@ -42,6 +42,7 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -163,6 +164,11 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
+    }
+
+    @Override
+    public boolean isServiceAvailable(ServiceType serviceType) {
+        return serviceRemoteManager.isServiceAvailable(serviceType);
     }
 
     @Override

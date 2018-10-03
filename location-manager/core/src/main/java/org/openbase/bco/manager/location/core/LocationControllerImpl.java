@@ -215,6 +215,18 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
+    public boolean isServiceAvailable(ServiceType serviceType) {
+        switch (serviceType) {
+            //todo: introduce inherited service flag in unit template to define which services are provided by the serviceRemoteManager and which are always available.
+            case PRESENCE_STATE_SERVICE:
+            case STANDBY_STATE_SERVICE:
+                return true;
+            default:
+                return serviceRemoteManager.isServiceAvailable(serviceType);
+        }
+    }
+
+    @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return serviceRemoteManager.recordSnapshot();
     }
