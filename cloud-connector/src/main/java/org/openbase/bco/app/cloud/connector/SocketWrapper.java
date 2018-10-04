@@ -96,7 +96,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     private JsonObject loginData;
     private Socket socket;
     private boolean active, loggedIn;
-    private String agentUserId;
 
     private final UnitRegistryObserver unitRegistryObserver;
 
@@ -131,8 +130,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
 
-            final String bcoId = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS).getId();
-            agentUserId = userId + "@" + bcoId;
+
 
             // create socket
             socket = IO.socket(JPService.getProperty(JPCloudServerURI.class).getValue());
@@ -142,6 +140,8 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
                 transport.on(Transport.EVENT_REQUEST_HEADERS, args1 -> {
                     try {
+                        final String bcoId = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS).getId();
+                        final String agentUserId = userId + "@" + bcoId;
                         @SuppressWarnings("unchecked")
                         Map<String, List<String>> headers = (Map<String, List<String>>) args1[0];
                         // combination of bco and user id to header
@@ -199,7 +199,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             // handle request and create response
             LOGGER.info("Call handler with authentication token[" + tokenStore.getCloudConnectorToken() + "]");
-            final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), agentUserId, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+            final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), userId, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
             final String response = gson.toJson(jsonObject);
             LOGGER.info("Handler produced response: " + response);
             // send back response
@@ -470,7 +470,16 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             ExceptionPrinter.printHistory(ex, LOGGER);
             Thread.currentThread().interrupt();
             // this should not happen since wait for data is not called
-        } catch (CouldNotPerformException | ExecutionException | TimeoutException | IllegalArgumentException ex) {
+        } catch (CouldNotPerformException | TimeoutException | IllegalArgumentException | ExecutionException ex) {
+            try {
+                if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
+                    // note: this should not happen since the registry should guarantee that users always have permissions for themselves
+                    acknowledgement.call("Du hast keine Rechte den Status von " + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName() + " zu beeinflussen.");
+                    return;
+                }
+            } catch (CouldNotPerformException exx) {
+                // return error as below
+            }
             acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
@@ -714,20 +723,22 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         LOGGER.info("Received scene registration data:\n" + gson.toJson(data));
         final UnitConfig.Builder sceneUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.SCENE);
 
+        UnitConfig location;
+        String label = null;
         try {
-            UnitConfig location = Registries.getUnitRegistry().getRootLocationConfig();
+            location = Registries.getUnitRegistry().getRootLocationConfig();
             if (data.has("location")) {
                 final String locationLabel = data.get("location").getAsString();
                 List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(locationLabel, UnitType.LOCATION);
                 if (locations.size() == 0) {
-                    acknowledgement.call("Ich kann die location " + locationLabel + " nicht finden");
+                    acknowledgement.call("Ich kann die Location " + locationLabel + " nicht finden");
                 } else {
                     location = locations.get(0);
                 }
             }
 
             if (data.has("label")) {
-                final String label = data.get("label").getAsString();
+                label = data.get("label").getAsString();
                 final Label.MapFieldEntry.Builder entry = sceneUnitConfig.getLabelBuilder().addEntryBuilder();
                 entry.setKey(Locale.GERMAN.getLanguage());
                 entry.addValue(label);
@@ -749,7 +760,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             } catch (ExecutionException | TimeoutException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
-                    acknowledgement.call("Du besitzt nicht die Rechte eine Szene auf der Location " + locationRemote.getLabel() + " aufzunehmen.");
+                    acknowledgement.call("Du besitzt nicht die Rechte eine Szene von der Location " + locationRemote.getLabel() + " aufzunehmen.");
                     return;
                 }
                 acknowledgement.call(RESPONSE_GENERIC_ERROR);
@@ -758,8 +769,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             try {
-                UnitConfig unitConfig = Registries.getUnitRegistry().registerUnitConfig(sceneUnitConfig.build()).get(1, TimeUnit.SECONDS);
-                String label;
+                UnitConfig unitConfig = Registries.getUnitRegistry().registerUnitConfig(sceneUnitConfig.build()).get(5, TimeUnit.SECONDS);
                 try {
                     label = LabelProcessor.getLabelByLanguage(Locale.GERMAN, unitConfig.getLabel());
                 } catch (NotAvailableException ex) {
@@ -774,7 +784,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 acknowledgement.call(RESPONSE_GENERIC_ERROR);
                 ExceptionPrinter.printHistory(ex, LOGGER);
             } catch (TimeoutException e) {
-                acknowledgement.call("Die Szene wird gerade registriert");
+                if (label != null) {
+                    acknowledgement.call("Das registrieren der Szene " + label + " dauert noch ein wenig.");
+                } else {
+                    acknowledgement.call("Das erstellen einer Szene von der Location " + LabelProcessor.getLabelByLanguage(Locale.GERMAN, location.getLabel()) + " dauert etwas länger.");
+                }
             }
         } catch (InterruptedException ex) {
             acknowledgement.call(RESPONSE_GENERIC_ERROR);
@@ -823,7 +837,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             // build a response for a sync request
             final JsonObject syncResponse = new JsonObject();
-            FulfillmentHandler.handleSync(syncResponse, agentUserId);
+            FulfillmentHandler.handleSync(syncResponse, userId);
             // return if the response to a sync has not changed since the last time
             if (lastSyncResponse != null && lastSyncResponse.hashCode() == syncResponse.hashCode()) {
                 return;

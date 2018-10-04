@@ -223,7 +223,6 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
                         setWrite(writePermissionSet.contains(unitId));
             }
 
-            System.out.println(authorizationToken.build());
             // request such a token from the unit registry
             return Registries.getUnitRegistry().requestAuthorizationToken(authorizationToken.build()).get();
         } catch (InterruptedException ex) {

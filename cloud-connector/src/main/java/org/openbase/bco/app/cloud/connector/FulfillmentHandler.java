@@ -39,6 +39,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
@@ -52,14 +53,13 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.language.LabelType.Label;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.language.LabelType.Label;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -118,9 +118,10 @@ public class FulfillmentHandler {
      * and invoking according methods for each.
      *
      * @param request the request from Google parsed into a JsonObject.
+     *
      * @return a JsonObject which is the answer for the request
      */
-    public static JsonObject handleRequest(final JsonObject request, final String agentUserId, final String authenticationToken, final String authorizationToken) {
+    public static JsonObject handleRequest(final JsonObject request, final String userId, final String authenticationToken, final String authorizationToken) {
         // build basic response type and add payload
         final JsonObject response = new JsonObject();
         final JsonObject payload = new JsonObject();
@@ -140,7 +141,7 @@ public class FulfillmentHandler {
                 case SYNC_INTENT:
                     LOGGER.info("Handle SYNC");
                     // method will handle a sync intent and fill the payload of the response accordingly
-                    handleSync(payload, agentUserId);
+                    handleSync(payload, userId);
                     break;
                 case QUERY_INTENT:
                     LOGGER.info("Handle QUERY");
@@ -183,7 +184,7 @@ public class FulfillmentHandler {
      *
      * @param payload the payload of the response send to Google.
      */
-    public static void handleSync(final JsonObject payload, final String agentUserId) {
+    public static void handleSync(final JsonObject payload, final String userId) {
         final JsonArray devices = new JsonArray();
         try {
             final UnitRegistryRemote unitRegistryRemote = Registries.getUnitRegistry();
@@ -194,7 +195,7 @@ public class FulfillmentHandler {
                 setError(payload, ex, ErrorCode.TIMEOUT);
                 return;
             }
-            payload.addProperty(AGENT_USER_ID_KEY, agentUserId);
+            payload.addProperty(AGENT_USER_ID_KEY, userId + "@" + Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS).getId());
 
             final Set<String> handledUnitConfigs = new HashSet<>();
 
@@ -227,7 +228,7 @@ public class FulfillmentHandler {
                 if (unitConfigTypeMapping.size() > 1) {
                     try {
                         // create google device for this device with all its internal units
-                        devices.add(createJsonDevice(deviceUnitConfig, unitConfigTypeMapping));
+                        devices.add(createJsonDevice(deviceUnitConfig, unitConfigTypeMapping, userId));
                         // add all units already handled by this routine
                         for (final UnitConfig unitConfig : unitConfigTypeMapping.keySet()) {
                             handledUnitConfigs.add(unitConfig.getId());
@@ -252,7 +253,7 @@ public class FulfillmentHandler {
                 } else {
                     try {
                         final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitGroup.getUnitGroupConfig().getUnitType());
-                        devices.add(createJsonDevice(unitGroup, unitTypeMapping));
+                        devices.add(createJsonDevice(unitGroup, unitTypeMapping, userId));
                     } catch (NotAvailableException ex) {
                         LOGGER.warn("Skip unit group[" + unitGroup.getAlias(0) + "]: " + ex.getMessage());
                     }
@@ -284,7 +285,7 @@ public class FulfillmentHandler {
 
                 try {
                     final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitConfig.getUnitType());
-                    devices.add(createJsonDevice(unitConfig, unitTypeMapping));
+                    devices.add(createJsonDevice(unitConfig, unitTypeMapping, userId));
                 } catch (NotAvailableException ex) {
                     LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "]: " + ex.getMessage());
                 }
@@ -295,21 +296,24 @@ public class FulfillmentHandler {
         }
     }
 
-    private static JsonObject createJsonDevice(final UnitConfig unitConfig, final UnitTypeMapping unitTypeMapping) throws CouldNotPerformException {
+    private static JsonObject createJsonDevice(final UnitConfig unitConfig, final UnitTypeMapping unitTypeMapping, final String userId) throws CouldNotPerformException {
         final Map<UnitConfig, UnitTypeMapping> unitConfigTypeMapping = new HashMap<>();
         unitConfigTypeMapping.put(unitConfig, unitTypeMapping);
-        return createJsonDevice(unitConfig, unitConfigTypeMapping);
+        return createJsonDevice(unitConfig, unitConfigTypeMapping, userId);
     }
 
-    private static JsonObject createJsonDevice(final UnitConfig host, final Map<UnitConfig, UnitTypeMapping> mappings) throws CouldNotPerformException {
+    private static JsonObject createJsonDevice(final UnitConfig host, final Map<UnitConfig, UnitTypeMapping> mappings, final String userId) throws CouldNotPerformException {
         final JsonObject device = new JsonObject();
+
+        // resolve locale of user to use preferred label
+        final Locale userLocale = new Locale(Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getLanguage());
 
         device.addProperty(ID_KEY, host.getId());
         device.addProperty("willReportState", false); // This could be activated in the future
-        device.addProperty("roomHint", LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(host.getPlacementConfig().getLocationId()).getLabel()));
+        device.addProperty("roomHint", LabelProcessor.getBestMatch(userLocale, Registries.getUnitRegistry().getUnitConfigById(host.getPlacementConfig().getLocationId()).getLabel()));
 
         final JsonObject name = new JsonObject();
-        final String mainName = StringProcessor.insertSpaceBetweenCamelCase(LabelProcessor.getBestMatch(host.getLabel()));
+        final String mainName = StringProcessor.insertSpaceBetweenCamelCase(LabelProcessor.getBestMatch(userLocale, host.getLabel()));
         name.addProperty("name", mainName);
         final JsonArray defaultNames = new JsonArray();
         for (final String alias : host.getAliasList()) {
@@ -462,6 +466,7 @@ public class FulfillmentHandler {
      * @param unitConfig  the unit config for which a remote is created and its state synchronized into the device state
      * @param deviceState the device state into which the unit state is filled
      * @param syncObject  object used to synchronize every access to the device state
+     *
      * @return a future for the created task
      */
     private static Future createQueryTask(final UnitConfig unitConfig, final JsonObject deviceState, final SyncObject syncObject) {
@@ -590,7 +595,7 @@ public class FulfillmentHandler {
                                 }
                             }
                             // throw exception if at least one internal task has failed
-                            MultiException.checkAndThrow(() ->"Could not execute one command for internal units of device[" + unitConfig.getAlias(0) + "]", exceptionStack);
+                            MultiException.checkAndThrow(() -> "Could not execute one command for internal units of device[" + unitConfig.getAlias(0) + "]", exceptionStack);
                         } catch (InterruptedException ex) {
                             // interrupted, so cancel all internal tasks and finish normally
                             for (final Future internalFuture : internalFutureSet) {
@@ -676,6 +681,7 @@ public class FulfillmentHandler {
      *
      * @param unitRemote    the unit remote on which the actions will be executed
      * @param executionList a list of json objects defining the actions to be executed
+     *
      * @return a future of the task created that will execute all actions for the given unit remote
      */
     private static Future createExecutionTask(final UnitRemote<?> unitRemote, final List<JsonObject> executionList, final String authenticationToken, final String authorizationToken) {
