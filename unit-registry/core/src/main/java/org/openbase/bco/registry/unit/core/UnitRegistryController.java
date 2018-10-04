@@ -48,10 +48,7 @@ import org.openbase.bco.registry.unit.core.consistency.locationconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneServiceStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.*;
-import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.userconfig.UserPermissionConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.userconfig.UserUnitLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.*;
 import org.openbase.bco.registry.unit.core.plugin.*;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
@@ -286,6 +283,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserUnitLabelConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserPermissionConsistencyHandler());
+        userUnitConfigRegistry.registerConsistencyHandler(new UserConfigLanguageConsistencyHandler());
 
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListDuplicationConsistencyHandler());
