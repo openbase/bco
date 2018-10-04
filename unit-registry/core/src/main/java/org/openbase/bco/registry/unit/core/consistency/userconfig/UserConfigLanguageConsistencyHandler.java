@@ -58,7 +58,6 @@ public class UserConfigLanguageConsistencyHandler extends AbstractProtoBufRegist
         try {
             if (!unitConfig.getUserConfig().hasLanguage() || unitConfig.getUserConfig().getLanguage().isEmpty()) {
                 final String language = JPService.getProperty(JPLocale.class).getValue().getLanguage();
-                logger.warn("Set language of user {} to {}", unitConfig.getUserConfig().getUserName(), language);
                 unitConfig.getUserConfigBuilder().setLanguage(language);
                 throw new EntryModification(entry.setMessage(unitConfig, this), this);
             }
