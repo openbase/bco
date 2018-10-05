@@ -10,43 +10,40 @@ package org.openbase.bco.registry.lib.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitConfigProcessor {
 
     public static final Package UNIT_PACKAGE = UnitConfig.class.getPackage();
-    
+
     private static final List<UnitType> DAL_UNIT_TYPE_LIST = new ArrayList<>();
 
     public static boolean isHostUnit(final UnitConfig unitConfig) throws CouldNotPerformException {
@@ -94,17 +91,17 @@ public class UnitConfigProcessor {
                 return false;
         }
     }
-    
+
     public static boolean isVirtualUnit(final UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
-        
+
         // base units are never virtual!
-        if(isBaseUnit(unitConfig)) {
+        if (isBaseUnit(unitConfig)) {
             return false;
         }
-        
+
         return unitConfig.getUnitHostId().equals(unitConfig.getId());
     }
-        
+
 
     public static void verifyUnitType(final UnitConfigOrBuilder unitConfig, final UnitType unitType) throws VerificationFailedException {
         // verify if unit type is defined
@@ -139,12 +136,29 @@ public class UnitConfigProcessor {
         verifyUnitType(unitConfig, unitConfig.getUnitType());
     }
 
+    /**
+     * Verify if the unit is enabled.
+     *
+     * @param unitConfig the config to identify the unit.
+     *
+     * @throws VerificationFailedException is thrown if the unit is disabled.
+     */
     public static void verifyEnablingState(final UnitConfig unitConfig) throws VerificationFailedException {
-        if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
-            throw new VerificationFailedException("Referred Unit[" + unitConfig.getAlias(0)+ "] is disabled!");
+        if (!isEnabled(unitConfig)) {
+            throw new VerificationFailedException("Referred Unit[" + unitConfig.getAlias(0) + "] is disabled!");
         }
     }
 
+    /**
+     * Method returns if the unit referred by the given config is currently enabled.
+     *
+     * @param unitConfig the config to identify the unit.
+     *
+     * @return true if enabled otherwise false.
+     */
+    public static boolean isEnabled(final UnitConfig unitConfig) throws VerificationFailedException {
+        return unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+    }
 
     public synchronized static List<UnitType> getDalUnitTypes() {
         if (DAL_UNIT_TYPE_LIST.isEmpty()) {
@@ -161,6 +175,7 @@ public class UnitConfigProcessor {
      * This method returns the unit class name resolved by the given unit type.
      *
      * @param unitType the unit type to extract the class name.
+     *
      * @return the unit data class name.
      */
     public static String getUnitDataClassName(final UnitType unitType) {
@@ -171,13 +186,15 @@ public class UnitConfigProcessor {
      * This method returns the unit class resolved by the given unit type.
      *
      * @param unitType the unit type used to extract the unit class.
+     *
      * @return the unit data class.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class name could not be detected.
      */
     public static Class<? extends GeneratedMessage> getUnitDataClass(final UnitType unitType) throws NotAvailableException {
         final String unitDataClassSimpleName = getUnitDataClassName(unitType);
         final String unitDataClassName = UNIT_PACKAGE.getName() + "." + ((isBaseUnit(unitType)) ? unitType.name().toLowerCase().replaceAll("_", "") : "dal") + "." + unitDataClassSimpleName + "Type$" + unitDataClassSimpleName;
-     
+
         try {
             return (Class<? extends GeneratedMessage>) Class.forName(unitDataClassName);
         } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
@@ -189,7 +206,9 @@ public class UnitConfigProcessor {
      * This method returns the unit class resolved by the given unit config.
      *
      * @param unitConfig the unit config used to extract the unit class.
+     *
      * @return the unit data class.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getUnitDataClass(final UnitConfig unitConfig) throws NotAvailableException {
