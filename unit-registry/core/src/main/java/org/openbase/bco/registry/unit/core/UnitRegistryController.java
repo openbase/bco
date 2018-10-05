@@ -30,6 +30,7 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.core.consistency.*;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentConfigAgentClassIdConsistencyHandler;
@@ -666,13 +667,30 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         ));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param filterDisabledUnits {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
+     */
     @Override
-    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException {
-        ArrayList<UnitConfig> unitConfigList = new ArrayList<>();
+    public List<UnitConfig> getUnitConfigs(boolean filterDisabledUnits) throws CouldNotPerformException, NotAvailableException {
+        validateData();
+        final List<UnitConfig> unitConfigs = new ArrayList<>();
         for (final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry : unitConfigRegistryList) {
-            unitConfigList.addAll(unitConfigRegistry.getMessages());
+            for (UnitConfig unitConfig : unitConfigRegistry.getMessages()) {
+                if (filterDisabledUnits && !UnitConfigProcessor.isEnabled(unitConfig)) {
+                    continue;
+                }
+
+                unitConfigs.add(unitConfig);
+            }
         }
-        return unitConfigList;
+        return unitConfigs;
     }
 
     /**

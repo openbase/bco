@@ -26,6 +26,7 @@ import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -53,6 +54,7 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -370,10 +372,28 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param filterDisabledUnits {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
+     */
     @Override
-    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfig> getUnitConfigs(boolean filterDisabledUnits) throws CouldNotPerformException, NotAvailableException {
         validateData();
-        return unitConfigRemoteRegistry.getMessages();
+        final List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : unitConfigRemoteRegistry.getMessages()) {
+            if (filterDisabledUnits && !UnitConfigProcessor.isEnabled(unitConfig)) {
+                continue;
+            }
+
+            unitConfigs.add(unitConfig);
+        }
+        return unitConfigs;
     }
 
     /**

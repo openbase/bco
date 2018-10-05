@@ -22,9 +22,9 @@ package org.openbase.bco.registry.lib.provider;
  * #L%
  */
 
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -34,13 +34,26 @@ import java.util.List;
 public interface UnitConfigCollectionProvider {
 
     /**
-     * Method returns all registered unit configs.
+     * Method returns all non-disabled registered unit configs.
+     *
+     * @return the not disabled unit configs stored in this registry.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigs() throws CouldNotPerformException {
+        return getUnitConfigs(true);
+    }
+
+    /**
+     * Method returns all registered unit configs. It allows to filter disabled unit configs.
+     *
+     * @param filterDisabledUnits if true all unit configs which are disabled will be skipped.
      *
      * @return the unit configs stored in this registry.
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
+    List<UnitConfig> getUnitConfigs(final boolean filterDisabledUnits) throws CouldNotPerformException;
 
     /**
      * Method returns true if the unit config with the given id is
@@ -74,7 +87,7 @@ public interface UnitConfigCollectionProvider {
      * unit id. Additionally the type will be verified.
      *
      * @param unitConfigId the identifier of the unit.
-     * @param unitType the type to verify.
+     * @param unitType     the type to verify.
      *
      * @return the requested unit config validated with the given unit type.
      *
