@@ -41,6 +41,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -152,9 +153,9 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             remoteActionList.clear();
             RemoteAction action;
             for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getRequiredServiceStateDescriptionList()) {
-                action = new RemoteAction();
+                action = new RemoteAction(this);
                 try {
-                    action.init(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
+                    action.init(ActionParameter.newBuilder().setServiceStateDescription(serviceStateDescription).build());
                     remoteActionList.add(action);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
@@ -162,9 +163,9 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             }
 
             for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getOptionalServiceStateDescriptionList()) {
-                action = new RemoteAction();
+                action = new RemoteAction(this);
                 try {
-                    action.init(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
+                    action.init(ActionParameter.newBuilder().setServiceStateDescription(serviceStateDescription).build());
                     remoteActionList.add(action);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
@@ -205,13 +206,12 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Activate Scene[" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
 
-        final Map<Future<ActionDescription>, RemoteAction> executionFutureList = new HashMap<>();
-
         synchronized (actionListSync) {
             for (final RemoteAction action : remoteActionList) {
-                executionFutureList.put(action.execute(), action);
+                action.execute(activationState.getResponsibleAction());
             }
         }
+
         MultiException.ExceptionStack exceptionStack = null;
 
         try {
@@ -219,17 +219,17 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
             long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
             long timeout;
-            for (Entry<Future<ActionDescription>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
-                if (futureActionEntry.getKey().isDone()) {
+            for (final RemoteAction action : remoteActionList) {
+                if (action.isDone()) {
                     continue;
                 }
-                logger.info("Waiting for action [" + futureActionEntry.getValue().getActionDescription().getServiceStateDescription().getServiceAttributeType() + "]");
+                logger.info("Waiting for action [" + action.getActionDescription().getServiceStateDescription().getServiceAttributeType() + "]");
                 try {
                     timeout = checkStart - System.currentTimeMillis();
                     if (timeout <= 0) {
                         throw new RejectedException("Rejected because of scene timeout.");
                     }
-                    futureActionEntry.getKey().get(timeout, TimeUnit.MILLISECONDS);
+                    action.getActionFuture().get(timeout, TimeUnit.MILLISECONDS);
                 } catch (ExecutionException | TimeoutException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
@@ -239,18 +239,22 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         } catch (CouldNotPerformException | CancellationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getLabel() + "] execution failed!", ex), logger);
         } finally {
-            for (Entry<Future<ActionDescription>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
-                if (!futureActionEntry.getKey().isDone()) {
-                    futureActionEntry.getKey().cancel(true);
+            for (final RemoteAction action : remoteActionList) {
+                if (!action.getActionFuture().isDone()) {
+                    action.cancel();
                 }
             }
-            applyDataUpdate(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
         }
     }
 
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Finished scene: " + getLabel());
+        for (final RemoteAction action : remoteActionList) {
+            if (!action.getActionFuture().isDone()) {
+                action.cancel();
+            }
+        }
     }
 
     @Override
