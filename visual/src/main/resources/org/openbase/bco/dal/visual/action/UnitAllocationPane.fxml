@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="776.0" prefWidth="608.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openbase.bco.dal.visual.action.UnitAllocationPane">
+    <children>
+      <VBox prefHeight="776.0" prefWidth="608.0">
+         <children>
+            <BorderPane fx:id="topPane" prefHeight="230.0" prefWidth="608.0" />
+              <TableView fx:id="actionTable" prefHeight="562.0" prefWidth="608.0">
+                  <columns>
+                      <TableColumn prefWidth="75.0" text="Pos" />
+                      <TableColumn prefWidth="75.0" text="Action State" />
+                      <TableColumn prefWidth="159.0" text="Service State" />
+                      <TableColumn prefWidth="75.0" text="ID" />
+                  </columns>
+              </TableView>
+         </children>
+      </VBox>
+    </children>
+</AnchorPane>
