@@ -69,7 +69,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotable<Snapshot>, PingProvider, DataProvider<D> {
+public abstract class ServiceRemoteManager<D extends Message> implements Activatable, Snapshotable<Snapshot>, PingProvider, DataProvider<D> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRemoteManager.class);
 

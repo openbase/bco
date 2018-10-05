@@ -22,8 +22,10 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedSnapshotable;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
@@ -38,6 +40,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.iface.TransactionIdProvider;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
@@ -75,7 +78,9 @@ import rst.spatial.ShapeType.Shape;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -84,7 +89,7 @@ import java.util.concurrent.Future;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, AuthenticatedSnapshotable, TransactionIdProvider {
+public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, AuthenticatedSnapshotable, TransactionIdProvider {
 
     /**
      * Returns the type of this unit.
@@ -862,5 +867,9 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
     default ServiceProvider getServiceProvider() {
         return this;
+    }
+
+    default List<ActionDescription> getActionList() throws NotAvailableException {
+        return ProtoBufFieldProcessor.getRepeatedFieldList(Action.TYPE_FIELD_NAME_ACTION, getData());
     }
 }
