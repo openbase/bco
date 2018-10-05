@@ -10,12 +10,12 @@ package org.openbase.bco.manager.user.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -23,12 +23,16 @@ package org.openbase.bco.manager.user.core;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
+import org.openbase.bco.dal.lib.layer.service.operation.ActivityMultiStateOperationService;
+import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -40,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
@@ -54,6 +59,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -75,6 +81,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     private final Object netDeviceDetectorMapLock = new SyncObject("NetDeviceDetectorMapLock");
     private final Map<String, NetDeviceDetector> netDeviceDetectorMap;
+
     private boolean enabled;
 
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
@@ -85,6 +92,10 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider(LabelProcessor.getBestMatch(config.getLabel()), config.getMetaConfig());
+
+        registerOperationService(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, new ActivityMultiStateOperationServiceImpl(this));
+
+
         synchronized (netDeviceDetectorMapLock) {
 
             // shutdown and remove all existing detectors
@@ -320,6 +331,55 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[host:" + hostName + "]";
+        }
+    }
+
+    public class ActivityMultiStateOperationServiceImpl implements ActivityMultiStateOperationService {
+
+        private final Map<String, RemoteActionPool> remoteActionPoolMap;
+        private UserController userController;
+
+        public ActivityMultiStateOperationServiceImpl(final UserController userController) {
+            this.userController = userController;
+            this.remoteActionPoolMap = new HashMap<>();
+        }
+
+        @Override
+        public Future<ActionDescription> setActivityMultiState(ActivityMultiState activityMultiState) {
+            logger.info("Update activity list[" + activityMultiState.getActivityIdCount() + "]" + this);
+            return GlobalScheduledExecutorService.submit(() -> {
+                try (ClosableDataBuilder<UserData.Builder> dataBuilder = userController.getDataBuilder(this)) {
+                    if (activityMultiState.getActivityIdCount() == 0) {
+                        for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
+                            stringRemoteActionPoolEntry.getValue().stop();
+                        }
+                    } else if ((activityMultiState.getActivityIdCount() > 0)) {
+                        final String activityId = activityMultiState.getActivityId(0);
+                        for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
+                            if (!stringRemoteActionPoolEntry.getKey().equals(activityId)) {
+                                stringRemoteActionPoolEntry.getValue().stop();
+                            }
+                        }
+                        if (remoteActionPoolMap.containsKey(activityId)) {
+                            final RemoteActionPool remoteActionPool = new RemoteActionPool(UserControllerImpl.this);
+                            remoteActionPoolMap.put(activityId, remoteActionPool);
+                            final ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityId);
+                            remoteActionPool.initViaServiceStateDescription(activityConfig.getServiceStateDescriptionList());
+                        }
+
+                        remoteActionPoolMap.get(activityId).execute(activityMultiState.getResponsibleAction());
+                    }
+                    dataBuilder.getInternalBuilder().setActivityMultiState(activityMultiState);
+                    return null;
+                } catch (Exception ex) {
+                    throw new CouldNotPerformException("Could not apply data change!", ex);
+                }
+            });
+        }
+
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return UserControllerImpl.this;
         }
     }
 }

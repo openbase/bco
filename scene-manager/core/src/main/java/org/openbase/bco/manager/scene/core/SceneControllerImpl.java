@@ -23,14 +23,15 @@ package org.openbase.bco.manager.scene.core;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
-import org.openbase.bco.dal.remote.action.RemoteAction;
+import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -38,7 +39,6 @@ import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
@@ -52,10 +52,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,14 +70,14 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     private final Object buttonObserverLock = new SyncObject("ButtonObserverLock");
     private final Set<ButtonRemote> buttonRemoteSet;
-    private final List<RemoteAction> remoteActionList;
-    private final SyncObject actionListSync = new SyncObject("ActionListSync");
     private final Observer<DataProvider<ButtonData>, ButtonData> buttonObserver;
+    private final RemoteActionPool remoteActionPool;
+
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
         this.buttonRemoteSet = new HashSet<>();
-        this.remoteActionList = new ArrayList<>();
+        this.remoteActionPool = new RemoteActionPool(this);
         this.buttonObserver = (final DataProvider<ButtonData> source, ButtonData data) -> {
 
             // skip initial button state synchronization during system startup
@@ -146,37 +142,11 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
         }
 
-        MultiException.ExceptionStack exceptionStack = null;
+        final List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>();
+        serviceStateDescriptionList.addAll(config.getSceneConfig().getRequiredServiceStateDescriptionList());
+        serviceStateDescriptionList.addAll(config.getSceneConfig().getOptionalServiceStateDescriptionList());
+        remoteActionPool.initViaServiceStateDescription(serviceStateDescriptionList);
 
-        synchronized (actionListSync) {
-            remoteActionList.clear();
-            RemoteAction action;
-            for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getRequiredServiceStateDescriptionList()) {
-                action = new RemoteAction(this);
-                try {
-                    action.init(ActionParameter.newBuilder().setServiceStateDescription(serviceStateDescription).build());
-                    remoteActionList.add(action);
-                } catch (CouldNotPerformException ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
-                }
-            }
-
-            for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getOptionalServiceStateDescriptionList()) {
-                action = new RemoteAction(this);
-                try {
-                    action.init(ActionParameter.newBuilder().setServiceStateDescription(serviceStateDescription).build());
-                    remoteActionList.add(action);
-                } catch (CouldNotPerformException ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
-                }
-            }
-        }
-
-        try {
-            MultiException.checkAndThrow(() -> "Could not fully init units of " + this, exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
-        }
         return config;
     }
 
@@ -204,60 +174,13 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     @Override
     protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Activate Scene[" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
-
-        synchronized (actionListSync) {
-            for (final RemoteAction action : remoteActionList) {
-                action.execute(activationState.getResponsibleAction());
-            }
-        }
-
-        MultiException.ExceptionStack exceptionStack = null;
-
-        try {
-            logger.info("Waiting for action finalisation...");
-
-            long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
-            long timeout;
-            for (final RemoteAction action : remoteActionList) {
-                if (action.isDone()) {
-                    continue;
-                }
-                logger.info("Waiting for action [" + action.getActionDescription().getServiceStateDescription().getServiceAttributeType() + "]");
-                try {
-                    timeout = checkStart - System.currentTimeMillis();
-                    if (timeout <= 0) {
-                        throw new RejectedException("Rejected because of scene timeout.");
-                    }
-                    action.getActionFuture().get(timeout, TimeUnit.MILLISECONDS);
-                } catch (ExecutionException | TimeoutException ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
-                }
-            }
-            MultiException.checkAndThrow(() -> "Could not execute all actions!", exceptionStack);
-            logger.info("Deactivate Scene[" + getLabel() + "] because all actions are successfully executed.");
-        } catch (CouldNotPerformException | CancellationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getLabel() + "] execution failed!", ex), logger);
-        } finally {
-            for (final RemoteAction action : remoteActionList) {
-                if (!action.getActionFuture().isDone()) {
-                    action.cancel();
-                }
-            }
-        }
+        remoteActionPool.execute(activationState.getResponsibleAction());
     }
 
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Finished scene: " + getLabel());
-        for (final RemoteAction action : remoteActionList) {
-            try {
-                if (action.isValid() && !action.getActionFuture().isDone()) {
-                    action.cancel();
-                }
-            } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory("Could not cancel " + action, ex, logger, LogLevel.WARN);
-            }
-        }
+        remoteActionPool.stop();
     }
 
     @Override
