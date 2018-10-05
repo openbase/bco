@@ -116,6 +116,12 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
+            <artifactId>jul.visual.javafx</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
             <artifactId>bco.dal.remote</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -1,5 +1,6 @@
 package org.openbase.bco.dal.lib.layer.unit;
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 
 /*
@@ -30,6 +31,6 @@ import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
  *
  * @param <D> the data type of this unit used for the state synchronization.
  */
-public interface UnitHost<D> extends Unit<D>, OperationServiceFactoryProvider {
+public interface UnitHost<D extends Message> extends Unit<D>, OperationServiceFactoryProvider {
 
 }

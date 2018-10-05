@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -32,7 +33,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
  *
  * @param <DATA> the data type of this unit used for the state synchronization.
  */
-public interface MultiUnit<DATA> extends Unit<DATA>, ServiceAggregator {
+public interface MultiUnit<DATA extends Message> extends Unit<DATA>, ServiceAggregator {
 
     /**
      * {@inheritDoc}

@@ -23,11 +23,13 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
+import com.google.protobuf.Message;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * 
  * @param <DATA> the data type of this unit used for the state synchronization.
  */
-public interface BaseUnit<DATA> extends Unit<DATA> {
+public interface BaseUnit<DATA extends Message> extends Unit<DATA> {
 
 }
