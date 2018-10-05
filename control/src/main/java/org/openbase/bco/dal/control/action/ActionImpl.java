@@ -26,7 +26,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.action.Action;
-import org.openbase.bco.dal.lib.action.ExecutableAction;
+import org.openbase.bco.dal.lib.action.SchedulableAction;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -37,7 +37,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.pattern.provider.Provider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
@@ -46,14 +45,12 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.ActionStateType.ActionState.State;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.language.MultiLanguageTextType.MultiLanguageText;
@@ -67,7 +64,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class ActionImpl implements ExecutableAction {
+public class ActionImpl implements SchedulableAction {
 
     public static final String INITIATOR_KEY = "$INITIATOR";
     public static final String SERVICE_TYPE_KEY = "$SERVICE_TYPE";
@@ -373,9 +370,6 @@ public class ActionImpl implements ExecutableAction {
 
     @Override
     public String toString() {
-        if (actionDescriptionBuilder == null) {
-            return getClass().getSimpleName() + "[?]";
-        }
-        return getClass().getSimpleName() + "[" + unit.getLabel("?") + "|" + getId() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceType() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute() + "|" + actionDescriptionBuilder.getPriority().name() + "|" + StringProcessor.transformCollectionToString(actionDescriptionBuilder.getCategoryList(), " | ") + "]";
+        return Action.toString(this);
     }
 }

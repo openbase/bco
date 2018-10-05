@@ -52,6 +52,7 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
@@ -849,6 +850,15 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
             throw new NotAvailableException("LocationConfig", ex);
         }
     }
+
+
+    /**
+     * This method cancels the given action on remote controller.
+     *
+     * @param actionDescription the description which identifies the action.
+     * @return a future object representing the success of the cancellation.
+     */
+    Future<ActionDescription> cancelAction(final ActionDescription actionDescription);
 
     default ServiceProvider getServiceProvider() {
         return this;

@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.action;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.provider.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,40 +72,45 @@ public class ActionComparator implements Comparator<Action> {
      */
     @Override
     public int compare(final Action targetAction, final Action referenceAction) {
-        // compute ranking via priority
-        // the priority of this action by subtracting the priority of the given action. If this action is initiated by a human it gets an extra point.
-        int priority = targetAction.getActionDescription().getPriority().getNumber() + ((targetAction.getActionDescription().getActionInitiator().getInitiatorType() == InitiatorType.HUMAN) ? 1 : 0) - referenceAction.getActionDescription().getPriority().getNumber();
-
-        // if no conflict is detected than just return the priority as ranking
-        if (priority != 0) {
-            return priority;
-        }
-
-        EmphasisState emphasisState;
-
         try {
-            emphasisState = emphasisStateProvider.get();
-        } catch (CouldNotPerformException | InterruptedException ex) {
+            // compute ranking via priority
+            // the priority of this action by subtracting the priority of the given action. If this action is initiated by a human it gets an extra point.
+            int priority = targetAction.getActionDescription().getPriority().getNumber() + ((targetAction.getActionDescription().getActionInitiator().getInitiatorType() == InitiatorType.HUMAN) ? 1 : 0) - referenceAction.getActionDescription().getPriority().getNumber();
 
-            if (ex instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
+            // if no conflict is detected than just return the priority as ranking
+            if (priority != 0) {
+                return priority;
             }
-            // create mockup to guarantee safety operations
-            emphasisState = EmphasisState.newBuilder().setEconomy(1d / 3d).setSecurity(1d / 3d).setComfort(1d / 3d).build();
+
+            EmphasisState emphasisState;
+
+            try {
+                emphasisState = emphasisStateProvider.get();
+            } catch (CouldNotPerformException | InterruptedException ex) {
+
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                // create mockup to guarantee safety operations
+                emphasisState = EmphasisState.newBuilder().setEconomy(1d / 3d).setSecurity(1d / 3d).setComfort(1d / 3d).build();
+            }
+
+            double emphasis = targetAction.getEmphasisValue(emphasisState) - referenceAction.getEmphasisValue(emphasisState);
+
+            // if no conflict is detected than just return the emphasis as ranking
+            if (emphasis != 0) {
+                // multiply with 100 to project 0-1 scale to valid in value
+                return (int) (emphasis * 100);
+            }
+
+            // todo implement individual action scheduling to avoid conflicts.
+
+            LOGGER.warn("Conflict between {} and {} detected!", targetAction, referenceAction);
+
+            return 0;
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not compare actions!", ex, LOGGER);
         }
-
-        double emphasis = targetAction.getEmphasisValue(emphasisState) - referenceAction.getEmphasisValue(emphasisState);
-
-        // if no conflict is detected than just return the emphasis as ranking
-        if (emphasis != 0) {
-            // multiply with 100 to project 0-1 scale to valid in value
-            return (int) (emphasis * 100);
-        }
-
-        // todo implement individual action scheduling to avoid conflicts.
-
-        LOGGER.warn("Conflict between {} and {} detected!", targetAction, referenceAction);
-
-        return 0;
+        return -1;
     }
 }

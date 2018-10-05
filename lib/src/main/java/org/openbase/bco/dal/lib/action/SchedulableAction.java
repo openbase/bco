@@ -27,5 +27,5 @@ import org.openbase.jul.iface.Initializable;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 
-public interface ExecutableAction extends Action, Executable<ActionDescription>, Initializable<ActionDescription> {
+public interface SchedulableAction extends Action, Executable<ActionDescription>, Initializable<ActionDescription> {
 }

@@ -114,12 +114,4 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * @return if the the infrastructure flag is set to true in a meta config for this unit
      */
     boolean isInfrastructure();
-
-    /**
-     * This method cancels the given action on remote controller.
-     *
-     * @param actionDescription the description which identifies the action.
-     * @return a future object representing the success of the cancellation.
-     */
-    Future<ActionDescription> cancelAction(final ActionDescription actionDescription);
 }

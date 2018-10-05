@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,24 +23,20 @@ package org.openbase.bco.dal.remote.action;
  */
 
 import org.openbase.bco.dal.lib.action.Action;
-import org.openbase.bco.dal.remote.layer.service.AbstractServiceRemote;
-import org.openbase.bco.dal.remote.layer.service.ServiceRemoteFactory;
-import org.openbase.bco.dal.remote.layer.service.ServiceRemoteFactoryImpl;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.state.EnablingStateType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.action.ActionParameterType.ActionParameter;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -48,66 +44,56 @@ import java.util.concurrent.Future;
 /**
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class RemoteAction implements Action, Initializable<ActionDescription> {
+public class RemoteAction implements Action, Initializable<ActionParameter> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAction.class);
     private final SyncObject executionSync = new SyncObject(RemoteAction.class);
-    private ActionDescription actionDescription;
-    private UnitConfig unitConfig;
-    private ServiceRemoteFactory serviceRemoteFactory;
-    private AbstractServiceRemote<?, ?> serviceRemote;
-    private Future<ActionDescription> executionFuture;
+    private final Unit<?> executorUnit;
+    private ActionParameter.Builder actionParameterBuilder;
+    private Future<ActionDescription> actionFuture;
+    private Unit<?> targetUnit;
+
+    public RemoteAction(final Unit executorUnit) {
+        this.executorUnit = executorUnit;
+    }
 
     @Override
-    public void init(final ActionDescription actionDescription) throws InitializationException, InterruptedException {
-        this.actionDescription = actionDescription;
+    public void init(final ActionParameter actionParameter) throws InitializationException, InterruptedException {
+        this.actionParameterBuilder = actionParameter.toBuilder();
         try {
-            if (getActionDescription().getServiceStateDescription().getUnitId().isEmpty()) {
-                throw new InvalidStateException(getActionDescription().getLabel() + " has no valid unit id!");
-            }
+            // setup initiator
+            this.actionParameterBuilder.getActionInitiatorBuilder().setInitiatorId(executorUnit.getId());
 
-            this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
-            Registries.waitForData();
-            this.unitConfig = Registries.getUnitRegistry().getUnitConfigById(getActionDescription().getServiceStateDescription().getUnitId());
-            this.verifyUnitConfig(unitConfig);
-            this.serviceRemote = serviceRemoteFactory.newInstance(getActionDescription().getServiceStateDescription().getServiceType());
-            this.serviceRemote.setInfrastructureFilter(false);
-            this.serviceRemote.init(unitConfig);
-            serviceRemote.activate();
+            // prepare target unit
+            this.targetUnit = Units.getUnit(actionParameter.getServiceStateDescription().getUnitId(), false);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    private void verifyUnitConfig(final UnitConfig unitConfig) throws VerificationFailedException {
-        if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
-            try {
-                throw new VerificationFailedException("Referred Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] is disabled!");
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                try {
-                    throw new VerificationFailedException("Referred Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] is disabled!");
-                } catch (NotAvailableException exx) {
-                    throw new VerificationFailedException("Referred Unit[" + unitConfig.getId() + "] is disabled!");
-                }
-            }
+    public Future<ActionDescription> execute(final ActionDescription causeActionDescription) throws CouldNotPerformException {
+        synchronized (executionSync) {
+            actionParameterBuilder.setCause(causeActionDescription);
+            return execute();
         }
     }
 
     @Override
     public Future<ActionDescription> execute() throws CouldNotPerformException {
         synchronized (executionSync) {
-            return serviceRemote.applyAction(getActionDescription());
+            actionFuture = targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build());
+            actionFuture.notifyAll();
+            return actionFuture;
         }
     }
 
     public void waitForFinalization() throws CouldNotPerformException, InterruptedException {
         Future currentExecution;
         synchronized (executionSync) {
-            if (executionFuture == null) {
+            if (actionFuture == null) {
                 throw new InvalidStateException("No execution running!");
             }
-            currentExecution = executionFuture;
+            currentExecution = actionFuture;
         }
 
         try {
@@ -121,42 +107,70 @@ public class RemoteAction implements Action, Initializable<ActionDescription> {
      * {@inheritDoc }
      *
      * @return {@inheritDoc }
-     *
      */
     @Override
-    public ActionDescription getActionDescription() {
-        return actionDescription;
+    public ActionDescription getActionDescription() throws NotAvailableException {
+        try {
+            if (actionFuture == null || !actionFuture.isDone()) {
+                throw new NotAvailableException("ActionFuture");
+            }
+            return actionFuture.get();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new NotAvailableException("ActionDescription");
+        }
     }
 
     @Override
-    public long getCreationTime() {
-        return 0;
+    public long getCreationTime() throws NotAvailableException {
+        return getActionDescription().getTimestamp().getTime();
     }
 
     @Override
     public Future<ActionDescription> cancel() {
         try {
-            return Units.getUnit(getActionDescription().getServiceStateDescription().getUnitId(), false).cancelAction(getActionDescription().toBuilder().setCancel(true).build());
-        } catch (CouldNotPerformException | InterruptedException ex) {
+            if(!actionFuture.isDone()) {
+                actionFuture.cancel(true);
+            }
+            return targetUnit.cancelAction(getActionDescription());
+        } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ex);
         }
     }
 
     @Override
     public void schedule() {
-
+        // todo: remove from interface
     }
 
     @Override
     public void waitUntilFinish() throws InterruptedException {
+        return;
+        // todo redefine
+        // semantic changed on remote interface.
+        // wait for action not wait for execution
 
+//        synchronized (executionSync) {
+//            if(actionFuture == null) {
+//                actionFuture.wait();
+//            }
+//            try {
+//                actionFuture.get();
+//            } catch (ExecutionException e) {
+//                // failed but still finished
+//            }
+//
+//
+//            if()
+//            // wait until done
+//        }
+    }
+
+    public Future<ActionDescription> getActionFuture() {
+        return actionFuture;
     }
 
     @Override
     public String toString() {
-        if (getActionDescription() == null) {
-            return getClass().getSimpleName() + "[?]";
-        }
-        return getClass().getSimpleName() + "[" + getActionDescription().getServiceStateDescription().getUnitId() + "|" + getActionDescription().getServiceStateDescription().getServiceType() + "|" + getActionDescription().getServiceStateDescription().getServiceAttribute() + "|" + getActionDescription().getServiceStateDescription().getUnitId() + "]";
+        return Action.toString(this);
     }
 }

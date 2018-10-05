@@ -35,6 +35,7 @@ import org.openbase.bco.dal.control.action.ActionImpl;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionComparator;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.SchedulableAction;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
@@ -130,7 +131,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private UnitTemplate template;
     private boolean initialized = false;
     private String classDescription = "";
-    private ArrayList<Action> scheduledActionList = new ArrayList<>();
+    private ArrayList<SchedulableAction> scheduledActionList = new ArrayList<>();
     private Timeout scheduleTimeout;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
@@ -488,7 +489,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    private Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
+    public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
         try {
             Action actionToCancel = null;
             synchronized (scheduledActionListLock) {
@@ -514,7 +515,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    private Future<ActionDescription> scheduleAction(final Action actionToSchedule) {
+    private Future<ActionDescription> scheduleAction(final SchedulableAction actionToSchedule) {
         return GlobalCachedExecutorService.submit(() -> {
             synchronized (scheduledActionListLock) {
                 scheduledActionList.add(actionToSchedule);
@@ -560,10 +561,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 }
 
                 // detect and store current action
-                Action currentAction = null;
+                SchedulableAction currentAction = null;
                 for (int i = 0; i < scheduledActionList.size(); i++) {
-                    if (scheduledActionList.get(i).getActionDescription().getActionState().getValue() == State.EXECUTING) {
-                        currentAction = scheduledActionList.get(i);
+                    try {
+                        if (scheduledActionList.get(i).getActionDescription().getActionState().getValue() == State.EXECUTING) {
+                            currentAction = scheduledActionList.get(i);
+                            continue;
+                        }
+                    } catch (NotAvailableException e) {
+                        // continue if action is invalid
                         continue;
                     }
                 }
@@ -572,7 +578,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 Collections.sort(scheduledActionList, actionComparator);
 
                 // detect action with highest ranking
-                Action nextAction = null;
+                SchedulableAction nextAction = null;
                 for (int i = 0; i < scheduledActionList.size(); i++) {
 
                     nextAction = scheduledActionList.get(i);

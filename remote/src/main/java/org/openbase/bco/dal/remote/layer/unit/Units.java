@@ -33,11 +33,13 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.remote.layer.unit.user.UserRemote;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessageMap;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -55,7 +57,9 @@ import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rsb.Scope;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.state.EnablingStateType;
 import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -395,8 +399,9 @@ public class Units {
                 if (!unitRemoteRegistry.contains(unitId)) {
                     // create new instance.
                     newInstance = true;
-                    unitRemote = UNIT_REMOTE_FACTORY.newInitializedInstance(getUnitRegistry().getUnitConfigById(unitId));
-
+                    final UnitConfig unitConfig = getUnitRegistry().getUnitConfigById(unitId);
+                    UnitConfigProcessor.verifyEnablingState(unitConfig);
+                    unitRemote = UNIT_REMOTE_FACTORY.newInitializedInstance(unitConfig);
                     unitRemoteRegistry.register(unitRemote);
 
                 } else {
@@ -409,8 +414,8 @@ public class Units {
             }
 
             // The activation is not synchronized by the unitRemoteRegistryLock out of performance reasons. 
-            // By this, new unit remotes can be requested independend from the activation state of other units.
-            if (newInstance && unitRemote.isEnabled()) {
+            // By this, new unit remotes can be requested independent from the activation state of other units.
+            if (newInstance) {
                 unitRemote.activate();
                 unitRemote.lock(unitRemoteRegistry);
             }
@@ -421,6 +426,8 @@ public class Units {
             throw new NotAvailableException("UnitRemote[" + unitId + "]", ex);
         }
     }
+
+
 
     /**
      * Returns the unit remote of the unit identified by the given unit config.
