@@ -354,6 +354,9 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
+        if(getActionDescription().getExecutionTimePeriod() == 0) {
+            return;
+        }
         try {
             result.get(getExecutionTime(), TimeUnit.MILLISECONDS);
             if (isValid()) {
