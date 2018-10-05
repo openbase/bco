@@ -28,7 +28,12 @@ import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -132,6 +137,12 @@ public class UnitConfigProcessor {
     public static void verifyUnit(final UnitConfig unitConfig) throws VerificationFailedException {
         verifyUnitConfig(unitConfig, unitConfig.getUnitType());
         verifyUnitType(unitConfig, unitConfig.getUnitType());
+    }
+
+    public static void verifyEnablingState(final UnitConfig unitConfig) throws VerificationFailedException {
+        if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
+            throw new VerificationFailedException("Referred Unit[" + unitConfig.getAlias(0)+ "] is disabled!");
+        }
     }
 
 
