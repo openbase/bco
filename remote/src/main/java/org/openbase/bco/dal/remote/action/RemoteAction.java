@@ -138,11 +138,6 @@ public class RemoteAction implements Action, Initializable<ActionParameter> {
     }
 
     @Override
-    public void schedule() {
-        // todo: remove from interface
-    }
-
-    @Override
     public void waitUntilFinish() throws InterruptedException {
         return;
         // todo redefine

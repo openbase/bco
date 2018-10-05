@@ -149,8 +149,6 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
 
     Future<ActionDescription> cancel();
 
-    void schedule();
-
     void waitUntilFinish() throws InterruptedException;
 
     default double getEmphasisValue(final EmphasisState emphasisState) throws NotAvailableException {

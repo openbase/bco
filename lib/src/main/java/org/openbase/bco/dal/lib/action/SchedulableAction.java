@@ -28,4 +28,5 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 
 public interface SchedulableAction extends Action, Executable<ActionDescription>, Initializable<ActionDescription> {
+    void schedule();
 }
