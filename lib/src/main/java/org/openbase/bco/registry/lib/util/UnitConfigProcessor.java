@@ -156,7 +156,7 @@ public class UnitConfigProcessor {
      *
      * @return true if enabled otherwise false.
      */
-    public static boolean isEnabled(final UnitConfig unitConfig) throws VerificationFailedException {
+    public static boolean isEnabled(final UnitConfig unitConfig) {
         return unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
     }
 
