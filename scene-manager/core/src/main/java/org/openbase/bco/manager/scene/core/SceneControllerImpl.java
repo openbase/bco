@@ -10,12 +10,12 @@ package org.openbase.bco.manager.scene.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -32,18 +32,14 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.state.ButtonStateType.ButtonState.State;
@@ -52,10 +48,13 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -174,7 +173,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         }
 
         try {
-            MultiException.checkAndThrow(() ->"Could not fully init units of " + this, exceptionStack);
+            MultiException.checkAndThrow(() -> "Could not fully init units of " + this, exceptionStack);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
@@ -234,7 +233,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
-            MultiException.checkAndThrow(() ->"Could not execute all actions!", exceptionStack);
+            MultiException.checkAndThrow(() -> "Could not execute all actions!", exceptionStack);
             logger.info("Deactivate Scene[" + getLabel() + "] because all actions are successfully executed.");
         } catch (CouldNotPerformException | CancellationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getLabel() + "] execution failed!", ex), logger);
@@ -251,8 +250,12 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Finished scene: " + getLabel());
         for (final RemoteAction action : remoteActionList) {
-            if (!action.getActionFuture().isDone()) {
-                action.cancel();
+            try {
+                if (action.isValid() && !action.getActionFuture().isDone()) {
+                    action.cancel();
+                }
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory("Could not cancel " + action, ex, logger, LogLevel.WARN);
             }
         }
     }
