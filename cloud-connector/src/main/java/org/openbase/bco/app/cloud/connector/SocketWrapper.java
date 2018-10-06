@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -131,7 +131,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
 
-
             // create socket
             socket = IO.socket(JPService.getProperty(JPCloudServerURI.class).getValue());
             // add id to header for cloud server
@@ -157,30 +156,22 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 LOGGER.info("Socket of user[" + userId + "] connected");
                 login();
             }).on(Socket.EVENT_MESSAGE, objects -> {
-                // received a message
-                LOGGER.info("Socket of user[" + userId + "] received a request");
                 // handle request
                 handleRequest(objects[0], (Ack) objects[objects.length - 1]);
             }).on(Socket.EVENT_DISCONNECT, objects -> {
                 // reconnection is automatically done by the socket API, just print that disconnected
                 LOGGER.info("Socket of user[" + userId + "] disconnected");
             }).on(INTENT_USER_TRANSIT, objects -> {
-                LOGGER.info("Socket of user[" + userId + "] received transit state request");
                 handleUserTransitUpdate(objects[0], (Ack) objects[objects.length - 1]);
             }).on(INTENT_USER_ACTIVITY, objects -> {
-                LOGGER.info("Socket of user[" + userId + "] received activity request");
                 handleActivity(objects[0], (Ack) objects[objects.length - 1]);
             }).on(INTENT_REGISTER_SCENE, objects -> {
-                LOGGER.info("Socket of user[" + userId + "] received register scene request");
                 handleSceneRegistration(objects[0], (Ack) objects[objects.length - 1]);
             }).on(INTENT_USER_ACTIVITY_CANCELLATION, objects -> {
-                LOGGER.info("Socket of user[" + userId + "] received activity cancellation request");
                 handleActivityCancellation(objects[0], (Ack) objects[objects.length - 1]);
             }).on(INTENT_RELOCATE, objects -> {
-                LOGGER.info("Socket of user[" + userId + "] received relocate request");
                 handleRelocating(objects[0], (Ack) objects[objects.length - 1]);
             }).on(INTENT_RENAMING, objects -> {
-                LOGGER.info("Socket of user[" + userId + "] received rename request");
                 handleRenaming(objects[0], (Ack) objects[objects.length - 1]);
             });
 
@@ -198,7 +189,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             LOGGER.info("Request: " + gson.toJson(parse));
 
             // handle request and create response
-            LOGGER.info("Call handler with authentication token[" + tokenStore.getCloudConnectorToken() + "]");
             final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), userId, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
             final String response = gson.toJson(jsonObject);
             LOGGER.info("Handler produced response: " + response);
@@ -266,7 +256,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 return;
             }
 
-            LOGGER.info("Send loginInfo [" + gson.toJson(loginInfo) + "]");
+            LOGGER.debug("Send loginInfo [" + gson.toJson(loginInfo) + "]");
             socket.emit(LOGIN_EVENT, gson.toJson(loginInfo), (Ack) objects -> {
                 try {
                     final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
@@ -314,7 +304,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private void handleRelocating(final Object object, final Ack ack) {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("Received relocation data:\n" + gson.toJson(data));
+        LOGGER.info("Received relocation request:\n" + gson.toJson(data));
 
         String response = "";
         String currentLabel;
@@ -327,21 +317,21 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 try {
                     currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
                 } catch (NotAvailableException ex) {
-                    ack.call("Ich kann die Unit " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden.");
+                    respond(ack, "Ich kann das Gerät " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden.", true);
                     return;
                 }
             } else {
                 try {
                     currentUnit = getUnitByLabel(currentLabel).toBuilder();
                 } catch (NotAvailableException ex) {
-                    ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
+                    respond(ack, "Ich kann das Gerät " + currentLabel + " nicht finden.", true);
                     return;
                 }
             }
             newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().replace(" ", "");
             final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(newLocationLabel, UnitType.LOCATION);
             if (locations.isEmpty()) {
-                ack.call("Ich kann die Location " + newLocationLabel + " nicht finden.");
+                respond(ack, "Ich kann die Location " + newLocationLabel + " nicht finden.", true);
                 return;
             }
 
@@ -351,22 +341,22 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
-                    ack.call("Du besitzt nicht die benötigten Rechte um die Unit " + currentLabel + " in die Location " + newLocationLabel + " zu verschieben.");
+                    respond(ack, "Du besitzt nicht die benötigten Rechte um das Gerät " + currentLabel + " in die Location " + newLocationLabel + " zu verschieben.");
                     return;
                 }
-                ack.call(RESPONSE_GENERIC_ERROR);
+                respond(ack, RESPONSE_GENERIC_ERROR, true);
                 return;
             }
-            ack.call(response);
+            respond(ack, response);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            ack.call(RESPONSE_GENERIC_ERROR);
+            respond(ack, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
         } catch (CouldNotPerformException ex) {
-            ack.call(RESPONSE_GENERIC_ERROR);
+            respond(ack, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
         } catch (TimeoutException ex) {
-            ack.call(response.replace("wurde", "wird"));
+            respond(ack, response.replace("wurde", "wird"));
         }
     }
 
@@ -404,7 +394,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private void handleRenaming(final Object object, final Ack ack) {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("Received renaming data:\n" + gson.toJson(data));
+        LOGGER.info("Received renaming request:\n" + gson.toJson(data));
 
         String response = "";
         String currentLabel;
@@ -417,14 +407,14 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 try {
                     currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
                 } catch (NotAvailableException ex) {
-                    ack.call("Ich kann die Unit " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden.");
+                    respond(ack, "Ich kann das Gerät " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden", true);
                     return;
                 }
             } else {
                 try {
                     currentUnit = getUnitByLabel(currentLabel).toBuilder();
                 } catch (NotAvailableException ex) {
-                    ack.call("Ich kann die Unit " + currentLabel + " nicht finden.");
+                    respond(ack, "Ich kann das Gerät " + currentLabel + " nicht finden.", true);
                     return;
                 }
             }
@@ -437,36 +427,36 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
-                    ack.call("Du besitzt nicht die benötigten Rechte um " + currentLabel + " in " + newLabel + " umzubenennen.");
+                    respond(ack, "Du besitzt nicht die benötigten Rechte um " + currentLabel + " in " + newLabel + " umzubenennen.");
                     return;
                 }
-                ack.call(RESPONSE_GENERIC_ERROR);
+                respond(ack, RESPONSE_GENERIC_ERROR, true);
                 return;
             }
-            ack.call(response);
+            respond(ack, response);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            respond(ack, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
         } catch (CouldNotPerformException ex) {
-            ack.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            respond(ack, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
         } catch (TimeoutException ex) {
-            ack.call(response.replace("wurde", "wird"));
+            respond(ack, response.replace("wurde", "wird"));
         }
 
     }
 
     private void handleUserTransitUpdate(final Object object, final Ack acknowledgement) {
-        final String transit = (String) object;
-        LOGGER.info("Received user transit " + transit);
+        final String userTransitState = (String) object;
+        LOGGER.info("User [{}] received user transit request: {}", userId, userTransitState);
         try {
-            final UserTransitState.State state = Enum.valueOf(UserTransitState.State.class, transit);
+            final UserTransitState.State state = Enum.valueOf(UserTransitState.State.class, userTransitState);
             final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
             userRemote.setUserTransitState(UserTransitState.newBuilder().setValue(state).build()).get(3, TimeUnit.SECONDS);
-            acknowledgement.call("Alles klar");
+            respond(acknowledgement, "Alles klar");
         } catch (InterruptedException ex) {
-            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
             Thread.currentThread().interrupt();
             // this should not happen since wait for data is not called
@@ -474,26 +464,25 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             try {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
                     // note: this should not happen since the registry should guarantee that users always have permissions for themselves
-                    acknowledgement.call("Du hast keine Rechte den Status von " + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName() + " zu beeinflussen.");
+                    respond(acknowledgement, "Du hast keine Rechte den Status von " + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName() + " zu beeinflussen.");
                     return;
                 }
             } catch (CouldNotPerformException exx) {
                 // return error as below
             }
-            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
     }
 
     private void handleActivity(final Object object, final Ack acknowledgement) {
         final JsonObject params = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("Set activities: " + gson.toJson(params));
+        LOGGER.info("User [{}] received set activities request: {}", userId, gson.toJson(params));
         try {
             String errorResponse = "";
             final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
             if (params.has("location")) {
                 final String locationLabel = params.get("location").getAsString();
-                LOGGER.info("Found location " + locationLabel);
                 UnitConfig location = null;
 
                 for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
@@ -581,24 +570,24 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             if (!errorResponse.isEmpty()) {
-                acknowledgement.call(errorResponse);
+                respond(acknowledgement, errorResponse, true);
             } else {
-                acknowledgement.call("Okay");
+                respond(acknowledgement, "Okay");
             }
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
             if (ex instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
         } catch (TimeoutException ex) {
-            acknowledgement.call("Deine Anfrage wird bearbeitet.");
+            respond(acknowledgement, "Deine Anfrage wird bearbeitet.");
         }
     }
 
     private void handleActivityCancellation(final Object object, final Ack acknowledgement) {
         final JsonObject params = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("Cancel activities: " + gson.toJson(params));
+        LOGGER.info("User [{}] received cancel activities request: {}", userId, gson.toJson(params));
         try {
             final JsonArray activities = params.get("activity").getAsJsonArray();
 
@@ -677,18 +666,18 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             if (!errorResponse.isEmpty()) {
-                acknowledgement.call(errorResponse);
+                respond(acknowledgement, errorResponse, true);
             } else {
-                acknowledgement.call("Okay");
+                respond(acknowledgement, "Okay");
             }
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            acknowledgement.call("Entschuldige. Es ist ein Fehler aufgetreten.");
+            respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
             if (ex instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
         } catch (TimeoutException ex) {
-            acknowledgement.call("Deine Anfrage wird bearbeitet.");
+            respond(acknowledgement, "Deine Anfrage wird bearbeitet.");
         }
     }
 
@@ -720,7 +709,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 //        long startingTime = System.currentTimeMillis();
 
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("Received scene registration data:\n" + gson.toJson(data));
+        LOGGER.info("User [{}] received scene registration request: {}", userId, gson.toJson(data));
         final UnitConfig.Builder sceneUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.SCENE);
 
         UnitConfig location;
@@ -731,7 +720,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 final String locationLabel = data.get("location").getAsString();
                 List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(locationLabel, UnitType.LOCATION);
                 if (locations.size() == 0) {
-                    acknowledgement.call("Ich kann die Location " + locationLabel + " nicht finden");
+                    respond(acknowledgement, "Ich kann die Location " + locationLabel + " nicht finden", true);
                 } else {
                     location = locations.get(0);
                 }
@@ -746,7 +735,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 // make sure label is available for this location
                 for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(label, location.getId())) {
                     if (unitConfig.getUnitType() == UnitType.SCENE) {
-                        acknowledgement.call("");
+                        respond(acknowledgement, "Es existiert bereits eine Szene mit dem Name " + label + " in der Location " + LabelProcessor.getBestMatch(Locale.GERMAN, location.getLabel()), true);
                     }
                 }
             }
@@ -760,10 +749,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             } catch (ExecutionException | TimeoutException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
-                    acknowledgement.call("Du besitzt nicht die Rechte eine Szene von der Location " + locationRemote.getLabel() + " aufzunehmen.");
+                    respond(acknowledgement, "Du besitzt nicht die Rechte eine Szene von der Location " + locationRemote.getLabel() + " aufzunehmen.");
                     return;
                 }
-                acknowledgement.call(RESPONSE_GENERIC_ERROR);
+                respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
                 ExceptionPrinter.printHistory(ex, LOGGER);
                 return;
             }
@@ -775,27 +764,27 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 } catch (NotAvailableException ex) {
                     label = LabelProcessor.getBestMatch(unitConfig.getLabel());
                 }
-                acknowledgement.call("Die Szene " + label + " wurde erfolgreich registriert.");
+                respond(acknowledgement, "Die Szene " + label + " wurde erfolgreich registriert.");
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
-                    acknowledgement.call("Du besitzt nicht die Rechte eine Szene zu registrieren.");
+                    respond(acknowledgement, "Du besitzt nicht die Rechte eine Szene zu registrieren.");
                     return;
                 }
-                acknowledgement.call(RESPONSE_GENERIC_ERROR);
+                respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
                 ExceptionPrinter.printHistory(ex, LOGGER);
             } catch (TimeoutException e) {
                 if (label != null) {
-                    acknowledgement.call("Das registrieren der Szene " + label + " dauert noch ein wenig.");
+                    respond(acknowledgement, "Das registrieren der Szene " + label + " dauert noch ein wenig.");
                 } else {
-                    acknowledgement.call("Das erstellen einer Szene von der Location " + LabelProcessor.getLabelByLanguage(Locale.GERMAN, location.getLabel()) + " dauert etwas länger.");
+                    respond(acknowledgement, "Das erstellen einer Szene von der Location " + LabelProcessor.getLabelByLanguage(Locale.GERMAN, location.getLabel()) + " dauert etwas länger.");
                 }
             }
         } catch (InterruptedException ex) {
-            acknowledgement.call(RESPONSE_GENERIC_ERROR);
+            respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
             Thread.currentThread().interrupt();
             ExceptionPrinter.printHistory(ex, LOGGER);
         } catch (CouldNotPerformException ex) {
-            acknowledgement.call(RESPONSE_GENERIC_ERROR);
+            respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
     }
@@ -864,6 +853,17 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
         });
+    }
+
+    private void respond(final Ack acknowledgement, final String text) {
+        respond(acknowledgement, text, false);
+    }
+
+    private void respond(final Ack acknowledgement, final String text, final boolean error) {
+        final JsonObject response = new JsonObject();
+        response.addProperty("text", text);
+        response.addProperty("error", error);
+        acknowledgement.call(gson.toJson(response));
     }
 
     public Future<Void> getLoginFuture() {

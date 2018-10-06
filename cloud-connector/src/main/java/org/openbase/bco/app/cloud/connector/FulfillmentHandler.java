@@ -139,17 +139,14 @@ public class FulfillmentHandler {
             // decide what to do based on the intent
             switch (intent) {
                 case SYNC_INTENT:
-                    LOGGER.info("Handle SYNC");
                     // method will handle a sync intent and fill the payload of the response accordingly
                     handleSync(payload, userId);
                     break;
                 case QUERY_INTENT:
-                    LOGGER.info("Handle QUERY");
                     // method will handle a query intent and fill the payload of the response accordingly
                     handleQuery(payload, input);
                     break;
                 case EXECUTE_INTENT:
-                    LOGGER.info("Handle EXECUTE");
                     // method will handle an execute intent and fill the payload of the response accordingly
                     handleExecute(payload, input, authenticationToken, authorizationToken);
                     break;

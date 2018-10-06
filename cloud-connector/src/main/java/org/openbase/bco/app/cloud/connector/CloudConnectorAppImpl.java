@@ -125,7 +125,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
                     String.class,
                     authenticatedValue.getTicketAuthenticatorWrapper(),
                     sessionManager).get();
-            tokenStore.addCloudConenctorToken(token);
+            tokenStore.addCloudConnectorToken(token);
         } catch (CouldNotPerformException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not create authentication token for cloud connector", ex);
         }

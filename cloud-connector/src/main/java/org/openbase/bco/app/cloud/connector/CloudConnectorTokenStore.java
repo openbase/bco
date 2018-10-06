@@ -61,7 +61,7 @@ public class CloudConnectorTokenStore extends TokenStore {
         addToken(userId + SEPARATOR + BCO_POSTFIX, token);
     }
 
-    public void addCloudConenctorToken(final String token) {
+    public void addCloudConnectorToken(final String token) {
         addToken(CLOUD_CONNECTOR_TOKEN_KEY, token);
     }
 
