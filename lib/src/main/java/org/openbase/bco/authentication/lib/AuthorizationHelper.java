@@ -63,6 +63,7 @@ public class AuthorizationHelper {
      * @param userId     ID of the user whose permissions should be checked.
      * @param groups     All available groups in the system, indexed by their group ID.
      * @param locations  All available locations in the system, indexed by their id.
+     *
      * @return True if the user can read from the unit, false if not.
      */
     public static boolean canRead(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
@@ -77,6 +78,7 @@ public class AuthorizationHelper {
      * @param userId     ID of the user whose permissions should be checked.
      * @param groups     All available groups in the system, indexed by their group ID.
      * @param locations  All available locations in the system, indexed by their id.
+     *
      * @return True if the user can write to the unit, false if not.
      */
     public static boolean canWrite(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
@@ -90,6 +92,7 @@ public class AuthorizationHelper {
      * @param userId     ID of the user whose permissions should be checked.
      * @param groups     All available groups in the system, indexed by their group ID.
      * @param locations  All available locations in the system, indexed by their id.
+     *
      * @return True if the user can access the unit, false if not.
      */
     public static boolean canAccess(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
@@ -103,7 +106,9 @@ public class AuthorizationHelper {
      * @param userId     ID of the user whose permissions should be checked.
      * @param groups     All available groups in the system, indexed by their group ID.
      * @param locations  All available locations in the system, indexed by their id.
+     *
      * @return Permission object representing the maximum permissions for the given user on the given unit.
+     *
      * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
     public static Permission getPermission(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws CouldNotPerformException {
@@ -148,9 +153,10 @@ public class AuthorizationHelper {
      * @param userId           ID of the user whose permissions should be checked.
      * @param groups           All available groups in the system, indexed by their group ID.
      * @param type             The permission type to check.
+     *
      * @return True if the user has the given permission, false if not.
      */
-    private static boolean canDo(final PermissionConfig permissionConfig, final String userId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, PermissionType type) {
+    private static boolean canDo(final PermissionConfig permissionConfig, String userId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, PermissionType type) {
         // Other
         if (permitted(permissionConfig.getOtherPermission(), type)) {
             return true;
@@ -164,8 +170,10 @@ public class AuthorizationHelper {
         // If the given ID has the form user@client, we check both.
         String[] split = userId.split("@", 2);
 
-        if (split.length > 1) {
+        if (split.length > 1 && !split[0].isEmpty() && !split[1].isEmpty()) {
             return canDo(permissionConfig, split[0], groups, locations, type) || canDo(permissionConfig, split[1], groups, locations, type);
+        } else {
+            userId = userId.replace("@", "");
         }
 
         // Owner
@@ -368,6 +376,7 @@ public class AuthorizationHelper {
      *
      * @param permission    the super permission
      * @param subPermission the sub permission
+     *
      * @return if subPermission is indeed a sub permission as described above
      */
     public static boolean isSubPermission(final Permission permission, final Permission subPermission) {
