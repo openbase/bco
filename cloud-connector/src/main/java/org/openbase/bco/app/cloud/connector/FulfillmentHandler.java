@@ -82,6 +82,7 @@ public class FulfillmentHandler {
     public static final String SYNC_INTENT = INTENT_PREFIX + "SYNC";
     public static final String QUERY_INTENT = INTENT_PREFIX + "QUERY";
     public static final String EXECUTE_INTENT = INTENT_PREFIX + "EXECUTE";
+    public static final String DISCONNECT_INTENT = INTENT_PREFIX + "DISCONNECT";
 
     public static final String INPUTS_KEY = "inputs";
     public static final String INTENT_KEY = "intent";
@@ -125,13 +126,7 @@ public class FulfillmentHandler {
         // build basic response type and add payload
         final JsonObject response = new JsonObject();
         final JsonObject payload = new JsonObject();
-        response.add(PAYLOAD_KEY, payload);
         try {
-            // parse request id
-            final String requestId = request.get(REQUEST_ID_KEY).getAsString();
-            // add request id to response
-            response.addProperty(REQUEST_ID_KEY, requestId);
-
             // parse input and intent
             final JsonObject input = request.getAsJsonArray(INPUTS_KEY).get(0).getAsJsonObject();
             final String intent = input.get(INTENT_KEY).getAsString();
@@ -150,6 +145,10 @@ public class FulfillmentHandler {
                     // method will handle an execute intent and fill the payload of the response accordingly
                     handleExecute(payload, input, authenticationToken, authorizationToken);
                     break;
+                case DISCONNECT_INTENT:
+                    // TODO: what needs to be handled? -> do not attempt syncs when disconnected?
+                    // when disconnecting google expects an empty response so return that
+                    return response;
                 default:
                     setError(payload, "Intent[" + intent + "] is not supported", ErrorCode.NOT_SUPPORTED);
             }
@@ -158,6 +157,12 @@ public class FulfillmentHandler {
             // this translates to a protocol error from Google
             setError(payload, ex, ErrorCode.PROTOCOL_ERROR);
         }
+        // parse request id
+        final String requestId = request.get(REQUEST_ID_KEY).getAsString();
+        // add request id to response
+        response.addProperty(REQUEST_ID_KEY, requestId);
+        // add payload to response
+        response.add(PAYLOAD_KEY, payload);
         return response;
     }
 
@@ -318,19 +323,22 @@ public class FulfillmentHandler {
         }
         name.add("defaultNames", defaultNames);
 
-        final JsonArray nickNames = new JsonArray();
-        for (final Label.MapFieldEntry mapFieldEntry : host.getLabel().getEntryList()) {
-            for (final String label : mapFieldEntry.getValueList()) {
-                final String nickName = StringProcessor.insertSpaceBetweenCamelCase(label);
-                if (nickName.equals(mainName)) {
-                    continue;
-                }
+        //TODO: remove this if case
+        if (!mainName.equalsIgnoreCase("leselampe")) {
+            final JsonArray nickNames = new JsonArray();
+            for (final Label.MapFieldEntry mapFieldEntry : host.getLabel().getEntryList()) {
+                for (final String label : mapFieldEntry.getValueList()) {
+                    final String nickName = StringProcessor.insertSpaceBetweenCamelCase(label);
+                    if (nickName.equals(mainName)) {
+                        continue;
+                    }
 
-                nickNames.add(StringProcessor.insertSpaceBetweenCamelCase(label));
+                    nickNames.add(StringProcessor.insertSpaceBetweenCamelCase(label));
+                }
             }
-        }
-        if (nickNames.size() != 0) {
-            name.add("nicknames", nickNames);
+            if (nickNames.size() != 0) {
+                name.add("nicknames", nickNames);
+            }
         }
         device.add(NAME_KEY, name);
 
