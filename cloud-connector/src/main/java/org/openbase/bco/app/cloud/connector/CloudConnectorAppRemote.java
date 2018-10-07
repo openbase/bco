@@ -34,6 +34,8 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
+import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule.Builder;
+import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.app.AppClassType.AppClass;
@@ -85,7 +87,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      *
      * @param connect flag determining if the socket connection for the user currently logged in at the default session
      *                manager should be established or stopped.
+     *
      * @return a future of the task created
+     *
      * @throws CouldNotPerformException if the task could not be created
      */
     public Future<Void> connect(final Boolean connect) throws CouldNotPerformException {
@@ -96,7 +100,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -109,7 +115,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * This method will generate an authorization token for the user with the same permissions he posseses.
      *
      * @param password a password for the account of the user at the BCO Cloud
+     *
      * @return a future of the task
+     *
      * @throws CouldNotPerformException if the task could not be created
      */
     public Future<Void> register(final String password) throws CouldNotPerformException {
@@ -122,7 +130,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * @param password           a password for the account of the user at the BCO Cloud
      * @param authorizationToken an authorization token which will be used by the cloud connector to apply actions in the
      *                           users name.
+     *
      * @return a future of the task
+     *
      * @throws CouldNotPerformException if the task could not be created
      */
     public Future<Void> register(final String password, final String authorizationToken) throws CouldNotPerformException {
@@ -135,7 +145,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -147,6 +159,7 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * Call {@link #remove(AuthenticatedValue)} for the user logged in at the default session manager.
      *
      * @return a future of the task
+     *
      * @throws CouldNotPerformException if the task could not be created
      */
     public Future<Void> remove() throws CouldNotPerformException {
@@ -157,7 +170,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -169,7 +184,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * Call {@link #setAuthorizationToken(AuthenticatedValue)} for the user logged in at the default session manager.
      *
      * @param authorizationToken the new authorization token for the user logged in at the default session manager.
+     *
      * @return a future of the task
+     *
      * @throws CouldNotPerformException if the task could not be created
      */
     public Future<Void> setAuthorizationToken(final String authorizationToken) throws CouldNotPerformException {
@@ -180,7 +197,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -193,6 +212,7 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * This token will grant the same permissions as the currently logged in user.
      *
      * @return an authorization token as described above
+     *
      * @throws CouldNotPerformException if the token could not be generated
      */
     public String generateDefaultAuthorizationToken() throws CouldNotPerformException {
@@ -205,9 +225,9 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
             final Set<String> accessPermissionSet = new HashSet<>();
             final Set<String> readPermissionSet = new HashSet<>();
             final Set<String> writePermissionSet = new HashSet<>();
-            getUnitsWithAccessPermissions(accessPermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.ACCESS);
-            getUnitsWithAccessPermissions(readPermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.READ);
-            getUnitsWithAccessPermissions(writePermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.WRITE);
+            getUnitsWithPermission(accessPermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.ACCESS);
+            getUnitsWithPermission(readPermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.READ);
+            getUnitsWithPermission(writePermissionSet, Registries.getUnitRegistry().getRootLocationConfig(), userId, PermissionType.WRITE);
 
             final Set<String> unitIds = new HashSet<>();
             unitIds.addAll(accessPermissionSet);
@@ -215,7 +235,7 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
             unitIds.addAll(writePermissionSet);
 
             for (final String unitId : unitIds) {
-                PermissionRule.Builder builder = authorizationToken.addPermissionRuleBuilder();
+                final PermissionRule.Builder builder = authorizationToken.addPermissionRuleBuilder();
                 builder.setUnitId(unitId);
                 builder.getPermissionBuilder().
                         setAccess(accessPermissionSet.contains(unitId)).
@@ -223,6 +243,16 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
                         setWrite(writePermissionSet.contains(unitId));
             }
 
+            // give permissions for own user
+            final PermissionRule.Builder builder = authorizationToken.addPermissionRuleBuilder();
+            builder.setUnitId(userId);
+            builder.getPermissionBuilder().setRead(true).setAccess(true).setWrite(true);
+
+
+            for (PermissionRule permissionRule : authorizationToken.getPermissionRuleList()) {
+                UnitConfig unitConfigById = Registries.getUnitRegistry().getUnitConfigById(permissionRule.getUnitId());
+                System.out.println(LabelProcessor.getBestMatch(unitConfigById.getLabel()) + " - " + unitConfigById.getAlias(0) + " [" + permissionRule.getPermission().getRead() + ", " + permissionRule.getPermission().getWrite() + ". " + permissionRule.getPermission().getWrite() + "]");
+            }
             // request such a token from the unit registry
             return Registries.getUnitRegistry().requestAuthorizationToken(authorizationToken.build()).get();
         } catch (InterruptedException ex) {
@@ -247,9 +277,10 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
      * @param location       the location where the recursive traversal is started
      * @param userId         the id of the user for whom permissions are checked
      * @param permissionType the permission type checked
+     *
      * @throws CouldNotPerformException if the process fails
      */
-    public void getUnitsWithAccessPermissions(final Set<String> unitIdSet, final UnitConfig location, final String userId, final PermissionType permissionType) throws CouldNotPerformException {
+    public void getUnitsWithPermission(final Set<String> unitIdSet, final UnitConfig location, final String userId, final PermissionType permissionType) throws CouldNotPerformException {
         try {
             if (AuthorizationHelper.canDo(location, userId,
                     Registries.getUnitRegistry().getAuthorizationGroupMap(),
@@ -263,7 +294,7 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
                 // recursively add ids for child locations
                 for (final String childId : location.getLocationConfig().getChildIdList()) {
                     final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
-                    getUnitsWithAccessPermissions(unitIdSet, Registries.getUnitRegistry().getUnitConfigById(childId), userId, permissionType);
+                    getUnitsWithPermission(unitIdSet, Registries.getUnitRegistry().getUnitConfigById(childId), userId, permissionType);
                     for (String unitId : locationUnitConfig.getLocationConfig().getUnitIdList()) {
                         internalUnitIdSet.remove(unitId);
                     }

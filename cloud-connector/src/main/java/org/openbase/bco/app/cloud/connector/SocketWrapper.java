@@ -30,6 +30,9 @@ import io.socket.client.Socket;
 import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.user.UserRemote;
@@ -47,9 +50,12 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
@@ -338,7 +344,8 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             response = currentLabel + " wurde in die Location " + newLocationLabel + " verschoben.";
             currentUnit.getPlacementConfigBuilder().setLocationId(locations.get(0).getId());
             try {
-                Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
                     respond(ack, "Du besitzt nicht die benötigten Rechte um das Gerät " + currentLabel + " in die Location " + newLocationLabel + " zu verschieben.");
@@ -401,7 +408,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         String newLabel;
         try {
             UnitConfig.Builder currentUnit;
-            currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
+            currentLabel = data.get(CURRENT_LABEL_KEY).getAsString().replace(" ", "");
             if (data.has(CURRENT_LOCATION_KEY)) {
                 final String currentLocationLabel = data.get(CURRENT_LOCATION_KEY).getAsString();
                 try {
@@ -424,10 +431,12 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             response = currentLabel + " wurde zu " + newLabel + " umbenannt.";
             try {
-                Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
+//                Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
-                    respond(ack, "Du besitzt nicht die benötigten Rechte um " + currentLabel + " in " + newLabel + " umzubenennen.");
+                    respond(ack, "Du besitzt nicht die benötigten Rechte um das Gerät " + currentLabel + " in " + newLabel + " umzubenennen.");
                     return;
                 }
                 respond(ack, RESPONSE_GENERIC_ERROR, true);
@@ -452,8 +461,13 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         LOGGER.info("User [{}] received user transit request: {}", userId, userTransitState);
         try {
             final UserTransitState.State state = Enum.valueOf(UserTransitState.State.class, userTransitState);
+            final UserTransitState serviceState = UserTransitState.newBuilder().setValue(state).build();
             final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
-            userRemote.setUserTransitState(UserTransitState.newBuilder().setValue(state).build()).get(3, TimeUnit.SECONDS);
+
+            final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.USER_TRANSIT_STATE_SERVICE, userRemote).build();
+            final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+
+            userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
             respond(acknowledgement, "Alles klar");
         } catch (InterruptedException ex) {
             respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
@@ -464,7 +478,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             try {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
                     // note: this should not happen since the registry should guarantee that users always have permissions for themselves
-                    respond(acknowledgement, "Du hast keine Rechte den Status von " + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName() + " zu beeinflussen.");
+                    respond(acknowledgement, "Du hast keine Rechte den Status von Nutzer " + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName() + " zu beeinflussen.");
                     return;
                 }
             } catch (CouldNotPerformException exx) {
@@ -566,7 +580,9 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             if (builder.getActivityIdCount() > 0) {
-                userRemote.setActivityMultiState(builder.build()).get(3, TimeUnit.SECONDS);
+                final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote).build();
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
             }
 
             if (!errorResponse.isEmpty()) {
@@ -662,7 +678,9 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             if (builder.getActivityIdCount() != initialCount) {
-                userRemote.setActivityMultiState(builder.build()).get(3, TimeUnit.SECONDS);
+                final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote).build();
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                userRemote.applyActionAuthenticated(authenticatedValue).get(2, TimeUnit.SECONDS);
             }
 
             if (!errorResponse.isEmpty()) {
@@ -748,17 +766,14 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     sceneConfig.addRequiredServiceStateDescription(serviceStateDescription);
                 }
             } catch (ExecutionException | TimeoutException ex) {
-                if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
-                    respond(acknowledgement, "Du besitzt nicht die Rechte eine Szene von der Location " + locationRemote.getLabel() + " aufzunehmen.");
-                    return;
-                }
                 respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
                 ExceptionPrinter.printHistory(ex, LOGGER);
                 return;
             }
 
             try {
-                UnitConfig unitConfig = Registries.getUnitRegistry().registerUnitConfig(sceneUnitConfig.build()).get(5, TimeUnit.SECONDS);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(sceneUnitConfig.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                UnitConfig unitConfig = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().registerUnitConfigAuthenticated(authenticatedValue), UnitConfig.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance()).get(5, TimeUnit.SECONDS);
                 try {
                     label = LabelProcessor.getLabelByLanguage(Locale.GERMAN, unitConfig.getLabel());
                 } catch (NotAvailableException ex) {
