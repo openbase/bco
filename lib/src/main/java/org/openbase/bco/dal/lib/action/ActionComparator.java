@@ -104,10 +104,9 @@ public class ActionComparator implements Comparator<Action> {
             }
 
             // todo implement individual action scheduling to avoid conflicts.
-
             LOGGER.warn("Conflict between {} and {} detected!", targetAction, referenceAction);
 
-            return 0;
+            return (int) (targetAction.getCreationTime() - referenceAction.getCreationTime());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not compare actions!", ex, LOGGER);
         }

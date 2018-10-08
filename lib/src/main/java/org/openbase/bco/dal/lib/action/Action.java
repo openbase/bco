@@ -99,7 +99,9 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      *
      * @return time in milliseconds.
      */
-    long getCreationTime() throws NotAvailableException;
+    default long getCreationTime() throws NotAvailableException {
+        return getActionDescription().getTimestamp().getTime();
+    }
 
     /**
      * Check if this action is still valid which means there is still some execution time left.

@@ -37,6 +37,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
@@ -84,7 +85,6 @@ public class ActionImpl implements SchedulableAction {
     protected final AbstractUnitController<?, ?> unit;
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
     private final ServiceJSonProcessor serviceJSonProcessor;
-    private final long creationTime;
     protected ActionDescription.Builder actionDescriptionBuilder;
     private Message serviceState;
     private ServiceDescription serviceDescription;
@@ -92,7 +92,6 @@ public class ActionImpl implements SchedulableAction {
 
     public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit) throws InstantiationException {
         try {
-            this.creationTime = System.currentTimeMillis();
             this.unit = unit;
             this.serviceJSonProcessor = new ServiceJSonProcessor();
             this.init(actionDescription);
@@ -105,6 +104,8 @@ public class ActionImpl implements SchedulableAction {
     public void init(final ActionDescription actionDescription) throws InitializationException {
         try {
             actionDescriptionBuilder = actionDescription.toBuilder();
+
+            TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
 
             // update initiator type
             if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
@@ -218,16 +219,6 @@ public class ActionImpl implements SchedulableAction {
      * @return {@inheritDoc}
      */
     @Override
-    public long getCreationTime() {
-        return creationTime;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
     public Future<ActionDescription> execute() {
         synchronized (executionSync) {
             if (isExecuting()) {
@@ -245,7 +236,6 @@ public class ActionImpl implements SchedulableAction {
 
                         try {
                             try {
-
                                 setRequestedState();
 
                                 // Execute
@@ -261,10 +251,9 @@ public class ActionImpl implements SchedulableAction {
                                     }
                                     throw new ExecutionException(ex);
                                 }
-                                updateActionState(ActionState.State.FINISHING);
+                                updateActionState(State.FINISHED);
                                 return getActionDescription();
                             } catch (final CancellationException ex) {
-
                                 updateActionState(ActionState.State.REJECTED);
                                 throw ex;
                             }

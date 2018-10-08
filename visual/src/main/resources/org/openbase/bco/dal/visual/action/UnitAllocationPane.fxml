@@ -3,20 +3,22 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="776.0" prefWidth="608.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openbase.bco.dal.visual.action.UnitAllocationPane">
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openbase.bco.dal.visual.action.UnitAllocationPane">
     <children>
-      <VBox prefHeight="776.0" prefWidth="608.0">
+      <VBox alignment="CENTER">
          <children>
-            <BorderPane fx:id="topPane" prefHeight="230.0" prefWidth="608.0" />
-              <TableView fx:id="actionTable" prefHeight="562.0" prefWidth="608.0">
+            <HBox fx:id="topPane" alignment="CENTER" minHeight="100.0" VBox.vgrow="ALWAYS" />
+              <TableView fx:id="actionTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                   <columns>
-                      <TableColumn prefWidth="75.0" text="Pos" />
-                      <TableColumn prefWidth="75.0" text="Action State" />
-                      <TableColumn prefWidth="159.0" text="Service State" />
-                      <TableColumn prefWidth="75.0" text="ID" />
+                      <TableColumn fx:id="actionIdColumn" minWidth="0.0" prefWidth="119.0" text="ID" />
+                      <TableColumn fx:id="positionColumn" prefWidth="56.0" text="Pos" />
+                  <TableColumn fx:id="timestampColumn" prefWidth="193.0" text="Timestamp" />
+                      <TableColumn fx:id="actionStateColumn" prefWidth="137.0" text="Action State" />
+                      <TableColumn fx:id="serviceStateColumn" prefWidth="238.0" text="Service State" />
+                  <TableColumn fx:id="initiatorColumn" prefWidth="238.0" text="Initiator" />
                   </columns>
               </TableView>
          </children>

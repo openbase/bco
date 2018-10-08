@@ -121,11 +121,6 @@ public class RemoteAction implements Action, Initializable<ActionParameter> {
     }
 
     @Override
-    public long getCreationTime() throws NotAvailableException {
-        return getActionDescription().getTimestamp().getTime();
-    }
-
-    @Override
     public Future<ActionDescription> cancel() {
         try {
             if(!actionFuture.isDone()) {

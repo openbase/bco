@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -67,7 +67,6 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.extension.rst.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -131,13 +130,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private UnitTemplate template;
     private boolean initialized = false;
     private String classDescription = "";
-    private ArrayList<SchedulableAction> scheduledActionList = new ArrayList<>();
+    private ArrayList<SchedulableAction> scheduledActionList, actionsToRemoveList;
     private Timeout scheduleTimeout;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
         this.unitDataObservableMap = new HashMap<>();
         this.operationServiceMap = new TreeMap<>();
+        this.scheduledActionList = new ArrayList<>();
+        this.actionsToRemoveList = new ArrayList<>();
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             unitDataObservableMap.put(serviceTempus, new UnitDataFilteredObservable<>(this, serviceTempus));
@@ -518,8 +519,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private Future<ActionDescription> scheduleAction(final SchedulableAction actionToSchedule) {
         return GlobalCachedExecutorService.submit(() -> {
             synchronized (scheduledActionListLock) {
-                scheduledActionList.add(actionToSchedule);
-                Action executingAction = reschedule();
+                Action executingAction = reschedule(actionToSchedule);
 
                 if (actionToSchedule != executingAction) {
                     logger.info("================================================================================");
@@ -541,12 +541,29 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * Recalculate the action ranking and execute action with highest ranking if not executing or finished.
-     * If the current action was not finished but those will be rejected.
+     * If the current action is not finished those will be rejected.
      *
-     * @return the {@code action} which is ranked as highest one and which is currently blocking this unit.
+     * @return the {@code action} which is ranked as highest one and which is currently allocating this unit.
      */
     public Action reschedule() {
+        return reschedule();
+    }
+
+    /**
+     * Recalculate the action ranking and execute action with highest ranking if not executing or finished.
+     * If the current action is not finished those will be rejected.
+     *
+     * @param actionToSchedule a new action to schedule. If null those will be ignored.
+     *
+     * @return the {@code action} which is ranked as highest one and which is currently allocating this unit.
+     */
+    public Action reschedule(final SchedulableAction actionToSchedule) {
         synchronized (scheduledActionListLock) {
+
+            if (actionToSchedule != null) {
+                scheduledActionList.add(actionToSchedule);
+            }
+
             try {
                 // remove outdated actions
                 for (Action action : new ArrayList<>(scheduledActionList)) {
@@ -597,6 +614,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                         // if still valid than schedule again for later execution.
                         if (currentAction.isValid()) {
                             currentAction.schedule();
+                        } else {
+                            actionsToRemoveList.add(currentAction);
                         }
                     }
 
@@ -613,6 +632,33 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 if (nextAction == null) {
                     return null;
                 }
+
+
+                // remove duplicated actions of the same initiator unit.
+                if (actionToSchedule != null) {
+                    final String initiatorId;
+                    try {
+                        initiatorId = actionToSchedule.getActionDescription().getActionInitiator().getInitiatorId();
+                        for (Action action : scheduledActionList) {
+                            try {
+                                if (action.getActionDescription().getActionInitiator().getInitiatorId().equals(initiatorId) && actionToSchedule != action) {
+                                    if (action == nextAction) {
+                                        scheduledActionList.remove(actionToSchedule);
+                                    } else {
+                                        scheduledActionList.remove(action);
+                                    }
+                                }
+                            } catch (NotAvailableException exx) {
+                                ExceptionPrinter.printHistory("Could not cleanup " + action, exx, logger);
+                            }
+                        }
+                    } catch (NotAvailableException ex) {
+                        ExceptionPrinter.printHistory("Could detect initiator!", ex, logger);
+                    }
+                }
+
+                // cleanup actions
+                scheduledActionList.removeAll(actionsToRemoveList);
 
                 // setup next schedule trigger
                 try {
@@ -633,12 +679,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
                 }
-//                logger.warn("=== Current Action List ============================================");
-//                // print action list
-//                for (Action action : new ArrayList<>(scheduledActionList)) {
-//                    logger.warn("{}: [{}] {}", getLabel("?"), action.getActionState().name(), MultiLanguageTextProcessor.getBestMatch(action.getActionDescription().getDescription(), "?"));
-//                }
-//                logger.warn("====================================================================");
             }
         }
     }
@@ -665,7 +705,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 try {
                     applyAction(actionDescriptionBuilder.build()).get();
                 } catch (ExecutionException ex) {
-                    throw new CouldNotPerformException("Could not restore snapshot authenticated", ex);
+                    throw new CouldNotPerformException("Could apply authenticated action!", ex);
                 }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();

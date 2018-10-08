@@ -8,7 +8,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openbase.bco.dal.visual.action.UnitSelectionPane">
    <children>
       <VBox prefHeight="122.0" prefWidth="622.0">
@@ -39,7 +38,7 @@
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Label>
-                        <ComboBox fx:id="unitTypeComboBox" prefHeight="26.0" prefWidth="230.0">
+                        <ComboBox fx:id="unitTemplateComboBox" prefHeight="26.0" prefWidth="230.0">
                            <VBox.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </VBox.margin>
@@ -53,7 +52,7 @@
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Label>
-                        <ComboBox fx:id="serviceComboBox" prefHeight="26.0" prefWidth="230.0">
+                        <ComboBox fx:id="serviceTemplateComboBox" prefHeight="26.0" prefWidth="230.0">
                            <VBox.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </VBox.margin>
@@ -69,7 +68,7 @@
                         <Font name="System Bold" size="18.0" />
                      </font>
                   </Label>
-                  <ComboBox prefHeight="26.0" prefWidth="737.0">
+                  <ComboBox fx:id="unitComboBox" prefHeight="26.0" prefWidth="737.0">
                      <VBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </VBox.margin>

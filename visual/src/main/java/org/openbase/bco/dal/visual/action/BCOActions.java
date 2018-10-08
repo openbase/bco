@@ -30,17 +30,7 @@ import org.openbase.jul.visual.javafx.launch.AbstractFXMLApplication;
 public class BCOActions extends AbstractFXMLApplication {
 
     public BCOActions() {
-        super();
-    }
-
-    @Override
-    protected String getDefaultCSS() {
-        return "/styles/main-style.css";
-    }
-
-    @Override
-    protected String getDefaultFXML() {
-        return "org/openbase/bco/dal/visual/action/UnitAllocationPane.fxml";
+        super(UnitAllocationPane.class);
     }
 
     @Override
