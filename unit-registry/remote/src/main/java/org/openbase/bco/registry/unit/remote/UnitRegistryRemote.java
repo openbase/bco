@@ -405,7 +405,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      */
     @Override
     public List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException {
-        return dalUnitConfigRemoteRegistry.getMessages();
+        validateData();
+        final List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : dalUnitConfigRemoteRegistry.getMessages()) {
+            if (!UnitConfigProcessor.isEnabled(unitConfig)) {
+                continue;
+            }
+
+            unitConfigs.add(unitConfig);
+        }
+        return unitConfigs;
     }
 
     /**
@@ -417,7 +426,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      */
     @Override
     public List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException {
-        return baseUnitConfigRemoteRegistry.getMessages();
+        validateData();
+        final List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : baseUnitConfigRemoteRegistry.getMessages()) {
+            if (!UnitConfigProcessor.isEnabled(unitConfig)) {
+                continue;
+            }
+
+            unitConfigs.add(unitConfig);
+        }
+        return unitConfigs;
     }
 
     @Override
