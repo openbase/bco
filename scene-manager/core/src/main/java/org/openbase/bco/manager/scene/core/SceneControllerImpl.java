@@ -173,7 +173,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        logger.info("Activate Scene[" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
+        logger.error("Activate Scene[" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
         remoteActionPool.execute(activationState.getResponsibleAction());
     }
 

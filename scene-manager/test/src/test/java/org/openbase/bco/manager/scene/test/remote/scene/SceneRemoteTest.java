@@ -24,6 +24,7 @@ package org.openbase.bco.manager.scene.test.remote.scene;
 
 import org.junit.*;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.layer.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
@@ -49,6 +50,8 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.state.ActivationStateType.ActivationState.State;
 import rst.language.LabelType.Label;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -69,6 +72,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -506,22 +510,18 @@ public class SceneRemoteTest {
     public void activateScene(final String sceneLabel) throws CouldNotPerformException, InterruptedException, ExecutionException {
         SceneRemote sceneRemote = Units.getUnitsByLabel(sceneLabel, true, Units.SCENE).get(0);
         sceneRemote.addDataObserver(notifyChangeObserver);
-        sceneRemote.setActivationState(ACTIVATE).get();
-        waitForSceneExecution(sceneRemote);
+        waitForSceneExecution(sceneRemote.setActivationState(ACTIVATE));
+        waitForSceneExecution(sceneRemote.setActivationState(State.DEACTIVE));
         sceneRemote.requestData().get();
-        assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
+//        assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
         sceneRemote.removeDataObserver(notifyChangeObserver);
     }
 
-    private void waitForSceneExecution(SceneRemote sceneRemote) throws CouldNotPerformException {
-        synchronized (LOCK) {
-            try {
-                while (sceneRemote.getActivationState().getValue() != ActivationState.State.DEACTIVE) {
-                    LOCK.wait();
-                }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
+    private void waitForSceneExecution(final Future<ActionDescription> actionFuture) throws CouldNotPerformException {
+        try {
+            new RemoteAction(actionFuture).waitForFinalization();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 }
