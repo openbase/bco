@@ -115,7 +115,6 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             Command command = null;
             for (Class<? extends Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
                 try {
-                    LOGGER.info("Test transformatino for {} to {}", serviceType.name(), commandClass.getSimpleName());
                     command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString);
                     break;
                 } catch (IllegalAccessException | NoSuchMethodException ex) {

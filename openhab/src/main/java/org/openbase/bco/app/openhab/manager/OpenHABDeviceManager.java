@@ -32,11 +32,14 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+
+import java.util.Map.Entry;
 
 public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable {
 
@@ -46,6 +49,9 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
     private final DeviceManagerController deviceManagerController;
     private final CommandExecutor commandExecutor;
+    /**
+     * Synchronization observer that triggers resynchronization of all units if their configuration changes.
+     */
     private final Observer synchronizationObserver;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
@@ -61,17 +67,27 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                 return super.isSupported(config);
             }
         };
+
+        // the sync observer triggers a lot when the manager is initially activated ann all unit controller are created
+        // thus add an event filter
+        final RecurrenceEventFilter<Object> unitChangeSynchronizationFilter = new RecurrenceEventFilter<Object>(5000) {
+            @Override
+            public void relay() {
+                try {
+                    for (final Entry<String, String> entry : OpenHABRestCommunicator.getInstance().getStates().entrySet()) {
+                        try {
+                            commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue());
+                        } catch (CouldNotPerformException ex) {
+                            LOGGER.warn("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "] because unit not available", ex);
+                        }
+                    }
+                } catch (CouldNotPerformException e) {
+                    LOGGER.error("Could not retrieve item states from openHAB");
+                }
+            }
+        };
         this.commandExecutor = new CommandExecutor(deviceManagerController.getUnitControllerRegistry());
-        this.synchronizationObserver = ((observable, value) -> {
-            LOGGER.warn("Received item update {}", value);
-//            for (final Entry<String, String> entry : OpenHABRestCommunicator.getInstance().getStates().entrySet()) {
-//                try {
-//                    commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue());
-//                } catch (CouldNotPerformException ex) {
-//                    LOGGER.warn("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "] because unit not available", ex);
-//                }
-//            }
-        });
+        this.synchronizationObserver = ((observable, value) -> unitChangeSynchronizationFilter.trigger());
     }
 
     @Override
@@ -85,14 +101,14 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
         while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
             Thread.sleep(100);
         }
-//        deviceManagerController.getUnitControllerRegistry().addObserver(synchronizationObserver);
+        deviceManagerController.getUnitControllerRegistry().addObserver(synchronizationObserver);
         deviceManagerController.activate();
         OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-//        deviceManagerController.getUnitControllerRegistry().removeObserver(synchronizationObserver);
+        deviceManagerController.getUnitControllerRegistry().removeObserver(synchronizationObserver);
         OpenHABRestCommunicator.getInstance().removeSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
         deviceManagerController.deactivate();
     }
