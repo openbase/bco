@@ -346,7 +346,7 @@ public class FulfillmentHandler {
             throw new NotAvailableException("UnitTypeMappings for host[" + host.getAliasList().get(0) + "]");
         }
         //TODO: can this be solved differently
-        // user the first unit type mapping to resolve the device type
+        // use the first unit type mapping to resolve the device type
         device.addProperty(TYPE_KEY, mappings.values().iterator().next().getDeviceType().getRepresentation());
 
         final JsonObject attributes = new JsonObject();

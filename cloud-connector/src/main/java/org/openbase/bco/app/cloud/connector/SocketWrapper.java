@@ -64,6 +64,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 import rst.language.LabelType.Label;
 import rst.language.LabelType.Label.MapFieldEntry;
+import rst.language.LabelType.LabelOrBuilder;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -312,14 +313,23 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
         LOGGER.info("Received relocation request:\n" + gson.toJson(data));
 
+        if (!data.has(CURRENT_LABEL_KEY)) {
+            respond(ack, "Welches Gerät soll verschoben werden? Sage zum Beispiel: Der Deckenfluter steht im Wohnzimmer.", true);
+            return;
+        }
+        final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString().trim();
+
+        if (!data.has(NEW_LOCATION_KEY)) {
+            respond(ack, "Wo ist das Gerät " + currentLabel + "? Sage zum Beispiel: " + currentLabel + " ist jetzt im Flur.", true);
+            return;
+        }
+        final String newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().trim();
+
         String response = "";
-        String currentLabel;
-        String newLocationLabel;
         try {
             UnitConfig.Builder currentUnit;
-            currentLabel = data.get(CURRENT_LABEL_KEY).getAsString();
             if (data.has(CURRENT_LOCATION_KEY)) {
-                final String currentLocationLabel = data.get(CURRENT_LOCATION_KEY).getAsString();
+                final String currentLocationLabel = data.get(CURRENT_LOCATION_KEY).getAsString().trim();
                 try {
                     currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
                 } catch (NotAvailableException ex) {
@@ -334,7 +344,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     return;
                 }
             }
-            newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().replace(" ", "");
             final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(newLocationLabel, UnitType.LOCATION);
             if (locations.isEmpty()) {
                 respond(ack, "Ich kann die Location " + newLocationLabel + " nicht finden.", true);
@@ -403,12 +412,22 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
         LOGGER.info("Received renaming request:\n" + gson.toJson(data));
 
+        if (!data.has(CURRENT_LABEL_KEY)) {
+            respond(ack, "Welches Gerät soll ich umbenennen? Sage zum Beispiel die Deckenlampe soll jetzt Deckenlicht heißen.", true);
+            return;
+        }
+        final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString().trim();
+
+        if (!data.has(NEW_LABEL_KEY)) {
+            respond(ack, "Welchen neuen Namen soll das Gerät " + currentLabel + " bekommen. Sage zum Beispiel nenne " + currentLabel + " in neuer Name um", true);
+            return;
+        }
+        final String newLabel = data.get(NEW_LABEL_KEY).getAsString().trim();
+
+
         String response = "";
-        String currentLabel;
-        String newLabel;
         try {
             UnitConfig.Builder currentUnit;
-            currentLabel = data.get(CURRENT_LABEL_KEY).getAsString().replace(" ", "");
             if (data.has(CURRENT_LOCATION_KEY)) {
                 final String currentLocationLabel = data.get(CURRENT_LOCATION_KEY).getAsString();
                 try {
@@ -426,14 +445,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
 
-            newLabel = data.get(NEW_LABEL_KEY).getAsString().replace(" ", "");
             LabelProcessor.replace(currentUnit.getLabelBuilder(), currentLabel, newLabel);
-
             response = currentLabel + " wurde zu " + newLabel + " umbenannt.";
             try {
                 final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
                 Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
-//                Registries.getUnitRegistry().updateUnitConfig(currentUnit.build()).get(3, TimeUnit.SECONDS);
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
                     respond(ack, "Du besitzt nicht die benötigten Rechte um das Gerät " + currentLabel + " in " + newLabel + " umzubenennen.");
@@ -457,9 +473,13 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     }
 
     private void handleUserTransitUpdate(final Object object, final Ack acknowledgement) {
-        final String userTransitState = (String) object;
-        LOGGER.info("User [{}] received user transit request: {}", userId, userTransitState);
+        final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
+        LOGGER.info("User [{}] received user transit request: {}", userId, gson.toJson(data));
         try {
+            if (!data.has("userTransit")) {
+                throw new NotAvailableException("UserTransitState");
+            }
+            final String userTransitState = data.get("userTransit").getAsString();
             final UserTransitState.State state = Enum.valueOf(UserTransitState.State.class, userTransitState);
             final UserTransitState serviceState = UserTransitState.newBuilder().setValue(state).build();
             final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
@@ -493,6 +513,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         final JsonObject params = jsonParser.parse(object.toString()).getAsJsonObject();
         LOGGER.info("User [{}] received set activities request: {}", userId, gson.toJson(params));
         try {
+            LocalPositionState localPositionState = null;
             String errorResponse = "";
             final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
             if (params.has("location")) {
@@ -512,7 +533,8 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 if (location == null) {
                     errorResponse += "Die Location " + locationLabel + " ist nicht verfügbar.";
                 } else {
-                    userRemote.setLocalPositionState(LocalPositionState.newBuilder().addLocationId(location.getId()).build()).get(3, TimeUnit.SECONDS);
+                    localPositionState = LocalPositionState.newBuilder().addLocationId(location.getId()).build();
+
                 }
             }
 
@@ -549,24 +571,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                         unavailableActivities.add(activityRepresentation);
                     }
                 }
-//                    response += "Deine ";
-//                    if (activityList.size() == 1) {
-//                        response += "Aktivität ist jetzt " + LabelProcessor.getBestMatch(activityList.get(0).getLabel()) + ".";
-//                    } else {
-//                        response += "Aktivitäten sind jetzt ";
-//                        for (int i = 0; i < activityList.size(); i++) {
-//                            final String label = LabelProcessor.getBestMatch(activityList.get(i).getLabel());
-//                            if (i == activityList.size() - 1) {
-//                                response += "und " + label;
-//                            } else if (i == activityList.size() - 2) {
-//                                response += label + " ";
-//                            } else {
-//                                response += label + ", ";
-//                            }
-//                        }
-//                        response += ".";
-//                    }
-//                }
 
                 final String unavailable = buildUnavailableActivityResponse(errorResponse, unavailableActivities);
                 if (!unavailable.isEmpty()) {
@@ -579,26 +583,67 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
 
-            if (builder.getActivityIdCount() > 0) {
-                final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote).build();
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
-                userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
-            }
-
             if (!errorResponse.isEmpty()) {
                 respond(acknowledgement, errorResponse, true);
-            } else {
-                respond(acknowledgement, "Okay");
+                return;
             }
+            String response = "Okay, deine ";
+            if (builder.getActivityIdCount() > 1) {
+                response += "Aktivität ist jetzt " + getLabelForUser(Registries.getActivityRegistry().getActivityConfigById(builder.getActivityId(0)).getLabel());
+            } else {
+                response += "Aktivitäten sind nun ";
+                for (int i = 0; i < builder.getActivityIdCount(); i++) {
+                    if (i == builder.getActivityIdCount() - 1) {
+                        response += " und ";
+                    } else {
+                        response += ", ";
+                    }
+                    response += getLabelForUser(Registries.getActivityRegistry().getActivityConfigById(builder.getActivityId(i)).getLabel());
+                }
+            }
+
+            ActionDescription actionDescription;
+            AuthenticatedValue authenticatedValue;
+
+            if (localPositionState != null) {
+                actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, userRemote).build();
+                authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+
+                try {
+                    userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
+                } catch (TimeoutException ex) {
+                    final String locationLabel = getLabelForUser(Registries.getUnitRegistry().getUnitConfigById(localPositionState.getLocationId(0)).getLabel());
+                    response = "Dein Aufenthaltsort wird auf " + locationLabel + " gesetzt. Danach werden deine Aktivitäten berarbeitet.";
+                    respond(acknowledgement, response);
+                    return;
+                }
+            }
+
+            actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote).build();
+            authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+
+            try {
+                userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
+            } catch (TimeoutException ex) {
+                response = response.replace("ist jetzt", "wird auf").replace("sind nun", "werden auf") + " gesetzt.";
+                respond(acknowledgement, response);
+                return;
+            }
+
+            response += ".";
+            respond(acknowledgement, response);
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
             if (ex instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-        } catch (TimeoutException ex) {
-            respond(acknowledgement, "Deine Anfrage wird bearbeitet.");
         }
+    }
+
+    private String getLabelForUser(final LabelOrBuilder labelOrBuilder) throws CouldNotPerformException {
+        final String language = Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getLanguage();
+        return LabelProcessor.getBestMatch(new Locale(language), labelOrBuilder);
     }
 
     private void handleActivityCancellation(final Object object, final Ack acknowledgement) {
