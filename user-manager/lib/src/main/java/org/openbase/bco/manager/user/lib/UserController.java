@@ -36,6 +36,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public interface UserController extends Identifiable<String>, Configurable<String, UnitConfig>, Enableable, User, MessageController<UserData, UserData.Builder> {
 
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
+    void init(final UnitConfig config) throws InitializationException, InterruptedException;
 
 }

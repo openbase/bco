@@ -10,12 +10,12 @@ package org.openbase.bco.manager.user.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -31,6 +31,7 @@ import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
@@ -86,15 +87,17 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UserControllerImpl.class, UserData.newBuilder());
-        this.netDeviceDetectorMap = new HashMap<>();
+        try {
+            this.netDeviceDetectorMap = new HashMap<>();
+            registerOperationService(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, new ActivityMultiStateOperationServiceImpl(this));
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider(LabelProcessor.getBestMatch(config.getLabel()), config.getMetaConfig());
-
-        registerOperationService(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, new ActivityMultiStateOperationServiceImpl(this));
-
 
         synchronized (netDeviceDetectorMapLock) {
 
@@ -360,13 +363,12 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                                 stringRemoteActionPoolEntry.getValue().stop();
                             }
                         }
-                        if (remoteActionPoolMap.containsKey(activityId)) {
+                        if (!remoteActionPoolMap.containsKey(activityId)) {
                             final RemoteActionPool remoteActionPool = new RemoteActionPool(UserControllerImpl.this);
                             remoteActionPoolMap.put(activityId, remoteActionPool);
                             final ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityId);
                             remoteActionPool.initViaServiceStateDescription(activityConfig.getServiceStateDescriptionList());
                         }
-
                         remoteActionPoolMap.get(activityId).execute(activityMultiState.getResponsibleAction());
                     }
 
