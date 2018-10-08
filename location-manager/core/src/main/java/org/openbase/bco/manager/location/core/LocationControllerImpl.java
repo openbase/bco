@@ -24,16 +24,16 @@ package org.openbase.bco.manager.location.core;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
+import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
-import org.openbase.bco.dal.remote.processing.StandbyController;
 import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.processing.StandbyController;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -43,6 +43,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
@@ -50,7 +51,6 @@ import org.openbase.jul.schedule.RecurrenceEventFilter;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -62,7 +62,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
-import rst.domotic.unit.location.LocationDataType.LocationData.Builder;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType;
 import rst.vision.RGBColorType;
@@ -293,42 +292,43 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         public Future<ActionDescription> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
             LOGGER.info("Standby[" + standbyState.getValue() + "]" + this);
             return GlobalScheduledExecutorService.submit(() -> {
-                try (ClosableDataBuilder<Builder> dataBuilder = locationController.getDataBuilder(this)) {
-                    switch (getStandbyState().getValue()) {
-                        case UNKNOWN:
-                        case RUNNING:
-                            switch (standbyState.getValue()) {
-                                case STANDBY:
-                                    for (LocationRemote childLocation : getChildLocationList(false)) {
-                                        childLocation.waitForMiddleware();
-                                        childLocation.setStandbyState(State.STANDBY).get();
-                                    }
-                                    standbyController.standby();
-                                    dataBuilder.getInternalBuilder().setStandbyState(standbyState);
-                            }
-                            break;
-                        case STANDBY:
-                            switch (standbyState.getValue()) {
-                                case RUNNING:
-                                    standbyController.wakeup();
-                                    for (LocationRemote childLocation : getChildLocationList(false)) {
-                                        childLocation.waitForMiddleware();
-                                        childLocation.setStandbyState(State.RUNNING).get();
-                                    }
-                                    dataBuilder.getInternalBuilder().setStandbyState(standbyState);
-                                case STANDBY:
-                                    // already in standby but the command is send again
-                                    // make sure that all children are in standby
-                                    for (LocationRemote childLocation : getChildLocationList(false)) {
-                                        childLocation.waitForMiddleware();
-                                        childLocation.setStandbyState(State.STANDBY).get();
-                                    }
-                            }
-                    }
-                    return null;
-                } catch (Exception ex) {
-                    throw new CouldNotPerformException("Could not apply data change!", ex);
+                switch (getStandbyState().getValue()) {
+                    case UNKNOWN:
+                    case RUNNING:
+                        switch (standbyState.getValue()) {
+                            case STANDBY:
+                                for (LocationRemote childLocation : getChildLocationList(false)) {
+                                    childLocation.waitForMiddleware();
+                                    childLocation.setStandbyState(State.STANDBY).get();
+                                }
+                                standbyController.standby();
+                        }
+                        break;
+                    case STANDBY:
+                        switch (standbyState.getValue()) {
+                            case RUNNING:
+                                standbyController.wakeup();
+                                for (LocationRemote childLocation : getChildLocationList(false)) {
+                                    childLocation.waitForMiddleware();
+                                    childLocation.setStandbyState(State.RUNNING).get();
+                                }
+                            case STANDBY:
+                                // already in standby but the command is send again
+                                // make sure that all children are in standby
+                                for (LocationRemote childLocation : getChildLocationList(false)) {
+                                    childLocation.waitForMiddleware();
+                                    childLocation.setStandbyState(State.STANDBY).get();
+                                }
+                        }
                 }
+
+                try {
+                    applyDataUpdate(standbyState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.STANDBY_STATE_SERVICE);
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not update standby state of " + this + " to " + standbyState.getValue().name(), ex);
+                }
+
+                return null;
             });
         }
 

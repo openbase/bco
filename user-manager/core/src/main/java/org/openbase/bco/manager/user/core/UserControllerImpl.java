@@ -22,6 +22,7 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivityMultiStateOperationService;
@@ -32,7 +33,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -348,7 +348,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         public Future<ActionDescription> setActivityMultiState(ActivityMultiState activityMultiState) {
             logger.info("Update activity list[" + activityMultiState.getActivityIdCount() + "]" + this);
             return GlobalScheduledExecutorService.submit(() -> {
-                try (ClosableDataBuilder<UserData.Builder> dataBuilder = userController.getDataBuilder(this)) {
+                try {
                     if (activityMultiState.getActivityIdCount() == 0) {
                         for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
                             stringRemoteActionPoolEntry.getValue().stop();
@@ -369,10 +369,11 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
                         remoteActionPoolMap.get(activityId).execute(activityMultiState.getResponsibleAction());
                     }
-                    dataBuilder.getInternalBuilder().setActivityMultiState(activityMultiState);
+
+                    applyDataUpdate(activityMultiState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE);
                     return null;
                 } catch (Exception ex) {
-                    throw new CouldNotPerformException("Could not apply data change!", ex);
+                    throw new CouldNotPerformException("Could not update activity state of " + this, ex);
                 }
             });
         }
