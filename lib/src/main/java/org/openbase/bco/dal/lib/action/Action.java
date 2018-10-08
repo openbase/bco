@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -104,7 +104,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
     }
 
     /**
-     * Check if this action is still valid which means there is still some execution time left.
+     * Check if this action is still valid which means there is still some execution time left or it is valid to execute.
      *
      * @return true if this action is still valid, otherwise false.
      */
@@ -124,14 +124,47 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
         return hasExecutionTimeLeft();
     }
 
+    /**
+     * Check if this action has been executed and reached a termination state.
+     *
+     * @return true if executed and terminated.
+     */
     default boolean isDone() {
         try {
-
             switch (getActionState()) {
                 case ABORTED:
                 case EXECUTION_FAILED:
                 case REJECTED:
                 case FINISHED:
+                    return true;
+            }
+        } catch (NotAvailableException ex) {
+            // not done if available
+        }
+        return false;
+    }
+
+    /**
+     * Check if the action is currently executing or scheduled.
+     *
+     * @return true if running and false if never started or already terminated.
+     */
+    default boolean isRunning() {
+        try {
+            switch (getActionState()) {
+                case UNKNOWN:
+                case INITIALIZED:
+                case ABORTED:
+                case EXECUTION_FAILED:
+                case REJECTED:
+                case FINISHED:
+                    return false;
+                case ABORTING:
+                case INITIATING:
+                case EXECUTING:
+                case SCHEDULED:
+                case ABORTING_FAILED:
+                case FINISHING:
                     return true;
             }
         } catch (NotAvailableException ex) {

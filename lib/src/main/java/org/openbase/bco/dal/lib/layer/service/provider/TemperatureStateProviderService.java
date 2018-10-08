@@ -43,6 +43,7 @@ public interface TemperatureStateProviderService extends ProviderService {
         if (!temperatureState.hasTemperature()) {
             throw new VerificationFailedException("Temperature value unknown!");
         }
+
         switch (temperatureState.getTemperatureDataUnit()) {
             case UNKNOWN:
                 throw new VerificationFailedException("TemperatureState data unit unknown!");

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -29,6 +29,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,9 +88,8 @@ public class RemoteActionPool {
             remoteActionList.clear();
             RemoteAction action;
             for (ActionParameter actionParameter : actionParameters) {
-                action = new RemoteAction(unit);
                 try {
-                    action.init(actionParameter);
+                    action = new RemoteAction(unit, actionParameter);
                     remoteActionList.add(action);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
@@ -105,7 +105,13 @@ public class RemoteActionPool {
     }
 
     public void execute(final ActionDescription causeActionDescription) throws CouldNotPerformException, InterruptedException {
+
         synchronized (actionListSync) {
+
+            if (remoteActionList.isEmpty()) {
+                LOGGER.warn("Remote action pool is empty, skip execution...");
+            }
+
             for (final RemoteAction action : remoteActionList) {
                 action.execute(causeActionDescription);
             }
@@ -146,12 +152,8 @@ public class RemoteActionPool {
 
     public void stop() {
         for (final RemoteAction action : remoteActionList) {
-            try {
-                if (action.isValid() && !action.getActionFuture().isDone()) {
-                    action.cancel();
-                }
-            } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory("Could not cancel " + action, ex, LOGGER, LogLevel.WARN);
+            if (action.isRunning()) {
+                action.cancel();
             }
         }
     }

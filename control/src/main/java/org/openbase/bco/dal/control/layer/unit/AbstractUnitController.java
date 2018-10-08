@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -293,7 +293,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
 
         if (config == null) {
-            assert config != null;
             throw new NotAvailableException("UnitConfig");
         }
 
@@ -701,16 +700,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
                 }
 
-                // TODO: user string should be set in action description ... all authentication info should be updated here
                 try {
-                    applyAction(actionDescriptionBuilder.build()).get();
+                    return applyAction(actionDescriptionBuilder.build()).get();
                 } catch (ExecutionException ex) {
-                    throw new CouldNotPerformException("Could apply authenticated action!", ex);
+                    throw new CouldNotPerformException("Could not apply authenticated action!", ex);
                 }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
             }
-            return null;
         }));
     }
 
@@ -1123,7 +1121,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      */
     @Override
     public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
-        //logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to PowerState [" + serviceState + "]");
+        //logger.debug("Set " + this + " to " + serviceType.name() + " " + serviceState + "");
         if (!operationServiceMap.containsKey(serviceType)) {
             return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
         }
