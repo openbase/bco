@@ -588,7 +588,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 return;
             }
             String response = "Okay, deine ";
-            if (builder.getActivityIdCount() > 1) {
+            if (builder.getActivityIdCount() == 1) {
                 response += "Aktivität ist jetzt " + getLabelForUser(Registries.getActivityRegistry().getActivityConfigById(builder.getActivityId(0)).getLabel());
             } else {
                 response += "Aktivitäten sind nun ";
