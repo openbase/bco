@@ -333,7 +333,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 try {
                     currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
                 } catch (NotAvailableException ex) {
-                    respond(ack, "Ich kann das Gerät " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden.", true);
+                    respond(ack, "Ich kann das Gerät " + currentLabel + " in dem Ort " + currentLocationLabel + " nicht finden.", true);
                     return;
                 }
             } else {
@@ -346,18 +346,18 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
             final List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(newLocationLabel, UnitType.LOCATION);
             if (locations.isEmpty()) {
-                respond(ack, "Ich kann die Location " + newLocationLabel + " nicht finden.", true);
+                respond(ack, "Ich kann den Ort " + newLocationLabel + " nicht finden.", true);
                 return;
             }
 
-            response = currentLabel + " wurde in die Location " + newLocationLabel + " verschoben.";
+            response = currentLabel + " wurde in den Ort " + newLocationLabel + " verschoben.";
             currentUnit.getPlacementConfigBuilder().setLocationId(locations.get(0).getId());
             try {
                 final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
                 Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
-                    respond(ack, "Du besitzt nicht die benötigten Rechte um das Gerät " + currentLabel + " in die Location " + newLocationLabel + " zu verschieben.");
+                    respond(ack, "Du besitzt nicht die benötigten Rechte um das Gerät " + currentLabel + " in den Ort " + newLocationLabel + " zu verschieben.");
                     return;
                 }
                 respond(ack, RESPONSE_GENERIC_ERROR, true);
@@ -433,7 +433,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 try {
                     currentUnit = getUnitByLabelAndLocation(currentLabel, currentLocationLabel).toBuilder();
                 } catch (NotAvailableException ex) {
-                    respond(ack, "Ich kann das Gerät " + currentLabel + " in der Location " + currentLocationLabel + " nicht finden", true);
+                    respond(ack, "Ich kann das Gerät " + currentLabel + " in dem Ort " + currentLocationLabel + " nicht finden", true);
                     return;
                 }
             } else {
@@ -531,7 +531,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
 
                 if (location == null) {
-                    errorResponse += "Die Location " + locationLabel + " ist nicht verfügbar.";
+                    errorResponse += "Der Ort " + locationLabel + " ist nicht verfügbar.";
                 } else {
                     localPositionState = LocalPositionState.newBuilder().addLocationId(location.getId()).build();
 
@@ -783,7 +783,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 final String locationLabel = data.get("location").getAsString();
                 List<UnitConfig> locations = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(locationLabel, UnitType.LOCATION);
                 if (locations.size() == 0) {
-                    respond(acknowledgement, "Ich kann die Location " + locationLabel + " nicht finden", true);
+                    respond(acknowledgement, "Ich kann den Ort " + locationLabel + " nicht finden", true);
                 } else {
                     location = locations.get(0);
                 }
@@ -798,7 +798,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 // make sure label is available for this location
                 for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(label, location.getId())) {
                     if (unitConfig.getUnitType() == UnitType.SCENE) {
-                        respond(acknowledgement, "Es existiert bereits eine Szene mit dem Name " + label + " in der Location " + LabelProcessor.getBestMatch(Locale.GERMAN, location.getLabel()), true);
+                        respond(acknowledgement, "Es existiert bereits eine Szene mit dem Name " + label + " in dem Ort " + LabelProcessor.getBestMatch(Locale.GERMAN, location.getLabel()), true);
                     }
                 }
             }
@@ -836,7 +836,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 if (label != null) {
                     respond(acknowledgement, "Das registrieren der Szene " + label + " dauert noch ein wenig.");
                 } else {
-                    respond(acknowledgement, "Das erstellen einer Szene von der Location " + LabelProcessor.getLabelByLanguage(Locale.GERMAN, location.getLabel()) + " dauert etwas länger.");
+                    respond(acknowledgement, "Das erstellen einer Szene von dem Ort " + LabelProcessor.getLabelByLanguage(Locale.GERMAN, location.getLabel()) + " dauert etwas länger.");
                 }
             }
         } catch (InterruptedException ex) {
