@@ -175,7 +175,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="bco" target="${maven.compiler.target}" />
+      <module name="bco" target="1.8" />
       <module name="bco.app" target="1.8" />
       <module name="bco.app.cloud.connector" target="1.8" />
       <module name="bco.app.openhab" target="1.8" />
