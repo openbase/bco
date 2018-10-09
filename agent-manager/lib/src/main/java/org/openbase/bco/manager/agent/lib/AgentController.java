@@ -34,7 +34,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AgentController extends Identifiable<String>, Enableable, org.openbase.bco.dal.lib.layer.unit.agent.Agent, MessageController<AgentData, AgentData.Builder> {
+public interface AgentController extends Identifiable<String>, org.openbase.bco.dal.lib.layer.unit.agent.Agent, MessageController<AgentData, AgentData.Builder> {
 
     void init(final UnitConfig config) throws InitializationException, InterruptedException;
 }

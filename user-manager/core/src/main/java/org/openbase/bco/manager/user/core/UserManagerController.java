@@ -22,6 +22,7 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 import org.openbase.bco.manager.user.lib.*;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -30,7 +31,6 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
-import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType.EnablingState;
@@ -49,31 +49,31 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
     private final UserControllerFactory userControllerFactory;
     private final AuthorizationGroupControllerFactory authorizationGroupControllerFactory;
 
-    private final ControllerRegistryImpl<String, UserController> unitRegistry;
+    private final ControllerRegistryImpl<String, UserController> userRegistry;
     private final ControllerRegistryImpl<String, AuthorizationGroupController> authorizationGroupRegistry;
 
-    private final EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder> unitRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder> userRegistrySynchronizer;
     private final ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, UnitConfig.Builder> authorizationGroupRegistrySynchronizer;
 
-    public UserManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public UserManagerController() throws org.openbase.jul.exception.InstantiationException {
         try {
             this.userControllerFactory = UserControllerFactoryImpl.getInstance();
             this.authorizationGroupControllerFactory = AuthorizationGroupControllerFactoryImpl.getInstance();
 
-            this.unitRegistry = new ControllerRegistryImpl<>();
+            this.userRegistry = new ControllerRegistryImpl<>();
             this.authorizationGroupRegistry = new ControllerRegistryImpl<>();
 
-            this.unitRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(unitRegistry, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), userControllerFactory) {
-
+            this.userRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, UserController, UnitConfig, Builder>(userRegistry, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), userControllerFactory) {
                 @Override
-                public boolean enablingCondition(UnitConfig config) {
-                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
+                public boolean activationCondition(UnitConfig config) {
+                    return UnitConfigProcessor.isEnabled(config);
                 }
             };
+            
             this.authorizationGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, Builder>(authorizationGroupRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), authorizationGroupControllerFactory) {
                 @Override
                 public boolean activationCondition(UnitConfig config) {
-                    return config.getEnablingState().getValue() == State.ENABLED;
+                    return UnitConfigProcessor.isEnabled(config);
                 }
             };
         } catch (CouldNotPerformException ex) {
@@ -90,30 +90,30 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
     public void activate() throws CouldNotPerformException, InterruptedException {
         BCOLogin.loginBCOUser();
 
-        unitRegistrySynchronizer.activate();
+        userRegistrySynchronizer.activate();
         authorizationGroupRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return unitRegistrySynchronizer.isActive();
+        return userRegistrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        unitRegistrySynchronizer.deactivate();
+        userRegistrySynchronizer.deactivate();
         authorizationGroupRegistrySynchronizer.deactivate();
 
-        unitRegistry.clear();
+        userRegistry.clear();
         authorizationGroupRegistry.clear();
     }
 
     @Override
     public void shutdown() {
-        unitRegistrySynchronizer.shutdown();
+        userRegistrySynchronizer.shutdown();
         authorizationGroupRegistrySynchronizer.shutdown();
 
-        unitRegistry.shutdown();
+        userRegistry.shutdown();
         authorizationGroupRegistry.shutdown();
     }
 }

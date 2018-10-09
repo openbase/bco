@@ -24,11 +24,13 @@ package org.openbase.bco.manager.scene.core;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.manager.scene.lib.SceneControllerFactory;
 import org.openbase.bco.manager.scene.lib.SceneManager;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RegistryImpl;
@@ -36,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 /**
  *
@@ -47,18 +50,18 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
 
     private final SceneControllerFactory factory;
     private final ControllerRegistryImpl<String, SceneController> sceneRegistry;
-    private final EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder> sceneRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, SceneController, UnitConfig, Builder> sceneRegistrySynchronizer;
 
     public SceneManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.factory = SceneControllerFactoryImpl.getInstance();
             this.sceneRegistry = new ControllerRegistryImpl<>();
 
-            this.sceneRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
+            this.sceneRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
-                public boolean enablingCondition(UnitConfig config) {
-                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
+                public boolean activationCondition(UnitConfig config) {
+                    return UnitConfigProcessor.isEnabled(config);
                 }
             };
         } catch (CouldNotPerformException ex) {

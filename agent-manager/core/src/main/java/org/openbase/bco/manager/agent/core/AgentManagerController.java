@@ -28,17 +28,20 @@ package org.openbase.bco.manager.agent.core;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentControllerFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 import java.util.concurrent.TimeUnit;
 
@@ -48,18 +51,18 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
 
     private final AgentControllerFactory factory;
     private final ControllerRegistryImpl<String, AgentController> agentRegistry;
-    private final EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder> agentRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, AgentController, UnitConfig, Builder> agentRegistrySynchronizer;
 
     public AgentManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.factory = AgentControllerFactoryImpl.getInstance();
             this.agentRegistry = new ControllerRegistryImpl<>();
 
-            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
+            this.agentRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
-                public boolean enablingCondition(final UnitConfig config) {
-                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
+                public boolean activationCondition(UnitConfig config) {
+                    return UnitConfigProcessor.isEnabled(config);
                 }
             };
 

@@ -56,7 +56,7 @@ public class AgentTest {
         /* Start main app */
         LOGGER.info("Start " + JPService.getApplicationName() + "...");
         try {
-            AgentControllerFactoryImpl.getInstance().newInstance(Registries.getUnitRegistry(true).getUnitConfigById(JPService.getProperty(JPAgentId.class).getValue())).enable();
+            AgentControllerFactoryImpl.getInstance().newInstance(Registries.getUnitRegistry(true).getUnitConfigById(JPService.getProperty(JPAgentId.class).getValue())).activate();
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         }

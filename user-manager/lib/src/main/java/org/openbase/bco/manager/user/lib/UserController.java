@@ -34,7 +34,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UserController extends Identifiable<String>, Configurable<String, UnitConfig>, Enableable, User, MessageController<UserData, UserData.Builder> {
+public interface UserController extends Identifiable<String>, Configurable<String, UnitConfig>, User, MessageController<UserData, UserData.Builder> {
 
     void init(final UnitConfig config) throws InitializationException, InterruptedException;
 

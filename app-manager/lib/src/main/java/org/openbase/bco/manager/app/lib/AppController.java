@@ -30,5 +30,5 @@ import rst.domotic.unit.app.AppDataType.AppData;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface AppController extends Enableable, org.openbase.bco.dal.lib.layer.unit.app.App, BaseUnitController<AppData, AppData.Builder>, UnitHost<AppData> {
+public interface AppController extends org.openbase.bco.dal.lib.layer.unit.app.App, BaseUnitController<AppData, AppData.Builder>, UnitHost<AppData> {
 }

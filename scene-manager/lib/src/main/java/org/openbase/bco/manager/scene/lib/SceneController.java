@@ -29,6 +29,6 @@ import rst.domotic.unit.scene.SceneDataType.SceneData;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface SceneController extends Enableable, org.openbase.bco.dal.lib.layer.unit.scene.Scene, BaseUnitController<SceneData, SceneData.Builder> {
+public interface SceneController extends org.openbase.bco.dal.lib.layer.unit.scene.Scene, BaseUnitController<SceneData, SceneData.Builder> {
     
 }

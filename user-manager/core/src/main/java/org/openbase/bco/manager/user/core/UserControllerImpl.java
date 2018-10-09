@@ -137,18 +137,6 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    public void enable() throws CouldNotPerformException, InterruptedException {
-        enabled = true;
-        activate();
-    }
-
-    @Override
-    public void disable() throws CouldNotPerformException, InterruptedException {
-        enabled = false;
-        deactivate();
-    }
-
-    @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         synchronized (netDeviceDetectorMapLock) {
             for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
@@ -174,11 +162,6 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
             }
         }
         super.deactivate();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
     }
 
     @Override
