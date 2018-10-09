@@ -11,6 +11,7 @@
         <module name="authentication.test" />
         <module name="bco" />
         <module name="bco.app.cloud.connector" />
+        <module name="bco.app.openhab" />
         <module name="bco.authentication.core" />
         <module name="bco.authentication.lib" />
         <module name="bco.authentication.test" />
@@ -18,6 +19,7 @@
         <module name="bco.dal.example" />
         <module name="bco.dal.lib" />
         <module name="bco.dal.remote" />
+        <module name="bco.dal.remote (1)" />
         <module name="bco.dal.task" />
         <module name="bco.dal.test" />
         <module name="bco.dal.visual" />
@@ -173,10 +175,6 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="authentication" target="1.8" />
-      <module name="authentication.core" target="1.8" />
-      <module name="authentication.lib" target="1.8" />
-      <module name="authentication.test" target="1.8" />
       <module name="bco" target="${maven.compiler.target}" />
       <module name="bco.app" target="1.8" />
       <module name="bco.app.cloud.connector" target="1.8" />
@@ -190,6 +188,7 @@
       <module name="bco.dal.example" target="1.8" />
       <module name="bco.dal.lib" target="1.8" />
       <module name="bco.dal.remote" target="1.8" />
+      <module name="bco.dal.remote (1)" target="1.8" />
       <module name="bco.dal.task" target="1.8" />
       <module name="bco.dal.test" target="1.8" />
       <module name="bco.dal.visual" target="1.8" />
@@ -254,39 +253,14 @@
       <module name="bco.registry.activity.lib" target="1.8" />
       <module name="bco.registry.activity.remote" target="1.8" />
       <module name="bco.registry.activity.test" target="1.8" />
-      <module name="bco.registry.agent" target="1.8" />
-      <module name="bco.registry.agent.core" target="1.8" />
-      <module name="bco.registry.agent.lib" target="1.8" />
-      <module name="bco.registry.agent.remote" target="1.8" />
-      <module name="bco.registry.agent.test" target="1.8" />
-      <module name="bco.registry.app" target="1.8" />
-      <module name="bco.registry.app.core" target="1.8" />
-      <module name="bco.registry.app.lib" target="1.8" />
-      <module name="bco.registry.app.remote" target="1.8" />
-      <module name="bco.registry.app.test" target="1.8" />
       <module name="bco.registry.class" target="1.8" />
       <module name="bco.registry.class.core" target="1.8" />
       <module name="bco.registry.class.lib" target="1.8" />
       <module name="bco.registry.class.remote" target="1.8" />
       <module name="bco.registry.class.test" target="1.8" />
-      <module name="bco.registry.device" target="1.8" />
-      <module name="bco.registry.device.core" target="1.8" />
-      <module name="bco.registry.device.lib" target="1.8" />
-      <module name="bco.registry.device.remote" target="1.8" />
-      <module name="bco.registry.device.test" target="1.8" />
       <module name="bco.registry.editor" target="1.8" />
       <module name="bco.registry.lib" target="1.8" />
-      <module name="bco.registry.location" target="1.8" />
-      <module name="bco.registry.location.core" target="1.8" />
-      <module name="bco.registry.location.lib" target="1.8" />
-      <module name="bco.registry.location.remote" target="1.8" />
-      <module name="bco.registry.location.test" target="1.8" />
       <module name="bco.registry.remote" target="1.8" />
-      <module name="bco.registry.scene" target="1.8" />
-      <module name="bco.registry.scene.core" target="1.8" />
-      <module name="bco.registry.scene.lib" target="1.8" />
-      <module name="bco.registry.scene.remote" target="1.8" />
-      <module name="bco.registry.scene.test" target="1.8" />
       <module name="bco.registry.template" target="1.8" />
       <module name="bco.registry.template.core" target="1.8" />
       <module name="bco.registry.template.lib" target="1.8" />
@@ -297,28 +271,8 @@
       <module name="bco.registry.unit.lib" target="1.8" />
       <module name="bco.registry.unit.remote" target="1.8" />
       <module name="bco.registry.unit.test" target="1.8" />
-      <module name="bco.registry.user" target="1.8" />
-      <module name="bco.registry.user.activity" target="1.8" />
-      <module name="bco.registry.user.activity.core" target="1.8" />
-      <module name="bco.registry.user.activity.lib" target="1.8" />
-      <module name="bco.registry.user.activity.remote" target="1.8" />
-      <module name="bco.registry.user.activity.test" target="1.8" />
-      <module name="bco.registry.user.core" target="1.8" />
-      <module name="bco.registry.user.lib" target="1.8" />
-      <module name="bco.registry.user.remote" target="1.8" />
-      <module name="bco.registry.user.test" target="1.8" />
       <module name="bco.registry.util" target="1.8" />
       <module name="bco.stage" target="1.8" />
-      <module name="bcozy" target="1.8" />
-      <module name="dal" target="1.8" />
-      <module name="dal.example" target="1.8" />
-      <module name="dal.lib" target="1.8" />
-      <module name="dal.remote" target="1.8" />
-      <module name="dal.task" target="1.8" />
-      <module name="dal.test" target="1.8" />
-      <module name="dal.visual" target="1.8" />
-      <module name="editor" target="1.8" />
-      <module name="eveson" target="1.8" />
       <module name="jul" target="1.8" />
       <module name="jul.annotation" target="1.8" />
       <module name="jul.audio" target="1.8" />
@@ -354,104 +308,6 @@
       <module name="jul.visual" target="1.8" />
       <module name="jul.visual.javafx" target="1.8" />
       <module name="jul.visual.swing" target="1.8" />
-      <module name="lib" target="1.8" />
-      <module name="manager" target="1.8" />
-      <module name="manager.agent" target="1.8" />
-      <module name="manager.agent.binding" target="1.8" />
-      <module name="manager.agent.binding.openhab" target="1.8" />
-      <module name="manager.agent.core" target="1.8" />
-      <module name="manager.agent.lib" target="1.8" />
-      <module name="manager.agent.remote" target="1.8" />
-      <module name="manager.agent.test" target="1.8" />
-      <module name="manager.app" target="1.8" />
-      <module name="manager.app.binding" target="1.8" />
-      <module name="manager.app.binding.openhab" target="1.8" />
-      <module name="manager.app.core" target="1.8" />
-      <module name="manager.app.lib" target="1.8" />
-      <module name="manager.app.remote" target="1.8" />
-      <module name="manager.app.test" target="1.8" />
-      <module name="manager.device" target="1.8" />
-      <module name="manager.device.binding" target="1.8" />
-      <module name="manager.device.binding.openhab" target="1.8" />
-      <module name="manager.device.core" target="1.8" />
-      <module name="manager.device.lib" target="1.8" />
-      <module name="manager.device.remote" target="1.8" />
-      <module name="manager.device.test" target="1.8" />
-      <module name="manager.location" target="1.8" />
-      <module name="manager.location.binding" target="1.8" />
-      <module name="manager.location.binding.openhab" target="1.8" />
-      <module name="manager.location.core" target="1.8" />
-      <module name="manager.location.lib" target="1.8" />
-      <module name="manager.location.remote" target="1.8" />
-      <module name="manager.location.test" target="1.8" />
-      <module name="manager.scene" target="1.8" />
-      <module name="manager.scene.binding" target="1.8" />
-      <module name="manager.scene.binding.openhab" target="1.8" />
-      <module name="manager.scene.core" target="1.8" />
-      <module name="manager.scene.lib" target="1.8" />
-      <module name="manager.scene.remote" target="1.8" />
-      <module name="manager.scene.test" target="1.8" />
-      <module name="manager.scene.visual" target="1.8" />
-      <module name="manager.user" target="1.8" />
-      <module name="manager.user.core" target="1.8" />
-      <module name="manager.user.lib" target="1.8" />
-      <module name="manager.user.remote" target="1.8" />
-      <module name="manager.user.test" target="1.8" />
-      <module name="manager.util" target="1.8" />
-      <module name="ontology" target="1.8" />
-      <module name="org.openhab.binding.rsb" target="1.8" />
-      <module name="psc" target="1.5" />
-      <module name="psc.control" target="1.8" />
-      <module name="psc.identification" target="1.8" />
-      <module name="psc.lib" target="1.8" />
-      <module name="psc.ray-extractor" target="1.8" />
-      <module name="psc.skeleton-merging" target="1.8" />
-      <module name="psc.util" target="1.8" />
-      <module name="registry" target="1.8" />
-      <module name="registry.agent" target="1.8" />
-      <module name="registry.agent.core" target="1.8" />
-      <module name="registry.agent.lib" target="1.8" />
-      <module name="registry.agent.remote" target="1.8" />
-      <module name="registry.agent.test" target="1.8" />
-      <module name="registry.app" target="1.8" />
-      <module name="registry.app.core" target="1.8" />
-      <module name="registry.app.lib" target="1.8" />
-      <module name="registry.app.remote" target="1.8" />
-      <module name="registry.app.test" target="1.8" />
-      <module name="registry.device" target="1.8" />
-      <module name="registry.device.core" target="1.8" />
-      <module name="registry.device.lib" target="1.8" />
-      <module name="registry.device.remote" target="1.8" />
-      <module name="registry.device.test" target="1.8" />
-      <module name="registry.lib" target="1.8" />
-      <module name="registry.location" target="1.8" />
-      <module name="registry.location.core" target="1.8" />
-      <module name="registry.location.lib" target="1.8" />
-      <module name="registry.location.remote" target="1.8" />
-      <module name="registry.location.test" target="1.8" />
-      <module name="registry.remote" target="1.8" />
-      <module name="registry.scene" target="1.8" />
-      <module name="registry.scene.core" target="1.8" />
-      <module name="registry.scene.lib" target="1.8" />
-      <module name="registry.scene.remote" target="1.8" />
-      <module name="registry.scene.test" target="1.8" />
-      <module name="registry.unit" target="1.8" />
-      <module name="registry.unit.core" target="1.8" />
-      <module name="registry.unit.lib" target="1.8" />
-      <module name="registry.unit.remote" target="1.8" />
-      <module name="registry.unit.test" target="1.8" />
-      <module name="registry.user" target="1.8" />
-      <module name="registry.user.activity" target="1.8" />
-      <module name="registry.user.activity.core" target="1.8" />
-      <module name="registry.user.activity.lib" target="1.8" />
-      <module name="registry.user.activity.remote" target="1.8" />
-      <module name="registry.user.activity.test" target="1.8" />
-      <module name="registry.user.core" target="1.8" />
-      <module name="registry.user.lib" target="1.8" />
-      <module name="registry.user.remote" target="1.8" />
-      <module name="registry.user.test" target="1.8" />
-      <module name="registry.util" target="1.8" />
-      <module name="stage" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

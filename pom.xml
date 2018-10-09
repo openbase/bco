@@ -110,6 +110,13 @@
                             </platforms>
                         </program>
                         <program>
+                            <mainClass>org.openbase.bco.manager.util.launch.BCOTestLauncher</mainClass>
+                            <id>bco-test</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
                             <mainClass>org.openbase.bco.authentication.core.AuthenticatorLauncher</mainClass>
                             <id>bco-authenticator</id>
                             <platforms>
@@ -254,7 +261,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.dal.visual.DalVisualRemote</mainClass>
+                            <mainClass>org.openbase.bco.dal.visual.BCOVisualRemote</mainClass>
                             <id>bco-visual-remote</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -263,6 +270,27 @@
                         <program>
                             <mainClass>org.openbase.bco.bcozy.BCozyLauncher</mainClass>
                             <id>bcozy</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.dal.remote.printer.BCOLogger</mainClass>
+                            <id>bco-logger</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.dal.remote.BCORemote</mainClass>
+                            <id>bco-remote</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.bcozy.BCOConsole</mainClass>
+                            <id>bco-console</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
