@@ -452,7 +452,13 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         final String currentLabel = data.get(CURRENT_LABEL_KEY).getAsString().trim();
 
         if (!data.has(NEW_LABEL_KEY)) {
-            respond(ack, "Welchen neuen Namen soll das Gerät " + currentLabel + " bekommen. Sage zum Beispiel nenne " + currentLabel + " in neuer Name um", true);
+            String newName;
+            if (currentLabel.equalsIgnoreCase("Deckenlicht")) {
+                newName = "Deckenlicht";
+            } else {
+                newName = "Deckenlampe";
+            }
+            respond(ack, "Welchen neuen Namen soll das Gerät " + currentLabel + " bekommen. Sage zum Beispiel nenne " + currentLabel + " in " + newName + " um", true);
             return;
         }
         final String newLabel = data.get(NEW_LABEL_KEY).getAsString().trim();
