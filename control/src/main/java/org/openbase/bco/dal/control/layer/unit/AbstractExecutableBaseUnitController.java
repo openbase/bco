@@ -33,13 +33,11 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivationStateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -55,15 +53,14 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable, ActivationStateProviderService {
+public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements ActivationStateProviderService {
 
     public static final String FIELD_ACTIVATION_STATE = "activation_state";
     public static final String FIELD_AUTOSTART = "autostart";
 
-    private final SyncObject enablingLock = new SyncObject(AbstractExecutableBaseUnitController.class);
+    private final SyncObject activationLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
     private Future<ActionDescription> executionFuture;
-    private boolean enabled;
     private final ActivationStateOperationServiceImpl activationStateOperationService;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
@@ -92,16 +89,10 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     }
 
     @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @Override
-    public void enable() throws CouldNotPerformException, InterruptedException {
+    public void activate() throws CouldNotPerformException, InterruptedException {
         try {
-            synchronized (enablingLock) {
-                enabled = true;
-                activate();
+            synchronized (activationLock) {
+                super.activate();
                 if (detectAutostart()) {
                     activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
                 } else {
@@ -109,21 +100,21 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                 }
             }
         } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not enable " + this, ex);
+            throw new CouldNotPerformException("Could not activate " + this, ex);
         }
     }
 
     @Override
-    public void disable() throws CouldNotPerformException, InterruptedException {
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
         try {
-            synchronized (enablingLock) {
+            synchronized (activationLock) {
+                stop(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
                 cancelExecution();
-                enabled = false;
                 activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
-                deactivate();
+                super.deactivate();
             }
         } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not disable " + this, ex);
+            throw new CouldNotPerformException("Could not deactivates " + this, ex);
         }
     }
 
@@ -131,17 +122,8 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         try {
             return isAutostartEnabled();
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new NotSupportedException("autostart", (AbstractExecutableBaseUnitController) this, (Throwable) ex), logger, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new NotSupportedException("autostart", this, ex), logger, LogLevel.WARN);
             return true;
-        }
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        try {
-            stop(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
-        } finally {
-            super.deactivate();
         }
     }
 

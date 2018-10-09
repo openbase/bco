@@ -49,6 +49,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
@@ -267,7 +268,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     public boolean isEnabled() {
         try {
-            return getConfig().getEnablingState().getValue().equals(EnablingState.State.ENABLED);
+            return UnitConfigProcessor.isEnabled(getConfig());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
