@@ -397,6 +397,8 @@
 
     <properties>
         <skipTests>true</skipTests>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <build.appassembler>${project.build.directory}/appassembler</build.appassembler>
         <build.appassembler.repo.name>share/bco/lib</build.appassembler.repo.name>
         <deb.prefix>usr</deb.prefix>
@@ -405,61 +407,60 @@
         <deb.prefix.share>${deb.prefix}/share/${project.artifactId}</deb.prefix.share>
     </properties>
 
-
     <dependencies>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.util</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.util</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>authentication.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.authentication.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>dal.task</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.dal.task</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>dal.visual</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.dal.visual</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>psc.util</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.psc.util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.scene.visual</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.scene.visual</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco.registry</groupId>
-            <artifactId>editor</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.editor</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>stage</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.stage</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>eveson</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.eveson</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>bcozy</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.bcozy</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
