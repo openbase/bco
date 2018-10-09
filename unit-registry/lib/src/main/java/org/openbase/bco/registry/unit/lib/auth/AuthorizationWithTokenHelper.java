@@ -259,13 +259,13 @@ public class AuthorizationWithTokenHelper {
         // test if the unit id in the permission rule matches the unit config
         if (!permissionRule.getUnitId().equals(unitConfig.getId())) {
             // it does not so test if the unit id belongs to a location
-            final UnitConfig location = unitRegistry.getUnitConfigById(permissionRule.getUnitId());
+            final UnitConfig locationToCheck = unitRegistry.getUnitConfigById(permissionRule.getUnitId());
             // if it is not a location then the permission rule do not permit what is asked
-            if (location.getUnitType() != UnitType.LOCATION) {
+            if (locationToCheck.getUnitType() != UnitType.LOCATION) {
                 return false;
             }
             // if the location does not contain the given unit config the permission rule does not permit it
-            if (!location.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
+            if (!containsUnit(unitConfig, locationToCheck, unitRegistry)) {
                 return false;
             }
         }
@@ -284,5 +284,21 @@ public class AuthorizationWithTokenHelper {
             return false;
         }
         return true;
+    }
+
+    private static boolean containsUnit(final UnitConfig unitConfig, final UnitConfig locationToCheck, final UnitRegistry unitRegistry) throws CouldNotPerformException {
+        UnitConfig location = unitRegistry.getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
+        if (location.getId().equals(locationToCheck.getId())) {
+            return true;
+        }
+
+        while (!location.getLocationConfig().getRoot()) {
+            location = unitRegistry.getUnitConfigById(location.getPlacementConfig().getLocationId());
+            if (location.getId().equals(locationToCheck.getId())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
