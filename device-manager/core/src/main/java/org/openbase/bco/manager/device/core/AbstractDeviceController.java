@@ -92,7 +92,9 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
     public void shutdown() {
         for (UnitController unitController : getHostedUnitController()) {
             try {
-                DeviceManagerController.getDeviceManager().getUnitControllerRegistry().remove(unitController);
+                if (DeviceManagerController.getDeviceManager().getUnitControllerRegistry().contains(unitController)) {
+                    DeviceManagerController.getDeviceManager().getUnitControllerRegistry().remove(unitController);
+                }
             } catch (CouldNotPerformException ex) {
                 logger.warn("Could not deregister unit controller!", ex);
             }
