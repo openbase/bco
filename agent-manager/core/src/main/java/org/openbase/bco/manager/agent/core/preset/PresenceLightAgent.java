@@ -32,11 +32,19 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -52,38 +60,48 @@ public class PresenceLightAgent extends AbstractTriggerableAgent {
     }
 
     @Override
-    public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-        } catch (NotAvailableException ex) {
-            throw new InitializationException("LocationRemote not available.", ex);
+            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
         }
-
-//        try {
-//            GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
-//            agentTriggerHolder.addTrigger(agentTrigger, TriggerAggregation.OR);
-//        } catch (CouldNotPerformException ex) {
-//            throw new InitializationException("Could not add agent to agentpool", ex);
-//        }
     }
+
+    private ActionDescription taskActionDescription;
 
     @Override
-    void trigger(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-//        try {
-//            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
-//                    ResourceAllocation.Initiator.SYSTEM,
-//                    1000 * 30,
-//                    ResourceAllocation.Policy.FIRST,
-//                    ResourceAllocation.Priority.NORMAL,
-//                    locationRemote,
-//                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
-//                    UnitType.LIGHT,
-//                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-//                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-//            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-//            logger.error("Could not switch on Lights.", ex);
-//        }
+    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+        switch (activationState.getValue()) {
+            case ACTIVE:
+                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.ON))).get();
+                break;
+            case DEACTIVE:
+                if(taskActionDescription != null) {
+                    taskActionDescription = locationRemote.cancelAction(taskActionDescription).get();
+                }
+                break;
+        }
     }
+
+//    @Override
+//    void trigger(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+////        try {
+////            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
+////                    ResourceAllocation.Initiator.SYSTEM,
+////                    1000 * 30,
+////                    ResourceAllocation.Policy.FIRST,
+////                    ResourceAllocation.Priority.NORMAL,
+////                    locationRemote,
+////                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
+////                    UnitType.LIGHT,
+////                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+////                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+////            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+////        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+////            logger.error("Could not switch on Lights.", ex);
+////        }
+//    }
 }
