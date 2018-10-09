@@ -63,7 +63,7 @@ public class CloudConnectorLauncher {
 
             CloudConnectorAppImpl cloudConnectorApp = new CloudConnectorAppImpl();
             cloudConnectorApp.init(CloudConnectorAppRemote.getCloudConnectorUnitConfig());
-            cloudConnectorApp.enable();
+            cloudConnectorApp.activate();
         } catch (InterruptedException | CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not launch cloud connector", ex, LOGGER);
         }
