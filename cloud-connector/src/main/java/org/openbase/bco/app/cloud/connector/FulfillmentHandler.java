@@ -59,6 +59,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.language.LabelType.Label;
 
 import java.util.*;
@@ -312,7 +313,13 @@ public class FulfillmentHandler {
 
         device.addProperty(ID_KEY, host.getId());
         device.addProperty("willReportState", false); // This could be activated in the future
-        device.addProperty("roomHint", LabelProcessor.getBestMatch(userLocale, Registries.getUnitRegistry().getUnitConfigById(host.getPlacementConfig().getLocationId()).getLabel()));
+
+        // always register units at a tile so that they will respond to that when queried like this by google
+        UnitConfig location = Registries.getUnitRegistry().getUnitConfigById(host.getPlacementConfig().getLocationId());
+        while (location.getLocationConfig().getType() == LocationType.REGION) {
+            location = Registries.getUnitRegistry().getUnitConfigById(location.getPlacementConfig().getLocationId());
+        }
+        device.addProperty("roomHint", LabelProcessor.getBestMatch(userLocale, location.getLabel()));
 
         final JsonObject name = new JsonObject();
         final String mainName = StringProcessor.insertSpaceBetweenCamelCase(LabelProcessor.getBestMatch(userLocale, host.getLabel()));

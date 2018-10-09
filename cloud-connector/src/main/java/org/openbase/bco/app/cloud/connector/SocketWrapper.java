@@ -57,6 +57,7 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -325,7 +326,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         }
         final String newLocationLabel = data.get(NEW_LOCATION_KEY).getAsString().trim();
 
-        String response = "";
+        String response;
         try {
             UnitConfig.Builder currentUnit;
             if (data.has(CURRENT_LOCATION_KEY)) {
@@ -352,9 +353,22 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             response = currentLabel + " wurde in den Ort " + newLocationLabel + " verschoben.";
             currentUnit.getPlacementConfigBuilder().setLocationId(locations.get(0).getId());
+            currentUnit.getEnablingStateBuilder().setValue(State.DISABLED);
             try {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
-                Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
+                //TODO: validate that this is really necessary
+                final int currentRequestNumber = requestNumber;
+                // Note: this is a hack because google will not update locations, this the unit is disabled when moved to a new location and then again enabled
+                // this triggers two synchronizations with google where the unit is removed and then added again which causes the location to update
+                AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                LOGGER.debug("Update unit location and set disabled");
+                Future<UnitConfig> updateFuture = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue), UnitConfig.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+                try {
+                    updateFuture.get(3, TimeUnit.SECONDS).toBuilder();
+                } catch (TimeoutException ex) {
+                    respond(ack, response.replace("wurde", "wird"));
+                } finally {
+                    enableAgain(updateFuture, currentRequestNumber);
+                }
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
                     respond(ack, "Du besitzt nicht die benötigten Rechte um das Gerät " + currentLabel + " in den Ort " + newLocationLabel + " zu verschieben.");
@@ -371,9 +385,28 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         } catch (CouldNotPerformException ex) {
             respond(ack, RESPONSE_GENERIC_ERROR, true);
             ExceptionPrinter.printHistory(ex, LOGGER);
-        } catch (TimeoutException ex) {
-            respond(ack, response.replace("wurde", "wird"));
         }
+    }
+
+    private void enableAgain(final Future<UnitConfig> unitConfigFuture, final int currentRequestNumber) {
+        LOGGER.info("Trigger enable task");
+        GlobalCachedExecutorService.submit(() -> {
+            try {
+                final UnitConfig.Builder currentUnit = unitConfigFuture.get().toBuilder();
+                LOGGER.debug("Disabled and relocated unit. Now enable again");
+                currentUnit.getEnablingStateBuilder().setValue(State.ENABLED);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue).get();
+                LOGGER.debug("RequestCounters {}, {}", requestNumber, currentRequestNumber);
+                if (requestNumber < currentRequestNumber + 2) {
+                    LOGGER.info("Trigger request sync after enabling because only {} changes occurred", requestNumber - currentRequestNumber);
+                    requestSync();
+                }
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory("Could not enable unit again", ex, LOGGER);
+            }
+            return null;
+        });
     }
 
     private UnitConfig getUnitByLabel(final String label) throws CouldNotPerformException {
@@ -901,7 +934,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         }
     }
 
+    int requestNumber = 0;
+
     private void requestSync() {
+        requestNumber++;
         socket.emit(REQUEST_SYNC_EVENT, (Ack) objects -> {
             final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
             if (response.has(SUCCESS_KEY)) {
