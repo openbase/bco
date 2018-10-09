@@ -26,6 +26,7 @@ import java.util.List;
 import org.openbase.bco.dal.control.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.lib.DeviceController;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
@@ -49,7 +50,7 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
 
     private final SyncObject configUpdateLock = new SyncObject("ApplyConfigUpdateLock");
 
-    public AbstractDeviceController(final Class deviceClass) throws InstantiationException, CouldNotTransformException {
+    public AbstractDeviceController(final Class deviceClass) throws InstantiationException {
         super(deviceClass, DeviceData.newBuilder());
     }
 
@@ -58,6 +59,7 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
         synchronized (configUpdateLock) {
             UnitConfig unitConfig = super.applyConfigUpdate(config);
 
+            // update unit controller registry if device is active.
             for (final String removedUnitId : getRemovedUnitIds()) {
                 DeviceManagerController.getDeviceManager().getUnitControllerRegistry().remove(removedUnitId);
             }
@@ -75,11 +77,26 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
         List<UnitConfig> unitConfigs = new ArrayList<>();
         try {
             for (String unitId : getConfig().getDeviceConfig().getUnitIdList()) {
-                unitConfigs.add(Registries.getUnitRegistry(true).getUnitConfigById(unitId));
+                UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
+                if(UnitConfigProcessor.isEnabled(unitConfig)) {
+                    unitConfigs.add(unitConfig);
+                }
             }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Hosted units description of Device", this, ex);
         }
         return unitConfigs;
+    }
+
+    @Override
+    public void shutdown() {
+        for (UnitController unitController : getHostedUnitController()) {
+            try {
+                DeviceManagerController.getDeviceManager().getUnitControllerRegistry().remove(unitController);
+            } catch (CouldNotPerformException ex) {
+                logger.warn("Could not deregister unit controller!", ex);
+            }
+        }
+        super.shutdown();
     }
 }
