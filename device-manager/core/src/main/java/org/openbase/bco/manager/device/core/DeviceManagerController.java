@@ -186,7 +186,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
      *
      * @param config
      *
-     * @return
+     * @return true if supported
      *
      * @throws CouldNotPerformException
      */
