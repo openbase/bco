@@ -34,11 +34,13 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.ActivationStateType.ActivationState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.concurrent.CompletableFuture;
@@ -60,7 +62,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     private final SyncObject activationLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
-    private Future<ActionDescription> executionFuture;
+    private Future<Void> executionFuture;
     private final ActivationStateOperationServiceImpl activationStateOperationService;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
@@ -152,11 +154,17 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
         @Override
         public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+
+            logger.debug("setActivationState: {}", activationState.getValue().name());
             synchronized (executionLock) {
+
                 // filter events that do not change anything
                 if (activationState.getValue() == getActivationState().getValue()) {
+                    logger.debug("skip already applied state: {}", activationState.getValue().name());
                     return CompletableFuture.completedFuture(null);
                 }
+
+                final ActivationState fallbackActivationState = getActivationState();
 
                 if (activationState.getValue() == ActivationState.State.ACTIVE) {
 
@@ -170,6 +178,18 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                             execute(activationState);
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
+
+                            // rollback previous activation state
+                            synchronized (executionLock) {
+                                try {
+                                    stop(fallbackActivationState);
+                                } catch (InterruptedException exx) {
+                                    Thread.currentThread().interrupt();
+                                } catch (Exception exx) {
+                                    ExceptionPrinter.printHistory("rollback failed", exx, logger);
+                                }
+                                applyDataUpdate(fallbackActivationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                            }
                         }
                         return null;
                     });
@@ -183,6 +203,10 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                         stop(activationState);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
+                        return FutureProcessor.canceledFuture(ex);
+                    } catch (Exception ex) {
+                        ExceptionPrinter.printHistory("stop failed", ex, logger);
+                        return FutureProcessor.canceledFuture(ex);
                     }
                 }
 

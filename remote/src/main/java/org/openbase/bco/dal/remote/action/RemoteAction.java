@@ -37,9 +37,7 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionParameterType.ActionParameter;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -75,7 +73,7 @@ public class RemoteAction implements Action {
 
         // check if action remote was instantiated via task future.
         if (actionParameterBuilder == null) {
-            throw new InvalidStateException("Action already executing!");
+            throw new NotAvailableException("ActionParameter");
         }
 
         synchronized (executionSync) {
@@ -89,7 +87,7 @@ public class RemoteAction implements Action {
 
         // check if action remote was instantiated via task future.
         if (actionParameterBuilder == null) {
-            throw new InvalidStateException("Action already executing!");
+            throw new NotAvailableException("ActionParameter");
         }
 
         synchronized (executionSync) {
@@ -128,13 +126,18 @@ public class RemoteAction implements Action {
                 if (actionFuture == null) {
                     throw new NotAvailableException("ActionFuture");
                 }
-                final ActionDescription actionDescription = actionFuture.get(5, TimeUnit.SECONDS);
+                System.out.println("wait for desc");
+                final ActionDescription actionDescription = actionFuture.get(1, TimeUnit.SECONDS);
+                System.out.println("continue");
                 if (actionDescription == null) {
                     throw new InvalidStateException("Task returned null!");
                 }
                 return actionDescription;
             }
-        } catch (CouldNotPerformException | ExecutionException | InterruptedException | TimeoutException ex) {
+        } catch (CouldNotPerformException | ExecutionException | CancellationException | InterruptedException | TimeoutException ex) {
+            if(actionFuture != null && actionFuture.isCancelled()) {
+                LOGGER.warn("Action future was canceled!");
+            }
             throw new NotAvailableException(this.getClass().getSimpleName(), "ActionDescription", ex);
         }
     }

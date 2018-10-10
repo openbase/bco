@@ -1130,6 +1130,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Void.class, ex);
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory("Unexpected exception while performing operation service!", ex, logger);
+            return FutureProcessor.canceledFuture(Void.class, ex);
         }
     }
 }
