@@ -399,9 +399,16 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         }
 
         try {
-            ActionDescription actionDescription = EncryptionHelper.decrypt(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class, SessionManager.getInstance().getUserId() == null);
-            //TODO: when the flag of real services is available test them here
-            if(actionDescription.getServiceStateDescription().getServiceType() == ServiceType.STANDBY_STATE_SERVICE) {
+            final ActionDescription actionDescription = EncryptionHelper.decrypt(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class, SessionManager.getInstance().getUserId() == null);
+            for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                if (serviceDescription.getAggregated()) {
+                    continue;
+                }
+
+                if(serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
+                    continue;
+                }
+
                 return super.applyActionAuthenticated(authenticatedValue);
             }
         } catch (CouldNotPerformException ex) {
