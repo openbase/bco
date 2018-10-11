@@ -43,8 +43,8 @@ public interface BlindStateProviderService extends ProviderService {
 
     static void verifyBlindState(final BlindState blindState) throws VerificationFailedException {
         try {
-            if (!blindState.hasValue() && !blindState.hasOpeningRatio()) {
-                throw new VerificationFailedException("MovementState and OpeningRatio not available!", new InvalidStateException(blindState.toString()));
+            if (!(blindState.hasValue() || blindState.hasOpeningRatio())) {
+                throw new VerificationFailedException("MovementState or OpeningRatio not available!", new InvalidStateException(blindState.toString()));
             }
 
             if (blindState.hasOpeningRatio() && blindState.getOpeningRatio() < 0) {
