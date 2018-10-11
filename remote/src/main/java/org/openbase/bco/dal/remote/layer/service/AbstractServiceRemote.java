@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -52,8 +52,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -701,6 +701,13 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             ActionDescriptionList.add(unitRemote.applyActionAuthenticated(authValue));
         }
 
+        // Because the action is never send to the controller the authenticator will not and does not need to be updated.
+        // But in order not to override the applyAction method, which returns a future that validates the authenticator,
+        // on the location remote and unit group remote, it is faked here.
+        final Authenticator.Builder authenticator = EncryptionHelper.decryptSymmetric(authenticatedValue.getTicketAuthenticatorWrapper().getAuthenticator(), SessionManager.getInstance().getSessionKey(), Authenticator.class).toBuilder();
+        authenticator.getTimestampBuilder().setTime(authenticator.getTimestamp().getTime() + 1);
+        final ByteString encryptedAuthenticator = EncryptionHelper.encryptSymmetric(authenticator.build(), SessionManager.getInstance().getSessionKey());
+
         return GlobalCachedExecutorService.allOf(input -> {
             for (final Future<AuthenticatedValue> future : input) {
                 final TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
@@ -714,7 +721,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                 }
             }
-            return authenticatedValue.toBuilder().setTicketAuthenticatorWrapper(SessionManager.getInstance().getTicketAuthenticatorWrapper()).build();
+            AuthenticatedValue.Builder builder = authenticatedValue.toBuilder();
+            builder.getTicketAuthenticatorWrapperBuilder().setAuthenticator(encryptedAuthenticator);
+            return builder.build();
         }, ActionDescriptionList);
     }
 
