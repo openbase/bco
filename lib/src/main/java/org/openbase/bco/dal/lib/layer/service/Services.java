@@ -41,6 +41,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -169,7 +170,7 @@ public class Services extends ServiceStateProcessor {
             // create new service state builder
             return (GeneratedMessage.Builder) Services.getServiceStateClass(serviceType).getMethod("newBuilder").invoke(null);
         } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
-            throw new CouldNotPerformException("Could not generate service state builder!", ex);
+            throw new CouldNotPerformException("Could not generate service state builder from ServiceType["+serviceType+"]!", ex);
         }
     }
 
@@ -241,9 +242,13 @@ public class Services extends ServiceStateProcessor {
     public static Class<? extends GeneratedMessage> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
         String serviceStateName;
         try {
-            serviceStateName = StringProcessor.transformUpperCaseToCamelCase(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType().name());
+            final CommunicationType communicationType = Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType();
+            if(communicationType == CommunicationType.UNKNOWN) {
+                throw new InvalidStateException("CommunicationType is not configured in ServiceTemplate!");
+            }
+            serviceStateName = StringProcessor.transformUpperCaseToCamelCase(communicationType.name());
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("CommunicationType for serviceType[" + serviceType + "]");
+            throw new NotAvailableException("CommunicationType for ServiceType[" + serviceType + "]");
         }
 
         final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName;

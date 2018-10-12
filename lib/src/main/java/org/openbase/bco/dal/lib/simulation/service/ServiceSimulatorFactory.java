@@ -65,7 +65,7 @@ public class ServiceSimulatorFactory implements Factory<AbstractServiceSimulator
     @Override
     public AbstractServiceSimulator newInstance(final Pair<UnitController, ServiceType> configPair) throws InstantiationException, InterruptedException {
         try {
-            // try to return costum service simulator
+            // try to return custom service simulator
             final String serviceSimulatorClassName = AbstractServiceSimulator.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(configPair.getValue().name()) + "Simulator";
             return ((Class<? extends AbstractServiceSimulator>) Class.forName(serviceSimulatorClassName)).getConstructor(UnitController.class).newInstance(configPair.getKey());
         } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | java.lang.InstantiationException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {

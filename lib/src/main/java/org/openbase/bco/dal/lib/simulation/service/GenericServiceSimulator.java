@@ -26,8 +26,12 @@ import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -75,6 +79,8 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Gene
                 }
             });
             MultiException.checkAndThrow(() ->"Could not generate all service values!", exceptionStack);
+        } catch (NotAvailableException ex) {
+            ExceptionPrinter.printHistory(serviceType.name() + " does not provide any service states.", ex, LOGGER, LogLevel.DEBUG);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate service states!", ex);
         }

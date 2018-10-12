@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.storage.registry.SynchronizableRegistry;
 
 /**
@@ -30,7 +31,7 @@ import org.openbase.jul.storage.registry.SynchronizableRegistry;
  * 
  * @param <CONTROLLER> the builder used to build the unit data instances.
  */
-public interface UnitControllerRegistry<CONTROLLER extends UnitController<?,?>> extends SynchronizableRegistry<String, CONTROLLER> {
+public interface UnitControllerRegistry<CONTROLLER extends UnitController<?,?>> extends SynchronizableRegistry<String, CONTROLLER>, Activatable {
 
     /**
      * Returns a unit controller instance with the given scope.
