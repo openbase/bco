@@ -21,21 +21,14 @@ package org.openbase.bco.manager.user.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.protobuf.MessageController;
-import org.openbase.jul.iface.Configurable;
-import org.openbase.jul.iface.Enableable;
-import org.openbase.jul.iface.Identifiable;
 import rst.domotic.unit.user.UserDataType.UserData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UserController extends Identifiable<String>, Configurable<String, UnitConfig>, User, MessageController<UserData, UserData.Builder> {
-
-    void init(final UnitConfig config) throws InitializationException, InterruptedException;
+public interface UserController extends User, BaseUnitController<UserData, UserData.Builder> {
 
 }

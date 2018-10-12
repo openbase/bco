@@ -21,22 +21,54 @@ package org.openbase.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitManager;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.storage.registry.RegistryImpl;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface DeviceManager extends OperationServiceFactoryProvider, DeviceFactoryProvider {
+public interface DeviceManager extends HostUnitManager, DeviceFactoryProvider {
 
-    public RegistryImpl<String, DeviceController> getDeviceControllerRegistry() throws NotAvailableException;
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     *
+     * @throws NotAvailableException is thrown if the controller registry is not available.
+     */
+    UnitControllerRegistry<DeviceController> getDeviceControllerRegistry() throws NotAvailableException;
 
-    public UnitControllerRegistry getUnitControllerRegistry() throws NotAvailableException;
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     *
+     * @throws NotAvailableException is thrown if the controller registry is not available.
+     */
+    UnitControllerRegistry<UnitController<?, ?>> getUnitControllerRegistry() throws NotAvailableException;
 
-    public boolean isSupported(final UnitConfig config) throws CouldNotPerformException;
+    /**
+     * All devices will be supported by default. Feel free to overwrite method
+     * to changing this behavior.
+     *
+     * @param config
+     *
+     * @return true if supported
+     */
+    @Override
+    default boolean isSupported(final UnitConfig config) {
+        return config.getUnitType() == UnitType.DEVICE;
+    }
+
 }

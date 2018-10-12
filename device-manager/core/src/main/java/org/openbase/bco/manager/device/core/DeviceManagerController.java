@@ -22,14 +22,17 @@ package org.openbase.bco.manager.device.core;
  * #L%
  */
 
+import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.mock.OperationServiceFactoryMock;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -38,6 +41,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.RegistryImpl;
@@ -45,6 +49,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -60,10 +66,10 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     private final OperationServiceFactory operationServiceFactory;
     private final UnitSimulationManager unitSimulationManager;
 
-    private final ControllerRegistryImpl<String, DeviceController> deviceControllerRegistry;
-    private final UnitControllerRegistryImpl unitControllerRegistry;
+    private final UnitControllerRegistryImpl<DeviceController> deviceControllerRegistry;
+    private final UnitControllerRegistryImpl<UnitController<?,?>> unitControllerRegistry;
 
-    private final ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder> deviceRegistrySynchronizer;
+    private final UnitControllerRegistrySynchronizer<DeviceController> deviceRegistrySynchronizer;
 
     private boolean active = false;
 
@@ -88,36 +94,13 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
             this.deviceControllerFactory = deviceControllerFactory;
             this.operationServiceFactory = operationServiceFactory;
 
-            this.unitControllerRegistry = new UnitControllerRegistryImpl();
-            this.deviceControllerRegistry = new ControllerRegistryImpl<>();
+            this.unitControllerRegistry = new UnitControllerRegistryImpl<>();
+            this.deviceControllerRegistry = new UnitControllerRegistryImpl<>();
 
             Registries.waitForData();
 
-            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), deviceControllerFactory) {
-
-                @Override
-                public boolean activationCondition(final UnitConfig config) {
-                    return true;
-                }
-
-                @Override
-                public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
-                    try {
-                        // verify device manager support.
-                        if (!DeviceManagerController.this.isSupported(config)) {
-                            return false;
-                        }
-
-                        // skip if device is not enabled
-                        if (config.getEnablingState().getValue() != State.ENABLED) {
-                            return false;
-                        }
-                        return true;
-                    } catch (CouldNotPerformException ex) {
-                        throw new VerificationFailedException("Could not verify device config!", ex);
-                    }
-                }
-            };
+            this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), deviceControllerFactory);
+            this.deviceRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerController.this.isSupported(unitConfig));
 
             // handle simulation mode
             this.unitSimulationManager = new UnitSimulationManager();
@@ -171,28 +154,13 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     }
 
     @Override
-    public RegistryImpl<String, DeviceController> getDeviceControllerRegistry() {
+    public UnitControllerRegistry<DeviceController> getDeviceControllerRegistry() {
         return deviceControllerRegistry;
     }
 
     @Override
-    public UnitControllerRegistry<?, ?> getUnitControllerRegistry() {
+    public UnitControllerRegistry<UnitController<?,?>> getUnitControllerRegistry() {
         return unitControllerRegistry;
-    }
-
-    /**
-     * All devices will be supported by default. Feel free to overwrite method
-     * to changing this behavior.
-     *
-     * @param config
-     *
-     * @return true if supported
-     *
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public boolean isSupported(final UnitConfig config) throws CouldNotPerformException {
-        return true;
     }
 
     @Override

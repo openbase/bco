@@ -23,6 +23,7 @@ package org.openbase.bco.manager.app.core;
  */
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -30,7 +31,12 @@ import org.openbase.jul.exception.NotSupportedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.app.AppDataType.AppData;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -65,5 +71,23 @@ public abstract class AbstractAppController extends AbstractExecutableBaseUnitCo
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
         return getConfig().getAppConfig().getAutostart();
+    }
+
+    @Override
+    public List<UnitController<?, ?>> getHostedUnitControllerList() {
+        // Method can be overwritten in case this app introduces further units.
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public UnitController<?, ?> getHostedUnitController(String id) throws NotAvailableException {
+        // Method can be overwritten in case this app introduces further units.
+        throw new NotAvailableException("UnitController", id);
+    }
+
+    @Override
+    public List<UnitConfig> getHostedUnitConfigList() {
+        // Method can be overwritten in case this app introduces further units.
+        return Collections.EMPTY_LIST;
     }
 }

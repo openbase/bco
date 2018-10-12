@@ -66,7 +66,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
             deviceManagerController = new DeviceManagerController(new OpenhabOperationServiceFactory()) {
 
                 @Override
-                public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
+                public boolean isSupported(UnitConfig config) {
                     try {
                         DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
                         if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {

@@ -1,5 +1,7 @@
 package org.openbase.bco.manager.location.lib;
 
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.RegistryImpl;
 
 /*
@@ -29,7 +31,25 @@ import org.openbase.jul.storage.registry.RegistryImpl;
  */
 public interface LocationManager {
 
-    public RegistryImpl<String, LocationController> getLocationControllerRegistry();
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     *
+     * @throws NotAvailableException is thrown if the controller registry is not available.
+     */
+    UnitControllerRegistry<LocationController> getLocationControllerRegistry();
 
-    public RegistryImpl<String, ConnectionController> getConnectionControllerRegistry();
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     *
+     * @throws NotAvailableException is thrown if the controller registry is not available.
+     */
+    UnitControllerRegistry<ConnectionController> getConnectionControllerRegistry();
 }

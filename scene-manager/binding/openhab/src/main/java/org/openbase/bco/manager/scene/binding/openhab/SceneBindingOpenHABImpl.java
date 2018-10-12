@@ -22,6 +22,7 @@ package org.openbase.bco.manager.scene.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.remote.layer.unit.UnitRemoteRegistrySynchronizer;
 import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -35,6 +36,7 @@ import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 /**
  *
@@ -47,25 +49,19 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
     public static final String SCENE_MANAGER_ITEM_FILTER = "bco.manager.scene";
 
     private final SceneRemoteFactoryImpl factory;
-    private final RegistrySynchronizer<String, SceneRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
+    private final UnitRemoteRegistrySynchronizer<SceneRemote> registrySynchronizer;
     private final RemoteControllerRegistryImpl<String, SceneRemote> registry;
     private final boolean hardwareSimulationMode;
     private boolean active;
 
-    public SceneBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
+    public SceneBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException {
         super();
         try {
             registry = new RemoteControllerRegistryImpl<>();
             factory = new SceneRemoteFactoryImpl();
             hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 
-            this.registrySynchronizer = new RegistrySynchronizer<String, SceneRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
-
-                @Override
-                public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
-                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
-                }
-            };
+            this.registrySynchronizer = new UnitRemoteRegistrySynchronizer<>(registry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), factory);
         } catch (final CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

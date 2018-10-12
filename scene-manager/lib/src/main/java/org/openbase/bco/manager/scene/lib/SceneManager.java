@@ -22,10 +22,21 @@ package org.openbase.bco.manager.scene.lib;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface SceneManager {
+
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     */
+    UnitControllerRegistry<SceneController> getSceneControllerRegistry();
     
 }

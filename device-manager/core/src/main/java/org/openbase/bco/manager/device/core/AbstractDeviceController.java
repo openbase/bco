@@ -29,7 +29,6 @@ import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.SyncObject;
@@ -73,24 +72,8 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
     }
 
     @Override
-    protected List<UnitConfig> getHostedUnits() throws NotAvailableException, InterruptedException {
-        List<UnitConfig> unitConfigs = new ArrayList<>();
-        try {
-            for (String unitId : getConfig().getDeviceConfig().getUnitIdList()) {
-                UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
-                if(UnitConfigProcessor.isEnabled(unitConfig)) {
-                    unitConfigs.add(unitConfig);
-                }
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Hosted units description of Device", this, ex);
-        }
-        return unitConfigs;
-    }
-
-    @Override
     public void shutdown() {
-        for (UnitController unitController : getHostedUnitController()) {
+        for (UnitController unitController : getHostedUnitControllerList()) {
             try {
                 if (DeviceManagerController.getDeviceManager().getUnitControllerRegistry().contains(unitController)) {
                     DeviceManagerController.getDeviceManager().getUnitControllerRegistry().remove(unitController);

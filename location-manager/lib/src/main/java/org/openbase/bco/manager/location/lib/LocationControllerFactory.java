@@ -28,6 +28,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface LocationFactory extends Factory<LocationController, UnitConfig> {
+public interface LocationControllerFactory extends Factory<LocationController, UnitConfig> {
 
 }

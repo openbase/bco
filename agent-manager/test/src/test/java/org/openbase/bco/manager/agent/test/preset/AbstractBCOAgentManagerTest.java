@@ -71,7 +71,6 @@ public abstract class AbstractBCOAgentManagerTest extends AbstractBCOTest {
 
             Registries.waitForData();
 
-            agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
         } catch (CouldNotPerformException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

@@ -22,12 +22,13 @@ package org.openbase.bco.manager.location.lib;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
 import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface ConnectionController extends org.openbase.bco.dal.lib.layer.unit.connection.Connection, BaseUnitController<ConnectionData, ConnectionData.Builder> {
+public interface ConnectionController extends Connection, BaseUnitController<ConnectionData, ConnectionData.Builder> {
 
 }

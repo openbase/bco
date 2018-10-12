@@ -25,47 +25,35 @@ package org.openbase.bco.manager.agent.core;
  *
  */
 
+import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentControllerFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.ControllerRegistryImpl;
-import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
-
-import java.util.concurrent.TimeUnit;
 
 public class AgentManagerController implements AgentManager, Launchable<Void>, VoidInitializable {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerController.class);
 
     private final AgentControllerFactory factory;
-    private final ControllerRegistryImpl<String, AgentController> agentRegistry;
-    private final ActivatableEntryRegistrySynchronizer<String, AgentController, UnitConfig, Builder> agentRegistrySynchronizer;
+    private final UnitControllerRegistry<AgentController> agentControllerRegistry;
+    private final UnitControllerRegistrySynchronizer<AgentController> agentRegistrySynchronizer;
 
-    public AgentManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public AgentManagerController() throws org.openbase.jul.exception.InstantiationException {
         try {
             this.factory = AgentControllerFactoryImpl.getInstance();
-            this.agentRegistry = new ControllerRegistryImpl<>();
+            this.agentControllerRegistry = new UnitControllerRegistryImpl<>();
 
-            this.agentRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
-
-                @Override
-                public boolean activationCondition(UnitConfig config) {
-                    return UnitConfigProcessor.isEnabled(config);
-                }
-            };
-
+            this.agentRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(agentControllerRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(), factory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -99,7 +87,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
     }
 
     @Override
-    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        Registries.getUnitRegistry().waitForData(timeout, timeUnit);
+    public UnitControllerRegistry<AgentController> getAgentControllerRegistry() throws NotAvailableException {
+        return agentControllerRegistry;
     }
 }

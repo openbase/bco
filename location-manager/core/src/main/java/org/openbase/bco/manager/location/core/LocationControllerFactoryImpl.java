@@ -22,7 +22,7 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 import org.openbase.bco.manager.location.lib.LocationController;
-import org.openbase.bco.manager.location.lib.LocationFactory;
+import org.openbase.bco.manager.location.lib.LocationControllerFactory;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.InstantiationException;
@@ -33,13 +33,13 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class LocationFactoryImpl implements LocationFactory {
+public class LocationControllerFactoryImpl implements LocationControllerFactory {
 
-    private static LocationFactoryImpl instance;
+    private static LocationControllerFactoryImpl instance;
 
-    public synchronized static LocationFactoryImpl getInstance() {
+    public synchronized static LocationControllerFactoryImpl getInstance() {
         if (instance == null) {
-            instance = new LocationFactoryImpl();
+            instance = new LocationControllerFactoryImpl();
         }
         return instance;
     }

@@ -21,20 +21,22 @@ package org.openbase.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.user.lib.*;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
@@ -49,33 +51,22 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
     private final UserControllerFactory userControllerFactory;
     private final AuthorizationGroupControllerFactory authorizationGroupControllerFactory;
 
-    private final ControllerRegistryImpl<String, UserController> userRegistry;
-    private final ControllerRegistryImpl<String, AuthorizationGroupController> authorizationGroupRegistry;
+    private final UnitControllerRegistry<UserController> userControllerRegistry;
+    private final UnitControllerRegistry<AuthorizationGroupController> authorizationGroupControllerRegistry;
 
-    private final ActivatableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder> userRegistrySynchronizer;
-    private final ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, UnitConfig.Builder> authorizationGroupRegistrySynchronizer;
+    private final UnitControllerRegistrySynchronizer<UserController> userRegistrySynchronizer;
+    private final UnitControllerRegistrySynchronizer<AuthorizationGroupController> authorizationGroupRegistrySynchronizer;
 
     public UserManagerController() throws org.openbase.jul.exception.InstantiationException {
         try {
             this.userControllerFactory = UserControllerFactoryImpl.getInstance();
             this.authorizationGroupControllerFactory = AuthorizationGroupControllerFactoryImpl.getInstance();
 
-            this.userRegistry = new ControllerRegistryImpl<>();
-            this.authorizationGroupRegistry = new ControllerRegistryImpl<>();
+            this.userControllerRegistry = new UnitControllerRegistryImpl<>();
+            this.authorizationGroupControllerRegistry = new UnitControllerRegistryImpl<>();
 
-            this.userRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, UserController, UnitConfig, Builder>(userRegistry, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), userControllerFactory) {
-                @Override
-                public boolean activationCondition(UnitConfig config) {
-                    return UnitConfigProcessor.isEnabled(config);
-                }
-            };
-            
-            this.authorizationGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, Builder>(authorizationGroupRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), authorizationGroupControllerFactory) {
-                @Override
-                public boolean activationCondition(UnitConfig config) {
-                    return UnitConfigProcessor.isEnabled(config);
-                }
-            };
+            this.userRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(userControllerRegistry, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry(), userControllerFactory);
+            this.authorizationGroupRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(authorizationGroupControllerRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(), authorizationGroupControllerFactory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -104,8 +95,8 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
         userRegistrySynchronizer.deactivate();
         authorizationGroupRegistrySynchronizer.deactivate();
 
-        userRegistry.clear();
-        authorizationGroupRegistry.clear();
+        userControllerRegistry.clear();
+        authorizationGroupControllerRegistry.clear();
     }
 
     @Override
@@ -113,7 +104,17 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
         userRegistrySynchronizer.shutdown();
         authorizationGroupRegistrySynchronizer.shutdown();
 
-        userRegistry.shutdown();
-        authorizationGroupRegistry.shutdown();
+        userControllerRegistry.shutdown();
+        authorizationGroupControllerRegistry.shutdown();
+    }
+
+    @Override
+    public UnitControllerRegistry<UserController> getUserControllerRegistry() {
+        return userControllerRegistry;
+    }
+
+    @Override
+    public UnitControllerRegistry<AuthorizationGroupController> getAuthorizationGroupControllerRegistry() {
+        return authorizationGroupControllerRegistry;
     }
 }

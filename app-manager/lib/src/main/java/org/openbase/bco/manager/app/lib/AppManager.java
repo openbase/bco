@@ -22,10 +22,39 @@ package org.openbase.bco.manager.app.lib;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.HostUnitManager;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface AppManager {
-    
+public interface AppManager extends HostUnitManager {
+
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     *
+     * @throws NotAvailableException is thrown if the controller registry is not available.
+     */
+    UnitControllerRegistry<AppController> getAppControllerRegistry() throws NotAvailableException;
+
+    /**
+     * All apps will be supported by default. Feel free to overwrite method
+     * to changing this behavior.
+     *
+     * @param config
+     *
+     * @return true if supported
+     */
+    @Override
+    default boolean isSupported(final UnitConfig config) {
+        return config.getUnitType() == UnitType.APP;
+    }
 }

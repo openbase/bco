@@ -29,5 +29,5 @@ import org.openbase.jul.exception.NotAvailableException;
  */
 public interface DeviceFactoryProvider {
 
-    public DeviceControllerFactory getDeviceControllerFactory() throws NotAvailableException;
+    DeviceControllerFactory getDeviceControllerFactory() throws NotAvailableException;
 }

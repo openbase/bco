@@ -1,7 +1,10 @@
 package org.openbase.bco.manager.agent.lib;
 
 import java.util.concurrent.TimeUnit;
+
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 
 /*
  * #%L
@@ -31,5 +34,14 @@ import org.openbase.jul.exception.CouldNotPerformException;
  */
 public interface AgentManager {
 
-    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     *
+     * @throws NotAvailableException is thrown if the controller registry is not available.
+     */
+    UnitControllerRegistry<AgentController> getAgentControllerRegistry() throws NotAvailableException;
 }

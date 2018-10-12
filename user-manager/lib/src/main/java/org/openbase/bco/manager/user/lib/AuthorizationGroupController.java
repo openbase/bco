@@ -22,16 +22,10 @@ package org.openbase.bco.manager.user.lib;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.protobuf.MessageController;
-import org.openbase.jul.iface.Configurable;
-import org.openbase.jul.iface.Identifiable;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 
-public interface AuthorizationGroupController extends Identifiable<String>, Configurable<String, UnitConfig>, AuthorizationGroup, MessageController<AuthorizationGroupData, AuthorizationGroupData.Builder> {
-
-    void init(final UnitConfig config) throws InitializationException, InterruptedException;
+public interface AuthorizationGroupController extends AuthorizationGroup, BaseUnitController<AuthorizationGroupData, AuthorizationGroupData.Builder> {
 
 }

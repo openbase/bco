@@ -22,10 +22,30 @@ package org.openbase.bco.manager.user.lib;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UserManager {
+
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     */
+    UnitControllerRegistry<UserController> getUserControllerRegistry();
+
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     */
+    UnitControllerRegistry<AuthorizationGroupController> getAuthorizationGroupControllerRegistry();
 
 }

@@ -21,7 +21,9 @@ package org.openbase.bco.manager.app.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.remote.layer.unit.UnitRemoteRegistrySynchronizer;
 import org.openbase.bco.dal.remote.layer.unit.app.AppRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -35,6 +37,7 @@ import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 /**
  *
@@ -46,7 +49,7 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
     public static final String AGENT_MANAGER_ITEM_FILTER = "bco.manager.app";
 
     private final AppRemoteFactoryImpl factory;
-    private final RegistrySynchronizer<String, AppRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
+    private final UnitRemoteRegistrySynchronizer<AppRemote> registrySynchronizer;
     private final RemoteControllerRegistryImpl<String, AppRemote> registry;
     private final boolean hardwareSimulationMode;
     private boolean active;
@@ -54,17 +57,10 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
     public AppBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
         try {
-            registry = new RemoteControllerRegistryImpl<>();
-            factory = new AppRemoteFactoryImpl();
-            hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
-
-            this.registrySynchronizer = new RegistrySynchronizer<String, AppRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
-
-                @Override
-                public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
-                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
-                }
-            };
+            this.registry = new RemoteControllerRegistryImpl<>();
+            this.factory = new AppRemoteFactoryImpl();
+            this.hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
+            this.registrySynchronizer = new UnitRemoteRegistrySynchronizer<>(registry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), factory);
         } catch (final CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

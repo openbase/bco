@@ -21,14 +21,13 @@ package org.openbase.bco.manager.app.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
-import org.openbase.jul.iface.Enableable;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
+import org.openbase.bco.dal.lib.layer.unit.app.App;
 import rst.domotic.unit.app.AppDataType.AppData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface AppController extends org.openbase.bco.dal.lib.layer.unit.app.App, BaseUnitController<AppData, AppData.Builder>, UnitHost<AppData> {
+public interface AppController extends App, HostUnitController<AppData, AppData.Builder> {
 }

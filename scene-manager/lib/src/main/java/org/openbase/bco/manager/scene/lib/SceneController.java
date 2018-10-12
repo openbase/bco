@@ -22,13 +22,13 @@ package org.openbase.bco.manager.scene.lib;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
-import org.openbase.jul.iface.Enableable;
+import org.openbase.bco.dal.lib.layer.unit.scene.Scene;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface SceneController extends org.openbase.bco.dal.lib.layer.unit.scene.Scene, BaseUnitController<SceneData, SceneData.Builder> {
+public interface SceneController extends Scene, BaseUnitController<SceneData, SceneData.Builder> {
     
 }

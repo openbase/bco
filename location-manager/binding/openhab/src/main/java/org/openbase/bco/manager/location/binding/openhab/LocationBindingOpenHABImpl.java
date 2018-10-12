@@ -21,28 +21,24 @@ package org.openbase.bco.manager.location.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.location.binding.openhab.unitgroup.UnitGroupRemoteFactoryImpl;
+
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.remote.layer.unit.UnitRemoteRegistrySynchronizer;
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
+import org.openbase.bco.manager.location.binding.openhab.unitgroup.UnitGroupRemoteFactoryImpl;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
-import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
-import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
  */
 public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
@@ -51,49 +47,34 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     private final LocationRemoteFactoryImpl locationRemoteFactory;
     private final ConnectionRemoteFactoryImpl connectionRemoteFactory;
-    private final RegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
-    private final RegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
-    private final RemoteControllerRegistryImpl<String, LocationRemote> locationRegistry;
-    private final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRegistry;
-    private final boolean hardwareSimulationMode;
-    private boolean active;
 
+    private final UnitRemoteRegistrySynchronizer<LocationRemote> locationRegistrySynchronizer;
+    private final UnitRemoteRegistrySynchronizer<ConnectionRemote> connectionRegistrySynchronizer;
+    private final UnitRemoteRegistrySynchronizer<UnitGroupRemote> unitGroupRegistrySynchronizer;
+
+    private final RemoteControllerRegistryImpl<String, LocationRemote> locationRemoteRegistry;
+    private final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRemoteRegistry;
+    private final RemoteControllerRegistryImpl<String, UnitGroupRemote> unitGroupRemoteRegistry;
+
+    private final boolean hardwareSimulationMode;
     private final UnitGroupRemoteFactoryImpl unitGroupRemoteFactory;
-    private final RegistrySynchronizer<String, UnitGroupRemote, UnitConfig, UnitConfig.Builder> unitGroupRegistrySynchronizer;
-    private final RemoteControllerRegistryImpl<String, UnitGroupRemote> unitGroupRegistry;
+    private boolean active;
 
     public LocationBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
         try {
-            hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
-            locationRegistry = new RemoteControllerRegistryImpl<>();
-            connectionRegistry = new RemoteControllerRegistryImpl<>();
-            locationRemoteFactory = new LocationRemoteFactoryImpl();
-            connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
-            locationRegistrySynchronizer = new RegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), locationRemoteFactory) {
+            this.hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
+            this.locationRemoteRegistry = new RemoteControllerRegistryImpl<>();
+            this.connectionRemoteRegistry = new RemoteControllerRegistryImpl<>();
+            this.unitGroupRemoteRegistry = new RemoteControllerRegistryImpl<>();
 
-                @Override
-                public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
-                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
-                }
-            };
-            this.connectionRegistrySynchronizer = new RegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), connectionRemoteFactory) {
+            this.locationRemoteFactory = new LocationRemoteFactoryImpl();
+            this.connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
+            this.unitGroupRemoteFactory = new UnitGroupRemoteFactoryImpl();
 
-                @Override
-                public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
-                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
-                }
-            };
-
-            unitGroupRegistry = new RemoteControllerRegistryImpl<>();
-            unitGroupRemoteFactory = new UnitGroupRemoteFactoryImpl();
-            unitGroupRegistrySynchronizer = new RegistrySynchronizer<String, UnitGroupRemote, UnitConfig, UnitConfig.Builder>(unitGroupRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), unitGroupRemoteFactory) {
-
-                @Override
-                public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
-                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
-                }
-            };
+            this.locationRegistrySynchronizer = new UnitRemoteRegistrySynchronizer<>(locationRemoteRegistry, Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(), locationRemoteFactory);
+            this.connectionRegistrySynchronizer = new UnitRemoteRegistrySynchronizer<>(connectionRemoteRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(), connectionRemoteFactory);
+            this.unitGroupRegistrySynchronizer = new UnitRemoteRegistrySynchronizer<>(unitGroupRemoteRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), unitGroupRemoteFactory);
         } catch (final CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -101,7 +82,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     @Override
     public void init() throws InitializationException, InterruptedException {
-        super.init(LOCATION_MANAGER_ITEM_FILTER, new LocationBindingOpenHABRemote(hardwareSimulationMode, locationRegistry, connectionRegistry, unitGroupRegistry));
+        super.init(LOCATION_MANAGER_ITEM_FILTER, new LocationBindingOpenHABRemote(hardwareSimulationMode, locationRemoteRegistry, connectionRemoteRegistry, unitGroupRemoteRegistry));
         try {
             Registries.waitForData();
             locationRemoteFactory.init(openHABRemote);

@@ -21,6 +21,8 @@ package org.openbase.bco.manager.agent.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
@@ -29,12 +31,12 @@ import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentDataType.AgentData.Builder;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AgentController extends Identifiable<String>, org.openbase.bco.dal.lib.layer.unit.agent.Agent, MessageController<AgentData, AgentData.Builder> {
+public interface AgentController extends Agent, BaseUnitController<AgentData, AgentData.Builder> {
 
-    void init(final UnitConfig config) throws InitializationException, InterruptedException;
 }

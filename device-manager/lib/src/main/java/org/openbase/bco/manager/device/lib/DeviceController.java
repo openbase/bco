@@ -21,8 +21,8 @@ package org.openbase.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
+import org.openbase.bco.dal.lib.layer.unit.device.Device;
 import rst.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
@@ -30,5 +30,5 @@ import rst.domotic.unit.device.DeviceDataType.DeviceData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public interface DeviceController extends org.openbase.bco.dal.lib.layer.unit.device.Device, BaseUnitController<DeviceData, DeviceData.Builder>, UnitHost<DeviceData> {
+public interface DeviceController extends Device, HostUnitController<DeviceData, DeviceData.Builder> {
 }

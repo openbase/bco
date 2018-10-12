@@ -22,6 +22,9 @@ package org.openbase.bco.manager.app.core;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppControllerFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
@@ -29,14 +32,13 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.ControllerRegistryImpl;
-import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
@@ -49,15 +51,15 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     protected static final Logger LOGGER = LoggerFactory.getLogger(AppManagerController.class);
 
     private final AppControllerFactory factory;
-    private final ControllerRegistryImpl<String, AppController> appRegistry;
+    private final UnitControllerRegistry<AppController> appControllerRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> appRegistrySynchronizer;
 
-    public AppManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public AppManagerController() throws org.openbase.jul.exception.InstantiationException {
         try {
             this.factory = AppControllerFactoryImpl.getInstance();
-            this.appRegistry = new ControllerRegistryImpl<>();
+            this.appControllerRegistry = new UnitControllerRegistryImpl<>();
 
-            this.appRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AppController, UnitConfig, Builder>(appRegistry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
+            this.appRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AppController, UnitConfig, Builder>(appControllerRegistry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
                 public boolean activationCondition(UnitConfig config) {
@@ -72,7 +74,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
 
     @Override
     public void init() {
-        // this has to stay, else do not implement VoidInitializ
+        // this has to stay, else do not implement VoidInitializable
     }
 
     @Override
@@ -92,7 +94,18 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     }
 
     @Override
+    public UnitControllerRegistry<AppController> getAppControllerRegistry() {
+        return appControllerRegistry;
+    }
+
+    @Override
     public void shutdown() {
         appRegistrySynchronizer.shutdown();
+    }
+
+
+    @Override
+    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
+        throw new NotAvailableException("OperationServiceFactory", new NotSupportedException("OperationServiceFactory", this));
     }
 }

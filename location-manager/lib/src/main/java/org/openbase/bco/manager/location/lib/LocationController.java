@@ -1,8 +1,8 @@
 package org.openbase.bco.manager.location.lib;
 
+import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.protobuf.MessageController;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
@@ -32,7 +32,5 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface LocationController extends Location, MessageController<LocationData, LocationData.Builder> {
-
-    void init(final UnitConfig config) throws InitializationException, InterruptedException;
+public interface LocationController extends Location, BaseUnitController<LocationData, LocationData.Builder> {
 }
