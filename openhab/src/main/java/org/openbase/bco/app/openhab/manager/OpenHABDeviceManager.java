@@ -24,7 +24,7 @@ package org.openbase.bco.app.openhab.manager;
 
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.manager.service.OpenHABOperationServiceFactory;
-import org.openbase.bco.manager.device.core.DeviceManagerController;
+import org.openbase.bco.manager.device.core.DeviceManagerImpl;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -47,7 +47,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABDeviceManager.class);
 
-    private final DeviceManagerController deviceManagerController;
+    private final DeviceManagerImpl deviceManager;
     private final CommandExecutor commandExecutor;
     /**
      * Synchronization observer that triggers resynchronization of all units if their configuration changes.
@@ -55,7 +55,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
     private final Observer synchronizationObserver;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
-        this.deviceManagerController = new DeviceManagerController(new OpenHABOperationServiceFactory()) {
+        this.deviceManager = new DeviceManagerImpl(new OpenHABOperationServiceFactory()) {
 
             @Override
             public boolean isSupported(UnitConfig config) {
@@ -96,13 +96,13 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                 }
             }
         };
-        this.commandExecutor = new CommandExecutor(deviceManagerController.getUnitControllerRegistry());
+        this.commandExecutor = new CommandExecutor(deviceManager.getUnitControllerRegistry());
         this.synchronizationObserver = ((observable, value) -> unitChangeSynchronizationFilter.trigger());
     }
 
     @Override
     public void init() throws InterruptedException, InitializationException {
-        deviceManagerController.init();
+        deviceManager.init();
     }
 
     @Override
@@ -111,20 +111,20 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
         while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
             Thread.sleep(100);
         }
-        deviceManagerController.getUnitControllerRegistry().addObserver(synchronizationObserver);
-        deviceManagerController.activate();
+        deviceManager.getUnitControllerRegistry().addObserver(synchronizationObserver);
+        deviceManager.activate();
         OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        deviceManagerController.getUnitControllerRegistry().removeObserver(synchronizationObserver);
+        deviceManager.getUnitControllerRegistry().removeObserver(synchronizationObserver);
         OpenHABRestCommunicator.getInstance().removeSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
-        deviceManagerController.deactivate();
+        deviceManager.deactivate();
     }
 
     @Override
     public boolean isActive() {
-        return deviceManagerController.isActive();
+        return deviceManager.isActive();
     }
 }
