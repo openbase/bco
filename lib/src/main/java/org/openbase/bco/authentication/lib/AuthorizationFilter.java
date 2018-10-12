@@ -116,16 +116,16 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
      * @throws CouldNotPerformException It the read permissions for the unit cannot be computed.
      */
     @Override
-    public boolean filter(UnitConfig unitConfig) throws CouldNotPerformException {
+    public boolean match(UnitConfig unitConfig) {
         try {
             if (!JPService.getProperty(JPAuthentication.class).getValue()) {
-                return true;
+                return false;
             }
         } catch (JPNotAvailableException ex) {
-            return false;
+            return true;
         }
 
-        return AuthorizationHelper.canRead(unitConfig, sessionManager.getUserAtClientId(), authorizationGroups, locations);
+        return !AuthorizationHelper.canRead(unitConfig, sessionManager.getUserAtClientId(), authorizationGroups, locations);
     }
 
     /**
