@@ -33,6 +33,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
@@ -44,8 +45,6 @@ import org.slf4j.LoggerFactory;
 public class LocationManagerImpl implements LocationManager, Launchable<Void>, VoidInitializable {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(LocationManagerImpl.class);
-
-    private final UnitSimulationManager unitSimulationManager;
 
     private final LocationControllerFactory locationControllerFactory;
     private final ConnectionControllerFactory connectionControllerFactory;
@@ -59,7 +58,7 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
     private final UnitControllerRegistrySynchronizer<ConnectionController> connectionRegistrySynchronizer;
     private final UnitControllerRegistrySynchronizer<UnitGroupController> unitGroupRegistrySynchronizer;
 
-    public LocationManagerImpl() throws org.openbase.jul.exception.InstantiationException {
+    public LocationManagerImpl() throws InstantiationException {
         try {
             // init factories
             this.locationControllerFactory = LocationControllerFactoryImpl.getInstance();
@@ -75,9 +74,6 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
             this.locationRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(locationControllerRegistry, Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(), locationControllerFactory);
             this.connectionRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(connectionControllerRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(), connectionControllerFactory);
             this.unitGroupRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(unitGroupControllerRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), unitGroupFactory);
-
-            // handle simulation mode
-            this.unitSimulationManager = new UnitSimulationManager();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -86,14 +82,14 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
     @Override
     public void init() throws InitializationException, InterruptedException {
         // this overwrite is needed to overwrite the default implementation!
-        unitSimulationManager.init(locationControllerRegistry);
-        unitSimulationManager.init(connectionControllerRegistry);
-        unitSimulationManager.init(unitGroupControllerRegistry);
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         BCOLogin.loginBCOUser();
+        locationControllerRegistry.activate();
+        connectionControllerRegistry.activate();
+        unitGroupControllerRegistry.activate();
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();
         unitGroupRegistrySynchronizer.activate();
@@ -101,7 +97,12 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
 
     @Override
     public boolean isActive() {
-        return locationRegistrySynchronizer.isActive() && connectionRegistrySynchronizer.isActive() && unitGroupRegistrySynchronizer.isActive();
+        return locationControllerRegistry.isActive() &&
+                connectionControllerRegistry.isActive() &&
+                unitGroupControllerRegistry.isActive() &&
+                locationRegistrySynchronizer.isActive() &&
+                locationRegistrySynchronizer.isActive() &&
+                unitGroupRegistrySynchronizer.isActive();
     }
 
     @Override
@@ -109,6 +110,9 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
         locationRegistrySynchronizer.deactivate();
         connectionRegistrySynchronizer.deactivate();
         unitGroupRegistrySynchronizer.deactivate();
+        locationControllerRegistry.deactivate();
+        connectionControllerRegistry.deactivate();
+        unitGroupControllerRegistry.deactivate();
     }
 
     @Override
@@ -116,6 +120,9 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
         locationRegistrySynchronizer.shutdown();
         connectionRegistrySynchronizer.shutdown();
         unitGroupRegistrySynchronizer.shutdown();
+        locationControllerRegistry.shutdown();
+        connectionControllerRegistry.shutdown();
+        unitGroupControllerRegistry.shutdown();
     }
 
     @Override

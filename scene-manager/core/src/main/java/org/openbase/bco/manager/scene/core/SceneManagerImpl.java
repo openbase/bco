@@ -21,6 +21,7 @@ package org.openbase.bco.manager.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.scene.lib.SceneController;
@@ -48,20 +49,13 @@ public class SceneManagerImpl implements SceneManager, Launchable<Void>, VoidIni
 
     private final SceneControllerFactory factory;
     private final UnitControllerRegistry<SceneController> sceneControllerRegistry;
-    private final ActivatableEntryRegistrySynchronizer<String, SceneController, UnitConfig, Builder> sceneRegistrySynchronizer;
+    private final UnitControllerRegistrySynchronizer<SceneController> sceneRegistrySynchronizer;
 
-    public SceneManagerImpl() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public SceneManagerImpl() throws org.openbase.jul.exception.InstantiationException {
         try {
             this.factory = SceneControllerFactoryImpl.getInstance();
             this.sceneControllerRegistry = new UnitControllerRegistryImpl<>();
-
-            this.sceneRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneControllerRegistry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
-
-                @Override
-                public boolean activationCondition(UnitConfig config) {
-                    return UnitConfigProcessor.isEnabled(config);
-                }
-            };
+            this.sceneRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(sceneControllerRegistry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), factory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -75,22 +69,26 @@ public class SceneManagerImpl implements SceneManager, Launchable<Void>, VoidIni
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         BCOLogin.loginBCOUser();
+        sceneControllerRegistry.activate();
         sceneRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return sceneRegistrySynchronizer.isActive();
+        return sceneRegistrySynchronizer.isActive() &&
+                sceneControllerRegistry.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         sceneRegistrySynchronizer.deactivate();
+        sceneControllerRegistry.deactivate();
     }
 
     @Override
     public void shutdown() {
         sceneRegistrySynchronizer.shutdown();
+        sceneControllerRegistry.shutdown();
     }
 
     @Override

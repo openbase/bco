@@ -34,6 +34,7 @@ import org.openbase.bco.manager.agent.lib.AgentManager;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
@@ -48,11 +49,10 @@ public class AgentManagerImpl implements AgentManager, Launchable<Void>, VoidIni
     private final UnitControllerRegistry<AgentController> agentControllerRegistry;
     private final UnitControllerRegistrySynchronizer<AgentController> agentRegistrySynchronizer;
 
-    public AgentManagerImpl() throws org.openbase.jul.exception.InstantiationException {
+    public AgentManagerImpl() throws InstantiationException {
         try {
             this.factory = AgentControllerFactoryImpl.getInstance();
             this.agentControllerRegistry = new UnitControllerRegistryImpl<>();
-
             this.agentRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(agentControllerRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(), factory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
@@ -67,23 +67,26 @@ public class AgentManagerImpl implements AgentManager, Launchable<Void>, VoidIni
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         BCOLogin.loginBCOUser();
-
+        agentControllerRegistry.activate();
         agentRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return agentRegistrySynchronizer.isActive();
+        return agentRegistrySynchronizer.isActive() &&
+                agentControllerRegistry.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         agentRegistrySynchronizer.deactivate();
+        agentControllerRegistry.deactivate();
     }
 
     @Override
     public void shutdown() {
         agentRegistrySynchronizer.shutdown();
+        agentControllerRegistry.shutdown();
     }
 
     @Override

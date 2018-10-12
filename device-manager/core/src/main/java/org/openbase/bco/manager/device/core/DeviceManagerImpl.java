@@ -10,12 +10,12 @@ package org.openbase.bco.manager.device.core;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,7 +28,6 @@ import org.openbase.bco.dal.lib.layer.service.mock.OperationServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
-import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
@@ -36,6 +35,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
@@ -54,14 +54,11 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
     private final DeviceControllerFactory deviceControllerFactory;
     private final OperationServiceFactory operationServiceFactory;
-    private final UnitSimulationManager unitSimulationManager;
 
     private final UnitControllerRegistryImpl<DeviceController> deviceControllerRegistry;
-    private final UnitControllerRegistryImpl<UnitController<?,?>> unitControllerRegistry;
+    private final UnitControllerRegistryImpl<UnitController<?, ?>> unitControllerRegistry;
 
     private final UnitControllerRegistrySynchronizer<DeviceController> deviceRegistrySynchronizer;
-
-    private boolean active = false;
 
     /**
      * This construction is using a service factory mock and is only suitable for the testing purpose.
@@ -69,11 +66,11 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
      * @throws org.openbase.jul.exception.InstantiationException
      * @throws InterruptedException
      */
-    public DeviceManagerImpl() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl() throws InstantiationException, InterruptedException {
         this(OperationServiceFactoryMock.getInstance());
     }
 
-    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory) throws InstantiationException, InterruptedException {
         this(operationServiceFactory, new DeviceControllerFactoryImpl(operationServiceFactory));
     }
 
@@ -91,9 +88,6 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
             this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), deviceControllerFactory);
             this.deviceRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isSupported(unitConfig));
-
-            // handle simulation mode
-            this.unitSimulationManager = new UnitSimulationManager();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -109,29 +103,30 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     @Override
     public void init() throws InitializationException, InterruptedException {
         // this overwrite is needed to overwrite the default implementation!
-        unitSimulationManager.init(unitControllerRegistry);
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        active = true;
         BCOLogin.loginBCOUser();
+
+        deviceControllerRegistry.activate();
+        unitControllerRegistry.activate();
+
         deviceRegistrySynchronizer.activate();
-        unitSimulationManager.activate();
     }
 
     @Override
     public boolean isActive() {
-        return active;
+        return deviceControllerRegistry.isActive() &&
+                unitControllerRegistry.isActive() &&
+                deviceRegistrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        active = false;
-        unitSimulationManager.deactivate();
         deviceRegistrySynchronizer.deactivate();
-        deviceControllerRegistry.clear();
-        unitControllerRegistry.clear();
+        deviceControllerRegistry.deactivate();
+        unitControllerRegistry.deactivate();
     }
 
     @Override
@@ -139,7 +134,6 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
         deviceRegistrySynchronizer.shutdown();
         deviceControllerRegistry.shutdown();
         unitControllerRegistry.shutdown();
-        unitSimulationManager.shutdown();
         instance = null;
     }
 
@@ -149,7 +143,7 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     }
 
     @Override
-    public UnitControllerRegistry<UnitController<?,?>> getUnitControllerRegistry() {
+    public UnitControllerRegistry<UnitController<?, ?>> getUnitControllerRegistry() {
         return unitControllerRegistry;
     }
 
