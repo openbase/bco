@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.core.plugin;
 
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -101,7 +102,7 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
         try {
             return findUser(unitConfig.getId(), userRegistry);
         } catch (NotAvailableException ex) {
-            throw new NotAvailableException("User for unit[" + unitConfig.getAlias(0) + "]");
+            throw new NotAvailableException("User for unit[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]");
         }
     }
 

@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  * #L%
  */
 
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -81,7 +82,7 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
                 if (unitMap.containsKey(key)) {
                     final String typeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
                     throw new InvalidStateException(
-                            typeName + "[" + unitConfig.getAlias(0) + "] and " +
+                            typeName + "[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "] and " +
                                     typeName + "[" + unitMap.get(key).getAlias(0) +
                                     "] are registered with the same label according to the generated key[" +
                                     key + "].");
@@ -105,7 +106,7 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
         if (unitConfig.getAliasCount() < 1) {
             throw new InvalidStateException("Alias not provided by Unit[" + unitConfig.getId() + "]!");
         }
-        return unitConfig.getAlias(0);
+        return UnitConfigProcessor.getDefaultAlias(unitConfig, "?");
     }
 
     /**

@@ -27,6 +27,7 @@ import org.openbase.bco.authentication.lib.AuthPair;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -95,7 +96,7 @@ public class AuthorizationWithTokenHelper {
 
                 // reject the token if the user tries to give more permissions than he has
                 if (!AuthorizationHelper.isSubPermission(permission, permissionRule.getPermission())) {
-                    throw new RejectedException("User[" + authorizationToken.getUserId() + "] has not enough permissions to create an authorizationToken with permissions[" + permissionRule.getPermission() + "] for unit[" + unitConfig.getAlias(0) + "]");
+                    throw new RejectedException("User[" + authorizationToken.getUserId() + "] has not enough permissions to create an authorizationToken with permissions[" + permissionRule.getPermission() + "] for unit[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]");
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -196,7 +197,7 @@ public class AuthorizationWithTokenHelper {
             }
             throw new PermissionDeniedException("User[" + userId + "] " + permissionType.name().toLowerCase() + " permission denied!");
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not verify permissions for unit[" + unitConfig.getAlias(0) + "]", ex);
+            throw new CouldNotPerformException("Could not verify permissions for unit[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]", ex);
         }
     }
 

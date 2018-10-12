@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  */
 
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -109,7 +110,7 @@ public class ClassAuthorizationGroupCreationPlugin extends ProtobufRegistryPlugi
             }
 
             final MetaConfigPool metaConfigPool = new MetaConfigPool();
-            metaConfigPool.register(new MetaConfigVariableProvider(unitConfig.getAlias(0) + MetaConfig.class.getSimpleName(),
+            metaConfigPool.register(new MetaConfigVariableProvider(UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + MetaConfig.class.getSimpleName(),
                     unitConfig.getMetaConfig()));
             try {
                 metaConfigPool.getValue(propertyKey);

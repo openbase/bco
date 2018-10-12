@@ -10,33 +10,35 @@ package org.openbase.bco.registry.lib.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +77,11 @@ public class UnitConfigProcessor {
     }
 
     public static boolean isBaseUnit(final UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
-        verifyUnitConfig(unitConfig, unitConfig.getUnitType());
+        try {
+            verifyUnitConfig(unitConfig, unitConfig.getUnitType());
+        } catch (VerificationFailedException ex) {
+            ExceptionPrinter.printHistory("Invalid UnitConfig[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "] detected!", ex, LoggerFactory.getLogger(UnitConfigProcessor.class), LogLevel.WARN);
+        }
         return isBaseUnit(unitConfig.getUnitType());
     }
 
@@ -126,16 +132,17 @@ public class UnitConfigProcessor {
         // verify unit type config
         if (isBaseUnit(unitType)) {
             try {
-                if (!(boolean) unitConfig.getClass().getMethod("has" + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Config").invoke(unitConfig)) {
-                    throw new VerificationFailedException("UnitType missing in given UnitConfig!");
+                final FieldDescriptor unitTypeFieldDescriptor = getUnitTypeFieldDescriptor(unitConfig);
+                if (!unitConfig.hasField(unitTypeFieldDescriptor)) {
+                    throw new VerificationFailedException("Custom unit config field [" + unitTypeFieldDescriptor.getName() + "] is not set for UnitConfig[" + LabelProcessor.getBestMatch(unitConfig.getLabel(), UnitConfigProcessor.getDefaultAlias(unitConfig, "?")) + "]!");
                 }
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException ex) {
-                throw new VerificationFailedException("Given unit config is not compatible with current program version!", ex);
+            } catch (NotAvailableException | NullPointerException | IndexOutOfBoundsException ex) {
+                throw new VerificationFailedException("Given unit config is invalid or not compatible with current program version!", ex);
             }
         }
     }
 
-    public static void verifyUnit(final UnitConfig unitConfig) throws VerificationFailedException {
+    public static void verifyUnitConfig(final UnitConfig unitConfig) throws VerificationFailedException {
         verifyUnitConfig(unitConfig, unitConfig.getUnitType());
         verifyUnitType(unitConfig, unitConfig.getUnitType());
     }
@@ -149,7 +156,7 @@ public class UnitConfigProcessor {
      */
     public static void verifyEnablingState(final UnitConfig unitConfig) throws VerificationFailedException {
         if (!isEnabled(unitConfig)) {
-            throw new VerificationFailedException("Referred Unit[" + unitConfig.getAlias(0) + "] is disabled!");
+            throw new VerificationFailedException("Referred Unit[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "] is disabled!");
         }
     }
 
@@ -241,5 +248,70 @@ public class UnitConfigProcessor {
             throw new CouldNotPerformException("Could not load builder for " + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "!", ex);
         }
         return builder;
+    }
+
+    /**
+     * Method resolves the field descriptor of the custom type field of the unit config.
+     * For example in case a UnitConfig of UnitType.Location is passed those method would return the descriptor referring the LocationConfig field of the UnitConfig.
+     *
+     * @param unitConfig the config used to resolve the unit type and the field descriptor.
+     *
+     * @return a field descriptor which is referring the custom type field.
+     *
+     * @throws NotAvailableException is thrown in case the descriptor could not be resolved.
+     */
+    public static FieldDescriptor getUnitTypeFieldDescriptor(final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
+        return getUnitTypeFieldDescriptor(unitConfig.getUnitType(), unitConfig);
+    }
+
+    /**
+     * Method resolves the field descriptor of the custom type field of the unit config.
+     * For example in case a UnitConfig of UnitType.Location is passed those method would return the descriptor referring the LocationConfig field of the UnitConfig.
+     *
+     * @param unitType   refers the type of config.
+     * @param unitConfig the config used to resolve the field descriptor.
+     *
+     * @return a field descriptor which is referring the custom type field.
+     *
+     * @throws NotAvailableException is thrown in case the descriptor could not be resolved.
+     */
+    public static FieldDescriptor getUnitTypeFieldDescriptor(final UnitType unitType, final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
+        final FieldDescriptor unitTypeFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(unitConfig, unitType.name().toLowerCase() + "_config");
+        if (unitTypeFieldDescriptor == null) {
+            throw new NotAvailableException("UnitConfig", "UnitTypeFieldDescriptor");
+        }
+        return unitTypeFieldDescriptor;
+    }
+
+    /**
+     * Method returns the default alias of the given unit config.
+     *
+     * @param unitConfig  the alias provider.
+     * @param alternative this string is returned if the default alias is not available.
+     *
+     * @return the default alias as string.
+     */
+    public static String getDefaultAlias(final UnitConfigOrBuilder unitConfig, final String alternative) {
+        try {
+            return getDefaultAlias(unitConfig);
+        } catch (NotAvailableException e) {
+            return alternative;
+        }
+    }
+
+    /**
+     * Method returns the default alias of the given unit config.
+     *
+     * @param unitConfig the alias provider.
+     *
+     * @return the default alias as string.
+     *
+     * @throws NotAvailableException is thrown if the given unit config does not provide a default alias.
+     */
+    public static String getDefaultAlias(final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
+        if (unitConfig.getAliasCount() <= 0) {
+            throw new NotAvailableException("Default Alias");
+        }
+        return unitConfig.getAlias(0);
     }
 }

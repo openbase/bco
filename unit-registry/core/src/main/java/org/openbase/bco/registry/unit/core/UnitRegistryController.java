@@ -317,6 +317,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneServiceStateConsistencyHandler(unitConfigRegistryList));
 
         // add consistency handler for all unitConfig registries
+        registerConsistencyHandler(new BaseUnitTypeFieldConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitServiceConfigConsistencyHandler(), UnitConfig.class);

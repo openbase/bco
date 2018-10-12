@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  */
 
 import org.openbase.bco.registry.lib.util.LocationUtils;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -117,7 +118,7 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
         } catch (TransformerException ex) {
             // TODO: does this need to be fixed in test mode, because it currently leads to a lot if warning printed in tests
             if (!JPService.testMode()) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + unitConfig.getAlias(0) + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
             }
             return;
         }

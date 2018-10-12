@@ -1,6 +1,6 @@
 package org.openbase.bco.registry.unit.core.consistency;
 
-/*
+/*-
  * #%L
  * BCO Registry Unit Core
  * %%
@@ -21,45 +21,43 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.language.LabelType.Label;
 
 /**
+ * Consistency handler which generates other permissions for units without a placement and the root location.
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class ExecutableUnitAutostartConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
-    private static final boolean DEFAULT_AUTOSTART_STATE = true;
+public class BaseUnitTypeFieldConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        UnitConfigProcessor.verifyUnitConfig(unitConfig.build());
+        // filter dal units
+        if(UnitConfigProcessor.isDalUnit(entry.getMessage().getUnitType())) {
+            return;
+        }
 
-        switch (unitConfig.getUnitType()) {
-            case APP:
-                if (!unitConfig.getAppConfig().hasAutostart()) {
-                    unitConfig.getAppConfigBuilder().setAutostart(DEFAULT_AUTOSTART_STATE);
-                    throw new EntryModification(entry.setMessage(unitConfig), this);
-                }
-                break;
-            case AGENT:
-                if (!unitConfig.getAgentConfig().hasAutostart()) {
-                    unitConfig.getAgentConfigBuilder().setAutostart(DEFAULT_AUTOSTART_STATE);
-                    throw new EntryModification(entry.setMessage(unitConfig), this);
-                }
-                break;
-            default:
-                throw new NotSupportedException(unitConfig.getUnitType(), getClass());
+        // init needed information
+        final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+        final FieldDescriptor fieldDescriptor = UnitConfigProcessor.getUnitTypeFieldDescriptor(unitConfig);
+
+        // if type field is not available, than recover.
+        if (!unitConfig.hasField(fieldDescriptor)) {
+            throw new EntryModification(entry.setMessage(unitConfig.setField(fieldDescriptor, unitConfig.getField(fieldDescriptor)), this), this);
         }
     }
 }
