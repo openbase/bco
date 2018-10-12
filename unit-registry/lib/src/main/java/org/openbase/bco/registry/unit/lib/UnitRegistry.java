@@ -1479,5 +1479,4 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 //     */
 //    @RPCMethod
 //    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
-
 }

@@ -24,13 +24,17 @@ package org.openbase.bco.registry.lib.util;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -123,10 +127,10 @@ public class UnitConfigProcessor {
         if (isBaseUnit(unitType)) {
             try {
                 if (!(boolean) unitConfig.getClass().getMethod("has" + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Config").invoke(unitConfig)) {
-                    throw new VerificationFailedException("UnitType config missing of given UnitConfig!");
+                    throw new VerificationFailedException("UnitType missing in given UnitConfig!");
                 }
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException ex) {
-                throw new VerificationFailedException("Given unit config is not compatible with current programm version!", ex);
+                throw new VerificationFailedException("Given unit config is not compatible with current program version!", ex);
             }
         }
     }
@@ -213,5 +217,29 @@ public class UnitConfigProcessor {
      */
     public static Class<? extends GeneratedMessage> getUnitDataClass(final UnitConfig unitConfig) throws NotAvailableException {
         return UnitConfigProcessor.getUnitDataClass(unitConfig.getUnitType());
+    }
+
+    public static GeneratedMessage.Builder generateUnitDataBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
+        GeneratedMessage.Builder builder;
+        try {
+            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
+            String unitMessageClassName = "rst.domotic.unit.dal." + unitTypeName + "DataType$" + unitTypeName + "Data";
+            Class messageClass;
+            try {
+                messageClass = Class.forName(unitMessageClassName);
+            } catch (ClassNotFoundException ex) {
+                throw new CouldNotPerformException("Could not find builder Class[" + unitMessageClassName + "]!", ex);
+            }
+
+            try {
+                builder = (GeneratedMessage.Builder) messageClass.getMethod("newBuilder").invoke(null);
+            } catch (NoSuchMethodException | SecurityException ex) {
+                throw new CouldNotPerformException("Could not instantiate builder out of Class[" + messageClass.getName() + "]!", ex);
+            }
+
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not load builder for " + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "!", ex);
+        }
+        return builder;
     }
 }

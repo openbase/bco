@@ -103,7 +103,7 @@ public class RemoteRegistrySynchronizer<M extends GeneratedMessage> implements O
             final List<M> filteredList = this.filter.filter(entryList);
             remoteRegistry.notifyRegistryUpdate(filteredList);
 //            LOGGER.info("triggered for: " + remoteRegistry + " from [" + initialSize + ", " + filteredList.size() + " | " + sizeBefore + ", "+remoteRegistry.getMessages().size()+"]");
-//            remoteRegistry.notifyRegistryUpdate(this.filter.filter(entryList));
+//            remoteRegistry.notifyRegistryUpdate(this.filter.pass(entryList));
         } catch (CouldNotPerformException | IndexOutOfBoundsException | ClassCastException | NullPointerException ex) {
             ExceptionPrinter.printHistory("Registry synchronization failed!", ex, LOGGER);
         }
