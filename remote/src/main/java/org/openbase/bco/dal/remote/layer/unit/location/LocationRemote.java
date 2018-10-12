@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import java.util.concurrent.Future;
 
 import com.google.protobuf.Message;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -46,6 +48,7 @@ import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
 import rst.domotic.state.BrightnessStateType;
 import rst.domotic.state.ColorStateType;
+import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.state.MotionStateType;
 import rst.domotic.state.PowerConsumptionStateType;
@@ -378,9 +381,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         }
         return unitRemote;
     }
-
-
-
     @Override
     public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
@@ -393,7 +393,28 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public Future<AuthenticatedValue> applyActionAuthenticated(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        if (!SessionManager.getInstance().isLoggedIn()) {
+            throw new CouldNotPerformException("Could not apply authenticated action because default session manager not logged in");
+        }
+
+        try {
+            final ActionDescription actionDescription = EncryptionHelper.decrypt(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class, SessionManager.getInstance().getUserId() == null);
+            for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                if (serviceDescription.getAggregated()) {
+                    continue;
+                }
+
+                if(serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
+                    continue;
+                }
+
+                return super.applyActionAuthenticated(authenticatedValue);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
+        }
+
         return serviceRemoteManager.applyActionAuthenticated(authenticatedValue);
     }
 }

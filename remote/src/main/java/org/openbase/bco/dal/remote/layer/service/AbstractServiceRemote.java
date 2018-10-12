@@ -52,8 +52,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -701,6 +701,13 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             ActionDescriptionList.add(unitRemote.applyActionAuthenticated(authValue));
         }
 
+        // Because the action is never send to the controller the authenticator will not and does not need to be updated.
+        // But in order not to override the applyAction method, which returns a future that validates the authenticator,
+        // on the location remote and unit group remote, it is faked here.
+        final Authenticator.Builder authenticator = EncryptionHelper.decryptSymmetric(authenticatedValue.getTicketAuthenticatorWrapper().getAuthenticator(), SessionManager.getInstance().getSessionKey(), Authenticator.class).toBuilder();
+        authenticator.getTimestampBuilder().setTime(authenticator.getTimestamp().getTime() + 1);
+        final ByteString encryptedAuthenticator = EncryptionHelper.encryptSymmetric(authenticator.build(), SessionManager.getInstance().getSessionKey());
+
         return GlobalCachedExecutorService.allOf(input -> {
             for (final Future<AuthenticatedValue> future : input) {
                 final TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
@@ -714,7 +721,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                 }
             }
-            return authenticatedValue.toBuilder().setTicketAuthenticatorWrapper(SessionManager.getInstance().getTicketAuthenticatorWrapper()).build();
+            AuthenticatedValue.Builder builder = authenticatedValue.toBuilder();
+            builder.getTicketAuthenticatorWrapperBuilder().setAuthenticator(encryptedAuthenticator);
+            return builder.build();
         }, ActionDescriptionList);
     }
 
