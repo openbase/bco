@@ -25,6 +25,7 @@ package org.openbase.bco.manager.location.core;
 import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
+import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.location.lib.*;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupController;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupControllerFactory;
@@ -44,7 +45,7 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(LocationManagerImpl.class);
 
-//    private final UnitSimulationManager unitSimulationManager;
+    private final UnitSimulationManager unitSimulationManager;
 
     private final LocationControllerFactory locationControllerFactory;
     private final ConnectionControllerFactory connectionControllerFactory;
@@ -76,7 +77,7 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
             this.unitGroupRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(unitGroupControllerRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), unitGroupFactory);
 
             // handle simulation mode
-//            this.unitSimulationManager = new UnitSimulationManager();
+            this.unitSimulationManager = new UnitSimulationManager();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -85,9 +86,9 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
     @Override
     public void init() throws InitializationException, InterruptedException {
         // this overwrite is needed to overwrite the default implementation!
-//        unitSimulationManager.init(locationControllerRegistry);
-//        unitSimulationManager.init(connectionControllerRegistry);
-//        unitSimulationManager.init(unitGroupControllerRegistry);
+        unitSimulationManager.init(locationControllerRegistry);
+        unitSimulationManager.init(connectionControllerRegistry);
+        unitSimulationManager.init(unitGroupControllerRegistry);
     }
 
     @Override
