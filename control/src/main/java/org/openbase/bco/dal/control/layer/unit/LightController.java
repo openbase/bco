@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Light;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -49,8 +49,8 @@ public class LightController extends AbstractDALUnitController<LightData, LightD
     
     private PowerStateOperationService powerService;
     
-    public LightController(final UnitHost unitHost, final LightData.Builder builder) throws InstantiationException {
-        super(LightController.class, unitHost, builder);
+    public LightController(final HostUnitController hostUnitController, final LightData.Builder builder) throws InstantiationException {
+        super(LightController.class, hostUnitController, builder);
     }
     
     @Override

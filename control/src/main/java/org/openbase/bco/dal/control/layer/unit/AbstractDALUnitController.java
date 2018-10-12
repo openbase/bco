@@ -25,7 +25,8 @@ package org.openbase.bco.dal.control.layer.unit;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnit;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -47,17 +48,17 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
 
 
 
-    private final UnitHost unitHost;
+    private final HostUnitController hostUnit;
     private final OperationServiceFactory operationServiceFactory;
 
-    public AbstractDALUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws InstantiationException {
+    public AbstractDALUnitController(final Class unitClass, final HostUnitController hostUnitController, final MB builder) throws InstantiationException {
         super(unitClass, builder);
         try {
-            if (unitHost.getOperationServiceFactory() == null) {
+            if (hostUnitController.getOperationServiceFactory() == null) {
                 throw new NotAvailableException("service factory");
             }
-            this.unitHost = unitHost;
-            this.operationServiceFactory = unitHost.getOperationServiceFactory();
+            this.hostUnit = hostUnitController;
+            this.operationServiceFactory = hostUnitController.getOperationServiceFactory();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -99,7 +100,7 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
         return operationServiceFactory;
     }
 
-    public UnitHost getUnitHost() {
-        return unitHost;
+    public HostUnit getHostUnit() {
+        return hostUnit;
     }
 }

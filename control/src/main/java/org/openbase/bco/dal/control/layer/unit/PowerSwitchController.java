@@ -23,7 +23,7 @@ package org.openbase.bco.dal.control.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -47,8 +47,8 @@ public class PowerSwitchController extends AbstractDALUnitController<PowerSwitch
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
     
-    public PowerSwitchController(final UnitHost unitHost, final PowerSwitchData.Builder builder) throws InstantiationException {
-        super(PowerSwitchController.class, unitHost, builder);
+    public PowerSwitchController(final HostUnitController hostUnitController, final PowerSwitchData.Builder builder) throws InstantiationException {
+        super(PowerSwitchController.class, hostUnitController, builder);
     }
 
     @Override

@@ -21,14 +21,13 @@ package org.openbase.bco.dal.lib.layer.unit.device;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnit;
 import rst.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Device extends BaseUnit<DeviceData> {
+public interface Device extends HostUnit<DeviceData> {
 
 }

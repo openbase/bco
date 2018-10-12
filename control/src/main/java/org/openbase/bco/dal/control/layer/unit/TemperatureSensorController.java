@@ -22,7 +22,7 @@ package org.openbase.bco.dal.control.layer.unit;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -42,7 +42,7 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
     }
     
-    public TemperatureSensorController(final UnitHost unitHost, final TemperatureSensorData.Builder builder) throws InstantiationException {
-        super(TemperatureSensorController.class, unitHost, builder);
+    public TemperatureSensorController(final HostUnitController hostUnitController, final TemperatureSensorData.Builder builder) throws InstantiationException {
+        super(TemperatureSensorController.class, hostUnitController, builder);
     }
 }

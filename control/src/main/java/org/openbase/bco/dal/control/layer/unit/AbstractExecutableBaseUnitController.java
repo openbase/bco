@@ -60,8 +60,8 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     private final SyncObject activationLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
-    private Future<ActionDescription> executionFuture;
     private final ActivationStateOperationServiceImpl activationStateOperationService;
+    private Future<ActionDescription> executionFuture;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
         super(unitClass, builder);
@@ -106,15 +106,10 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        try {
-            synchronized (activationLock) {
-                stop(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
-                cancelExecution();
-                activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
-                super.deactivate();
-            }
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not deactivates " + this, ex);
+        synchronized (activationLock) {
+            stop(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+            cancelExecution();
+            super.deactivate();
         }
     }
 

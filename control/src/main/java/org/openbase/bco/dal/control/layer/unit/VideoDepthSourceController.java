@@ -21,7 +21,7 @@ package org.openbase.bco.dal.control.layer.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.VideoDepthSource;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -39,7 +39,7 @@ public class VideoDepthSourceController extends AbstractDALUnitController<VideoD
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(VideoDepthSourceData.getDefaultInstance()));
     }
 
-    public VideoDepthSourceController(final UnitHost unitHost, VideoDepthSourceData.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(VideoDepthSourceController.class, unitHost, builder);
+    public VideoDepthSourceController(final HostUnitController hostUnitController, VideoDepthSourceData.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(VideoDepthSourceController.class, hostUnitController, builder);
     }
 }

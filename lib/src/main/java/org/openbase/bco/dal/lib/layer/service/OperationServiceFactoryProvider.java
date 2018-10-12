@@ -30,5 +30,5 @@ import org.openbase.jul.exception.NotAvailableException;
  */
 public interface OperationServiceFactoryProvider {
 
-    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException;
+    OperationServiceFactory getOperationServiceFactory() throws NotAvailableException;
 }

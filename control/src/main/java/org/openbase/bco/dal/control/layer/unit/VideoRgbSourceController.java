@@ -21,7 +21,7 @@ package org.openbase.bco.dal.control.layer.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.VideoRgbSource;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -39,7 +39,7 @@ public class VideoRgbSourceController extends AbstractDALUnitController<VideoRgb
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(VideoRgbSourceData.getDefaultInstance()));
     }
 
-    public VideoRgbSourceController(final UnitHost unitHost, VideoRgbSourceData.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(VideoRgbSourceController.class, unitHost, builder);
+    public VideoRgbSourceController(final HostUnitController hostUnitController, VideoRgbSourceData.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(VideoRgbSourceController.class, hostUnitController, builder);
     }
 }

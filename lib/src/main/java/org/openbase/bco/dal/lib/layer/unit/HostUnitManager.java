@@ -22,17 +22,21 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.jul.pattern.Filter;
-import rst.domotic.state.EnablingStateType.EnablingState.State;
+import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- * A collection of useful unit filters.
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UnitFilters {
+public interface HostUnitManager extends OperationServiceFactoryProvider {
 
     /**
-     * Filters all units which are disabled and let enabled ones filter.
+     * Check if the given unit is supported by this manager instance.
+     *
+     * @param config the config of the unit to check.
+     *
+     * @return true if supported.
      */
-    public static final Filter<UnitConfig> DISABELED_UNIT_FILTER = unitConfig -> unitConfig.getEnablingState().getValue() != State.ENABLED;
+    boolean isSupported(final UnitConfig config);
+
 }

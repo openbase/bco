@@ -21,21 +21,16 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.SynchronizableRegistry;
-
-import java.util.Map;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * 
- * @param <D> the data type of the units used for the state synchronization.
- * @param <DB> the builder used to build the unit data instances.
+ * @param <CONTROLLER> the builder used to build the unit data instances.
  */
-public interface UnitControllerRegistry<D extends GeneratedMessage, DB extends D.Builder<DB>> extends SynchronizableRegistry<String, UnitController<D, DB>> {
+public interface UnitControllerRegistry<CONTROLLER extends UnitController<?,?>> extends SynchronizableRegistry<String, CONTROLLER> {
 
     /**
      * Returns a unit controller instance with the given scope.
@@ -44,5 +39,5 @@ public interface UnitControllerRegistry<D extends GeneratedMessage, DB extends D
      * @return the scope matching unit controller.
      * @throws NotAvailableException is thrown in case there is no unit registered for the given scope.
      */
-    UnitController<D, DB> getUnitByScope(final String scope) throws NotAvailableException;
+    CONTROLLER getUnitByScope(final String scope) throws NotAvailableException;
 }

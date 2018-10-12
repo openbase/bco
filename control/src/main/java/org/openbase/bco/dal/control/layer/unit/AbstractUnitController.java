@@ -91,7 +91,6 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.ActionStateType.ActionState.State;
-import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -1130,6 +1129,20 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Void.class, ex);
+        }
+    }
+
+    public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
+
+        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name()) + "Controller";
+        try {
+            return (Class<? extends UnitController>) Class.forName(className);
+        } catch (ClassNotFoundException ex) {
+            try {
+                throw new CouldNotTransformException(ScopeGenerator.generateStringRep(unitConfig.getScope()), UnitController.class, new NotAvailableException("Class", ex));
+            } catch (CouldNotPerformException ex1) {
+                throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
+            }
         }
     }
 }

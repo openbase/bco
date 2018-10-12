@@ -27,7 +27,7 @@ package org.openbase.bco.dal.control.layer.unit;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.LightSensor;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -45,7 +45,7 @@ public class LightSensorController extends AbstractDALUnitController<LightSensor
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(IlluminanceState.getDefaultInstance()));
     }
     
-    public LightSensorController(final UnitHost unitHost, LightSensorData.Builder builder) throws InstantiationException {
-        super(LightSensorController.class, unitHost, builder);
+    public LightSensorController(final HostUnitController hostUnitController, LightSensorData.Builder builder) throws InstantiationException {
+        super(LightSensorController.class, hostUnitController, builder);
     }
 }

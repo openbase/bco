@@ -31,6 +31,6 @@ import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
  *
  * @param <D> the data type of this unit used for the state synchronization.
  */
-public interface UnitHost<D extends Message> extends Unit<D>, OperationServiceFactoryProvider {
+public interface HostUnit<D extends Message> extends BaseUnit<D> {
 
 }

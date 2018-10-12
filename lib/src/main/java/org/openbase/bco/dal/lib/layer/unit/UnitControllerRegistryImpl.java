@@ -39,19 +39,18 @@ import org.openbase.jul.storage.registry.ControllerRegistryImpl;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
- * @param <D> the data type of the units used for the state synchronization.
- * @param <DB> the builder used to build the unit data instances.
+ * @param <CONTROLLER> the type of unit controller.
  */
-public class UnitControllerRegistryImpl<D extends GeneratedMessage, DB extends D.Builder<DB>> extends ControllerRegistryImpl<String, UnitController<D, DB>> implements UnitControllerRegistry<D, DB> {
+public class UnitControllerRegistryImpl<CONTROLLER extends UnitController<?,?>> extends ControllerRegistryImpl<String, CONTROLLER> implements UnitControllerRegistry<CONTROLLER> {
 
-    private final Map<String, UnitController<D, DB>> scopeControllerMap;
+    private final Map<String, CONTROLLER> scopeControllerMap;
 
     public UnitControllerRegistryImpl() throws InstantiationException {
         this.scopeControllerMap = new HashMap<>();
         addObserver(new UnitControllerSynchronizer());
     }
 
-    public UnitControllerRegistryImpl(final HashMap<String, UnitController<D, DB>> entryMap) throws InstantiationException {
+    public UnitControllerRegistryImpl(final HashMap<String, CONTROLLER> entryMap) throws InstantiationException {
         super(entryMap);
         this.scopeControllerMap = new HashMap<>();
         addObserver(new UnitControllerSynchronizer());
@@ -63,8 +62,8 @@ public class UnitControllerRegistryImpl<D extends GeneratedMessage, DB extends D
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public UnitController getUnitByScope(final String scope) throws NotAvailableException {
-        final UnitController controller = scopeControllerMap.get(scope);
+    public CONTROLLER getUnitByScope(final String scope) throws NotAvailableException {
+        final CONTROLLER controller = scopeControllerMap.get(scope);
         if (controller == null) {
             throw new NotAvailableException("UnitController", new InvalidStateException("No unit controller for given scope registered!"));
         }
@@ -74,19 +73,19 @@ public class UnitControllerRegistryImpl<D extends GeneratedMessage, DB extends D
     /**
      * Class to synchronize the scope controller map with the unit controller registry.
      */
-    private class UnitControllerSynchronizer implements Observer<DataProvider<Map<String, UnitController<D, DB>>>, Map<String, UnitController<D, DB>>> {
+    private class UnitControllerSynchronizer implements Observer<DataProvider<Map<String, CONTROLLER>>, Map<String, CONTROLLER>> {
 
         @Override
-        public void update(final DataProvider<Map<String, UnitController<D, DB>>> source, final Map<String, UnitController<D, DB>> data) throws Exception {
+        public void update(final DataProvider<Map<String, CONTROLLER>> source, final Map<String, CONTROLLER> data) throws Exception {
 
-            final Collection<UnitController<D, DB>> unitControllerCollection = data.values();
+            final Collection<CONTROLLER> unitControllerCollection = new ArrayList<>(data.values());
             // add new entries to the scope controller map
-            for (final UnitController<D, DB> controller : unitControllerCollection) {
+            for (final CONTROLLER controller : unitControllerCollection) {
                 scopeControllerMap.put(ScopeGenerator.generateStringRep(controller.getScope()), controller);
             }
 
             // remove controller which are no longer provided by the registry
-            for (final UnitController<D, DB> controller : new ArrayList<>(scopeControllerMap.values())) {
+            for (final CONTROLLER controller : new ArrayList<>(scopeControllerMap.values())) {
                 if (unitControllerCollection.contains(controller)) {
                     continue;
                 }

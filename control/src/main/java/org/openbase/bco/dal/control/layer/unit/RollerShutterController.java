@@ -24,7 +24,7 @@ package org.openbase.bco.dal.control.layer.unit;
 import java.util.concurrent.Future;
 
 import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -46,8 +46,8 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BlindState.getDefaultInstance()));
     }
 
-    public RollerShutterController(final UnitHost unitHost, final RollerShutterData.Builder builder) throws InstantiationException {
-        super(RollerShutterController.class, unitHost, builder);
+    public RollerShutterController(final HostUnitController hostUnitController, final RollerShutterData.Builder builder) throws InstantiationException {
+        super(RollerShutterController.class, hostUnitController, builder);
     }
 
     @Override

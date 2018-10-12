@@ -124,7 +124,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
                     // filter non dal units and disabled units
                     try {
-                        if (!UnitConfigProcessor.isDalUnit(unitConfig) || unitConfig.getEnablingState().getValue() == State.DISABLED) {
+                        if (!UnitConfigProcessor.isDalUnit(unitConfig) || !UnitConfigProcessor.isEnabled(unitConfig)) {
                             continue;
                         }
                     } catch (VerificationFailedException ex) {

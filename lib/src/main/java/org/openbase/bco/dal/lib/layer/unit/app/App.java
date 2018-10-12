@@ -2,7 +2,7 @@ package org.openbase.bco.dal.lib.layer.unit.app;
 
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnit;
 import rst.domotic.unit.app.AppDataType.AppData;
 
 /*
@@ -30,5 +30,5 @@ import rst.domotic.unit.app.AppDataType.AppData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface App extends BaseUnit<AppData>, ActivationStateOperationService {
+public interface App extends HostUnit<AppData>, ActivationStateOperationService {
 }

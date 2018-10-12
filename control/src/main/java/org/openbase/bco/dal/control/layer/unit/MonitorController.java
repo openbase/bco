@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Monitor;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -54,8 +54,8 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     private PowerStateOperationService powerStateService;
     private StandbyStateOperationService standbyStateService;
     
-    public MonitorController(final UnitHost unitHost, final MonitorData.Builder builder) throws InstantiationException {
-        super(MonitorController.class, unitHost, builder);
+    public MonitorController(final HostUnitController hostUnitController, final MonitorData.Builder builder) throws InstantiationException {
+        super(MonitorController.class, hostUnitController, builder);
     }
 
     @Override

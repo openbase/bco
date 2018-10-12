@@ -23,7 +23,7 @@ package org.openbase.bco.dal.control.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Battery;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -40,7 +40,7 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryState.getDefaultInstance()));
     }
 
-    public BatteryController(final UnitHost unitHost, BatteryData.Builder builder) throws InstantiationException {
-        super(BatteryController.class, unitHost, builder);
+    public BatteryController(final HostUnitController hostUnitController, BatteryData.Builder builder) throws InstantiationException {
+        super(BatteryController.class, hostUnitController, builder);
     }
 }

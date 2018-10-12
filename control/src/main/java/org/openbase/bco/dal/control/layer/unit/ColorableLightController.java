@@ -23,7 +23,7 @@ package org.openbase.bco.dal.control.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -71,8 +71,8 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
     private Color neutralWhite;
 
-    public ColorableLightController(final UnitHost unitHost, final ColorableLightData.Builder builder) throws InstantiationException {
-        super(ColorableLightController.class, unitHost, builder);
+    public ColorableLightController(final HostUnitController hostUnitController, final ColorableLightData.Builder builder) throws InstantiationException {
+        super(ColorableLightController.class, hostUnitController, builder);
         this.neutralWhite = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;
     }
 

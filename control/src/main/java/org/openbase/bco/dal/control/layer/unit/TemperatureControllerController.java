@@ -24,7 +24,7 @@ package org.openbase.bco.dal.control.layer.unit;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -48,8 +48,8 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
     
     private TargetTemperatureStateOperationService targetTemperatureStateService;
     
-    public TemperatureControllerController(final UnitHost unitHost, final TemperatureControllerData.Builder builder) throws InstantiationException {
-        super(TemperatureControllerController.class, unitHost, builder);
+    public TemperatureControllerController(final HostUnitController hostUnitController, final TemperatureControllerData.Builder builder) throws InstantiationException {
+        super(TemperatureControllerController.class, hostUnitController, builder);
     }
 
     @Override

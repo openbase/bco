@@ -22,7 +22,7 @@ package org.openbase.bco.dal.control.layer.unit;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.ReedContact;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -40,7 +40,7 @@ public class ReedContactController extends AbstractDALUnitController<ReedContact
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
     }
     
-    public ReedContactController(final UnitHost unitHost, ReedContactData.Builder builder) throws InstantiationException {
-        super(ReedContactController.class, unitHost, builder);
+    public ReedContactController(final HostUnitController hostUnitController, ReedContactData.Builder builder) throws InstantiationException {
+        super(ReedContactController.class, hostUnitController, builder);
     }
 }

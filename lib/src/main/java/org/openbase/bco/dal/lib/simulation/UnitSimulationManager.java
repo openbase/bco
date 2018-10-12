@@ -50,7 +50,7 @@ import org.openbase.jul.exception.InstantiationException;
  *
  * This class generates unit simulators for each unit controller the given unit controller registry provides.
  */
-public class UnitSimulationManager implements Manageable<UnitControllerRegistry<?, ?>> {
+public class UnitSimulationManager<CONTROLLER extends UnitController<?,?>> implements Manageable<UnitControllerRegistry<CONTROLLER>> {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UnitSimulationManager.class);
 
@@ -89,7 +89,7 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
      * @throws InterruptedException is thrown if the current thread is externally interrupted.
      */
     @Override
-    public void init(final UnitControllerRegistry<?, ?> unitControllerRegistry) throws InterruptedException {
+    public void init(final UnitControllerRegistry<CONTROLLER> unitControllerRegistry) throws InterruptedException {
         if (!enabled) {
             return;
         }
@@ -105,10 +105,10 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
         }
     }
 
-    private <D extends GeneratedMessage, DB extends D.Builder<DB>> void updateUnitSimulators(final Collection<UnitController<D, DB>> unitControllerList) throws InterruptedException {
+    private void updateUnitSimulators(final Collection<CONTROLLER> unitControllerList) throws InterruptedException {
         synchronized (UNIT_SIMULATOR_MONITOR) {
             final List<String> previousUnitKeyList = new ArrayList<>(unitSimulatorMap.keySet());
-            for (UnitController<?, ?> unitController : unitControllerList) {
+            for (CONTROLLER unitController : unitControllerList) {
                 try {
 
                     previousUnitKeyList.remove(unitController.getId());
@@ -141,7 +141,7 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
     }
 
     /**
-     * Method activates the unit simulation but only of the {@code JPHardwareSimulationMode} is activated.
+     * Method activates the unit simulation but only if the {@code JPHardwareSimulationMode} is activated.
      *
      * @throws CouldNotPerformException is thrown if the simulation could not be started.
      * @throws InterruptedException is thrown if the current thread is externally interrupted.

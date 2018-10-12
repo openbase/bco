@@ -23,7 +23,8 @@ package org.openbase.bco.dal.control.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Button;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -66,8 +67,8 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
         }
     };
 
-    public ButtonController(final UnitHost unitHost, final ButtonData.Builder builder) throws InstantiationException {
-        super(ButtonController.class, unitHost, builder);
+    public ButtonController(final HostUnitController hostUnitController, final ButtonData.Builder builder) throws InstantiationException {
+        super(ButtonController.class, hostUnitController, builder);
     }
 
     @Override

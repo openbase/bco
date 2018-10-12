@@ -5,7 +5,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Dimmer;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -55,8 +55,8 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     private PowerStateOperationService powerStateService;
     private BrightnessStateOperationService brightnessStateService;
 
-    public DimmerController(final UnitHost unitHost, DimmerData.Builder builder) throws InstantiationException {
-        super(DimmerController.class, unitHost, builder);
+    public DimmerController(final HostUnitController hostUnitController, DimmerData.Builder builder) throws InstantiationException {
+        super(DimmerController.class, hostUnitController, builder);
     }
 
     @Override

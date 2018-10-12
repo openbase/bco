@@ -23,7 +23,7 @@ package org.openbase.bco.dal.control.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
-import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -40,7 +40,7 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
     }
 
-    public TamperDetectorController(final UnitHost unitHost, final TamperDetectorData.Builder builder) throws InstantiationException {
-        super(TamperDetectorController.class, unitHost, builder);
+    public TamperDetectorController(final HostUnitController hostUnitController, final TamperDetectorData.Builder builder) throws InstantiationException {
+        super(TamperDetectorController.class, hostUnitController, builder);
     }
 }
