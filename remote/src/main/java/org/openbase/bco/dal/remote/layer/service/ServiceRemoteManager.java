@@ -128,7 +128,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                             continue;
                         }
                     } catch (VerificationFailedException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("UnitConfig[" + unitConfig + "] could not be verified as a dal unit!", ex), LOGGER);
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("UnitConfig[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "] could not be verified as a dal unit!", ex), LOGGER);
                     }
 
                     // sort dal unit by service type
