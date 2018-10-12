@@ -29,6 +29,7 @@ import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.registry.diff.IdentifiableEnrichedThingDTO;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -93,7 +94,7 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
 //        try {
 //            Registries.getUnitRegistry().removeUnitConfig(unitConfig).get();
 //        } catch (ExecutionException ex) {
-//            throw new CouldNotPerformException("Could not remove unit " + unitConfig.getAlias(0), ex);
+//            throw new CouldNotPerformException("Could not remove unit " + UnitConfigProcessor.getDefaultAlias(unitConfig, "?"), ex);
 //        }
     }
 
@@ -147,7 +148,7 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
                 try {
                     itemDTO.type = OpenHABItemProcessor.getItemType(serviceType);
                 } catch (NotAvailableException ex) {
-                    logger.warn("Skip registration of item for service {} of unit {} because no item type available", serviceType.name(), unitConfig.getAlias(0));
+                    logger.warn("Skip registration of item for service {} of unit {} because no item type available", serviceType.name(), UnitConfigProcessor.getDefaultAlias(unitConfig, "?"));
                     continue;
                 }
                 OpenHABRestCommunicator.getInstance().registerItem(itemDTO);

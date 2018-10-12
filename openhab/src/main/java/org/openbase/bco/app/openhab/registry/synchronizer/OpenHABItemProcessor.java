@@ -22,6 +22,7 @@ package org.openbase.bco.app.openhab.registry.synchronizer;
  * #L%
  */
 
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.core.consistency.UnitAliasGenerationConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -50,7 +51,7 @@ public class OpenHABItemProcessor {
 
     public static String generateItemName(final UnitConfig unitConfig, final ServiceType serviceType) {
         // openHAB only supports underscores as special characters in item names
-        return unitConfig.getAlias(0).replace(UnitAliasGenerationConsistencyHandler.ALIAS_NUMBER_SEPARATOR, ITEM_SUBSEGMENT_DELIMITER) +
+        return UnitConfigProcessor.getDefaultAlias(unitConfig, "?").replace(UnitAliasGenerationConsistencyHandler.ALIAS_NUMBER_SEPARATOR, ITEM_SUBSEGMENT_DELIMITER) +
                 ITEM_SEGMENT_DELIMITER +
                 StringProcessor.transformUpperCaseToCamelCase(serviceType.name());
     }

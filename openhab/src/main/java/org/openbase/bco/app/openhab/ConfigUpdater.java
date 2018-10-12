@@ -25,6 +25,7 @@ package org.openbase.bco.app.openhab;
 import org.openbase.bco.app.openhab.registry.synchronizer.SynchronizationProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -76,9 +77,9 @@ public class ConfigUpdater {
             for (final String company : companyDeviceClassMap.keySet()) {
                 LOGGER.info("Check company {}", company);
                 for (final UnitConfig unitConfig : companyDeviceClassMap.get(company)) {
-                    LOGGER.info("Check device {}", unitConfig.getAlias(0));
+                    LOGGER.info("Check device {}", UnitConfigProcessor.getDefaultAlias(unitConfig, "?"));
                     final MetaConfigPool metaConfigPool = new MetaConfigPool();
-                    metaConfigPool.register(new MetaConfigVariableProvider(unitConfig.getAlias(0) + "MetaConfig", unitConfig.getMetaConfig()));
+                    metaConfigPool.register(new MetaConfigVariableProvider(UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "MetaConfig", unitConfig.getMetaConfig()));
 
                     String thingUID;
                     UnitConfig openhab2Device;
@@ -154,7 +155,7 @@ public class ConfigUpdater {
 
     private static String getDeviceId(final UnitConfig unitConfig) throws NotAvailableException {
         final MetaConfigPool metaConfigPool = new MetaConfigPool();
-        metaConfigPool.register(new MetaConfigVariableProvider(unitConfig.getAlias(0) + "MetaConfig", unitConfig.getMetaConfig()));
+        metaConfigPool.register(new MetaConfigVariableProvider(UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "MetaConfig", unitConfig.getMetaConfig()));
         return metaConfigPool.getValue("OPENHAB_BINDING_DEVICE_ID");
     }
 

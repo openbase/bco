@@ -38,6 +38,7 @@ import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -290,7 +291,7 @@ public class FulfillmentHandler {
                     final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitConfig.getUnitType());
                     devices.add(createJsonDevice(unitConfig, unitTypeMapping, userId));
                 } catch (NotAvailableException ex) {
-                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "]: " + ex.getMessage());
+                    LOGGER.warn("Skip unit[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]: " + ex.getMessage());
                 }
             }
             payload.add(DEVICES_KEY, devices);
@@ -422,7 +423,7 @@ public class FulfillmentHandler {
             // this is done in separate tasks because it will be waited for unit data and this should be done for all requested in parallel
             try {
                 final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(id);
-                final SyncObject syncObject = new SyncObject(unitConfig.getAlias(0));
+                final SyncObject syncObject = new SyncObject(UnitConfigProcessor.getDefaultAlias(unitConfig, "?"));
                 if (unitConfig.getUnitType() == UnitType.DEVICE) {
                     // if unit is a device start tasks for all its internal dal units
                     final Future future = GlobalCachedExecutorService.submit(() -> {
@@ -607,7 +608,7 @@ public class FulfillmentHandler {
                                 }
                             }
                             // throw exception if at least one internal task has failed
-                            MultiException.checkAndThrow(() -> "Could not execute one command for internal units of device[" + unitConfig.getAlias(0) + "]", exceptionStack);
+                            MultiException.checkAndThrow(() -> "Could not execute one command for internal units of device[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]", exceptionStack);
                         } catch (InterruptedException ex) {
                             // interrupted, so cancel all internal tasks and finish normally
                             for (final Future internalFuture : internalFutureSet) {

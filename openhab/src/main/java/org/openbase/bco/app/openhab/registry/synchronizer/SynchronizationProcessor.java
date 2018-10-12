@@ -30,6 +30,7 @@ import org.eclipse.smarthome.core.thing.dto.ThingDTO;
 import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -248,7 +249,7 @@ public class SynchronizationProcessor {
         }
 
         if (channelUID.isEmpty()) {
-            throw new NotAvailableException("ChannelUID for service[" + serviceType.name() + "] of unit[" + unitConfig.getAlias(0) + "]");
+            throw new NotAvailableException("ChannelUID for service[" + serviceType.name() + "] of unit[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]");
         }
 
         return channelUID;
@@ -260,7 +261,7 @@ public class SynchronizationProcessor {
             final ServiceType serviceType = entry.getKey();
             final ServicePattern servicePattern = entry.getValue();
 
-            LOGGER.debug("Register/Validate item for service[" + serviceType.name() + "] of unit[" + unitConfig.getAlias(0) + "]");
+            LOGGER.debug("Register/Validate item for service[" + serviceType.name() + "] of unit[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]");
 
             String itemName = OpenHABItemProcessor.generateItemName(unitConfig, serviceType);
 

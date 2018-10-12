@@ -29,6 +29,7 @@ import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.manager.app.core.AbstractAppController;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -100,7 +101,7 @@ public class CloudConnectorAppImpl extends AbstractAppController implements Clou
             UnitConfig cloudConnectorUser = null;
             for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
                 MetaConfigPool metaConfigPool = new MetaConfigPool();
-                metaConfigPool.register(new MetaConfigVariableProvider(unitConfig.getAlias(0), unitConfig.getMetaConfig()));
+                metaConfigPool.register(new MetaConfigVariableProvider(UnitConfigProcessor.getDefaultAlias(unitConfig, "?"), unitConfig.getMetaConfig()));
                 try {
                     String unitId = metaConfigPool.getValue("UNIT_ID");
                     if (unitId.equalsIgnoreCase(getId())) {
