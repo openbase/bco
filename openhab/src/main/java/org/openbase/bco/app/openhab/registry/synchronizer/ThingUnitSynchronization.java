@@ -107,7 +107,7 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
     }
 
     @Override
-    public boolean verifyEntry(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) {
+    public boolean isSupported(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) {
         // only handle things of the bco binding
         return identifiableEnrichedThingDTO.getId().startsWith(BCO_BINDING_ID);
     }

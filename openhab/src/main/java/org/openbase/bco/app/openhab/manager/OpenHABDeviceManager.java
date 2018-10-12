@@ -58,8 +58,18 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
         this.deviceManagerController = new DeviceManagerController(new OpenHABOperationServiceFactory()) {
 
             @Override
-            public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
-                DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
+            public boolean isSupported(UnitConfig config) {
+                DeviceClass deviceClass = null;
+                try {
+                    try {
+                        deviceClass = Registries.getClassRegistry(true).getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return false;
+                    }
+                } catch (CouldNotPerformException e) {
+                    return false;
+                }
                 if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
                     return false;
                 }

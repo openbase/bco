@@ -209,7 +209,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * @return if the device managed by openHAB
      */
     @Override
-    public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
+    public boolean isSupported(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
         // validate that the device is configured via openHAB
 //        try {
 //            SynchronizationProcessor.getThingIdFromDevice(identifiableMessage.getMessage());

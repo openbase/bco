@@ -31,6 +31,7 @@ import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransfo
 import org.openbase.bco.app.openhab.manager.transform.ServiceTypeCommandMapping;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor.OpenHABItemNameMetaData;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.registry.remote.Registries;
@@ -51,7 +52,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutor.class);
 
-    private final UnitControllerRegistry<?, ?> unitControllerRegistry;
+    private final UnitControllerRegistry<UnitController<?, ?>> unitControllerRegistry;
     private final JsonParser jsonParser;
 
     public CommandExecutor(final UnitControllerRegistry unitControllerRegistry) {

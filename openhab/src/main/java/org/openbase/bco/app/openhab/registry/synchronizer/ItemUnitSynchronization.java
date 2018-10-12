@@ -91,7 +91,7 @@ public class ItemUnitSynchronization extends AbstractSynchronizer<String, Identi
     }
 
     @Override
-    public boolean verifyEntry(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) {
+    public boolean isSupported(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) {
         return true;
     }
 

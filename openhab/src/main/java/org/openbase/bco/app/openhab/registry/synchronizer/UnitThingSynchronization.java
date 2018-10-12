@@ -136,7 +136,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
      * @return if the device managed by the bco binding
      */
     @Override
-    public boolean verifyEntry(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
+    public boolean isSupported(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) {
         try {
             return handledByBCOBinding(identifiableMessage.getMessage());
         } catch (CouldNotPerformException ex) {
