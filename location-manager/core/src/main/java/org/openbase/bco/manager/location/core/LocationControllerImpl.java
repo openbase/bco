@@ -72,7 +72,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
-import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
+import static org.openbase.bco.manager.location.core.LocationManagerImpl.LOGGER;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
 
 /**

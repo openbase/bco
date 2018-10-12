@@ -30,10 +30,10 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class LocationManagerLauncher extends AbstractLauncher<LocationManagerController> {
+public class LocationManagerLauncher extends AbstractLauncher<LocationManagerImpl> {
 
     public LocationManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
-        super(LocationManager.class, LocationManagerController.class);
+        super(LocationManager.class, LocationManagerImpl.class);
     }
 
     @Override

@@ -30,10 +30,10 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 
-public class AgentManagerLauncher extends AbstractLauncher<AgentManagerController> {
+public class AgentManagerLauncher extends AbstractLauncher<AgentManagerImpl> {
 
     public AgentManagerLauncher() throws InstantiationException {
-        super(AgentManager.class, AgentManagerController.class);
+        super(AgentManager.class, AgentManagerImpl.class);
     }
 
     @Override

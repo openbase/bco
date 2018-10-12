@@ -32,35 +32,25 @@ import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.pattern.Filter;
-import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.ControllerRegistryImpl;
-import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.EnablingStateType.EnablingState.State;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceManagerController implements DeviceManager, Launchable<Void>, VoidInitializable {
+public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidInitializable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManagerController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManagerImpl.class);
 
     //TODO: please remove in future release
-    private static DeviceManagerController instance;
+    private static DeviceManagerImpl instance;
 
     private final DeviceControllerFactory deviceControllerFactory;
     private final OperationServiceFactory operationServiceFactory;
@@ -79,17 +69,17 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
      * @throws org.openbase.jul.exception.InstantiationException
      * @throws InterruptedException
      */
-    public DeviceManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         this(OperationServiceFactoryMock.getInstance());
     }
 
-    public DeviceManagerController(final OperationServiceFactory operationServiceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         this(operationServiceFactory, new DeviceControllerFactoryImpl(operationServiceFactory));
     }
 
-    public DeviceManagerController(final OperationServiceFactory operationServiceFactory, final DeviceControllerFactory deviceControllerFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final DeviceControllerFactory deviceControllerFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            DeviceManagerController.instance = this;
+            DeviceManagerImpl.instance = this;
 
             this.deviceControllerFactory = deviceControllerFactory;
             this.operationServiceFactory = operationServiceFactory;
@@ -100,7 +90,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
             Registries.waitForData();
 
             this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), deviceControllerFactory);
-            this.deviceRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerController.this.isSupported(unitConfig));
+            this.deviceRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isSupported(unitConfig));
 
             // handle simulation mode
             this.unitSimulationManager = new UnitSimulationManager();

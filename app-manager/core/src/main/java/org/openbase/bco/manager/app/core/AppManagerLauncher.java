@@ -3,7 +3,6 @@ package org.openbase.bco.manager.app.core;
 import org.openbase.bco.manager.app.lib.AppManager;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
-import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
 
 /*
  * #%L
@@ -29,10 +28,10 @@ import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class AppManagerLauncher extends AbstractLauncher<AppManagerController> {
+public class AppManagerLauncher extends AbstractLauncher<AppManagerImpl> {
 
     public AppManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
-        super(AppManager.class, AppManagerController.class);
+        super(AppManager.class, AppManagerImpl.class);
     }
 
     @Override

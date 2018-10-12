@@ -43,7 +43,7 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
     
     private static final Logger LOGGER = LoggerFactory.getLogger(FallbackDeviceManagerController.class);
     
-    private DeviceManagerController deviceManagerController;
+    private DeviceManagerImpl deviceManager;
 
     public FallbackDeviceManagerController() throws InstantiationException, JPNotAvailableException {
     }
@@ -52,7 +52,7 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
     public void init() throws InitializationException, InterruptedException {
         try {
             Registries.getClassRegistry(true);
-            deviceManagerController = new DeviceManagerController(OperationServiceFactoryMock.getInstance()) {
+            deviceManager = new DeviceManagerImpl(OperationServiceFactoryMock.getInstance()) {
 
                 @Override
                 public boolean isSupported(UnitConfig config) {
@@ -66,7 +66,7 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
                 }
             };
             
-            deviceManagerController.init();
+            deviceManager.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -74,23 +74,23 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
 
     @Override
     public void shutdown() {
-        if (deviceManagerController != null) {
-            deviceManagerController.shutdown();
+        if (deviceManager != null) {
+            deviceManager.shutdown();
         }
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        deviceManagerController.activate();
+        deviceManager.activate();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        deviceManagerController.deactivate();
+        deviceManager.deactivate();
     }
 
     @Override
     public boolean isActive() {
-        return deviceManagerController.isActive();
+        return deviceManager.isActive();
     }
 }

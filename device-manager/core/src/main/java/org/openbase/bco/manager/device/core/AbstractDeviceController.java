@@ -21,16 +21,11 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
 import org.openbase.bco.dal.control.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.lib.DeviceController;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -60,11 +55,11 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
 
             // update unit controller registry if device is active.
             for (final String removedUnitId : getRemovedUnitIds()) {
-                DeviceManagerController.getDeviceManager().getUnitControllerRegistry().remove(removedUnitId);
+                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().remove(removedUnitId);
             }
 
             for (final UnitController newUnitController : getNewUnitController()) {
-                DeviceManagerController.getDeviceManager().getUnitControllerRegistry().register(newUnitController);
+                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().register(newUnitController);
             }
 
             return unitConfig;
@@ -75,8 +70,8 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
     public void shutdown() {
         for (UnitController unitController : getHostedUnitControllerList()) {
             try {
-                if (DeviceManagerController.getDeviceManager().getUnitControllerRegistry().contains(unitController)) {
-                    DeviceManagerController.getDeviceManager().getUnitControllerRegistry().remove(unitController);
+                if (DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().contains(unitController)) {
+                    DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().remove(unitController);
                 }
             } catch (CouldNotPerformException ex) {
                 logger.warn("Could not deregister unit controller!", ex);

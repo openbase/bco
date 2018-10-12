@@ -31,10 +31,10 @@ import org.openbase.jul.exception.InstantiationException;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserManagerLauncher extends AbstractLauncher<UserManagerController> {
+public class UserManagerLauncher extends AbstractLauncher<UserManagerImpl> {
 
     public UserManagerLauncher() throws InstantiationException {
-        super(UserManager.class, UserManagerController.class);
+        super(UserManager.class, UserManagerImpl.class);
     }
 
     @Override

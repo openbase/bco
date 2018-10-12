@@ -40,9 +40,9 @@ import org.slf4j.LoggerFactory;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LocationManagerController implements LocationManager, Launchable<Void>, VoidInitializable {
+public class LocationManagerImpl implements LocationManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(LocationManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(LocationManagerImpl.class);
 
 //    private final UnitSimulationManager unitSimulationManager;
 
@@ -58,7 +58,7 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     private final UnitControllerRegistrySynchronizer<ConnectionController> connectionRegistrySynchronizer;
     private final UnitControllerRegistrySynchronizer<UnitGroupController> unitGroupRegistrySynchronizer;
 
-    public LocationManagerController() throws org.openbase.jul.exception.InstantiationException {
+    public LocationManagerImpl() throws org.openbase.jul.exception.InstantiationException {
         try {
             // init factories
             this.locationControllerFactory = LocationControllerFactoryImpl.getInstance();

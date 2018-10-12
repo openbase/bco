@@ -24,17 +24,16 @@ package org.openbase.bco.manager.scene.core;
 import org.openbase.bco.manager.scene.lib.SceneManager;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
-import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class SceneManagerLauncher extends AbstractLauncher<SceneManagerController> {
+public class SceneManagerLauncher extends AbstractLauncher<SceneManagerImpl> {
 
     public SceneManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
-        super(SceneManager.class, SceneManagerController.class);
+        super(SceneManager.class, SceneManagerImpl.class);
     }
 
     @Override

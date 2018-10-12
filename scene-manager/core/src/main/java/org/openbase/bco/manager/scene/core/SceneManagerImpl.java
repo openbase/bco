@@ -30,7 +30,6 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
@@ -43,15 +42,15 @@ import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SceneManagerController implements SceneManager, Launchable<Void>, VoidInitializable {
+public class SceneManagerImpl implements SceneManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(SceneManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(SceneManagerImpl.class);
 
     private final SceneControllerFactory factory;
     private final UnitControllerRegistry<SceneController> sceneControllerRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, SceneController, UnitConfig, Builder> sceneRegistrySynchronizer;
 
-    public SceneManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public SceneManagerImpl() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.factory = SceneControllerFactoryImpl.getInstance();
             this.sceneControllerRegistry = new UnitControllerRegistryImpl<>();

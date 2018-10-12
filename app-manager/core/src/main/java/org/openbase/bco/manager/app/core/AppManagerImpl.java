@@ -46,15 +46,15 @@ import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AppManagerController implements AppManager, Launchable<Void>, VoidInitializable {
+public class AppManagerImpl implements AppManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(AppManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AppManagerImpl.class);
 
     private final AppControllerFactory factory;
     private final UnitControllerRegistry<AppController> appControllerRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> appRegistrySynchronizer;
 
-    public AppManagerController() throws org.openbase.jul.exception.InstantiationException {
+    public AppManagerImpl() throws org.openbase.jul.exception.InstantiationException {
         try {
             this.factory = AppControllerFactoryImpl.getInstance();
             this.appControllerRegistry = new UnitControllerRegistryImpl<>();

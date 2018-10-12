@@ -23,7 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab.comm;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor;
-import org.openbase.bco.manager.device.core.DeviceManagerController;
+import org.openbase.bco.manager.device.core.DeviceManagerImpl;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -48,7 +48,7 @@ public class DeviceOpenHABRemote extends AbstractOpenHABRemote {
     @Override
     public void init(String itemFilter) throws InitializationException, InterruptedException {
         try {
-            this.commandExecutor = new OpenHABCommandExecutor(DeviceManagerController.getDeviceManager().getUnitControllerRegistry());
+            this.commandExecutor = new OpenHABCommandExecutor(DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry());
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

@@ -23,7 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab;
  */
 import org.openbase.bco.manager.device.binding.openhab.comm.DeviceOpenHABRemote;
 import org.openbase.bco.manager.device.binding.openhab.service.OpenhabOperationServiceFactory;
-import org.openbase.bco.manager.device.core.DeviceManagerController;
+import org.openbase.bco.manager.device.core.DeviceManagerImpl;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -45,7 +45,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
     //TODO: Should be declared in the openhab config generator and used from there
     public static final String DEVICE_MANAGER_ITEM_FILTER = "";
 
-    private DeviceManagerController deviceManagerController;
+    private DeviceManagerImpl deviceManager;
 
     public DeviceBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException {
         super();
@@ -63,7 +63,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
         try {
             Registries.getClassRegistry(true);
-            deviceManagerController = new DeviceManagerController(new OpenhabOperationServiceFactory()) {
+            deviceManager = new DeviceManagerImpl(new OpenhabOperationServiceFactory()) {
 
                 @Override
                 public boolean isSupported(UnitConfig config) {
@@ -81,7 +81,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
             };
 
             super.init(itemFilter, openHABRemote);
-            deviceManagerController.init();
+            deviceManager.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -89,24 +89,24 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     @Override
     public void shutdown() {
-        if (deviceManagerController != null) {
-            deviceManagerController.shutdown();
+        if (deviceManager != null) {
+            deviceManager.shutdown();
         }
         super.shutdown();
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        deviceManagerController.activate();
+        deviceManager.activate();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        deviceManagerController.deactivate();
+        deviceManager.deactivate();
     }
 
     @Override
     public boolean isActive() {
-        return deviceManagerController.isActive();
+        return deviceManager.isActive();
     }
 }

@@ -25,28 +25,22 @@ import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronize
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.user.lib.*;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserManagerController implements UserManager, Launchable<Void>, VoidInitializable {
+public class UserManagerImpl implements UserManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(UserManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(UserManagerImpl.class);
 
     private final UserControllerFactory userControllerFactory;
     private final AuthorizationGroupControllerFactory authorizationGroupControllerFactory;
@@ -57,7 +51,7 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
     private final UnitControllerRegistrySynchronizer<UserController> userRegistrySynchronizer;
     private final UnitControllerRegistrySynchronizer<AuthorizationGroupController> authorizationGroupRegistrySynchronizer;
 
-    public UserManagerController() throws org.openbase.jul.exception.InstantiationException {
+    public UserManagerImpl() throws org.openbase.jul.exception.InstantiationException {
         try {
             this.userControllerFactory = UserControllerFactoryImpl.getInstance();
             this.authorizationGroupControllerFactory = AuthorizationGroupControllerFactoryImpl.getInstance();

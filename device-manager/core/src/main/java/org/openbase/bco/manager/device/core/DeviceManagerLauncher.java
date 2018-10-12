@@ -36,10 +36,10 @@ import org.openbase.jps.preset.JPPrefix;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerController> {
+public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerImpl> {
 
     public DeviceManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
-        super(DeviceManager.class, DeviceManagerController.class);
+        super(DeviceManager.class, DeviceManagerImpl.class);
     }
 
     @Override

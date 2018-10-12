@@ -40,15 +40,15 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AgentManagerController implements AgentManager, Launchable<Void>, VoidInitializable {
+public class AgentManagerImpl implements AgentManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerImpl.class);
 
     private final AgentControllerFactory factory;
     private final UnitControllerRegistry<AgentController> agentControllerRegistry;
     private final UnitControllerRegistrySynchronizer<AgentController> agentRegistrySynchronizer;
 
-    public AgentManagerController() throws org.openbase.jul.exception.InstantiationException {
+    public AgentManagerImpl() throws org.openbase.jul.exception.InstantiationException {
         try {
             this.factory = AgentControllerFactoryImpl.getInstance();
             this.agentControllerRegistry = new UnitControllerRegistryImpl<>();
