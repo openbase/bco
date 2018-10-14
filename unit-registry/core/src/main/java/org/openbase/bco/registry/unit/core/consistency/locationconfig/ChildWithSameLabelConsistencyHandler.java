@@ -34,8 +34,6 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
-import javax.xml.ws.WebServiceProvider;
-
 /**
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
