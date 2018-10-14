@@ -53,6 +53,7 @@ public class AuthPair {
      * @param authUser the id of the user who both authenticate and authorize an action.
      */
     public AuthPair(String authUser) {
+
         final Pair<String, String> userIdPair = resolveUserIdPair(authUser);
         this.authenticatedBy = userIdPair.getKey();
         this.authorizedBy = userIdPair.getValue();
@@ -90,6 +91,7 @@ public class AuthPair {
      * @return returns the user if available, otherwise the client id.
      */
     private static String resolveAuthUser(Pair<String, String> pair) {
+
         if(pair.getKey() != null) {
             return pair.getKey();
         }
