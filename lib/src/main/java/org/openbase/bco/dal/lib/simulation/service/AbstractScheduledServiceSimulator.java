@@ -47,8 +47,8 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
  */
 public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends GeneratedMessage> extends AbstractServiceSimulator {
 
-    private final static long DEFAULT_STARTUP_DELAY = 0;
-    public static final long DEFAULT_CHANGE_RATE = 100000;
+    private final static long DEFAULT_STARTUP_DELAY = 15000;
+    public static final long DEFAULT_CHANGE_RATE = 120000;
     public static final long BENCHMARK_CHANGE_RATE = 1000;
 
     protected final static Random RANDOM = new Random(System.currentTimeMillis());
@@ -113,7 +113,7 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
             simulationTaskFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(simulationTask, RANDOM.nextInt((int) changeRate) + DEFAULT_STARTUP_DELAY, changeRate, TimeUnit.MILLISECONDS);
             futureList.add(simulationTaskFuture);
         } catch (IllegalArgumentException | RejectedExecutionException | NotAvailableException ex) {
-            ExceptionPrinter.printHistory("Coult not execute random service simulation of " + unitController + "!", ex, LOGGER);
+            ExceptionPrinter.printHistory("Could not execute random service simulation of " + unitController + "!", ex, LOGGER);
         }
         return futureList;
     }
