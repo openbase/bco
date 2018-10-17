@@ -22,18 +22,35 @@ package org.openbase.bco.dal.remote.printer;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.DALRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBThreadPooling;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.List;
+import java.util.Map;
 
 public class BCOLogger extends UnitStatePrinter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DALRemote.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BCOLogger.class);
 
     public static final String APP_NAME = BCOLogger.class.getSimpleName();
 
@@ -43,12 +60,22 @@ public class BCOLogger extends UnitStatePrinter {
 
     public static void main(String[] args) throws InstantiationException, InterruptedException, InitializationException {
 
-        LOGGER.info("Start " + APP_NAME + "...");
-
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPCredentialsDirectory.class);
+        JPService.registerProperty(JPRSBHost.class);
+        JPService.registerProperty(JPRSBPort.class);
+        JPService.registerProperty(JPRSBTransport.class);
 
-        JPService.parseAndExitOnError(args);
+        try {
+            JPService.parseAndExitOnError(args);
+        } catch (IllegalStateException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            LOGGER.info(APP_NAME + " finished unexpected.");
+        }
+
+        LOGGER.info("Start " + APP_NAME + "...");
 
         try {
             new BCOLogger().init();
