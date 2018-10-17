@@ -84,7 +84,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
     }
 
     private void updateUnitTypeAliasNumberMap() throws CouldNotPerformException {
-        for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
+        for (UnitConfig unitConfig : unitRegistry.getUnitConfigs(false)) {
             registerAlias(unitConfig);
         }
     }
