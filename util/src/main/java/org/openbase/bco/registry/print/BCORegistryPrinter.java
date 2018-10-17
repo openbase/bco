@@ -22,11 +22,18 @@ package org.openbase.bco.registry.print;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.processing.StringProcessor.Alignment;
@@ -44,7 +51,9 @@ import java.util.*;
  */
 public class BCORegistryPrinter {
 
-    private static final Logger logger = LoggerFactory.getLogger(BCORegistryPrinter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BCORegistryPrinter.class);
+
+    public static final String APP_NAME = "bco-print-registry";
 
     private static final int AMOUNT_COLUM_SPACE = 5;
     private final int LINE_LENGHT;
@@ -62,7 +71,7 @@ public class BCORegistryPrinter {
         deviceNumberByClassMap = new HashMap<>();
         unitNumberByTypeMap = new HashMap<>();
         serviceNumberByTypeMap = new HashMap<>();
-        Registries.getClassRegistry().waitForData();
+        Registries.waitForData();
 
         // calculate max unit label length
         int maxUnitLabelLength = 0;
@@ -183,10 +192,26 @@ public class BCORegistryPrinter {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+
+        /* Setup JPService */
+        JPService.setApplicationName(APP_NAME);
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPCredentialsDirectory.class);
+        JPService.registerProperty(JPRSBHost.class);
+        JPService.registerProperty(JPRSBPort.class);
+        JPService.registerProperty(JPRSBTransport.class);
+
+        try {
+            JPService.parseAndExitOnError(args);
+        } catch (IllegalStateException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            LOGGER.info(APP_NAME + " finished unexpected.");
+        }
+
         try {
             new BCORegistryPrinter();
         } catch (InterruptedException | CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(ex, logger);
+            ExceptionPrinter.printHistoryAndExit(ex, LOGGER);
         }
         System.exit(0);
     }
