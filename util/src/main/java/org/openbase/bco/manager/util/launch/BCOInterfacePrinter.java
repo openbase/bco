@@ -49,9 +49,9 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class RSBInterfacePrinter {
+public class BCOInterfacePrinter {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(RSBInterfacePrinter.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(BCOInterfacePrinter.class);
 
     public enum AnsiColor {
 
