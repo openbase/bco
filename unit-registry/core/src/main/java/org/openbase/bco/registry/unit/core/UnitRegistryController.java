@@ -1000,13 +1000,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         // Create a filter which removes unit ids if the user does not have access permissions for them
         final ListFilter<String> readFilterByUnitId = unitId -> {
             try {
-                return AuthorizationHelper.canRead(getUnitConfigById(unitId), userId,
+                return !AuthorizationHelper.canRead(getUnitConfigById(unitId), userId,
                         authorizationGroupUnitConfigRegistry.getEntryMap(),
                         locationUnitConfigRegistry.getEntryMap());
             } catch (CouldNotPerformException ex) {
                 // this can happen if more than one unit are removed in rapid succession
                 // if getUnitConfigById fails the unit should be filtered anyway
-                return false;
+                return true;
             }
         };
         // iterate over all fields of unit registry data
