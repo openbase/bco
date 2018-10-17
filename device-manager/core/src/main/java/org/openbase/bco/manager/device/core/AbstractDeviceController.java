@@ -21,11 +21,14 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.control.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -33,7 +36,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractDeviceController extends AbstractHostUnitController<DeviceData, DeviceData.Builder> implements DeviceController {
@@ -68,14 +70,15 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
 
     @Override
     public void shutdown() {
-        for (UnitController unitController : getHostedUnitControllerList()) {
-            try {
-                if (DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().contains(unitController)) {
-                    DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().remove(unitController);
-                }
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not deregister unit controller!", ex);
+        try {
+            // skip if registry is shutting down anyway.
+            if (!DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().isShutdownInitiated()) {
+                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().removeAll(getHostedUnitControllerList());
             }
+        } catch (InvalidStateException ex) {
+            // registry already shutting down during removal which will clear the entries anyway.
+        } catch (MultiException ex) {
+            logger.warn("Could not deregister all unit controller during shutdown!", ex);
         }
         super.shutdown();
     }
