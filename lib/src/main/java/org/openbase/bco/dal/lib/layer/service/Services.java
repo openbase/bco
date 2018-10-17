@@ -573,13 +573,13 @@ public class Services extends ServiceStateProcessor {
                     continue;
                 case "color":
                     final HSBColor hsbColor = ((Color) entry.getValue()).getHsbColor();
-                    stateValue = hsbColor.getHue() + " " + hsbColor.getSaturation() + " " + hsbColor.getBrightness();
+                    stateValue = hsbColor.getHue() + ", " + hsbColor.getSaturation() + ", " + hsbColor.getBrightness();
                     break;
                 case "value":
                     stateName = "state";
                     break;
             }
-            states.add(serviceType.name().toLowerCase() + ", " + timestamp + ", " + stateName.toLowerCase() + ", " + stateValue.toLowerCase());
+            states.add(serviceType.name().toLowerCase() + ", " + timestamp + ", [" + stateName.toLowerCase() + ", " + stateValue.toLowerCase() + "]");
         }
         return states;
     }

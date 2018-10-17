@@ -22,15 +22,11 @@ package org.openbase.bco.dal.lib.simulation;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.simulation.unit.AbstractUnitSimulator;
 import org.openbase.bco.dal.lib.simulation.unit.GenericUnitSimulator;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
