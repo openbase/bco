@@ -26,6 +26,8 @@ import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -33,14 +35,19 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.DefaultInitializable;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Objects;
 
 public class UnitStatePrinter implements DefaultInitializable {
 
@@ -55,6 +62,7 @@ public class UnitStatePrinter implements DefaultInitializable {
             this.printStream = printStream;
             this.customUnitPool = new CustomUnitPool(filters);
             this.unitStateObserver = (source, data) -> print(source, data);
+            this.printStaticRelations();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -67,6 +75,24 @@ public class UnitStatePrinter implements DefaultInitializable {
             customUnitPool.addObserver(unitStateObserver);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
+        }
+    }
+
+    private void printStaticRelations() {
+        try {
+            // print unit templates
+            printStream.println("UnitType" + "(ServiceType)");
+            for (UnitTemplate unitTemplate : Registries.getTemplateRegistry(true).getUnitTemplates()) {
+                printStream.println(unitTemplate.getType().name() + "("+ StringProcessor.transformCollectionToString(unitTemplate.getServiceDescriptionList(), ", ", serviceDescription -> serviceDescription.getServiceType().name())+")");
+            }
+
+            // print service type mapping
+            printStream.println("ServiceType" + "(ServiceState)");
+            for (ServiceTemplate sericeTemplate : Registries.getTemplateRegistry(true).getServiceTemplates()) {
+                printStream.println(sericeTemplate.getType().name() + "(" + sericeTemplate.getCommunicationType()+ ")");
+            }
+        } catch (CouldNotPerformException | InterruptedException ex) {
+            ExceptionPrinter.printHistory("Could not print unit templates.", ex, LOGGER);
         }
     }
 
@@ -93,6 +119,4 @@ public class UnitStatePrinter implements DefaultInitializable {
             ExceptionPrinter.printHistory("Could not print " + serviceType.name() + " of " + unit, ex, LOGGER);
         }
     }
-
-
 }
