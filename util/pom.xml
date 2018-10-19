@@ -5,7 +5,7 @@
     <artifactId>bco.app.util</artifactId>
     <packaging>jar</packaging>
 
-    <name>BCO Manager Utility</name>
+    <name>BCO App Utility</name>
     
     <parent>
         <groupId>org.openbase</groupId>
@@ -13,7 +13,7 @@
         <version>2.0-SNAPSHOT</version>
     </parent>
     
-    <url>https://github.com/openbase/bco.manager/wiki</url>
+    <url>https://github.com/openbase/bco.app/wiki</url>
 
     <licenses>
         <license>
@@ -131,11 +131,6 @@
         <!-- test -->
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.manager.agent.core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
             <artifactId>bco.app.manager</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -143,6 +138,11 @@
             <groupId>org.openbase</groupId>
             <artifactId>bco.dal.control</artifactId>
             <version>${dependency.bco.dal.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.app.cloud.connector</artifactId>
+            <version>${dependency.bco.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>

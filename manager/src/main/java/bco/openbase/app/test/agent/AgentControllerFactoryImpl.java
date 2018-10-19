@@ -2,9 +2,9 @@ package bco.openbase.app.test.agent;
 
 /*
  * #%L
- * BCO Manager Agent Core
+ * BCO App Manager
  * %%
- * Copyright (C) 2015 - 2018 openbase.org
+ * Copyright (C) 2018 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -68,7 +68,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
                 throw new NotAvailableException("agentconfig");
             }
             if (!agentUnitConfig.getAgentConfig().hasAgentClassId()) {
-                throw new NotAvailableException("agentype");
+                throw new NotAvailableException("agenttype");
             }
             if (!agentUnitConfig.hasScope() && agentUnitConfig.getScope().getComponentList().isEmpty()) {
                 throw new NotAvailableException("scope");
