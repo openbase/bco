@@ -223,16 +223,6 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         }
     }
 
-    @Override
-    public Future<ActionDescription> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(globalPositionState, GLOBAL_POSITION_STATE_SERVICE);
-    }
-
-    @Override
-    public Future<ActionDescription> setLocalPositionState(LocalPositionState localPositionState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(localPositionState, LOCAL_POSITION_STATE_SERVICE);
-    }
-
     private class NetDeviceDetector extends ObservableImpl<NetDeviceDetector, Boolean> implements Manageable<String> {
 
         private static final int REACHABLE_TIMEOUT = 5000;
