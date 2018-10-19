@@ -262,7 +262,9 @@ public class ActionImpl implements SchedulableAction {
                                 updateActionState(ActionState.State.EXECUTING);
 
                                 try {
+                                    LOGGER.warn("Wait for execution...");
                                     waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
+                                    LOGGER.warn("Execution finished!");
                                 } catch (CouldNotPerformException ex) {
                                     if (ex.getCause() instanceof InterruptedException) {
                                         updateActionState(ActionState.State.ABORTED);
@@ -363,6 +365,7 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
+        //TODO this is a problem if the internal task is not returned as a completable future such as for the multi activity in users
         if (getActionDescription().getExecutionTimePeriod() == 0) {
             return;
         }

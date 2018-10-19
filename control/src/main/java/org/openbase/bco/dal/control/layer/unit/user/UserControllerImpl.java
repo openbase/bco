@@ -38,6 +38,7 @@ import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.ObservableImpl;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,7 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -307,7 +309,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         @Override
         public Future<ActionDescription> setActivityMultiState(ActivityMultiState activityMultiState) {
             logger.info("Update activity list[" + activityMultiState.getActivityIdCount() + "]" + this);
-            return GlobalScheduledExecutorService.submit(() -> {
+//            return GlobalScheduledExecutorService.submit(() -> {
                 try {
                     if (activityMultiState.getActivityIdCount() == 0) {
                         for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
@@ -329,12 +331,16 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         remoteActionPoolMap.get(activityId).execute(activityMultiState.getResponsibleAction());
                     }
 
+                    logger.info("Apply activity data update with {}", activityMultiState.getActivityIdCount());
                     applyDataUpdate(activityMultiState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE);
-                    return null;
+                    CompletableFuture<ActionDescription> future = new CompletableFuture<>();
+                    future.complete(null);
+                    return future;
                 } catch (Exception ex) {
-                    throw new CouldNotPerformException("Could not update activity state of " + this, ex);
+                    return FutureProcessor.canceledFuture(ex);
+//                    throw new CouldNotPerformException("Could not update activity state of " + this, ex);
                 }
-            });
+//            });
         }
 
         @Override
