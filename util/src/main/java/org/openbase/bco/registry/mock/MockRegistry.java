@@ -51,6 +51,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.slf4j.LoggerFactory;
+import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
 import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import rst.domotic.service.ServiceConfigType;
@@ -165,6 +166,7 @@ public class MockRegistry {
             .setDepth(30)
             .setLeftFrontBottom(Translation.newBuilder().setX(0).setY(0).setZ(0).build())
             .build();
+    public static String TEST_ACTIVITY_ID = "";
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MockRegistry.class);
     public static UnitConfig testUser;
     private static AuthenticatorLauncher authenticatorLauncher;
@@ -277,6 +279,9 @@ public class MockRegistry {
                 LOGGER.debug("Register connections...");
                 registerConnections();
 
+                LOGGER.debug("Register activities...");
+                registerActivities();
+
                 LOGGER.debug("Wait for final consistency...");
                 Registries.waitUntilReady();
                 return null;
@@ -300,6 +305,13 @@ public class MockRegistry {
 
     public static String getUnitAlias(final UnitType unitType, final int number) {
         return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "-" + number;
+    }
+
+    private static void registerActivities() throws CouldNotPerformException, ExecutionException, InterruptedException {
+        final String templateId = Registries.getTemplateRegistry().getActivityTemplates().get(0).getId();
+        final ActivityConfig.Builder builder = ActivityConfig.newBuilder().setActivityTemplateId(templateId);
+        LabelProcessor.addLabel(builder.getLabelBuilder(), Locale.getDefault(), "Test Activity");
+        TEST_ACTIVITY_ID = Registries.getActivityRegistry().registerActivityConfig(builder.build()).get().getId();
     }
 
     /**
