@@ -236,7 +236,7 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
         // wait for request
         future.get();
 
-        // preset if new value has been set
+        // test if new value has been set
         assertEquals(serviceState.getValue(), unitGroupRemote.getPowerState().getValue());
     }
 }

@@ -104,7 +104,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.DOUBLE_PRESSED, buttonRemote.getButtonState()));
         assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
-        // just to be safe that the next preset does not set the motion state in the same millisecond
+        // just to be safe that the next test does not set the motion state in the same millisecond
         Thread.sleep(1);
 
         stopwatch.start();
@@ -116,7 +116,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.PRESSED, buttonRemote.getButtonState()));
         assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
-        // just to be safe that the next preset does not set the motion state in the same millisecond
+        // just to be safe that the next test does not set the motion state in the same millisecond
         Thread.sleep(1);
 
         stopwatch.start();

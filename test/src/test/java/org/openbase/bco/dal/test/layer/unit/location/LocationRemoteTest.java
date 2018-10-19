@@ -421,7 +421,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         // wait for request
         future.get();
 
-        // preset if new value has been set
+        // test if new value has been set
         assertEquals(serviceState.getValue(), locationRemote.getPowerState().getValue());
     }
 }

@@ -96,7 +96,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         // start a unit remote to that colorable light
         ColorableLightRemote colorableLightRemote = Units.getUnit(colorableLightConfig, true, ColorableLightRemote.class);
 
-        // preset if the state of the light can be changed
+        // test if the state of the light can be changed
         colorableLightRemote.setPowerState(PowerState.State.ON).get();
         assertEquals("Power state has not been set in time!", PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
 
@@ -121,7 +121,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         // start a unit remote for it
         PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
 
-        // preset if both unit remotes can be used
+        // test if both unit remotes can be used
         powerSwitchRemote.setPowerState(PowerState.State.ON).get();
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
         assertEquals("Power state has not been set in time!", PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue());
@@ -147,11 +147,11 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         }
         assertTrue("DeviceManager still contains removed unit controller", !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().contains(powerSwitchConfig.getId()));
 
-        // preset if the colorable light can still be used
+        // test if the colorable light can still be used
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
         assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
 
-        // preset if the power switch remote has lost its connection
+        // test if the power switch remote has lost its connection
         powerSwitchRemote.waitForConnectionState(ConnectionState.DISCONNECTED, 1000);
         assertEquals("Remote has not disconnected even though its config should have been removed!", ConnectionState.DISCONNECTED, powerSwitchRemote.getConnectionState());
     }

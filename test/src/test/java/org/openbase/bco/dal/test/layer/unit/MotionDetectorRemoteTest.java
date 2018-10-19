@@ -106,7 +106,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
         assertTrue("The last motion timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
-        // just to be safe that the next preset does not set the motion state in the same millisecond
+        // just to be safe that the next test does not set the motion state in the same millisecond
         Thread.sleep(1);
 
         stopwatch.start();

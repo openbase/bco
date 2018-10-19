@@ -40,7 +40,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import static org.junit.Assert.*;
 
 /**
- * Integration preset of controlling a user controller using a user remote.
+ * Integration test of controlling a user controller using a user remote.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
@@ -105,17 +105,17 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
         final String activityId = "cookingId";
         final ActivityMultiState activityMultiState = ActivityMultiState.newBuilder().addActivityId(activityId).build();
 
-        // preset setting an activity
+        // test setting an activity
         userRemote.setActivityMultiState(activityMultiState).get();
         assertTrue("Activity multi state does not contain the expected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
         assertEquals("User performs an unexpected number of activities", 1, userRemote.getActivityMultiState().getActivityIdCount());
 
-        // preset if duplicates will be removed, so nothing should change doing this
+        // test if duplicates will be removed, so nothing should change doing this
         userRemote.addActivityState(activityId).get();
         assertTrue("Activity multi state does not contain the expected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
         assertEquals("User performs an unexpected number of activities", 1, userRemote.getActivityMultiState().getActivityIdCount());
 
-        // preset removing the activity
+        // test removing the activity
         userRemote.removeActivityState(activityId).get();
         assertFalse("Activity multi state does contains an unexpected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
         assertEquals("User performs more activities than expected", 0, userRemote.getActivityMultiState().getActivityIdCount());

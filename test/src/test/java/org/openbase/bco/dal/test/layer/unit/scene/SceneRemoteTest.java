@@ -444,7 +444,7 @@ public class SceneRemoteTest {
             assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
             assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
 
-            System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off preset.");
+            System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
             Thread.sleep(1000);
         }
     }
@@ -502,7 +502,7 @@ public class SceneRemoteTest {
             assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
             assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
 
-            System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off preset.");
+            System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
             Thread.sleep(1000);
         }
     }

@@ -66,7 +66,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
 
-        // legacy mode needed for testLegacyRemoteCallGetColor() preset.
+        // legacy mode needed for testLegacyRemoteCallGetColor() test.
         JPService.registerProperty(JPRSBLegacyMode.class, true);
         AbstractBCODeviceManagerTest.setUpClass();
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
@@ -114,15 +114,15 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             lightRemote.activate();
             lightRemote.waitForData();
 
-            // preset if the initial state was synced correctly
+            // test if the initial state was synced correctly
             assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
 
-            // preset controlling vid light remote
+            // test controlling vid light remote
             lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
             colorableLightRemote.requestData().get();
             assertEquals(lightRemote.getPowerState(), colorableLightRemote.getPowerState());
 
-            // preset controlling via colorable light remote
+            // test controlling via colorable light remote
             colorableLightRemote.setPowerState(State.OFF).get();
             lightRemote.requestData().get();
             assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
@@ -272,7 +272,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testPowerStateObserver() throws Exception {
         System.out.println("testPowerStateObserver");
 
-        // set initial state to on for this preset
+        // set initial state to on for this test
         if (colorableLightRemote.getPowerState().getValue() == PowerState.State.OFF) {
             colorableLightRemote.setPowerState(PowerState.State.ON).get();
         }
