@@ -65,6 +65,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
     }
 
     private ActionParameter defaultActionParameter;
+    private String authenticationToken = null;
 
     public AbstractAgentController(final Class unitClass) throws InstantiationException {
         super(unitClass, AgentDataType.AgentData.newBuilder());
@@ -72,6 +73,10 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
 
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        if(authenticationToken == null) {
+            authenticationToken = requestAuthenticationToken(config);
+        }
+
         // update default action parameter
         final AgentClass agentClass = Registries.getClassRegistry(true).getAgentClassById(config.getAgentConfig().getAgentClassId());
         defaultActionParameter = ActionParameter.newBuilder()
@@ -79,7 +84,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
                 .setPriority(agentClass.getPriority())
                 .setSchedulable(agentClass.getSchedulable())
                 .setInterruptible(agentClass.getInterruptible())
-                .setAuthenticationToken(requestAuthenticationToken(config))
+                .setAuthenticationToken(authenticationToken)
                 .setActionInitiator(ActionInitiator.newBuilder().setInitiatorId(config.getId()))
                 .build();
         return super.applyConfigUpdate(config);

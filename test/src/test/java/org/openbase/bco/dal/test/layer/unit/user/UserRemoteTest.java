@@ -101,8 +101,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
     public void testSetMultiActivityState() throws Exception {
         System.out.println("testSetMultiActivityState");
 
-        //TODO: this has to be changed to use real ids
-        final String activityId = "cookingId";
+        final String activityId = MockRegistry.TEST_ACTIVITY_ID;
         final ActivityMultiState activityMultiState = ActivityMultiState.newBuilder().addActivityId(activityId).build();
 
         // test setting an activity
