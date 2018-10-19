@@ -22,7 +22,8 @@ package org.openbase.bco.app.util.launch;
  * #L%
  */
 
-import bco.openbase.app.test.agent.AgentManagerLauncher;
+import org.openbase.app.test.app.AppManagerLauncher;
+import org.openbase.app.test.agent.AgentManagerLauncher;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
@@ -59,7 +60,7 @@ public class BCOTestLauncher {
                  * Manager *
                  */
                 AgentManagerLauncher.class,
-                bco.openbase.app.app.manager.AppManagerLauncher.class,
+                AppManagerLauncher.class,
                 DeviceManagerLauncher.class,
                 LocationManagerLauncher.class,
                 SceneManagerLauncher.class,

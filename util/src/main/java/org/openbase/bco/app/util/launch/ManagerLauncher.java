@@ -21,7 +21,8 @@ package org.openbase.bco.app.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import bco.openbase.app.test.agent.AgentManagerLauncher;
+import org.openbase.app.test.app.AppManagerLauncher;
+import org.openbase.app.test.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
@@ -42,7 +43,7 @@ public class ManagerLauncher {
         BCO.printLogo();
         AbstractLauncher.main(args, Manager.class,
                 AgentManagerLauncher.class,
-                bco.openbase.app.app.manager.AppManagerLauncher.class,
+                AppManagerLauncher.class,
                 DeviceManagerLauncher.class,
                 LocationManagerLauncher.class,
                 SceneManagerLauncher.class,
