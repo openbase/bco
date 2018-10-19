@@ -692,6 +692,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // clear auth fields
                 actionDescriptionBuilder.getActionInitiatorBuilder().clearAuthenticatedBy().clearAuthorizedBy();
 
+                // if an authentication token is send replace the initiator in any case
+                if (authenticationBaseData.getAuthenticationToken() != null) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
+                }
+
                 // setup auth fields
                 if (authPair.getAuthenticatedBy() != null) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
