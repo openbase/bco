@@ -1145,7 +1145,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         try {
             if (!operationServiceMap.containsKey(serviceType)) {
                 if (JPService.getProperty(JPProviderControlMode.class).getValue()) {
-                    applyDataUpdate(serviceState, serviceType);
+                    applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
                     return CompletableFuture.completedFuture(null);
                 } else {
                     return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
