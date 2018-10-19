@@ -24,7 +24,6 @@ package org.openbase.bco.dal.control.layer.unit;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
-import org.openbase.bco.dal.lib.layer.unit.HostUnit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -52,6 +51,7 @@ import java.util.*;
  */
 public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements HostUnitController<D, DB> {
 
+    //TODO: use a unit controller synchronizer instead of the combination of a diff and unit map
     private final Map<String, UnitController<?, ?>> unitMap;
     private final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> hostedUnitDiff;
     private final SyncObject unitMapLock = new SyncObject("UnitMapLock");
@@ -93,6 +93,9 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                 throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]!", ex);
             }
             unit.init(unitConfig);
+            if (isActive()) {
+                unit.activate();
+            }
             registerUnit(unit);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]!", ex);

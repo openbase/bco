@@ -22,18 +22,11 @@ package org.openbase.bco.dal.remote.layer.unit.scene;
  * #L%
  */
 
-import java.util.concurrent.Future;
-
 import org.openbase.bco.dal.lib.layer.unit.scene.Scene;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
@@ -50,10 +43,5 @@ public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene 
 
     public SceneRemote() {
         super(SceneData.class);
-    }
-
-    @Override
-    public Future<ActionDescription> setActivationState(ActivationState activationState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
 }

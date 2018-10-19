@@ -21,20 +21,29 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.BlindStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 
+import java.util.concurrent.Future;
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface BlindStateOperationService extends OperationService, BlindStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionDescription> setBlindState(final BlindState blindState) throws CouldNotPerformException;
+    default Future<ActionDescription> setBlindState(final BlindState blindState) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(blindState, ServiceType.BLIND_STATE_SERVICE));
+    }
 
+    default Future<ActionDescription> setBlindState(final BlindState blindState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(blindState, ServiceType.BLIND_STATE_SERVICE)));
+    }
 }

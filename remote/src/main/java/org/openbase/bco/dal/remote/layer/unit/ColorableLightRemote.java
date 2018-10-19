@@ -28,22 +28,17 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceTemplateConfigType;
 import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType;
-import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType;
-import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitTemplateConfigType;
 import rst.domotic.unit.dal.ColorableLightDataType;
@@ -160,22 +155,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(colorState, ServiceType.COLOR_STATE_SERVICE, this));
-    }
-
-    @Override
     public Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
         return setColor(neutralWhite);
-    }
-
-    @Override
-    public Future<ActionDescription> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
-    }
-
-    @Override
-    public Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
 }

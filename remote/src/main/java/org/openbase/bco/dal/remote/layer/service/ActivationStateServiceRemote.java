@@ -22,20 +22,19 @@ package org.openbase.bco.dal.remote.layer.service;
  * #L%
  */
 
-import java.util.concurrent.Future;
-
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.ActivationStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ActivationStateType.ActivationState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -65,11 +64,6 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-    }
-
-    @Override
-    public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(activationState, getServiceType()));
     }
 
     @Override

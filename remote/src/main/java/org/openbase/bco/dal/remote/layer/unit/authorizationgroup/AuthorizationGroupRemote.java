@@ -21,18 +21,12 @@ package org.openbase.bco.dal.remote.layer.unit.authorizationgroup;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import org.openbase.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
@@ -50,10 +44,5 @@ public class AuthorizationGroupRemote extends AbstractUnitRemote<AuthorizationGr
 
     public AuthorizationGroupRemote() {
         super(AuthorizationGroupData.class);
-    }
-
-    @Override
-    public Future<ActionDescription> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
     }
 }

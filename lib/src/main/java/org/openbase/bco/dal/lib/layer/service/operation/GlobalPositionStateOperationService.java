@@ -22,10 +22,13 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.GlobalPositionStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
 
 import java.util.concurrent.Future;
@@ -36,5 +39,11 @@ import java.util.concurrent.Future;
 public interface GlobalPositionStateOperationService extends OperationService, GlobalPositionStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionDescription> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException;
+    default Future<ActionDescription> setGlobalPositionState(final GlobalPositionState globalPositionState) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(globalPositionState, ServiceType.GLOBAL_POSITION_STATE_SERVICE));
+    }
+
+    default Future<ActionDescription> setGlobalPositionState(final GlobalPositionState globalPositionState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(globalPositionState, ServiceType.GLOBAL_POSITION_STATE_SERVICE)));
+    }
 }

@@ -22,10 +22,14 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * #L%
  */
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.TargetTemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
@@ -35,5 +39,11 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
 public interface TargetTemperatureStateOperationService extends OperationService, TargetTemperatureStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException;
+    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE));
+    }
+
+    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)));
+    }
 }

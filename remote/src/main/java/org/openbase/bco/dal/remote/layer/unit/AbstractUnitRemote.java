@@ -55,6 +55,7 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -581,8 +582,15 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     @Override
     public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+        final ActionParameter.Builder builder;
+        if(actionParameter instanceof ActionParameter.Builder) {
+            builder = ((ActionParameter.Builder) actionParameter);
+        } else {
+            builder = ((ActionParameter) actionParameter).toBuilder();
+        }
+        builder.getServiceStateDescriptionBuilder().setUnitId(getId());
         // create action description from parameters
-        final ActionDescription build = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build();
+        final ActionDescription build = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build();
         // create authenticated value with tokens
         final AuthenticatedValue authenticatedValue =
                 SessionManager.getInstance().initializeRequest(build, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());

@@ -21,17 +21,11 @@ package org.openbase.bco.dal.remote.layer.unit.agent;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 
 import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
@@ -50,10 +44,5 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
 
     public AgentRemote() {
         super(AgentData.class);
-    }
-
-    @Override
-    public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
 }

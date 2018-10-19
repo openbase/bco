@@ -21,17 +21,13 @@ package org.openbase.bco.dal.remote.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.jul.exception.CouldNotPerformException;
+
+import org.openbase.bco.dal.lib.layer.unit.Monitor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.dal.MonitorDataType.MonitorData;
-import org.openbase.bco.dal.lib.layer.unit.Monitor;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 
 /**
  *
@@ -47,15 +43,5 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
 
     public MonitorRemote() {
         super(MonitorData.class);
-    }
-
-    @Override
-    public Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
-    }
-
-    @Override
-    public Future<ActionDescription> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this));
     }
 }

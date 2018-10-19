@@ -21,24 +21,16 @@ package org.openbase.bco.dal.control.layer.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.DimmableLight;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmableLightDataType.DimmableLightData;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  *
@@ -52,21 +44,8 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
     }
 
-    private PowerStateOperationService powerService;
-    private BrightnessStateOperationService brightnessService;
-
     public DimmableLightController(final HostUnitController hostUnitController, DimmableLightData.Builder builder) throws InstantiationException {
         super(DimmableLightController.class, hostUnitController, builder);
-    }
-
-    @Override
-    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
-    }
-
-    @Override
-    public Future<ActionDescription> setBrightnessState(final BrightnessState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, BRIGHTNESS_STATE_SERVICE);
     }
 
     @Override

@@ -22,10 +22,13 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.LocalPositionStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.LocalPositionStateType.LocalPositionState;
 
 import java.util.concurrent.Future;
@@ -36,5 +39,11 @@ import java.util.concurrent.Future;
 public interface LocalPositionStateOperationService extends OperationService, LocalPositionStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException;
+    default Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE));
+    }
+
+    default Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE)));
+    }
 }

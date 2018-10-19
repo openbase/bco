@@ -22,10 +22,13 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivityMultiStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
 
 import java.util.ArrayList;
@@ -37,7 +40,13 @@ import java.util.concurrent.Future;
 public interface ActivityMultiStateOperationService extends OperationService, ActivityMultiStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionDescription> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException;
+    default Future<ActionDescription> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE));
+    }
+
+    default Future<ActionDescription> setActivityMultiState(final ActivityMultiState activityMultiState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(activityMultiState, ServiceType.ACTIVITY_MULTI_STATE_SERVICE)));
+    }
 
     @RPCMethod(legacy = true)
     default Future<ActionDescription> removeActivityState(final String activityId) throws CouldNotPerformException {

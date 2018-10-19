@@ -23,10 +23,14 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  */
 
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.UserTransitStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 
 /**
@@ -36,7 +40,13 @@ import rst.domotic.state.UserTransitStateType.UserTransitState;
 public interface UserTransitStateOperationService extends OperationService, UserTransitStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionDescription> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException;
+    default Future<ActionDescription> setUserTransitState(final UserTransitState userTransitState) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE));
+    }
+
+    default Future<ActionDescription> setUserTransitState(final UserTransitState userTransitState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE)));
+    }
 
     default Future<ActionDescription> setUserTransitState(UserTransitState.State userTransitState) throws CouldNotPerformException {
         return setUserTransitState(UserTransitState.newBuilder().setValue(userTransitState).build());

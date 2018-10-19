@@ -1,19 +1,10 @@
 package org.openbase.bco.dal.remote.layer.unit.location;
 
 import com.google.protobuf.GeneratedMessage;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.Future;
-
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -21,46 +12,25 @@ import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-
-import static org.openbase.bco.dal.remote.layer.unit.Units.CONNECTION;
-import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
-
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
-
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.AlarmStateType;
-import rst.domotic.state.BlindStateType;
-import rst.domotic.state.BrightnessStateType;
-import rst.domotic.state.ColorStateType;
-import rst.domotic.state.ColorStateType.ColorState;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
-import rst.domotic.state.MotionStateType;
-import rst.domotic.state.PowerConsumptionStateType;
-import rst.domotic.state.PowerStateType;
-import rst.domotic.state.PresenceStateType;
-import rst.domotic.state.SmokeStateType;
-import rst.domotic.state.StandbyStateType;
+import rst.domotic.state.*;
 import rst.domotic.state.StandbyStateType.StandbyState;
-import rst.domotic.state.TamperStateType;
-import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
@@ -69,6 +39,12 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType;
 import rst.vision.RGBColorType;
+
+import java.util.*;
+import java.util.concurrent.Future;
+
+import static org.openbase.bco.dal.remote.layer.unit.Units.CONNECTION;
+import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
 
 /*
  * #%L
@@ -385,11 +361,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
                 .addCategory(Category.ECONOMY));
-    }
-
-    @Override
-    public Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
     }
 
     @Override

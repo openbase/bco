@@ -22,11 +22,11 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.TamperStateType.TamperState;
 import rst.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
-import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

@@ -22,19 +22,13 @@ package org.openbase.bco.dal.control.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
-
-import java.util.concurrent.Future;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  *
@@ -49,10 +43,5 @@ public class PowerSwitchController extends AbstractDALUnitController<PowerSwitch
     
     public PowerSwitchController(final HostUnitController hostUnitController, final PowerSwitchData.Builder builder) throws InstantiationException {
         super(PowerSwitchController.class, hostUnitController, builder);
-    }
-
-    @Override
-    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
     }
 }

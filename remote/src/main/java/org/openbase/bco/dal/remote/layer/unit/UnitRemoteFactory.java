@@ -22,8 +22,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
-import java.util.concurrent.TimeUnit;
-
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -34,6 +32,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

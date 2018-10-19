@@ -27,7 +27,9 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
-import org.openbase.jul.storage.registry.*;
+import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
+import org.openbase.jul.storage.registry.RemoteRegistry;
+import org.openbase.jul.storage.registry.SynchronizableRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 

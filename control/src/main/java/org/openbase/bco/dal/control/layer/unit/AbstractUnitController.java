@@ -81,6 +81,8 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -460,8 +462,20 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    public Future<ActionDescription> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(ActionDescriptionProcessor.generateDefaultActionParameter(serviceAttribute, serviceType, this, false)).build();
+    @Override
+    public Future<ActionDescription> applyAction(ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+        final ActionParameter.Builder builder;
+        if (actionParameter instanceof ActionParameter.Builder) {
+            builder = ((ActionParameter.Builder) actionParameter);
+        } else {
+            builder = ((ActionParameter) actionParameter).toBuilder();
+        }
+        builder.getServiceStateDescriptionBuilder().setUnitId(getId());
+
+        return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
+    }
+
+    public Future<ActionDescription> applyUnauthorizedAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, MOCKUP_SESSION_MANAGER, this::applyActionAuthenticated);
     }
 
@@ -693,7 +707,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 actionDescriptionBuilder.getActionInitiatorBuilder().clearAuthenticatedBy().clearAuthorizedBy();
 
                 // if an authentication token is send replace the initiator in any case
-                if (authenticationBaseData.getAuthenticationToken() != null) {
+                if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
                 }
 

@@ -22,11 +22,11 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
-import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
