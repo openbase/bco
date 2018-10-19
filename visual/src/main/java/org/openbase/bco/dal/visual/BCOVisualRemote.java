@@ -21,6 +21,7 @@ package org.openbase.bco.dal.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.visual.util.LoginDialog;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.ImageIcon;
@@ -255,6 +256,7 @@ public class BCOVisualRemote extends javax.swing.JFrame {
         JPService.setApplicationName(BCOVisualRemote.class);
         JPService.registerProperty(JPAuthentication.class);
         JPService.registerProperty(JPBCOAutoLoginUser.class);
+        JPService.registerProperty(JPProviderControlMode.class);
         JPService.parseAndExitOnError(args);
 
         BCOLogin.autoLogin(true);

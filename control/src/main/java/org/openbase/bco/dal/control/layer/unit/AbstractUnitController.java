@@ -36,6 +36,7 @@ import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionComparator;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.SchedulableAction;
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
@@ -100,6 +101,7 @@ import rst.timing.TimestampType.Timestamp;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -1140,11 +1142,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      */
     @Override
     public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
-        //logger.debug("Set " + this + " to " + serviceType.name() + " " + serviceState + "");
-        if (!operationServiceMap.containsKey(serviceType)) {
-            return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
-        }
         try {
+            if (!operationServiceMap.containsKey(serviceType)) {
+                if (JPService.getProperty(JPProviderControlMode.class).getValue()) {
+                    applyDataUpdate(serviceState, serviceType);
+                    return CompletableFuture.completedFuture(null);
+                } else {
+                    return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
+                }
+            }
             return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Void.class, ex);
