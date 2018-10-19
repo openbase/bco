@@ -83,10 +83,10 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
     }
 
     /**
-     * Call to {@link #connect(AuthenticatedValue)} by using the default session manager.
+     * Call to {@link #connect(AuthenticatedValue)} by using the default session test.
      *
      * @param connect flag determining if the socket connection for the user currently logged in at the default session
-     *                manager should be established or stopped.
+     *                test should be established or stopped.
      *
      * @return a future of the task created
      *
@@ -111,7 +111,7 @@ public class CloudConnectorAppRemote extends AppRemoteAdapter implements CloudCo
     }
 
     /**
-     * Register the user logged in at the default session manager at the cloud connector.
+     * Register the user logged in at the default session test at the cloud connector.
      * This method will generate an authorization token for the user with the same permissions he posseses.
      *
      * @param password a password for the account of the user at the BCO Cloud

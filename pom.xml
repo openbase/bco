@@ -180,8 +180,11 @@
     </profiles>
 
     <modules>
-        <module>openhab</module>
         <module>cloud-connector</module>
+        <module>manager</module>
+        <module>test</module>
+        <module>preset</module>
+        <module>util</module>
     </modules>
     
     <properties>

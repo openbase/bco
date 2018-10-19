@@ -81,21 +81,12 @@
         </plugins>
     </build>
 
-
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.manager.app.core</artifactId>
+            <artifactId>bco.dal.control</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
-
-        <!-->Needed for the AWT color transformer<!-->
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>jul.visual.swing</artifactId>
-            <version>${dependency.bco.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>io.socket</groupId>
             <artifactId>socket.io-client</artifactId>

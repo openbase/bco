@@ -28,7 +28,7 @@ import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
-import org.openbase.bco.manager.app.core.AbstractAppController;
+import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
