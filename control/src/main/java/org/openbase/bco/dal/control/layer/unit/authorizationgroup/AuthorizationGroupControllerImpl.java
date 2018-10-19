@@ -45,9 +45,4 @@ public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController
     public AuthorizationGroupControllerImpl() throws InstantiationException {
         super(AuthorizationGroupControllerImpl.class, AuthorizationGroupData.newBuilder());
     }
-
-    @Override
-    public Future<ActionDescription> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(presenceState, PRESENCE_STATE_SERVICE);
-    }
 }

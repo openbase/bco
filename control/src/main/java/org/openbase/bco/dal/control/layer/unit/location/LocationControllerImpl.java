@@ -259,11 +259,6 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
 
-    @Override
-    public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(standbyState, STANDBY_STATE_SERVICE);
-    }
-
     public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
         final List<LocationRemote> childList = new ArrayList<>();
         for (String childId : getConfig().getLocationConfig().getChildIdList()) {

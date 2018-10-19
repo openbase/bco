@@ -164,21 +164,6 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    public Future<ActionDescription> setActivityMultiState(final ActivityMultiState activityMultiState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(activityMultiState, ACTIVITY_MULTI_STATE_SERVICE);
-    }
-
-    @Override
-    public Future<ActionDescription> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(presenceState, PRESENCE_STATE_SERVICE);
-    }
-
-    @Override
-    public Future<ActionDescription> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(userTransitState, USER_TRANSIT_STATE_SERVICE);
-    }
-
-    @Override
     protected void applyCustomDataUpdate(UserData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case USER_TRANSIT_STATE_SERVICE:
