@@ -31,7 +31,6 @@
         <module>core</module>
         <module>remote</module>
         <module>test</module>
-        <module>binding</module>
     </modules>
     
     <dependencies>
