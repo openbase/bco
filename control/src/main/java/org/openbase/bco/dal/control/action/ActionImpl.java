@@ -262,9 +262,9 @@ public class ActionImpl implements SchedulableAction {
                                 updateActionState(ActionState.State.EXECUTING);
 
                                 try {
-                                    LOGGER.warn("Wait for execution...");
+                                    LOGGER.debug("Wait for execution...");
                                     waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
-                                    LOGGER.warn("Execution finished!");
+                                    LOGGER.debug("Execution finished!");
                                 } catch (CouldNotPerformException ex) {
                                     if (ex.getCause() instanceof InterruptedException) {
                                         updateActionState(ActionState.State.ABORTED);
