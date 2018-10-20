@@ -180,7 +180,7 @@
     </profiles>
 
     <modules>
-        <module>cloud-connector</module>
+        <module>cloudconnector</module>
         <module>manager</module>
         <module>test</module>
         <module>preset</module>

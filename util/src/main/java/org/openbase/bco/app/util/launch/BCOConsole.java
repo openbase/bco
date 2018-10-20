@@ -22,7 +22,7 @@ package org.openbase.bco.app.util.launch;
  * #L%
  */
 
-import org.openbase.bco.app.cloud.connector.CloudConnectorAppRemote;
+import org.openbase.bco.app.cloudconnector.CloudConnectorRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.DALRemote;
 import org.openbase.bco.registry.lib.BCO;
@@ -113,7 +113,7 @@ public class BCOConsole {
                         SessionManager.getInstance().changeCredentials(Registries.getUnitRegistry().getUserUnitIdByUserName(user), oldPwd, newPwd);
                         break;
                     case "cloud connect":
-                        final CloudConnectorAppRemote cloudConnectorRemote = new CloudConnectorAppRemote();
+                        final CloudConnectorRemote cloudConnectorRemote = new CloudConnectorRemote();
                         System.out.println("For connecting your accound with the bco cloud connector a new cloud user password is needed.");
                         System.out.println("You need this password for example again to pair the google cloud with the bco cloud service.");
                         System.out.println("Please choose a strong password to protect the remote access of your home!");
@@ -139,7 +139,7 @@ public class BCOConsole {
     }
 
     private void cloudDisconnect(Console console) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final CloudConnectorAppRemote cloudConnectorRemote = new CloudConnectorAppRemote();
+        final CloudConnectorRemote cloudConnectorRemote = new CloudConnectorRemote();
         cloudConnectorRemote.remove();
     }
 
