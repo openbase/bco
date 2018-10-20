@@ -33,6 +33,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 public interface AgentControllerFactory extends Factory<AgentController, UnitConfig> {
 
     @Override
-    public AgentController newInstance(final UnitConfig config) throws InstantiationException;
+    AgentController newInstance(final UnitConfig config) throws InstantiationException;
 
 }
