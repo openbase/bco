@@ -5,7 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/bco.iml" filepath="$PROJECT_DIR$/bco.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/bco.app.iml" filepath="$PROJECT_DIR$/module/bco.app/bco.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/bco.app.iml" filepath="$PROJECT_DIR$/module/bco.app/bco.app.iml" group="bco.app and modules" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.app/cloud-connector/bco.app.cloud.connector.iml" filepath="$PROJECT_DIR$/module/bco.app/cloud-connector/bco.app.cloud.connector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.app/cloudconnector/bco.app.cloud.connector.iml" filepath="$PROJECT_DIR$/module/bco.app/cloudconnector/bco.app.cloud.connector.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/cloud-connector/bco.app.cloud.connector.iml" filepath="$PROJECT_DIR$/module/bco.app/cloud-connector/bco.app.cloud.connector.iml" group="bco.app and modules" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/manager/bco.app.manager.iml" filepath="$PROJECT_DIR$/module/bco.app/manager/bco.app.manager.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/preset/bco.app.preset.iml" filepath="$PROJECT_DIR$/module/bco.app/preset/bco.app.preset.iml" />
