@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../bco.device" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/module/bco.app" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/module/bco.authentication" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/module/bco.bcozy" vcs="Git" />
@@ -14,6 +15,5 @@
     <mapping directory="$PROJECT_DIR$/module/bco.registry.editor" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/module/bco.stage" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/module/jul" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/module/openhab-binding-rsb" vcs="Git" />
   </component>
 </project>

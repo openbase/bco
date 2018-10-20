@@ -34,6 +34,8 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/test/bco.dal.test.iml" filepath="$PROJECT_DIR$/module/bco.dal/test/bco.dal.test.iml" group="bco.dal and modules" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/visual/bco.dal.visual.iml" filepath="$PROJECT_DIR$/module/bco.dal/visual/bco.dal.visual.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/visual/bco.dal.visual.iml" filepath="$PROJECT_DIR$/module/bco.dal/visual/bco.dal.visual.iml" group="bco.dal and modules" />
+      <module fileurl="file://$PROJECT_DIR$/../bco.device/bco.device.iml" filepath="$PROJECT_DIR$/../bco.device/bco.device.iml" group="bco.dal and modules" />
+      <module fileurl="file://$PROJECT_DIR$/../bco.device/openhab/bco.device.openhab.iml" filepath="$PROJECT_DIR$/../bco.device/openhab/bco.device.openhab.iml" group="bco.dal and modules" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.eveson/bco.eveson.iml" filepath="$PROJECT_DIR$/module/bco.eveson/bco.eveson.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/bco.ontology.iml" filepath="$PROJECT_DIR$/module/bco.ontology/bco.ontology.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/bco.ontology.iml" filepath="$PROJECT_DIR$/module/bco.ontology/bco.ontology.iml" group="bco.ontology and modules" />

@@ -26,6 +26,7 @@
         <module name="bco.dal.task" />
         <module name="bco.dal.test" />
         <module name="bco.dal.visual" />
+        <module name="bco.device.openhab" />
         <module name="bco.eveson" />
         <module name="bco.ontology.lib" />
         <module name="bco.ontology.owl" />
@@ -167,6 +168,7 @@
       <module name="bco.dal.task" target="1.8" />
       <module name="bco.dal.test" target="1.8" />
       <module name="bco.dal.visual" target="1.8" />
+      <module name="bco.device" target="1.8" />
       <module name="bco.device.openhab" target="1.8" />
       <module name="bco.eveson" target="1.8" />
       <module name="bco.manager" target="1.8" />

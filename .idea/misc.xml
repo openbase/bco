@@ -37,6 +37,7 @@
         <option value="$PROJECT_DIR$/module/bco.eveson/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.registry.editor/pom.xml" />
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/../bco.device/pom.xml" />
       </list>
     </option>
   </component>
