@@ -59,7 +59,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-//import org.openbase.jul.exception.TimeoutException;
 
 /**
  * Agent that synchronizes the behavior of different units with a power source.

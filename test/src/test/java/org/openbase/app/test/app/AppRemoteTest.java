@@ -47,7 +47,7 @@ public class AppRemoteTest {
     
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AppRemoteTest.class);
 
-    private static AppManagerLauncher appManagerLauncher;
+    private static org.openbase.app.test.app.AppManagerLauncher appManagerLauncher;
     private static AppRemote appRemote;
     private static MockRegistry registry;
 
@@ -101,6 +101,6 @@ public class AppRemoteTest {
 
         Informer<Object> informer = Factory.getInstance().createInformer(scope, config);
         informer.activate();
-        informer.send("Beach");
+        informer.publish("Beach");
     }
 }

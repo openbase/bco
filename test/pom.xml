@@ -90,11 +90,6 @@
 <dependencies>
     <dependency>
         <groupId>org.openbase</groupId>
-        <artifactId>bco.app.manager</artifactId>
-        <version>${dependency.bco.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.openbase</groupId>
         <artifactId>bco.dal.test</artifactId>
         <version>${dependency.bco.version}</version>
     </dependency>

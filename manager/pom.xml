@@ -52,14 +52,14 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.app.test.app.AppManagerLauncher</mainClass>
+                            <mainClass>org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher</mainClass>
                             <id>bco-manager-app</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.app.test.agent.AgentManagerLauncher</mainClass>
+                            <mainClass>org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher</mainClass>
                             <id>bco-manager-agent</id>
                             <platforms>
                                 <platform>unix</platform>
