@@ -11,7 +11,10 @@
         <module name="authentication.test" />
         <module name="bco" />
         <module name="bco.app.cloud.connector" />
-        <module name="bco.app.openhab" />
+        <module name="bco.app.manager" />
+        <module name="bco.app.preset" />
+        <module name="bco.app.test" />
+        <module name="bco.app.util" />
         <module name="bco.authentication.core" />
         <module name="bco.authentication.lib" />
         <module name="bco.authentication.test" />
@@ -24,37 +27,6 @@
         <module name="bco.dal.test" />
         <module name="bco.dal.visual" />
         <module name="bco.eveson" />
-        <module name="bco.manager.agent.binding.openhab" />
-        <module name="bco.manager.agent.core" />
-        <module name="bco.manager.agent.lib" />
-        <module name="bco.manager.agent.remote" />
-        <module name="bco.manager.agent.test" />
-        <module name="bco.manager.app.binding.openhab" />
-        <module name="bco.manager.app.core" />
-        <module name="bco.manager.app.lib" />
-        <module name="bco.manager.app.remote" />
-        <module name="bco.manager.app.test" />
-        <module name="bco.manager.device.binding.openhab" />
-        <module name="bco.manager.device.core" />
-        <module name="bco.manager.device.lib" />
-        <module name="bco.manager.device.remote" />
-        <module name="bco.manager.device.test" />
-        <module name="bco.manager.location.binding.openhab" />
-        <module name="bco.manager.location.core" />
-        <module name="bco.manager.location.lib" />
-        <module name="bco.manager.location.remote" />
-        <module name="bco.manager.location.test" />
-        <module name="bco.manager.scene.binding.openhab" />
-        <module name="bco.manager.scene.core" />
-        <module name="bco.manager.scene.lib" />
-        <module name="bco.manager.scene.remote" />
-        <module name="bco.manager.scene.test" />
-        <module name="bco.manager.scene.visual" />
-        <module name="bco.manager.user.core" />
-        <module name="bco.manager.user.lib" />
-        <module name="bco.manager.user.remote" />
-        <module name="bco.manager.user.test" />
-        <module name="bco.manager.util" />
         <module name="bco.ontology.lib" />
         <module name="bco.ontology.owl" />
         <module name="bco.ontology.visual" />
@@ -97,7 +69,6 @@
         <module name="jul.annotation" />
         <module name="jul.audio" />
         <module name="jul.exception" />
-        <module name="jul.extension.openhab" />
         <module name="jul.extension.protobuf" />
         <module name="jul.extension.rct" />
         <module name="jul.extension.rsb.com" />
@@ -178,7 +149,11 @@
       <module name="bco" target="1.8" />
       <module name="bco.app" target="1.8" />
       <module name="bco.app.cloud.connector" target="1.8" />
+      <module name="bco.app.manager" target="1.8" />
       <module name="bco.app.openhab" target="1.8" />
+      <module name="bco.app.preset" target="1.8" />
+      <module name="bco.app.test" target="1.8" />
+      <module name="bco.app.util" target="1.8" />
       <module name="bco.authentication" target="1.8" />
       <module name="bco.authentication.core" target="1.8" />
       <module name="bco.authentication.lib" target="1.8" />
@@ -192,6 +167,7 @@
       <module name="bco.dal.task" target="1.8" />
       <module name="bco.dal.test" target="1.8" />
       <module name="bco.dal.visual" target="1.8" />
+      <module name="bco.device.openhab" target="1.8" />
       <module name="bco.eveson" target="1.8" />
       <module name="bco.manager" target="1.8" />
       <module name="bco.manager.agent" target="1.8" />

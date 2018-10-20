@@ -34,9 +34,9 @@
 	path = module/bco.ontology
     url = https://github.com/openbase/bco.ontology.git
     branch = master
-[submodule "module/bco.manager"]
-	path = module/bco.manager
-    url = https://github.com/openbase/bco.manager.git
+[submodule "module/bco.device"]
+	path = module/bco.device
+    url = https://github.com/openbase/bco.device.git
     branch = master
 [submodule "module/bco.bcozy"]
 	path = module/bco.bcozy
