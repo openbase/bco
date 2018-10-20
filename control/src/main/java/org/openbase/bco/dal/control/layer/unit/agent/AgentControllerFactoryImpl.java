@@ -21,17 +21,15 @@ package org.openbase.app.test.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.control.layer.unit.agent.AbstractAgentController;
 import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentControllerFactory;
 
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -48,10 +46,10 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
     protected final Logger logger = LoggerFactory.getLogger(AgentControllerFactoryImpl.class);
     private static AgentControllerFactoryImpl instance;
 
-    private static final String PRESET_AGENT_PACKAGE_PREFIX = "org.openbase.bco.app.preset.agent";
+    private static final String PRESET_AGENT_PACKAGE_PREFIX = "org.openbase.bco.app.preset";
+    private static final String CUSTOM_AGENT_PACKAGE_PREFIX = "org.openbase.bco.app";
 
-    public synchronized static AgentControllerFactory getInstance() {
-
+    public synchronized static AgentControllerFactoryImpl getInstance() {
         if (instance == null) {
             instance = new AgentControllerFactoryImpl();
         }
@@ -59,39 +57,38 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
     }
 
     private AgentControllerFactoryImpl() {
-
     }
 
     @Override
-    public AgentController newInstance(final UnitConfig agentUnitConfig) throws InstantiationException {
+    public AgentController newInstance(final UnitConfig agentUnitConfig) throws org.openbase.jul.exception.InstantiationException {
         AgentController agent;
         try {
             if (agentUnitConfig == null) {
-                throw new NotAvailableException("agentconfig");
+                throw new NotAvailableException("AgentConfig");
             }
-            if (!agentUnitConfig.getAgentConfig().hasAgentClassId()) {
-                throw new NotAvailableException("agenttype");
+
+            Registries.waitForData();
+            final AgentClass agentClass = Registries.getClassRegistry().getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
+
+            try {
+                // try to load preset agent
+                String className = PRESET_AGENT_PACKAGE_PREFIX
+                        + ".agent"
+                        + "." + LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel()) + "Agent";
+                agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
+            } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+                // try to load custom agent
+                String className = CUSTOM_AGENT_PACKAGE_PREFIX
+                        + "." + StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel())).toLowerCase()
+                        + ".agent"
+                        + "." + StringProcessor.transformToCamelCase(StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel()))) + "Agent";
+                agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
             }
-            if (!agentUnitConfig.hasScope() && agentUnitConfig.getScope().getComponentList().isEmpty()) {
-                throw new NotAvailableException("scope");
-            }
-            final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(agentUnitConfig));
-            logger.debug("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + ScopeGenerator.generateStringRep(agentUnitConfig.getScope()) + "]");
-            agent = (AgentController) agentClass.newInstance();
+            logger.debug("Creating agent of type [" + LabelProcessor.getBestMatch(agentClass.getLabel()) + "]");
             agent.init(agentUnitConfig);
         } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {
-            throw new InstantiationException(Agent.class, agentUnitConfig.getId(), ex);
+            throw new org.openbase.jul.exception.InstantiationException(Agent.class, agentUnitConfig.getId(), ex);
         }
         return agent;
-    }
-
-    private String getAgentClass(final UnitConfig agentUnitConfig) throws InterruptedException, NotAvailableException {
-        try {
-            AgentClass agentClass = Registries.getClassRegistry(true).getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
-            return PRESET_AGENT_PACKAGE_PREFIX + "." + LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel())
-                    + "Agent";
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AgentClass", ex);
-        }
     }
 }

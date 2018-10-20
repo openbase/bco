@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.unit.app.AppControllerFactory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -45,7 +46,8 @@ public class AppControllerFactoryImpl implements AppControllerFactory {
     protected final Logger logger = LoggerFactory.getLogger(AppControllerFactoryImpl.class);
     private static AppControllerFactoryImpl instance;
 
-    private static final String PRESET_APP_PACKAGE_PREFIX = "org.openbase.bco.app.preset.app";
+    private static final String PRESET_APP_PACKAGE_PREFIX = "org.openbase.bco.app.preset";
+    private static final String CUSTOM_APP_PACKAGE_PREFIX = "org.openbase.bco.app";
 
     public synchronized static AppControllerFactoryImpl getInstance() {
         if (instance == null) {
@@ -58,33 +60,33 @@ public class AppControllerFactoryImpl implements AppControllerFactory {
     }
 
     @Override
-    public AppController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException {
-        final AppController app;
+    public AppController newInstance(final UnitConfig appUnitConfig) throws org.openbase.jul.exception.InstantiationException {
+        AppController app;
         try {
-            if (config == null) {
-                throw new NotAvailableException("appconfig");
+            if (appUnitConfig == null) {
+                throw new NotAvailableException("AppConfig");
             }
 
-            final Class appClass = Thread.currentThread().getContextClassLoader().loadClass(getAppClass(config));
-            logger.debug("Creating app of type [" + appClass.getSimpleName() + "]");
-            app = (AppController) appClass.newInstance();
-            app.init(config);
+            Registries.waitForData();
+            final AppClass appClass = Registries.getClassRegistry().getAppClassById(appUnitConfig.getAppConfig().getAppClassId());
+
+            try {
+                // try to load preset app
+                String className = PRESET_APP_PACKAGE_PREFIX
+                        + "." + LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel()) + "App";
+                app = (AppController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
+            } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+                // try to load custom app
+                String className = CUSTOM_APP_PACKAGE_PREFIX
+                        + "." + StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel())).toLowerCase()
+                        + "." + StringProcessor.transformToCamelCase(StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel()))) + "App";
+                app = (AppController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
+            }
+            logger.debug("Creating app of type [" + LabelProcessor.getBestMatch(appClass.getLabel()) + "]");
+            app.init(appUnitConfig);
         } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(App.class, config.getId(), ex);
+            throw new org.openbase.jul.exception.InstantiationException(App.class, appUnitConfig.getId(), ex);
         }
         return app;
-    }
-
-    private String getAppClass(final UnitConfig appUnitConfig) throws InterruptedException, NotAvailableException {
-        try {
-            Registries.waitForData();
-            AppClass appClass = Registries.getClassRegistry().getAppClassById(appUnitConfig.getAppConfig().getAppClassId());
-            return PRESET_APP_PACKAGE_PREFIX
-                    + "."
-                    + LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel())
-                    + "App";
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AppClass", ex);
-        }
     }
 }
