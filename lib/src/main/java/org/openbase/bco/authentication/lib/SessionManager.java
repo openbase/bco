@@ -202,11 +202,11 @@ public class SessionManager implements Shutdownable {
         authenticatedValue.setTicketAuthenticatorWrapper(initializeServiceServerRequest());
         authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(value, sessionKey));
 
-        if (authenticationToken != null) {
+        if (authenticationToken != null && !authenticationToken.isEmpty()) {
             authenticatedValue.setAuthenticationToken(EncryptionHelper.encryptSymmetric(authenticationToken, sessionKey));
         }
 
-        if (authorizationToken != null) {
+        if (authorizationToken != null && !authorizationToken.isEmpty()) {
             authenticatedValue.setAuthorizationToken(EncryptionHelper.encryptSymmetric(authorizationToken, sessionKey));
         }
         return authenticatedValue.build();
