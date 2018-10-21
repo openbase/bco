@@ -24,11 +24,15 @@ package org.openbase.bco.dal.visual.service;
 import java.awt.Color;
 import java.text.DateFormat;
 import java.util.Date;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -36,6 +40,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.processing.StringProcessor;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.PresenceStateType.PresenceState.State;
 
@@ -54,6 +60,13 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
      */
     public PresenceStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
+        
+        try {
+            applyPresenceStateButton.setVisible(JPService.getProperty(JPProviderControlMode.class).getValue());
+        } catch (JPNotAvailableException ex) {
+            applyPresenceStateButton.setVisible(false);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -69,6 +82,7 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
         stateLabel = new javax.swing.JLabel();
         lastPresenceValueLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        applyPresenceStateButton = new javax.swing.JButton();
 
         presenceStatePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
@@ -80,16 +94,25 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
         presenceStatePanel.setLayout(presenceStatePanelLayout);
         presenceStatePanelLayout.setHorizontalGroup(
             presenceStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(stateLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+            .addGroup(presenceStatePanelLayout.createSequentialGroup()
+                .addComponent(stateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         presenceStatePanelLayout.setVerticalGroup(
             presenceStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(stateLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+            .addComponent(stateLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
         );
 
         lastPresenceValueLabel.setText("N/A");
 
         jLabel2.setText("Last Presence:");
+
+        applyPresenceStateButton.setText("PresenseState");
+        applyPresenceStateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyPresenceStateButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -97,14 +120,18 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(presenceStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(presenceStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(applyPresenceStateButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(jLabel2)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(lastPresenceValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lastPresenceValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                     .addContainerGap()))
         );
         layout.setVerticalGroup(
@@ -112,18 +139,39 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(presenceStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addGap(58, 58, 58)
+                .addComponent(applyPresenceStateButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(64, 64, 64)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(lastPresenceValueLabel)
                         .addComponent(jLabel2))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addContainerGap(74, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void applyPresenceStateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyPresenceStateButtonActionPerformed
+        try {
+            PresenceState presenceState;
+            switch (getProviderService().getPresenceState().getValue()) {
+                case PRESENT:
+                presenceState = PresenceState.newBuilder().setValue(PresenceState.State.ABSENT).build();
+                break;
+                default:
+                presenceState = PresenceState.newBuilder().setValue(PresenceState.State.PRESENT).build();
+                break;
+            }
+            ActionDescription action = ActionDescriptionProcessor.generateActionDescriptionBuilder(presenceState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE, getUnitRemote()).build();
+            notifyActionProcessing(getUnitRemote().applyAction(action));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+        }
+    }//GEN-LAST:event_applyPresenceStateButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton applyPresenceStateButton;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel lastPresenceValueLabel;
     private javax.swing.JPanel presenceStatePanel;
