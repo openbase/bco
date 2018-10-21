@@ -126,9 +126,7 @@ public class RemoteAction implements Action {
                 if (actionFuture == null) {
                     throw new NotAvailableException("ActionFuture");
                 }
-                System.out.println("wait for desc");
                 final ActionDescription actionDescription = actionFuture.get(1, TimeUnit.SECONDS);
-                System.out.println("continue");
                 if (actionDescription == null) {
                     throw new InvalidStateException("Task returned null!");
                 }
