@@ -156,21 +156,6 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
-    }
-
-    @Override
-    public Future<ActionDescription> setColorState(final ColorState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, COLOR_STATE_SERVICE);
-    }
-
-    @Override
-    public Future<ActionDescription> setBrightnessState(final BrightnessState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, BRIGHTNESS_STATE_SERVICE);
-    }
-
-    @Override
     protected void applyCustomDataUpdate(ColorableLightData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case COLOR_STATE_SERVICE:

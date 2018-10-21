@@ -22,11 +22,15 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * #L%
  */
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType.Color;
 import rst.vision.ColorType.Color.Type;
@@ -44,7 +48,13 @@ public interface ColorStateOperationService extends OperationService, ColorState
     Color DEFAULT_NEUTRAL_WHITE_COLOR = Color.newBuilder().setType(Type.HSB).setHsbColor(DEFAULT_NEUTRAL_WHITE).build();
 
     @RPCMethod(legacy = true)
-    Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException;
+    default Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(colorState, ServiceType.COLOR_STATE_SERVICE));
+    }
+
+    default Future<ActionDescription> setColorState(final ColorState colorState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(colorState, ServiceType.COLOR_STATE_SERVICE)));
+    }
 
     @RPCMethod(legacy = true)
     default Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {

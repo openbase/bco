@@ -22,8 +22,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
-import java.util.concurrent.TimeUnit;
-
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
@@ -36,6 +34,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * A unit remote factory which can be used to create unit remote instances out

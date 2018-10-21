@@ -21,23 +21,15 @@ package org.openbase.bco.dal.control.layer.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.Monitor;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.dal.lib.layer.unit.Monitor;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.dal.MonitorDataType.MonitorData;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
 
 /**
  *
@@ -51,20 +43,7 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
     }
     
-    private PowerStateOperationService powerStateService;
-    private StandbyStateOperationService standbyStateService;
-    
     public MonitorController(final HostUnitController hostUnitController, final MonitorData.Builder builder) throws InstantiationException {
         super(MonitorController.class, hostUnitController, builder);
-    }
-
-    @Override
-    public Future<ActionDescription> setPowerState(final PowerState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, POWER_STATE_SERVICE);
-    }
-    
-    @Override
-    public Future<ActionDescription> setStandbyState(final StandbyState state) throws CouldNotPerformException {
-        return applyUnauthorizedAction(state, STANDBY_STATE_SERVICE);
     }
 }

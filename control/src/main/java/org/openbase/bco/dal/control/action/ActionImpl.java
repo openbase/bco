@@ -27,10 +27,12 @@ import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.SchedulableAction;
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -57,8 +59,11 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.language.MultiLanguageTextType.MultiLanguageText;
 import rst.language.MultiLanguageTextType.MultiLanguageText.MapFieldEntry;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
 
@@ -236,13 +241,30 @@ public class ActionImpl implements SchedulableAction {
 
                         try {
                             try {
-                                setRequestedState();
+                                boolean hasOperationService = false;
+                                for (ServiceDescription description : unit.getUnitTemplate().getServiceDescriptionList()) {
+                                    if (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == ServicePattern.OPERATION) {
+                                        hasOperationService = true;
+                                        break;
+                                    }
+                                }
+
+                                // only update requested state if it is an operation state, else throw an exception if not in provider control mode
+                                if (!hasOperationService) {
+                                    if (!JPService.getProperty(JPProviderControlMode.class).getValue()) {
+                                        throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
+                                    }
+                                } else {
+                                    setRequestedState();
+                                }
 
                                 // Execute
                                 updateActionState(ActionState.State.EXECUTING);
 
                                 try {
+                                    LOGGER.debug("Wait for execution...");
                                     waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
+                                    LOGGER.debug("Execution finished!");
                                 } catch (CouldNotPerformException ex) {
                                     if (ex.getCause() instanceof InterruptedException) {
                                         updateActionState(ActionState.State.ABORTED);
@@ -343,7 +365,8 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
-        if(getActionDescription().getExecutionTimePeriod() == 0) {
+        //TODO this is a problem if the internal task is not returned as a completable future such as for the multi activity in users
+        if (getActionDescription().getExecutionTimePeriod() == 0) {
             return;
         }
         try {

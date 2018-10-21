@@ -152,6 +152,10 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
         }
         return "---";
     }
+    
+    protected UnitRemote getUnitRemote() {
+        return this.unitRemote;
+    }
 
     public synchronized void notifyActionProcessing(final Future future) {
         if (lastActionDescription != null && lastActionDescription.isDone()) {

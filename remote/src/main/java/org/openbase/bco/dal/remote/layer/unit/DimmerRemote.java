@@ -1,17 +1,11 @@
 package org.openbase.bco.dal.remote.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.unit.Dimmer;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
-
-import java.util.concurrent.Future;
 
 /*
  * #%L
@@ -48,15 +42,5 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
 
     public DimmerRemote() {
         super(DimmerData.class);
-    }
-
-    @Override
-    public Future<ActionDescription> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
-    }
-
-    @Override
-    public Future<ActionDescription> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
     }
 }

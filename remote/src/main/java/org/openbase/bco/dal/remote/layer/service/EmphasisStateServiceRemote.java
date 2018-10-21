@@ -21,22 +21,22 @@ package org.openbase.bco.dal.remote.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.collection.EmphasisStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.Collection;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -51,11 +51,6 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
     @Override
     protected EmphasisState computeServiceState() throws CouldNotPerformException {
         return getEmphasisState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public Future<ActionDescriptionType.ActionDescription> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(emphasisState, getServiceType()));
     }
 
     @Override

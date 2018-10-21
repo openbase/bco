@@ -24,6 +24,8 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import com.google.protobuf.Message;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
@@ -53,8 +55,8 @@ public interface ServiceProvider<ST> {
     @RPCMethod(legacy = true)
     Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
 
-    default Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptioBuildern) throws CouldNotPerformException {
-        return applyAction(actionDescriptioBuildern.build());
+    default Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
+        return applyAction(actionDescriptionBuilder.build());
     }
 
     default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {

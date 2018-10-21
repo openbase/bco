@@ -21,19 +21,14 @@ package org.openbase.bco.dal.control.layer.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 
-import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE;
 
 /**
  *
@@ -48,33 +43,5 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
 
     public RollerShutterController(final HostUnitController hostUnitController, final RollerShutterData.Builder builder) throws InstantiationException {
         super(RollerShutterController.class, hostUnitController, builder);
-    }
-
-    @Override
-    public Future<ActionDescription> setBlindState(final BlindState state) throws CouldNotPerformException {
-//        logger.debug("Setting [" + getLabel() + "] to BlindState [" + state + "]");
-//
-//        try {
-//            Services.verifyServiceState(state);
-//        } catch (VerificationFailedException ex) {
-//            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
-//        }
-//
-//        // stop before moving in any direction.
-//        switch (state.getValue()) {
-//            case DOWN:
-//            case UP:
-//                try {
-//                    blindStateService.setBlindState(state.toBuilder().setValue(BlindState.State.STOP).build()).get(1000, TimeUnit.MILLISECONDS);
-//                } catch (ExecutionException | TimeoutException | InterruptedException ex) {
-//                    if (ex instanceof InterruptedException) {
-//                        Thread.currentThread().interrupt();
-//                    }
-//                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not stop before inverse blind movement.", ex), logger, LogLevel.WARN);
-//                    // continue without stop
-//                }
-//        }
-//        return blindStateService.setBlindState(state);
-        return applyUnauthorizedAction(state, BLIND_STATE_SERVICE);
     }
 }

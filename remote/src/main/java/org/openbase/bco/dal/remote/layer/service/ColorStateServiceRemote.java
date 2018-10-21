@@ -21,23 +21,17 @@ package org.openbase.bco.dal.remote.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ColorStateType.ColorState;
@@ -45,6 +39,12 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -66,11 +66,6 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     @Override
     protected ColorState computeServiceState() throws CouldNotPerformException {
         return getColorState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(colorState, getServiceType()));
     }
 
     @Override

@@ -36,6 +36,7 @@ import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionComparator;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.SchedulableAction;
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
@@ -81,6 +82,8 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -98,6 +101,7 @@ import rst.timing.TimestampType.Timestamp;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -460,8 +464,20 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    public Future<ActionDescription> applyUnauthorizedAction(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(ActionDescriptionProcessor.generateDefaultActionParameter(serviceAttribute, serviceType, this, false)).build();
+    @Override
+    public Future<ActionDescription> applyAction(ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+        final ActionParameter.Builder builder;
+        if (actionParameter instanceof ActionParameter.Builder) {
+            builder = ((ActionParameter.Builder) actionParameter);
+        } else {
+            builder = ((ActionParameter) actionParameter).toBuilder();
+        }
+        builder.getServiceStateDescriptionBuilder().setUnitId(getId());
+
+        return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
+    }
+
+    public Future<ActionDescription> applyUnauthorizedAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, MOCKUP_SESSION_MANAGER, this::applyActionAuthenticated);
     }
 
@@ -691,6 +707,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 // clear auth fields
                 actionDescriptionBuilder.getActionInitiatorBuilder().clearAuthenticatedBy().clearAuthorizedBy();
+
+                // if an authentication token is send replace the initiator in any case
+                if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
+                }
 
                 // setup auth fields
                 if (authPair.getAuthenticatedBy() != null) {
@@ -1121,11 +1142,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      */
     @Override
     public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
-        //logger.debug("Set " + this + " to " + serviceType.name() + " " + serviceState + "");
-        if (!operationServiceMap.containsKey(serviceType)) {
-            return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
-        }
         try {
+            if (!operationServiceMap.containsKey(serviceType)) {
+                if (JPService.getProperty(JPProviderControlMode.class).getValue()) {
+                    applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
+                    return CompletableFuture.completedFuture(null);
+                } else {
+                    return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
+                }
+            }
             return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Void.class, ex);

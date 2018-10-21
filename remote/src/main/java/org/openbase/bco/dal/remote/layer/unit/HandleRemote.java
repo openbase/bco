@@ -22,11 +22,11 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.Handle;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.HandleStateType.HandleState;
 import rst.domotic.unit.dal.HandleDataType.HandleData;
-import org.openbase.bco.dal.lib.layer.unit.Handle;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

@@ -22,13 +22,12 @@ package org.openbase.bco.dal.remote.layer.service;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
@@ -44,11 +43,6 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
 
     public StandbyStateServiceRemote() {
         super(ServiceType.STANDBY_STATE_SERVICE, StandbyState.class);
-    }
-
-    @Override
-    public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(standbyState, getServiceType()));
     }
 
     @Override

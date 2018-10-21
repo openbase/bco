@@ -22,14 +22,13 @@ package org.openbase.bco.dal.remote.layer.service;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
@@ -98,11 +97,6 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         }
 
         return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setValue(mostOccurrences).setOpeningRatio(openingRatioAverage), TimeUnit.MICROSECONDS, logger).build();
-    }
-
-    @Override
-    public Future<ActionDescription> setBlindState(final BlindState blindState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(blindState, getServiceType()));
     }
 
     @Override

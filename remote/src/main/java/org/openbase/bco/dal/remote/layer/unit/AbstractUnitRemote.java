@@ -28,6 +28,7 @@ import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
 import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProcessor;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -54,7 +55,8 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -136,7 +138,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                         continue;
                     }
                     serviceTypeSet.add(serviceDescription.getServiceType());
-                    
+
                     try {
                         Object serviceData = Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
                         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
@@ -551,8 +553,8 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
-    public Future<ActionDescription> applyAction(ActionDescription.Builder actionDescription) throws CouldNotPerformException {
-        return applyAction(actionDescription.build());
+    public Future<ActionDescription> applyAction(ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
+        return applyAction(actionDescriptionBuilder.build());
     }
 
     /**
@@ -571,7 +573,37 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
+     * @param actionParameter {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+        final ActionParameter.Builder builder;
+        if(actionParameter instanceof ActionParameter.Builder) {
+            builder = ((ActionParameter.Builder) actionParameter);
+        } else {
+            builder = ((ActionParameter) actionParameter).toBuilder();
+        }
+        builder.getServiceStateDescriptionBuilder().setUnitId(getId());
+        // create action description from parameters
+        final ActionDescription build = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build();
+        // create authenticated value with tokens
+        final AuthenticatedValue authenticatedValue =
+                SessionManager.getInstance().initializeRequest(build, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
+        // call apply action authenticated and wrap in future that decrypts response
+        return new AuthenticatedValueFuture<>(applyActionAuthenticated(authenticatedValue), ActionDescription.class,
+                authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * @param actionDescription {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override

@@ -22,11 +22,11 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
-import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

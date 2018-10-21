@@ -24,7 +24,6 @@ package org.openbase.bco.dal.control.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.unit.Button;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;

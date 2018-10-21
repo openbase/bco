@@ -21,11 +21,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
+import org.openbase.bco.dal.lib.layer.unit.Switch;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.SwitchStateType.SwitchState;
 import rst.domotic.unit.dal.SwitchDataType.SwitchData;
-import org.openbase.bco.dal.lib.layer.unit.Switch;
 
 /**
  *

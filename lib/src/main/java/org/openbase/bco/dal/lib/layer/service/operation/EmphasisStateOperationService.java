@@ -23,10 +23,14 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  */
 
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.EmphasisStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 
 /**
@@ -36,6 +40,11 @@ import rst.domotic.state.EmphasisStateType.EmphasisState;
 public interface EmphasisStateOperationService extends OperationService, EmphasisStateProviderService {
 
     @RPCMethod(legacy = true)
-    Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException;
+    default Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE));
+    }
 
+    default Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE)));
+    }
 }

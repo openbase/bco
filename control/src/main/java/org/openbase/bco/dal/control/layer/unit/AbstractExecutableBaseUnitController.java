@@ -40,14 +40,11 @@ import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.ActivationStateType.ActivationState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ACTIVATION_STATE_SERVICE;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
@@ -78,10 +75,6 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
-    }
-
-    public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-        return applyUnauthorizedAction(activationState, ACTIVATION_STATE_SERVICE);
     }
 
     public boolean isExecuting() {

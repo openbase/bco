@@ -62,11 +62,6 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     }
 
     @Override
-    public Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState, getServiceType()));
-    }
-
-    @Override
     public Future<ActionDescription> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState, getServiceType(), unitType));
     }

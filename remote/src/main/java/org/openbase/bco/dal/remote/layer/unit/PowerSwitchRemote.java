@@ -23,16 +23,10 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
-
-import java.util.concurrent.Future;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -46,10 +40,5 @@ public class PowerSwitchRemote extends AbstractUnitRemote<PowerSwitchData> imple
 
     public PowerSwitchRemote() {
         super(PowerSwitchData.class);
-    }
-
-    @Override
-    public Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
 }
