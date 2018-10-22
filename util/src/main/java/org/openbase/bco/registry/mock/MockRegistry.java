@@ -887,7 +887,7 @@ public class MockRegistry {
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
         BATTERY(UnitType.BATTERY, BATTERY_SPS),
         LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS,
-                SMOKE_ALARM_SPS, SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS),
+                SMOKE_ALARM_SPS, SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS, PRESENCE_SPS),
         CONNECTION(UnitType.CONNECTION),
         SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
         AGENT(UnitType.AGENT, ACTIVATION_SPS, ACTIVATION_SOS),
@@ -898,11 +898,31 @@ public class MockRegistry {
 
         private final UnitTemplate template;
 
-        MockUnitTemplate(UnitType type, MockServiceDescription... serviceTemplates) {
-            UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
+        MockUnitTemplate(final UnitType type, final MockServiceDescription... serviceTemplates) {
+            final UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
             templateBuilder.setType(type);
-            for (MockServiceDescription serviceTemplate : serviceTemplates) {
+
+            for (final MockServiceDescription serviceTemplate : serviceTemplates) {
                 templateBuilder.addServiceDescription(serviceTemplate.getDescription());
+            }
+
+            if (type == UnitType.UNIT_GROUP) {
+                for (final ServiceDescription.Builder serviceDescription : templateBuilder.getServiceDescriptionBuilderList()) {
+                    serviceDescription.setAggregated(true);
+                }
+            }
+
+            if (type == UnitType.LOCATION) {
+                for (final ServiceDescription.Builder serviceDescription : templateBuilder.getServiceDescriptionBuilderList()) {
+                    switch (serviceDescription.getServiceType()) {
+                        case PRESENCE_STATE_SERVICE:
+                        case STANDBY_STATE_SERVICE:
+                            break;
+                        default:
+                            serviceDescription.setAggregated(true);
+                            break;
+                    }
+                }
             }
 
             switch (type) {
