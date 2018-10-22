@@ -410,7 +410,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.manager.util</artifactId>
+            <artifactId>bco.app.util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -440,7 +440,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.manager.scene.visual</artifactId>
+            <artifactId>bco.dal.control</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
