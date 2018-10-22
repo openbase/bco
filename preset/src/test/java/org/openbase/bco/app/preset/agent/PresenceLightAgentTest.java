@@ -72,7 +72,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test(timeout = 20000)
     public void testPreseceLightAgent() throws Exception {
         // TODO: turn back on when resource allocation is integrated for unit tests
         try {
@@ -90,8 +90,8 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.COLORABLE_LIGHT);
-        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.MOTION_DETECTOR, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.MOTION_DETECTOR);
+        ColorableLightRemote colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT,true, Units.COLORABLE_LIGHT).get(0);
+        MotionDetectorRemote motionDetectorRemote = locationRemote.getUnits(UnitType.MOTION_DETECTOR,true, Units.MOTION_DETECTOR).get(0);
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
 
         UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter<>(colorableLightRemote);
