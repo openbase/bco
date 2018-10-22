@@ -486,7 +486,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
         ActionDescription actionDescription;
         try {
-            actionDescription = EncryptionHelper.decrypt(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class, SessionManager.getInstance().getUserId() == null);
+            actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
         }

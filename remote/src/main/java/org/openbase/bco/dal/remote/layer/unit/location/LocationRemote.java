@@ -294,7 +294,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
                 }
             }
             try {
-                MultiException.checkAndThrow(() ->"Could not collect all unit remotes of " + this, exceptionStack);
+                MultiException.checkAndThrow(() -> "Could not collect all unit remotes of " + this, exceptionStack);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
             }
@@ -351,12 +351,13 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             }
         }
         try {
-            MultiException.checkAndThrow(() ->"Could not collect all unit remotes of " + this, exceptionStack);
+            MultiException.checkAndThrow(() -> "Could not collect all unit remotes of " + this, exceptionStack);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
         return unitRemote;
     }
+
     @Override
     public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
@@ -370,13 +371,13 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         }
 
         try {
-            final ActionDescription actionDescription = EncryptionHelper.decrypt(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class, SessionManager.getInstance().getUserId() == null);
-            for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+            final ActionDescription actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
+            for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
                 if (serviceDescription.getAggregated()) {
                     continue;
                 }
 
-                if(serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
+                if (serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
                     continue;
                 }
 

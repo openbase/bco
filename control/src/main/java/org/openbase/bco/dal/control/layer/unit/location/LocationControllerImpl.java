@@ -53,6 +53,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.*;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -72,7 +73,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
 
 /**
  * UnitConfig
@@ -246,12 +246,19 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
-        switch (actionDescription.getServiceStateDescription().getServiceType()) {
-            case STANDBY_STATE_SERVICE:
-                return super.applyAction(actionDescription);
-            default:
-                return serviceRemoteManager.applyAction(actionDescription);
+        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+            if (serviceDescription.getAggregated()) {
+                continue;
+            }
+
+            if (serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
+                continue;
+            }
+
+            return super.applyAction(actionDescription);
         }
+
+        return serviceRemoteManager.applyAction(actionDescription);
     }
 
     @Override

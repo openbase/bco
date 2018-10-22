@@ -669,7 +669,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
         ActionDescription actionDescription;
         try {
-            actionDescription = EncryptionHelper.decrypt(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class, SessionManager.getInstance().getUserId() == null);
+            actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
         }
@@ -694,8 +694,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescription));
 
             // encrypt action description again
-            final byte[] encrypt = EncryptionHelper.encrypt(builder.build(), SessionManager.getInstance().getSessionKey(), SessionManager.getInstance().getUserId() == null);
-            final AuthenticatedValue authValue = authenticatedValue.toBuilder().setValue(ByteString.copyFrom(encrypt)).build();
+            final ByteString encrypt = EncryptionHelper.encryptSymmetric(builder.build(), SessionManager.getInstance().getSessionKey());
+            final AuthenticatedValue authValue = authenticatedValue.toBuilder().setValue(encrypt).build();
 
             // apply action on remote
             ActionDescriptionList.add(unitRemote.applyActionAuthenticated(authValue));
