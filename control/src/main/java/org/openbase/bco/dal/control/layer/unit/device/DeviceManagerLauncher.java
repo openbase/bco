@@ -48,8 +48,6 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerImpl> {
         JPService.registerProperty(JPPrefix.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.registerProperty(JPBenchmarkMode.class);
-        JPService.registerProperty(JPUnitRegistryScope.class);
-        JPService.registerProperty(JPClassRegistryScope.class);
         JPService.registerProperty(JPUnitAllocation.class);
         JPService.registerProperty(JPProviderControlMode.class);
     }
