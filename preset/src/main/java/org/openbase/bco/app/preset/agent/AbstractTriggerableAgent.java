@@ -47,12 +47,12 @@ import java.util.concurrent.ExecutionException;
  */
 public abstract class AbstractTriggerableAgent extends AbstractAgentController {
 
-    private TriggerPool agentTriggerHolder;
+    private TriggerPool triggerPool;
     private Observer<Trigger, ActivationState> triggerHolderObserver;
 
     public AbstractTriggerableAgent(final Class unitClass) throws InstantiationException {
         super(unitClass);
-        this.agentTriggerHolder = new TriggerPool();
+        this.triggerPool = new TriggerPool();
         this.triggerHolderObserver = (Trigger source, ActivationState data) -> {
             GlobalCachedExecutorService.submit(() -> {
                 try {
@@ -68,12 +68,12 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
-        agentTriggerHolder.addObserver(triggerHolderObserver);
+        triggerPool.addObserver(triggerHolderObserver);
     }
 
     public void registerTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException{
         try {
-            agentTriggerHolder.addTrigger(trigger, aggregation);
+            triggerPool.addTrigger(trigger, aggregation);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agent pool", ex);
         }
@@ -92,19 +92,19 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
         }
-        agentTriggerHolder.activate();
+        triggerPool.activate();
     }
 
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
-        agentTriggerHolder.deactivate();
+        triggerPool.deactivate();
     }
 
     @Override
     public void shutdown() {
-        agentTriggerHolder.removeObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
+        triggerPool.removeObserver(triggerHolderObserver);
+        triggerPool.shutdown();
         super.shutdown();
     }
 
