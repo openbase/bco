@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>org.openbase</groupId>
-    <artifactId>bco.manager</artifactId>
+    <artifactId>bco.device</artifactId>
     <version>2.0-SNAPSHOT</version>
 
-    <name>BCO Manager</name>
+    <name>BCO Device</name>
     <inceptionYear>2015</inceptionYear>
-    <description>BCO Unit Controller Manager Collection</description>
+    <description>BCO Device Manager Collection</description>
 
     <url>https://github.com/openbase/bco.manager/wiki</url>
     
@@ -184,13 +184,7 @@
     </profiles>
 
     <modules>
-        <module>device-manager</module>
-        <module>location-manager</module>
-        <module>scene-manager</module>
-        <module>agent-manager</module>
-        <module>app-manager</module>
-        <module>user-manager</module>
-        <module>util</module>
+        <module>openhab</module>
     </modules>
     
     <properties>
