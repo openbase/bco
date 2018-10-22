@@ -231,7 +231,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServiceTemplate.ServicePattern.PROVIDER, this);
 
                         // verify operation service state (e.g. ignore UNKNOWN service states)
-                        Services.verifyServiceState(serviceAttribute);
+                        Services.verifyAndRevalidateServiceState(serviceAttribute);
 
                         // fill action config
                         final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
