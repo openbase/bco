@@ -313,12 +313,12 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @param waitForData     if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
      * @param unitRemoteClass the unit remote class.
      *
-     * @return a map of instance of the given remote class.
+     * @return a list of instances of the given remote class.
      *
      * @throws CouldNotPerformException is thrown in case something went wrong.
      * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
-    public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass) throws CouldNotPerformException, InterruptedException {
+    public <UR extends UnitRemote<?>> List<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass) throws CouldNotPerformException, InterruptedException {
         return getUnits(unitType, waitForData, unitRemoteClass, true);
     }
 
@@ -332,12 +332,12 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @param unitRemoteClass the unit remote class.
      * @param recursive       defines if recursive related unit should be included as well.
      *
-     * @return a map of instance of the given remote class.
+     * @return a list of instances of the given remote class.
      *
      * @throws CouldNotPerformException is thrown in case something went wrong.
      * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
-    public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass, final boolean recursive) throws CouldNotPerformException, InterruptedException {
+    public <UR extends UnitRemote<?>> List<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass, final boolean recursive) throws CouldNotPerformException, InterruptedException {
         final List<UR> unitRemote = new ArrayList<>();
         MultiException.ExceptionStack exceptionStack = null;
         Registries.waitForData();
