@@ -113,6 +113,7 @@ local.properties
 # .idea/dynamic.xml
 # .idea/uiDesigner.xml
 
+
 # Gradle:
 # .idea/gradle.xml
 # .idea/libraries
@@ -178,3 +179,7 @@ gen-external-apklibs
 ### Vim temporary files ###
 *.swp
 
+
+## custom
+
+.idea/misc.xml

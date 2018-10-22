@@ -19,6 +19,7 @@
         <module name="bco.authentication.lib" />
         <module name="bco.authentication.test" />
         <module name="bco.bcozy" />
+        <module name="bco.dal.control" />
         <module name="bco.dal.example" />
         <module name="bco.dal.lib" />
         <module name="bco.dal.remote" />
@@ -161,6 +162,7 @@
       <module name="bco.authentication.test" target="1.8" />
       <module name="bco.bcozy" target="1.8" />
       <module name="bco.dal" target="1.8" />
+      <module name="bco.dal.control" target="1.8" />
       <module name="bco.dal.example" target="1.8" />
       <module name="bco.dal.lib" target="1.8" />
       <module name="bco.dal.remote" target="1.8" />
