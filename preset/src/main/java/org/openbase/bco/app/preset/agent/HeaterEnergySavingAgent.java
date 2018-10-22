@@ -21,11 +21,6 @@ package org.openbase.bco.app.preset.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
-import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
@@ -44,6 +39,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
@@ -51,14 +48,14 @@ import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.Connect
 public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
 
     private LocationRemote locationRemote;
-    private final Map<TemperatureControllerRemote, TemperatureState> previousTemperatureState;
     private final WindowState.State triggerState = WindowState.State.OPEN;
     private ActionDescription taskActionDescription;
+    // TODO: read desired energySavingTemperature from config ?
+    private final double energySavingTemperature = 13.0;
+
 
     public HeaterEnergySavingAgent() throws InstantiationException {
         super(HeaterEnergySavingAgent.class);
-
-        previousTemperatureState = new HashMap();
     }
 
     @Override
@@ -84,60 +81,16 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
         }
     }
 
-    /**
-     * For all TemperatureControllerRemotes available in location, save the current targetTemperatureState for later restore.
-     * Set the targetTemperature for whole location to 13.0.
-     *
-     * @throws CouldNotPerformException
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
-    private void regulateHeater() throws CouldNotPerformException, ExecutionException, InterruptedException{
-        previousTemperatureState.clear();
-        try {
-            for (TemperatureControllerRemote remote : locationRemote.getUnits(UnitType.TEMPERATURE_CONTROLLER, true, Units.TEMPERATURE_CONTROLLER)) {
-                previousTemperatureState.put(remote, remote.getTargetTemperatureState());
-            }
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            logger.error("Could not get all TemperatureControllerRemotes.", ex);
-        }
-        taskActionDescription = locationRemote.applyAction(generateAction(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TEMPERATURE_STATE_SERVICE, TemperatureState.newBuilder().setTemperature(13.0)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
-    }
-
-    /**
-     * Try to restore all the saved targetTemperature values.
-     * It will only try to restore it once if possible, without placing a schedulable interruptible action.
-     *
-     * @throws CouldNotPerformException
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
-    private void restoreTemperatureState() throws CouldNotPerformException, ExecutionException, InterruptedException{
-        if(taskActionDescription != null) {
-            taskActionDescription = locationRemote.cancelAction(taskActionDescription).get();
-        }
-        if (previousTemperatureState == null | previousTemperatureState.isEmpty()) {
-            return;
-        }
-        previousTemperatureState.forEach((remote, temperatureState) -> {
-            try {
-                ActionDescription actionDescription = generateAction(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TEMPERATURE_STATE_SERVICE, TemperatureState.newBuilder().setTemperature(temperatureState.getTemperature()));
-                remote.applyAction(actionDescription.toBuilder().setInterruptible(false).setSchedulable(false).setExecutionTimePeriod(0).build()).get();
-            } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-                logger.error("Could not restore targetTemperatureState.", ex);
-            }
-        });
-        previousTemperatureState.clear();
-    }
-
     @Override
     void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                regulateHeater();
+                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TEMPERATURE_STATE_SERVICE, TemperatureState.newBuilder().setTemperature(energySavingTemperature)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
                 break;
             case DEACTIVE:
-                restoreTemperatureState();
+                if(taskActionDescription != null) {
+                    taskActionDescription = locationRemote.cancelAction(taskActionDescription).get();
+                }
                 break;
         }
     }
