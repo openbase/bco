@@ -34,6 +34,7 @@ import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
@@ -125,13 +126,20 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
         }
     }
 
-    protected ActionDescription generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceArgument) {
-        return ActionDescriptionProcessor.generateActionDescriptionBuilder(getDefaultActionParameter().toBuilder()
-                .setServiceStateDescription(ServiceStateDescription.newBuilder()
-                        .setServiceType(serviceType)
-                        .setUnitType(unitType)
-                        .setServiceAttribute(serviceArgument.build().toString())))
-                .build();
+    private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
+    protected ActionDescription generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceArgumentBuilder) throws CouldNotPerformException {
+        Message serviceArgument = serviceArgumentBuilder.build();
+        try {
+            return ActionDescriptionProcessor.generateActionDescriptionBuilder(getDefaultActionParameter().toBuilder()
+                    .setServiceStateDescription(ServiceStateDescription.newBuilder()
+                            .setServiceType(serviceType)
+                            .setUnitType(unitType)
+                            .setServiceAttributeType(protoBufJSonProcessor.getServiceAttributeType(serviceArgument))
+                            .setServiceAttribute(protoBufJSonProcessor.serialize(serviceArgument))))
+                    .build();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not generate action!", ex);
+        }
     }
 
 
