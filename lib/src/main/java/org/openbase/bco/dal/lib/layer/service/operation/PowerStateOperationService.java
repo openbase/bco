@@ -47,6 +47,10 @@ public interface PowerStateOperationService extends OperationService, PowerState
         return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(powerState, ServiceType.POWER_STATE_SERVICE)));
     }
 
+    default Future<ActionDescription> setPowerState(final PowerState.State powerState, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(PowerState.newBuilder().setValue(powerState).build(), ServiceType.POWER_STATE_SERVICE)));
+    }
+
     default Future<ActionDescription> setPowerState(final PowerState.State powerState) throws CouldNotPerformException {
         return setPowerState(PowerState.newBuilder().setValue(powerState).build());
     }
