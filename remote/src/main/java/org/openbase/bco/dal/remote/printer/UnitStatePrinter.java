@@ -72,6 +72,8 @@ public class UnitStatePrinter implements DefaultInitializable {
     public void init() throws InitializationException, InterruptedException {
         try {
             customUnitPool.init();
+            printStream.println("### Service State Updates: unit(unit_type , unit_id, service_state[service_value]). ###");
+
             customUnitPool.addObserver(unitStateObserver);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -81,16 +83,19 @@ public class UnitStatePrinter implements DefaultInitializable {
     private void printStaticRelations() {
         try {
             // print unit templates
-            printStream.println("UnitType" + "(ServiceType)");
+            printStream.println("### Unit Templates: unit_type(service_type). ###");
             for (UnitTemplate unitTemplate : Registries.getTemplateRegistry(true).getUnitTemplates()) {
-                printStream.println(unitTemplate.getType().name() + "("+ StringProcessor.transformCollectionToString(unitTemplate.getServiceDescriptionList(), ", ", serviceDescription -> serviceDescription.getServiceType().name())+")");
+                printStream.println(unitTemplate.getType().name().toLowerCase() + "("+ StringProcessor.transformCollectionToString(unitTemplate.getServiceDescriptionList(), ", ", serviceDescription -> serviceDescription.getServiceType().name().toLowerCase())+").");
             }
+            printStream.println();
 
             // print service type mapping
-            printStream.println("ServiceType" + "(ServiceState)");
+            printStream.println("### Service Templates: service_type\" + \"(service_state). ###");
+            printStream.println("service_type" + "(service_state).");
             for (ServiceTemplate sericeTemplate : Registries.getTemplateRegistry(true).getServiceTemplates()) {
-                printStream.println(sericeTemplate.getType().name() + "(" + sericeTemplate.getCommunicationType()+ ")");
+                printStream.println(sericeTemplate.getType().name().toLowerCase() + "(" + sericeTemplate.getCommunicationType().name().toLowerCase()+ ")");
             }
+            printStream.println();
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory("Could not print unit templates.", ex, LOGGER);
         }
