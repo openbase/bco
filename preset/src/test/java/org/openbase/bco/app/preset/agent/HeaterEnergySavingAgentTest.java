@@ -91,9 +91,9 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
-        TemperatureControllerRemote temperatureControllerRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.TEMPERATURE_CONTROLLER, MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).get(0), true, Units.TEMPERATURE_CONTROLLER);
-        ConnectionRemote connectionRemote = Units.getUnitsByLabel("Stairs_Hell_Lookout", true, Units.CONNECTION).get(0);
-        ReedContactRemote reedContactRemote = Units.getUnitsByLabel("Reed_Stairway_Window", true, Units.REED_CONTACT).get(0);
+        TemperatureControllerRemote temperatureControllerRemote = locationRemote.getUnits(UnitType.TEMPERATURE_CONTROLLER, true, Units.TEMPERATURE_CONTROLLER).get(0);
+        ConnectionRemote connectionRemote = Units.getUnitByAlias(MockRegistry.ALIAS_WINDOW_STAIRS_HELL_LOOKOUT, true, Units.CONNECTION);
+        ReedContactRemote reedContactRemote = locationRemote.getUnits(UnitType.REED_CONTACT, true, Units.REED_CONTACT).get(0);
         ReedContactController reedContactController = (ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId());
 
         UnitStateAwaiter<ReedContactData, ReedContactRemote> reedContactStateAwaiter = new UnitStateAwaiter<>(reedContactRemote);
@@ -104,6 +104,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         // create intial values with reed closed and target temperature at 21.0
         reedContactController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(CLOSED), ServiceType.CONTACT_STATE_SERVICE);
         temperatureControllerRemote.setTargetTemperatureState(TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(21.0).build()));
+
         reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.CLOSED);
         connectionStateAwaiter.waitForState((ConnectionData data) -> data.getWindowState().getValue() == WindowState.State.CLOSED);
         temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 21.0);
