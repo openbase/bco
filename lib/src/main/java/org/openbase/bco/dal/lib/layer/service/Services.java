@@ -440,12 +440,12 @@ public class Services extends ServiceStateProcessor {
     }
 
     public static Method detectServiceStateVerificationMethod(final Message serviceState) throws CouldNotPerformException, NotAvailableException {
-        String methodeName = "?";
+        String methodName = "?";
         try {
-            methodeName = "verify" + serviceState.getClass().getSimpleName();
-            return detectProviderServiceInterface(serviceState).getMethod(methodeName, serviceState.getClass());
+            methodName = "verify" + serviceState.getClass().getSimpleName();
+            return detectProviderServiceInterface(serviceState).getMethod(methodName, serviceState.getClass());
         } catch (SecurityException | ClassNotFoundException ex) {
-            throw new CouldNotPerformException("Could not detect service method[" + methodeName + "]!", ex);
+            throw new CouldNotPerformException("Could not detect service method[" + methodName + "]!", ex);
         } catch (NoSuchMethodException ex) {
             throw new NotAvailableException("service state verification method", ex);
         }

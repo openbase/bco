@@ -74,7 +74,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
             if (locationManagerLauncher != null) {
                 locationManagerLauncher.shutdown();
             }
-            MockRegistryHolder.shutdownMockRegistry();
+            AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }

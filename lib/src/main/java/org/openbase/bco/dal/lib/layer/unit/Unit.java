@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedSnapshotable;
 import org.openbase.bco.dal.lib.action.Action;
@@ -78,7 +77,6 @@ import rst.spatial.ShapeType.Shape;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -113,7 +111,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
 
     /**
      * Method returns the unit template of this unit containing all service templates of available units.
-     *
+     * <p>
      * Note: The amount of supported and available services only varies for {@code MultiUnits} (e.g. {@code Location}, {@code UnitGroup}).
      *
      * @param onlyAvailableServices if the filter flag is set to true, only service templates are included which are available for the current instance.
@@ -861,6 +859,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * This method cancels the given action on remote controller.
      *
      * @param actionDescription the description which identifies the action.
+     *
      * @return a future object representing the success of the cancellation.
      */
     Future<ActionDescription> cancelAction(final ActionDescription actionDescription);

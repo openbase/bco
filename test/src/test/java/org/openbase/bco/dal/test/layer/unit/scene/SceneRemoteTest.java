@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test.layer.unit.scene;
 
 import org.junit.*;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
+import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.remote.action.RemoteAction;
@@ -36,9 +37,8 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
-import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
+import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -51,11 +51,10 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.state.ActivationStateType.ActivationState.State;
-import rst.language.LabelType.Label;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.ActivationStateType.ActivationState.State;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -64,6 +63,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
+import rst.language.LabelType.Label;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
@@ -80,7 +80,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SceneRemoteTest {
+public class SceneRemoteTest extends AbstractBCOTest {
 
     public static final ActivationState ACTIVATE = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
     public static final String SCENE_TEST = "testScene";
@@ -102,7 +102,6 @@ public class SceneRemoteTest {
     private static SceneManagerLauncher sceneManagerLauncher;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static LocationManagerLauncher locationManagerLauncher;
-    private static MockRegistry registry;
     private static PowerStateServiceRemote powerStateServiceRemote;
     private static ColorStateServiceRemote colorStateServiceRemote;
     final SyncObject LOCK = new SyncObject("waitForSceneExecution");
@@ -116,10 +115,10 @@ public class SceneRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         try {
+            AbstractBCOTest.setUpClass();
             JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
@@ -138,14 +137,13 @@ public class SceneRemoteTest {
 
             powerStateServiceRemote.activate();
             colorStateServiceRemote.activate();
-
         } catch (JPServiceException | CouldNotPerformException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() throws Throwable {
         try {
             if (sceneManagerLauncher != null) {
                 sceneManagerLauncher.shutdown();
@@ -162,7 +160,8 @@ public class SceneRemoteTest {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
-            MockRegistryHolder.shutdownMockRegistry();
+
+            AbstractBCOTest.tearDownClass();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -232,19 +231,17 @@ public class SceneRemoteTest {
 
             label = SCENE_ROOT_LOCATION_ALL_DEVICES_ON;
             LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), false, LocationRemote.class);
-            locationRemote.addConnectionStateObserver((source, data) -> System.out.println("ConnectionState update of root location remote[" + data + "] isActive[" + locationRemote.isActive() + "]"));
-            System.out.println("LocationRemote connectionState[" + locationRemote.getConnectionState().name() + "] isActive[" + locationRemote.isActive() + "]");
             locationRemote.waitForData();
             locationRemote.setPowerState(POWER_ON).get();
             locationRemote.requestData().get();
-            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot(UnitType.POWER_SWITCH).get().getServiceStateDescriptionList()).addAllRequiredServiceStateDescription(locationRemote.recordSnapshot(UnitType.LIGHT).get().getServiceStateDescriptionList()).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             label = SCENE_ROOT_LOCATION_ALL_DEVICES_OFF;
             locationRemote.setPowerState(POWER_OFF).get();
             locationRemote.requestData().get();
-            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot(UnitType.POWER_SWITCH).get().getServiceStateDescriptionList()).addAllRequiredServiceStateDescription(locationRemote.recordSnapshot(UnitType.LIGHT).get().getServiceStateDescriptionList()).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
@@ -410,8 +407,8 @@ public class SceneRemoteTest {
 
         internalLight.requestData().get();
         internalPowerSwitch.requestData().get();
-        assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_ON);
-        assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
+        assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
+        assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
 
         LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, LocationRemote.class);
         locationRemote.setPowerState(POWER_OFF).get();
