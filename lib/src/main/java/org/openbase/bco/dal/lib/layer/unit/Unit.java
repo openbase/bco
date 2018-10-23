@@ -32,10 +32,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
@@ -231,7 +228,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServiceTemplate.ServicePattern.PROVIDER, this);
 
                         // verify operation service state (e.g. ignore UNKNOWN service states)
-                        Services.verifyAndRevalidateServiceState(serviceAttribute);
+                        try {
+                            Services.verifyAndRevalidateServiceState(serviceAttribute);
+                        } catch (VerificationFailedException ex) {
+                            // skip invalid or not available services.
+                            continue;
+                        }
 
                         // fill action config
                         final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
