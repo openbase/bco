@@ -520,7 +520,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 // handle if action was not found
                 if (actionToCancel == null) {
-                    throw new NotAvailableException("action");
+                    logger.debug("Can not cancel an unknown action, but than its not executing anyway.");
+                    CompletableFuture.completedFuture(actionDescription);
                 }
 
                 // cancel the action which triggers automatically a reschedule.
@@ -654,7 +655,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     final String initiatorId;
                     try {
                         initiatorId = actionToSchedule.getActionDescription().getActionInitiator().getInitiatorId();
-                        for (Action action : scheduledActionList) {
+                        for (Action action : new ArrayList<>(scheduledActionList)) {
                             try {
                                 if (action.getActionDescription().getActionInitiator().getInitiatorId().equals(initiatorId) && actionToSchedule != action) {
                                     if (action == nextAction) {
