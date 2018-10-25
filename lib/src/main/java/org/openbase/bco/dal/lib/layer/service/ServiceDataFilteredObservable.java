@@ -38,7 +38,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ServiceDataFilteredObservable<M extends Message> extends MessageObservable<M> {
+public class ServiceDataFilteredObservable<M extends Message> extends MessageObservable<ServiceStateProvider<M>, M> {
 
 
     /**
@@ -46,7 +46,7 @@ public class ServiceDataFilteredObservable<M extends Message> extends MessageObs
      *
      * @param source {@inheritDoc}
      */
-    public ServiceDataFilteredObservable(final DataProvider<M> source) {
+    public ServiceDataFilteredObservable(final ServiceStateProvider<M> source) {
         super(source);
         this.setHashGenerator((M value) -> clearUnobservedField(value.toBuilder()).build().hashCode());
     }

@@ -31,6 +31,7 @@ import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProces
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceDataFilteredObservable;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -92,7 +93,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
-    private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
+    private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
     private UnitTemplate template;
     private boolean initialized = false;
     private SessionManager sessionManager;
@@ -127,9 +128,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             });
 
             this.serviceTempusServiceTypeObservableMap.put(serviceTempus, new HashMap<>());
-            addDataObserver(serviceTempus, (DataProvider<D> source, D data1) -> {
+            this.addDataObserver(serviceTempus, (source, data1) -> {
                 final Set<ServiceType> serviceTypeSet = new HashSet<>();
-                for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                for (final ServiceDescription serviceDescription : AbstractUnitRemote.this.getUnitTemplate().getServiceDescriptionList()) {
                     if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
                         continue;
                     }
@@ -140,7 +141,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                     serviceTypeSet.add(serviceDescription.getServiceType());
 
                     try {
-                        Object serviceData = Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
+                        Message serviceData = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
                         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
                     } catch (CouldNotPerformException ex) {
                         logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this remote controller.", ex);
@@ -337,20 +338,21 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
 
             for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
-                //todo why not handle latest state?
+
+                // filter because provider do not offer an requested state.
                 if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
                     continue;
                 }
 
                 // create observable if new
                 if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getServiceType())) {
-                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable(this));
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable<>(new ServiceStateProvider<>(serviceDescription.getServiceType(),this)));
                 }
             }
         }
 
         // cleanup service observable related to new unit template
-        for (Map<ServiceType, MessageObservable> serviceTypeObservableMap : serviceTempusServiceTypeObservableMap.values()) {
+        for (Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>> serviceTypeObservableMap : serviceTempusServiceTypeObservableMap.values()) {
             outer:
             for (final ServiceType serviceType : serviceTypeObservableMap.keySet()) {
                 for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {

@@ -83,7 +83,7 @@ public class ServiceStateProcessorTest {
     public void testForNestedType() throws Exception {
         System.out.println("testForNestedType");
 
-        final MessageObservable<LocationData> messageObservable = new MessageObservableImpl<>(LocationData.class);
+        final MessageObservable<DataProvider<LocationData>, LocationData> messageObservable = new MessageObservableImpl<>(LocationData.class);
 
         final LocationData.Builder locationData1 = LocationData.newBuilder();
         final PowerState.Builder powerState1 = locationData1.getPowerStateBuilder();
@@ -144,7 +144,7 @@ public class ServiceStateProcessorTest {
         messageObservable.notifyObservers(locationData2.build());
     }
 
-    public class MessageObservableImpl<M extends Message> extends MessageObservable<M> {
+    public class MessageObservableImpl<M extends Message> extends MessageObservable<DataProvider<M>, M> {
 
         public MessageObservableImpl(final Class<M> dataClass) {
             super(new DataProviderImpl<>(dataClass));

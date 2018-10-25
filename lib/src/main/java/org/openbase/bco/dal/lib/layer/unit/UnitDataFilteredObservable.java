@@ -98,7 +98,6 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
         for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
             if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
                 serviceTypeSet.add(serviceDescription.getServiceType());
-
                 fieldsToKeep.add(Services.getServiceFieldName(serviceDescription.getServiceType(), serviceTempus));
             }
         }

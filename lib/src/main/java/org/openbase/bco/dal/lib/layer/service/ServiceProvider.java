@@ -41,7 +41,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ServiceProvider<ST> {
+public interface ServiceProvider<ST extends Message> {
 
     /**
      * Method applies the action on this instance.
@@ -67,5 +67,5 @@ public interface ServiceProvider<ST> {
 
     void removeServiceStateObserver(final ServiceType serviceType, final Observer<DataProvider<ST>, ST> observer);
 
-    Message getServiceState(final ServiceType serviceType) throws NotAvailableException;
+    ST getServiceState(final ServiceType serviceType) throws NotAvailableException;
 }

@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.layer.unit;
 
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitFilters;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -44,6 +45,7 @@ import org.openbase.jul.storage.registry.RemoteControllerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
@@ -64,7 +66,7 @@ public class CustomUnitPool implements DefaultInitializable {
     private final RemoteControllerRegistry<String, UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
     private final ProtobufListDiff<String, UnitConfig, Builder> unitConfigDiff;
     private final Set<Filter<UnitConfig>> filterSet;
-    private final ObservableImpl<Unit, Message> unitDataObservable;
+    private final ObservableImpl<ServiceStateProvider<Message>, Message> unitDataObservable;
 
     public CustomUnitPool(final Collection<Filter<UnitConfig>> filters) throws InstantiationException {
         this(filters.toArray(new Filter[filters.size()]));
@@ -82,7 +84,7 @@ public class CustomUnitPool implements DefaultInitializable {
             };
             this.unitDataObserver = (source, data) -> {
                 try {
-                    unitDataObservable.notifyObservers((Unit) source, (Message) data);
+                    unitDataObservable.notifyObservers((ServiceStateProvider<Message>) source, (Message) data);
                 } catch (ClassCastException ex) {
                     ExceptionPrinter.printHistory("Could not handle incoming data because type is unknown!", ex, LOGGER);
                 }
@@ -158,7 +160,10 @@ public class CustomUnitPool implements DefaultInitializable {
         try {
             final UnitRemote<?> unitRemote = Units.getUnit(unitId, false);
             unitRemoteRegistry.register(unitRemote);
-            unitRemote.addDataObserver(unitDataObserver);
+            for (ServiceType serviceType : unitRemote.getAvailableServiceTypes()) {
+                unitRemote.addServiceStateObserver(serviceType, unitDataObserver);
+            }
+            //unitRemote.addDataObserver(unitDataObserver);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not add " + unitId, ex, LOGGER);
         }
@@ -173,7 +178,10 @@ public class CustomUnitPool implements DefaultInitializable {
                 // unit not registered so removal not necessary.
                 return;
             }
-            unitRemote.removeDataObserver(unitDataObserver);
+            for (ServiceType serviceType : unitRemote.getAvailableServiceTypes()) {
+                unitRemote.removeServiceStateObserver(serviceType, unitDataObserver);
+            }
+            //unitRemote.removeDataObserver(unitDataObserver);
             unitRemoteRegistry.remove(unitRemote);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not remove " + unitId, ex, LOGGER);
@@ -185,7 +193,7 @@ public class CustomUnitPool implements DefaultInitializable {
      *
      * @param observer is the observer to register.
      */
-    public void addObserver(Observer<Unit, Message> observer) {
+    public void addObserver(Observer<ServiceStateProvider<Message>, Message> observer) {
         unitDataObservable.addObserver(observer);
     }
 
@@ -194,7 +202,7 @@ public class CustomUnitPool implements DefaultInitializable {
      *
      * @param observer is the observer to remove.
      */
-    public void removeObserver(Observer<Unit, Message> observer) {
+    public void removeObserver(Observer<ServiceStateProvider<Message>, Message> observer) {
         unitDataObservable.removeObserver(observer);
     }
 

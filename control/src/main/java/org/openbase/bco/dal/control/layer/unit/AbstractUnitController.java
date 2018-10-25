@@ -38,9 +38,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.SchedulableAction;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
-import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
-import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.*;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -127,7 +125,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
-    private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
+    private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
     private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
     private final ActionComparator actionComparator;
     private Map<ServiceType, OperationService> operationServiceMap;
@@ -259,7 +257,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
                     serviceTypeSet.add(serviceDescription.getServiceType());
                     try {
-                        Object serviceData = Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data);
+                        Message serviceData = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data);
                         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
                     } catch (CouldNotPerformException ex) {
                         logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this controller.", ex);
@@ -326,7 +324,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 // create observable if new
                 if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getServiceType())) {
-                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new MessageObservable(this));
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable<>(new ServiceStateProvider<>(serviceDescription.getServiceType(),this)));
                 }
             }
         }

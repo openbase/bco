@@ -31,7 +31,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.bco.dal.lib.layer.service.Services;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -65,7 +64,7 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Gene
     private void detectAndRegisterServiceStates(final ServiceType serviceType) throws CouldNotPerformException {
         try {
             final MultiException.ExceptionStack exceptionStack = new MultiException.ExceptionStack();
-            Services.getServiceStateValues(serviceType).forEach((stateValue) -> {
+            Services.getServiceStateEnumValues(serviceType).forEach((stateValue) -> {
                 try {
                     // filter unknown state values
                     if (stateValue.getValueDescriptor().getName().equals("UNKNOWN")) {
