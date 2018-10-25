@@ -33,7 +33,6 @@ import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
  */
 public class PowerConsumptionStateServiceSimulator extends AbstractScheduledServiceSimulator<PowerConsumptionState> {
 
-    public static final long CHANGE_RATE = 5000;
     public static final double FUSE = 16;
     public static final double POWER_VOLTAGE = 230;
     public static final double MAX_POWER_CONSUMPTION = POWER_VOLTAGE * FUSE;
@@ -46,7 +45,7 @@ public class PowerConsumptionStateServiceSimulator extends AbstractScheduledServ
      * @param unitController the unit to simulate.
      */
     public PowerConsumptionStateServiceSimulator(UnitController unitController) {
-        super(unitController, ServiceType.POWER_CONSUMPTION_STATE_SERVICE, CHANGE_RATE);
+        super(unitController, ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
         this.simulatedPowerConsumption = RANDOM.nextInt((int) MAX_POWER_CONSUMPTION);
     }
 
