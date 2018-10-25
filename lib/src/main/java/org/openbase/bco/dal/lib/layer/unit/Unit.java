@@ -81,7 +81,7 @@ import java.util.concurrent.Future;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider<Message>, Service, AuthenticatedSnapshotable, TransactionIdProvider {
+public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, AuthenticatedSnapshotable, TransactionIdProvider {
 
     /**
      * Returns the type of this unit.
@@ -636,7 +636,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @param observer    The observer which is added.
      */
     @Override
-    default <ST extends Message> void  addServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer) {
+    default void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         addServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
     }
 
@@ -648,7 +648,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @param observer    The observer which is removed.
      */
     @Override
-    default void removeServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) {
+    default void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         removeServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
     }
 

@@ -289,12 +289,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             powerStateObserverUpdateNumber++;
             LOGGER.info("Power state update {} with {}", powerStateObserverUpdateNumber, data.getValue().name());
         };
-        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, new Observer<ServiceStateProvider<PowerState>, PowerState>() {
-            @Override
-            public void update(ServiceStateProvider<Message> source, Message data) throws Exception {
 
-            }
-        });
+        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, powerStateObserver);
 
         colorableLightRemote.setPowerState(PowerState.State.OFF).get(); // notification 1
         colorableLightRemote.setPowerState(PowerState.State.ON).get(); // notification 2
