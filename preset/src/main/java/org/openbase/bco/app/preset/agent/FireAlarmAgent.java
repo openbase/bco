@@ -29,7 +29,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.BlindStateType.BlindState;
@@ -67,8 +67,9 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.FIRE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
-            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
+            // Todo: Add trigger for FireAlarm as soon as it is supported
+//            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceType.FIRE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
+            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceType.SMOKE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -76,16 +77,18 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
 
     private void alarmRoutine() throws CouldNotPerformException, ExecutionException, InterruptedException{
         taskActionDescriptionLightPower =  locationRemote.applyAction(generateAction(UnitType.LIGHT,
-                ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                PowerState.newBuilder().setValue(PowerState.State.OFF)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
-        taskActionDescriptionLightBrightness =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
-                ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE,
-                BrightnessState.newBuilder().setBrightness(100)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
-        taskActionDescriptionLightColor =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
-                ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE,
-                ColorState.newBuilder().setColor(color)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+                ServiceType.POWER_STATE_SERVICE,
+                PowerState.newBuilder().setValue(PowerState.State.ON)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+        // TODO: Set brightnessState as soon as it is supported
+//        taskActionDescriptionLightBrightness =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
+//                ServiceType.BRIGHTNESS_STATE_SERVICE,
+//                BrightnessState.newBuilder().setBrightness(100)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+        // TODO: Set color to white
+//        taskActionDescriptionLightColor =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
+//                ServiceType.COLOR_STATE_SERVICE,
+//                ColorState.newBuilder().setColor(color)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
         taskActionDescriptionBlinds =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
-                ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
+                ServiceType.BLIND_STATE_SERVICE,
                 BlindState.newBuilder().setOpeningRatio(100)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
     }
 
