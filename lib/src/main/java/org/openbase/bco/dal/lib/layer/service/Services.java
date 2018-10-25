@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
@@ -30,7 +31,6 @@ import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -47,8 +47,6 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import rst.vision.ColorType.Color;
-import rst.vision.HSBColorType.HSBColor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
@@ -125,7 +122,6 @@ public class Services extends ServiceStateProcessor {
      * @return The state type name as string.
      *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
-     *
      */
     public static String getServiceStateName(final ServiceTemplate template) throws NotAvailableException {
         try {
@@ -148,13 +144,54 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
-    public static Collection<? extends ProtocolMessageEnum> getServiceStateValues(final ServiceType serviceType) throws NotAvailableException {
-        final String serviceBaseName = getServiceBaseName(serviceType);
-        final String serviceEnumName = SERVICE_STATE_PACKAGE.getName() + "." + serviceBaseName + "Type$" + serviceBaseName + "$State";
+    public static Collection<ProtocolMessageEnum> getServiceStateEnumValues(final ServiceType serviceType) throws NotAvailableException {
         try {
-            return Arrays.asList((ProtocolMessageEnum[]) (Class.forName(serviceEnumName).getMethod("values").invoke(null)));
-        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
-            throw new NotAvailableException("ServiceStateValues", serviceEnumName, ex);
+            return getServiceStateEnumValues(getServiceStateClass(serviceType));
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(getServiceBaseName(serviceType), "ServiceStateValues", ex);
+        }
+    }
+
+    /**
+     * Method returns a collection of service state values.
+     *
+     * @param communicationType the communication type to identify the service state class.
+     *
+     * @return a collection of enum values of the service state.
+     *
+     * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
+     */
+    public static Collection<ProtocolMessageEnum> getServiceStateEnumValues(final CommunicationType communicationType) throws NotAvailableException {
+        try {
+            return getServiceStateEnumValues(getServiceStateClass(communicationType));
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(communicationType.name(), "ServiceStateValues", ex);
+        }
+    }
+
+    /**
+     * Method returns a collection of service state values.
+     *
+     * @param serviceStateClass the service state class to resolve the values.
+     *
+     * @return a collection of enum values of the service state.
+     *
+     * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
+     */
+    public static Collection<ProtocolMessageEnum> getServiceStateEnumValues(final Class<? extends GeneratedMessage> serviceStateClass) throws NotAvailableException {
+        try {
+            for (Class<?> declaredClass : serviceStateClass.getDeclaredClasses()) {
+                if (declaredClass.getSimpleName().equals("State")) {
+                    try {
+                        return Arrays.asList((ProtocolMessageEnum[]) (declaredClass.getMethod("values").invoke(null)));
+                    } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
+                        throw new CouldNotPerformException("Could not extract values of Enum[" + declaredClass.getSimpleName() + "]");
+                    }
+                }
+            }
+            throw new InvalidStateException("Class[" + serviceStateClass.getSimpleName() + "] does not provide a service state enum!");
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(serviceStateClass.getSimpleName(), "ServiceStateEnumValues", ex);
         }
     }
 
@@ -170,7 +207,7 @@ public class Services extends ServiceStateProcessor {
             // create new service state builder
             return (GeneratedMessage.Builder) Services.getServiceStateClass(serviceType).getMethod("newBuilder").invoke(null);
         } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
-            throw new CouldNotPerformException("Could not generate service state builder from ServiceType["+serviceType+"]!", ex);
+            throw new CouldNotPerformException("Could not generate service state builder from ServiceType[" + serviceType + "]!", ex);
         }
     }
 
@@ -240,15 +277,31 @@ public class Services extends ServiceStateProcessor {
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
+        try {
+            return getServiceStateClass(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType());
+        } catch (CouldNotPerformException e) {
+            throw new NotAvailableException("CommunicationType for ServiceType[" + serviceType + "]");
+        }
+    }
+
+    /**
+     * Method detects and returns the service state class.
+     *
+     * @param communicationType the communication type to resolve the service state class.
+     *
+     * @return the service state class.
+     *
+     * @throws NotAvailableException is thrown in case the class could not be detected.
+     */
+    public static Class<? extends GeneratedMessage> getServiceStateClass(final CommunicationType communicationType) throws NotAvailableException {
         String serviceStateName;
         try {
-            final CommunicationType communicationType = Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType();
-            if(communicationType == CommunicationType.UNKNOWN) {
+            if (communicationType == CommunicationType.UNKNOWN) {
                 throw new InvalidStateException("CommunicationType is not configured in ServiceTemplate!");
             }
             serviceStateName = StringProcessor.transformUpperCaseToCamelCase(communicationType.name());
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("CommunicationType for ServiceType[" + serviceType + "]");
+            throw new NotAvailableException("CommunicationType", communicationType.name());
         }
 
         final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName;
@@ -534,29 +587,176 @@ public class Services extends ServiceStateProcessor {
         return generateServiceStateStringRepresentation(Services.invokeProviderServiceMethod(serviceType, serviceProvider), serviceType);
     }
 
+//    public static List<String> generateServiceStateStringRepresentation(Message serviceState, ServiceType serviceType) throws CouldNotPerformException {
+//
+//        final List<String> states = new ArrayList<>();
+//
+//        for (Entry<FieldDescriptor, Object> entry : serviceState.getAllFields().entrySet()) {
+//
+//            // filter empty repeated fields
+//            if (!entry.getKey().isRepeated() && !serviceState.hasField(entry.getKey()) || entry.getValue() == null) {
+//                continue;
+//            }
+//
+//            String stateName = entry.getKey().getName();
+//            String stateValue = entry.getValue().toString();
+//            if (stateName == null || entry.getValue() == null) {
+//                continue;
+//            }
+//
+//            String timestamp;
+//            try {
+//                timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS));
+//            } catch (NotAvailableException ex) {
+//                timestamp = "na";
+//            }
+//
+//            switch (stateValue) {
+//                case "":
+//                case "NaN":
+//                    continue;
+//                default:
+//                    break;
+//            }
+//
+//            switch (stateName) {
+//                case "":
+//                case "last_value_occurrence":
+//                case "timestamp":
+//                case "responsible_action":
+//                    continue;
+//                case "color":
+//                    final HSBColor hsbColor = ((Color) entry.getValue()).getHsbColor();
+//                    stateValue = hsbColor.getHue() + ", " + hsbColor.getSaturation() + ", " + hsbColor.getBrightness();
+//                    break;
+//                case "value":
+//                    break;
+//            }
+//            states.add(serviceType.name().toLowerCase() + ", " + timestamp + ", [" + stateValue.toLowerCase() + "]");
+//        }
+//        return states;
+//    }
+
+    public static List<String> getServiceStateFieldDataTypes(final ServiceType serviceType) throws CouldNotPerformException {
+        return getFieldDataTypes(Services.generateServiceStateBuilder(serviceType).build());
+    }
+
+    public static List<String> getFieldDataTypes(final Message messagePrototype) throws CouldNotPerformException {
+        final List<String> dataTypes = new ArrayList<>();
+        for (FieldDescriptor fieldDescriptor : messagePrototype.getDescriptorForType().getFields()) {
+            String stateName = fieldDescriptor.getName();
+            String stateType = fieldDescriptor.getType().toString().toLowerCase();
+
+            // filter invalid states
+            if (stateName == null || stateType == null) {
+                LOGGER.warn("Could not detect datatype of " + stateName);
+            }
+
+            // filter general service fields
+            switch (stateName) {
+                case "last_value_occurrence":
+                case "timestamp":
+                case "responsible_action":
+                case "type":
+                case "rgb_color":
+                case "frame_id":
+                    continue;
+            }
+
+            // filter data units
+            if (stateName.endsWith("data_unit")) {
+                continue;
+            }
+
+            //System.out.println("name: "+ stateName);
+
+            if (fieldDescriptor.getType() == Type.MESSAGE) {
+                if (fieldDescriptor.isRepeated()) {
+                    List<String> types = new ArrayList<>();
+                    for (int i = 0; i < messagePrototype.getRepeatedFieldCount(fieldDescriptor); i++) {
+                        final Object repeatedFieldEntry = messagePrototype.getRepeatedField(fieldDescriptor, i);
+                        if (repeatedFieldEntry instanceof Message) {
+                            types.add("[" + getFieldDataTypes((Message) repeatedFieldEntry).toString() + "]");
+                        }
+                        types.add(repeatedFieldEntry.getClass().getSimpleName());
+                    }
+                    stateType = types.toString().toLowerCase();
+                } else {
+                    stateType = getFieldDataTypes((Message) messagePrototype.getField(fieldDescriptor)).toString();
+                }
+            }
+
+            dataTypes.add(fieldDescriptor.getName() + "=" + stateType);
+        }
+        return dataTypes;
+    }
+
     public static List<String> generateServiceStateStringRepresentation(Message serviceState, ServiceType serviceType) throws CouldNotPerformException {
+        final List<String> values = new ArrayList<>();
+        String timestamp;
+        try {
+            timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS));
+        } catch (NotAvailableException ex) {
+            timestamp = "na";
+        }
+        for (String stateValue : resolveStateValue(serviceState)) {
+            values.add(serviceType.name().toLowerCase() + ", " + timestamp + ", " + stateValue);
+        }
+        return values;
+    }
 
-        final List<String> states = new ArrayList<>();
+    public static List<String> resolveStateValue(Message serviceState) throws CouldNotPerformException {
+        final List<String> stateValues = new ArrayList<>();
+        for (FieldDescriptor fieldDescriptor : serviceState.getDescriptorForType().getFields()) {
+            String stateName = fieldDescriptor.getName();
+            String stateType = fieldDescriptor.getType().toString().toLowerCase();
 
-        for (Entry<FieldDescriptor, Object> entry : serviceState.getAllFields().entrySet()) {
+            // filter invalid states
+            if (stateName == null || stateType == null) {
+                LOGGER.warn("Could not detect datatype of " + stateName);
+            }
 
-            if (!entry.getKey().isRepeated() && !serviceState.hasField(entry.getKey()) || entry.getValue() == null) {
+            // filter general service fields
+            switch (stateName) {
+                case "last_value_occurrence":
+                case "timestamp":
+                case "responsible_action":
+                case "type":
+                case "rgb_color":
+                case "frame_id":
+                    continue;
+            }
+
+            // filter data units
+            if (stateName.endsWith("data_unit")) {
                 continue;
             }
 
-            String stateName = entry.getKey().getName();
-            String stateValue = entry.getValue().toString();
-            if (stateName == null || entry.getValue() == null) {
-                continue;
-            }
+            String stateValue = serviceState.getField(fieldDescriptor).toString();
 
-            String timestamp;
             try {
-                timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS));
-            } catch (NotAvailableException ex) {
-                timestamp = "?";
+                if (fieldDescriptor.getType() == Type.MESSAGE) {
+                    if (fieldDescriptor.isRepeated()) {
+                        List<String> types = new ArrayList<>();
+
+                        for (int i = 0; i < serviceState.getRepeatedFieldCount(fieldDescriptor); i++) {
+                            final Object repeatedFieldEntry = serviceState.getRepeatedField(fieldDescriptor, i);
+                            if (repeatedFieldEntry instanceof Message) {
+                                types.add("[" + resolveStateValue((Message) repeatedFieldEntry).toString() + "]");
+                            }
+                            types.add(repeatedFieldEntry.toString());
+                        }
+                        stateType = types.toString().toLowerCase();
+                    } else {
+                        stateValue = resolveStateValue((Message) serviceState.getField(fieldDescriptor)).toString();
+                    }
+                }
+            } catch (InvalidStateException ex) {
+                LOGGER.warn("Could not process value of " + fieldDescriptor.getName());
+                continue;
             }
 
+            // filter values
             switch (stateValue) {
                 case "":
                 case "NaN":
@@ -565,23 +765,9 @@ public class Services extends ServiceStateProcessor {
                     break;
             }
 
-            switch (stateName) {
-                case "":
-                case "last_value_occurrence":
-                case "timestamp":
-                case "responsible_action":
-                    continue;
-                case "color":
-                    final HSBColor hsbColor = ((Color) entry.getValue()).getHsbColor();
-                    stateValue = hsbColor.getHue() + ", " + hsbColor.getSaturation() + ", " + hsbColor.getBrightness();
-                    break;
-                case "value":
-                    stateName = "state";
-                    break;
-            }
-            states.add(serviceType.name().toLowerCase() + ", " + timestamp + ", [" + stateName.toLowerCase() + ", " + stateValue.toLowerCase() + "]");
+            stateValues.add(fieldDescriptor.getName() + "=" + stateValue.toLowerCase());
         }
-        return states;
+        return stateValues;
     }
 }
 

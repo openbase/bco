@@ -34,6 +34,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BatteryStateType;
@@ -84,13 +85,14 @@ public class ServiceTest {
     }
 
     /**
-     * Test of getServiceStateValues method, of class Service.
+     * Test of getServiceStateEnumValues method, of class Service.
      */
     @Test
     public void testGetServiceStateValues() throws Exception {
-        System.out.println("getServiceStateValues");
+        System.out.println("getServiceStateEnumValues");
         try {
-            Collection<? extends ProtocolMessageEnum> values = Services.getServiceStateValues(ServiceType.POWER_STATE_SERVICE);
+            Registries.getClassRegistry().waitForData();
+            Collection<? extends ProtocolMessageEnum> values = Services.getServiceStateEnumValues(ServiceType.POWER_STATE_SERVICE);
             for (PowerState.State state : PowerState.State.values()) {
                 Assert.assertTrue("Detected values does not contain " + state.name(), values.contains(state));
             }
