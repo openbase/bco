@@ -1,8 +1,8 @@
-package org.openbase.bco.dal.lib.layer.service;
+package org.openbase.bco.dal.test.layer.service;
 
 /*-
  * #%L
- * BCO DAL Library
+ * BCO DAL Test
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -34,7 +34,13 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.dal.test.AbstractBCOTest;
+import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BatteryStateType;
@@ -46,17 +52,19 @@ import rst.domotic.state.SmokeStateType;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class ServiceTest {
+public class ServiceTest extends AbstractBCOTest {
 
     public ServiceTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Throwable {
+        AbstractBCOTest.setUpClass();
     }
 
     @AfterClass
-    public static void tearDownClass() {
+    public static void tearDownClass() throws Throwable {
+        AbstractBCOTest.tearDownClass();
     }
 
     @Before
@@ -68,14 +76,13 @@ public class ServiceTest {
     }
 
     /**
-     * TODO: reactivate again, but needs mock registry now to resolve communcation types
      * Test of getServiceStateClass method, of class Service.
      */
-//    @Test
+    @Test
     public void testDetectServiceDataClass() throws Exception {
         System.out.println("detectServiceDataClass");
         try {
-            assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.BATTERY_STATE_SERVICE), BatteryStateType.BatteryState.class);
+            Assert.assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.BATTERY_STATE_SERVICE), BatteryStateType.BatteryState.class);
             assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.COLOR_STATE_SERVICE), ColorStateType.ColorState.class);
             assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.SMOKE_STATE_SERVICE), SmokeStateType.SmokeState.class);
             assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.MOTION_STATE_SERVICE), MotionStateType.MotionState.class);
@@ -100,5 +107,4 @@ public class ServiceTest {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
         }
     }
-
 }
