@@ -23,6 +23,9 @@ package org.openbase.bco.dal.remote.printer;
  */
 
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
@@ -31,6 +34,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.DefaultInitializable;
 import org.openbase.jul.pattern.Filter;
@@ -40,13 +44,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 public class UnitStatePrinter implements DefaultInitializable {
@@ -54,15 +61,14 @@ public class UnitStatePrinter implements DefaultInitializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitStatePrinter.class);
 
     private final CustomUnitPool customUnitPool;
-    private final Observer<Unit, Message> unitStateObserver;
+    private final Observer<ServiceStateProvider<Message>, Message> unitStateObserver;
     private final PrintStream printStream;
 
     public UnitStatePrinter(final PrintStream printStream, final Filter<UnitConfig>... filters) throws InstantiationException {
         try {
             this.printStream = printStream;
             this.customUnitPool = new CustomUnitPool(filters);
-            this.unitStateObserver = (source, data) -> print(source, data);
-            this.printStaticRelations();
+            this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -72,32 +78,9 @@ public class UnitStatePrinter implements DefaultInitializable {
     public void init() throws InitializationException, InterruptedException {
         try {
             customUnitPool.init();
-            printStream.println("### Service State Updates: unit(unit_type , unit_id, service_state[service_value]). ###");
-
             customUnitPool.addObserver(unitStateObserver);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
-        }
-    }
-
-    private void printStaticRelations() {
-        try {
-            // print unit templates
-            printStream.println("### Unit Templates: unit_type(service_type). ###");
-            for (UnitTemplate unitTemplate : Registries.getTemplateRegistry(true).getUnitTemplates()) {
-                printStream.println(unitTemplate.getType().name().toLowerCase() + "("+ StringProcessor.transformCollectionToString(unitTemplate.getServiceDescriptionList(), ", ", serviceDescription -> serviceDescription.getServiceType().name().toLowerCase())+").");
-            }
-            printStream.println();
-
-            // print service type mapping
-            printStream.println("### Service Templates: service_type\" + \"(service_state). ###");
-            printStream.println("service_type" + "(service_state).");
-            for (ServiceTemplate sericeTemplate : Registries.getTemplateRegistry(true).getServiceTemplates()) {
-                printStream.println(sericeTemplate.getType().name().toLowerCase() + "(" + sericeTemplate.getCommunicationType().name().toLowerCase()+ ")");
-            }
-            printStream.println();
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory("Could not print unit templates.", ex, LOGGER);
         }
     }
 
@@ -111,14 +94,34 @@ public class UnitStatePrinter implements DefaultInitializable {
         }
     }
 
-    private void print(Unit unit, ServiceType serviceType, Message data) {
+    private boolean headerPrinted = false;
+
+    private void print(Unit unit, ServiceType serviceType, Message serviceState) {
+
+        // print header
+        if (!headerPrinted) {
+            headerPrinted = true;
+            printStream.println("/**\n" +
+                    " * Service State Transitions\n" +
+                    " * --> syntax: transition(unit_id, unit_type, initiator[system/user], service_state, [service_value]).\n" +
+                    " */");
+        }
         try {
-            final List<String> states = Services.generateServiceProviderStringRepresentation(data, serviceType);
-            if (!states.isEmpty()) {
-                printStream.println("===========================================================================================================");
+
+            String initiator;
+            try {
+                initiator = Services.getResponsibleAction(serviceState).getActionInitiator().getInitiatorType().name().toLowerCase();
+            } catch (NotAvailableException ex) {
+                // in this case we use the system as initiator because responsible actions are not available for pure provider services and those are always system generated.
+                initiator = "system+";
             }
+
+            final List<String> states = Services.generateServiceStateStringRepresentation(serviceState, serviceType);
+//            if (!states.isEmpty()) {
+//                printStream.println("===========================================================================================================");
+//            }
             for (String extractServiceState : states) {
-                printStream.println("unit(" + unit.getUnitType().name().toLowerCase() + ", " + unit.getId() + ", " + extractServiceState + ").");
+                printStream.println("transition('" + unit.getId() + "', " + unit.getUnitType().name().toLowerCase() + ", " +initiator + ", " + extractServiceState + ").");
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not print " + serviceType.name() + " of " + unit, ex, LOGGER);
