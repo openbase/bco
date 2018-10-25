@@ -25,10 +25,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedSnapshotable;
 import org.openbase.bco.dal.lib.action.Action;
-import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
-import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
-import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.*;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.annotation.RPCMethod;
@@ -639,7 +636,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @param observer    The observer which is added.
      */
     @Override
-    default void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+    default <ST extends Message> void  addServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer) {
         addServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
     }
 
@@ -651,7 +648,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @param observer    The observer which is removed.
      */
     @Override
-    default void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+    default void removeServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) {
         removeServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
     }
 
@@ -666,7 +663,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @param serviceType   The service type on which the observer is added.
      * @param observer      The observer which is added.
      */
-    void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
+    void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer);
 
     /**
      * Remove an observer which is only notified if the desired service type for
@@ -676,7 +673,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @param serviceType   The service type on which the observer is removed.
      * @param observer      The observer which is removed.
      */
-    void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
+    void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer);
 
     /**
      * Add a data observer which is only notified if data for the given

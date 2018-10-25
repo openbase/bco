@@ -63,9 +63,9 @@ public interface ServiceProvider<ST extends Message> {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
     }
 
-    void addServiceStateObserver(final ServiceType serviceType, final Observer<DataProvider<ST>, ST> observer);
+    void addServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer);
 
-    void removeServiceStateObserver(final ServiceType serviceType, final Observer<DataProvider<ST>, ST> observer);
+    void removeServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer);
 
     ST getServiceState(final ServiceType serviceType) throws NotAvailableException;
 }

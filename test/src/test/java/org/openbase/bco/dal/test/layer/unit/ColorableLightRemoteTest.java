@@ -22,6 +22,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
@@ -288,7 +289,12 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             powerStateObserverUpdateNumber++;
             LOGGER.info("Power state update {} with {}", powerStateObserverUpdateNumber, data.getValue().name());
         };
-        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, powerStateObserver);
+        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, new Observer<ServiceStateProvider<PowerState>, PowerState>() {
+            @Override
+            public void update(ServiceStateProvider<Message> source, Message data) throws Exception {
+
+            }
+        });
 
         colorableLightRemote.setPowerState(PowerState.State.OFF).get(); // notification 1
         colorableLightRemote.setPowerState(PowerState.State.ON).get(); // notification 2

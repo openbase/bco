@@ -94,6 +94,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private final Observer unitConfigObserver;
     private final Observer connectionStateObserver;
     protected final ObservableImpl<DataProvider<ST>, ST> serviceStateObservable = new ObservableImpl<>();
+    private final ObservableImpl<ServiceStateProvider<ST>, ST> serviceStateProviderObservable = new ObservableImpl<>();
     private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
     private final SyncObject maintainerLock = new SyncObject("MaintainerLock");
     private final SyncObject connectionStateLock = new SyncObject("ConnectionStateLock");
@@ -142,6 +143,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             }
         };
         this.serviceStateObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
+        this.serviceStateProviderObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
     }
 
 
@@ -167,6 +169,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             serviceState = computeServiceState();
         }
         serviceStateObservable.notifyObservers(serviceState);
+        serviceStateProviderObservable.notifyObservers(serviceState);
         assert serviceStateObservable.isValueAvailable();
     }
 
@@ -205,24 +208,24 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
-    public void addServiceStateObserver(final ServiceType serviceType, final Observer<DataProvider<ST>, ST> observer) {
+    public void addServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer) {
         try {
             if (serviceType != getServiceType()) {
                 throw new VerificationFailedException("ServiceType[" + serviceType.name() + "] is not compatible with " + this);
             }
-            addDataObserver(observer);
+            serviceStateProviderObservable.addObserver(observer);
         } catch (final CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not add service state observer!", ex), logger);
         }
     }
 
     @Override
-    public void removeServiceStateObserver(final ServiceType serviceType, final Observer<DataProvider<ST>, ST> observer) {
+    public void removeServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer) {
         try {
             if (serviceType != getServiceType()) {
                 throw new VerificationFailedException("ServiceType[" + serviceType.name() + "] is not compatible with " + this);
             }
-            addDataObserver(observer);
+            serviceStateProviderObservable.removeObserver(observer);
         } catch (final CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove service state observer!", ex), logger, LogLevel.WARN);
         }

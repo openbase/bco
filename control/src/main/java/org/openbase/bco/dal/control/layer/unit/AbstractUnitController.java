@@ -733,12 +733,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public void addServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer observer) {
+    public void addServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer<ServiceStateProvider<Message>, Message> observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
     }
 
     @Override
-    public void removeServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer observer) {
+    public void removeServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer<ServiceStateProvider<Message>, Message> observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
     }
 

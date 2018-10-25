@@ -276,12 +276,12 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     @Override
-    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer) {
+    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
     }
 
     @Override
-    public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer) {
+    public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
     }
 
