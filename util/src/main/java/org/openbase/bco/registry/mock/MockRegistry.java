@@ -116,7 +116,9 @@ public class MockRegistry {
     public static final String ALIAS_DEVICE_REED_SWITCH_HOMEMATIC = "HM_ReedSwitch_Device";
     public static final String ALIAS_DEVICE_REED_SWITCH_STAIRWAY_WINDOW = "Reed_Stairway_Window_Device";
     public static final String ALIAS_DEVICE_ROLLERSHUTTER = "HA_TYA628C_Device";
+    public static final String ALIAS_DEVICE_ROLLERSHUTTER_STAIRWAY = "HA_TYA628C_Device_Stairway";
     public static final String ALIAS_DEVICE_SMOKE_DETECTOR = "Fibaro_SmokeDetector_Device";
+    public static final String ALIAS_DEVICE_SMOKE_DETECTOR_STAIRWAY = "Fibaro_SmokeDetector_Device_Stairway";
     public static final String ALIAS_DEVICE_TEMPERATURE_CONTROLLER = "Gire_TemperatureController_Device";
     public static final String ALIAS_DEVICE_TEMPERATURE_CONTROLLER_STAIRWAY_TO_HEAVEN = "Gire_TemperatureController_Device_Stairway";
     public static final String ALIAS_DOOR_GATE = "Gate";
@@ -140,6 +142,7 @@ public class MockRegistry {
     public static final String COMPANY_PHILIPS = "Philips";
     public static final String COMPANY_PLUGWISE = "Plugwise";
     public static final String LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING = "AbsenceEnergySaving";
+    public static final String LABEL_AGENT_CLASS_FIRE_ALARM = "FireAlarm";
     public static final String LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING = "HeaterEnergySaving";
     public static final String LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING = "IlluminationLightSaving";
     public static final String LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER = "PowerStateSynchroniser";
@@ -585,6 +588,7 @@ public class MockRegistry {
     private void registerAgentClasses() throws CouldNotPerformException, InterruptedException {
         try {
             AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING)).get().getId());
+            AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_FIRE_ALARM, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_FIRE_ALARM)).get().getId());
             AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING)).get().getId());
             AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING)).get().getId());
             AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER)).get().getId());
@@ -690,12 +694,14 @@ public class MockRegistry {
                     UnitType.ROLLER_SHUTTER);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_ROLLERSHUTTER, serialNumber, rollerShutterClass));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_ROLLERSHUTTER_STAIRWAY, serialNumber, rollerShutterClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
 
             // smoke detector
             DeviceClass smokeDetector = registerDeviceClass(LABEL_DEVICE_CLASS_FIBARO_FGSS_001, "FGSS_001", COMPANY_FIBARO,
                     UnitType.SMOKE_DETECTOR);
 
             registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_SMOKE_DETECTOR, serialNumber, smokeDetector));
+            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_SMOKE_DETECTOR_STAIRWAY, serialNumber, smokeDetector, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
 
             // temperature controller
             DeviceClass temperatureControllerClass = registerDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730250000, "429496730250000", COMPANY_GIRA,
