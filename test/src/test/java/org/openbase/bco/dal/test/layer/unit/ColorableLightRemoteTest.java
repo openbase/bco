@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test.layer.unit;
 
 import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
@@ -47,6 +48,7 @@ import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.vision.HSBColorType.HSBColor;
 
 import static org.junit.Assert.assertEquals;
@@ -277,14 +279,14 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             colorableLightRemote.setPowerState(PowerState.State.ON).get();
         }
 
-        final Observer<DataProvider<PowerState>, PowerState> powerStateObserver = (source, data) -> {
+        final Observer<ServiceStateProvider<PowerState>, PowerState> powerStateObserver = (source, data) -> {
             if (!data.hasValue()) {
                 LOGGER.warn("Notification with empty value");
                 return;
             }
 
             powerStateObserverUpdateNumber++;
-            LOGGER.info("Power state update {} with {}", powerStateObserverUpdateNumber, data);
+            LOGGER.info("Power state update {} with {}", powerStateObserverUpdateNumber, data.getValue().name());
         };
         colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, powerStateObserver);
 
