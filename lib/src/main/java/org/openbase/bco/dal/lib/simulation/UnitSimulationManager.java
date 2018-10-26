@@ -102,7 +102,7 @@ public class UnitSimulationManager<CONTROLLER extends UnitController<?, ?>> impl
                     previousUnitKeyList.remove(unitController.getId());
 
                     // filter already registered controller
-                    if (sourceUnitSimulatorMap.containsKey(unitController.getId())) {
+                    if (sourceUnitSimulatorMap.get(sourceRegistry).containsKey(unitController.getId())) {
                         continue;
                     }
 

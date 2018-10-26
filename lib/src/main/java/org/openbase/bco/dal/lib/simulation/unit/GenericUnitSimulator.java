@@ -21,11 +21,6 @@ package org.openbase.bco.dal.lib.simulation.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
 
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.simulation.service.AbstractServiceSimulator;
@@ -36,12 +31,17 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
+ * <p>
  * This class implements and generic unit simulator by extending the {@code AbstractUnitSimulator} and simulating each service of the unit by custom or generic service simulators.
  */
 public class GenericUnitSimulator extends AbstractUnitSimulator {
@@ -53,6 +53,7 @@ public class GenericUnitSimulator extends AbstractUnitSimulator {
      * Constructor creates a new generic unit simulator.
      *
      * @param unitController this controller must be linked to the unit which should be simulated.
+     *
      * @throws org.openbase.jul.exception.InstantiationException is thrown if any error occurs during class instantiation.
      */
     public GenericUnitSimulator(final UnitController unitController) throws InstantiationException, InterruptedException {
@@ -70,15 +71,18 @@ public class GenericUnitSimulator extends AbstractUnitSimulator {
         try {
             final MultiException.ExceptionStack exceptionStack = new MultiException.ExceptionStack();
             for (final ServiceDescription serviceDescription : unitController.getUnitTemplate().getServiceDescriptionList()) {
-
-                // filter unknown services type
-                if(serviceDescription.getServiceType() == ServiceType.UNKNOWN) {
-                    LOGGER.warn("Template of "+ unitController + " contains an unknown service description: "+ serviceDescription);
+                if (serviceDescription.getPattern() != ServicePattern.PROVIDER) {
                     continue;
                 }
 
-                // filter aggregated services because those are implicit simulated by there observed units.
-                if(serviceDescription.getAggregated()) {
+                // filter unknown services type
+                if (serviceDescription.getServiceType() == ServiceType.UNKNOWN) {
+                    LOGGER.warn("Template of " + unitController + " contains an unknown service description: " + serviceDescription);
+                    continue;
+                }
+
+                // filter aggregated services because those are implicitly simulated by the observed units.
+                if (serviceDescription.getAggregated()) {
                     continue;
                 }
 
@@ -89,7 +93,7 @@ public class GenericUnitSimulator extends AbstractUnitSimulator {
                 }
             }
             try {
-                MultiException.checkAndThrow(() ->"Could not init all service simulators of " +unitController+ "!", exceptionStack);
+                MultiException.checkAndThrow(() -> "Could not init all service simulators of " + unitController + "!", exceptionStack);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);
             }

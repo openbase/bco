@@ -21,17 +21,19 @@ package org.openbase.bco.dal.lib.simulation.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import java.util.ArrayList;
-import java.util.List;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
  * @param <SERVICE_STATE> the type of the service states used for the simulation.
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AbstractRandomServiceSimulator<SERVICE_STATE extends GeneratedMessage> extends AbstractScheduledServiceSimulator<SERVICE_STATE> {
 
@@ -60,6 +62,7 @@ public class AbstractRandomServiceSimulator<SERVICE_STATE extends GeneratedMessa
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override

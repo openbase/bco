@@ -21,14 +21,8 @@ package org.openbase.bco.dal.lib.simulation.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jps.core.JPService;
@@ -38,12 +32,23 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
+import org.openbase.jul.schedule.SyncObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+
 /**
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
  * @param <SERVICE_STATE> the type of the service states used for the simulation.
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends GeneratedMessage> extends AbstractServiceSimulator {
 
@@ -56,13 +61,29 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
     private final Runnable simulationTask;
     private Future simulationTaskFuture;
     private final long changeRate;
-    private final UnitController unitController;
+    protected final UnitController unitController;
+
+    // Debug code that prints how many simulations occur
+    private static final long START = System.currentTimeMillis();
+    private static int simulationCount = 0;
+    private static final SyncObject SIM_COUNT_SYNC = new SyncObject("SimulationCountSync");
+    private static final Logger DEBUG_LOGGER = LoggerFactory.getLogger(AbstractScheduledServiceSimulator.class);
+
+    private static void increaseSimCount() {
+        synchronized (SIM_COUNT_SYNC) {
+            simulationCount = simulationCount + 1;
+            if (simulationCount % 100 == 0) {
+                long time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - START);
+                DEBUG_LOGGER.warn("Simulated services [" + simulationCount + "] in [" + time + "]s which means [" + simulationCount / time + "] simulations/s!");
+            }
+        }
+    }
 
     /**
      * Creates a new scheduled {@code serviceType} simulator to simulate the given {@code @unitController}.
      *
      * @param unitController the unit to simulate.
-     * @param serviceType the service type to simulate.
+     * @param serviceType    the service type to simulate.
      */
     public AbstractScheduledServiceSimulator(final UnitController unitController, final ServiceType serviceType) {
         this(unitController, serviceType, (isBenchmarkDetected() ? BENCHMARK_CHANGE_RATE : DEFAULT_CHANGE_RATE));
@@ -72,21 +93,21 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
      * Creates a new scheduled {@code serviceType} simulator to simulate the given {@code @unitController}.
      *
      * @param unitController the unit to simulate.
-     * @param serviceType the service type to simulate.
-     * @param changeRate the simulation update speed in milliseconds.
+     * @param serviceType    the service type to simulate.
+     * @param changeRate     the simulation update speed in milliseconds.
      */
     public AbstractScheduledServiceSimulator(final UnitController unitController, final ServiceType serviceType, final long changeRate) {
         this.changeRate = (isBenchmarkDetected() ? BENCHMARK_CHANGE_RATE : changeRate);
         this.unitController = unitController;
         this.simulationTask = () -> {
-
             final SERVICE_STATE serviceState;
             try {
                 serviceState = getNextServiceState();
             } catch (NotAvailableException ex) {
-                LOGGER.warn("No more further service states are available. Simulation task will be terminated.");
+                LOGGER.warn("No further service states available for service {} of unit {}. Simulation task will be terminated.",
+                        serviceType.name(), unitController);
                 if (simulationTaskFuture != null) {
-                    simulationTaskFuture.cancel(true);
+                    simulationTaskFuture.cancel(false);
                 }
                 return;
             }
@@ -95,6 +116,7 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
             try {
                 // randomly select one of the registered service states, update the service state timestamp and apply the state update on unit controller.
                 unitController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
+                increaseSimCount();
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory("Could not apply service modification!", ex, LOGGER);
             }
@@ -130,6 +152,7 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
      * Method should return the next service state which is applied during next service state simulation.
      *
      * @return an appropriated value state.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException can be thrown in case no more service states are available. Be informed that in this case the simulation task will be terminated.
      */
     protected abstract SERVICE_STATE getNextServiceState() throws NotAvailableException;
