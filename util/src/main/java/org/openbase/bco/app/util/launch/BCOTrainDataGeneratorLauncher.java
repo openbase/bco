@@ -85,6 +85,8 @@ public class BCOTrainDataGeneratorLauncher {
             LOGGER.info("init simulation setup");
 
             // init
+            final int trainingSetCounter = 10;
+            int conditionCounter = 0;
             LocationRemote location = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("location-3"), true, Units.LOCATION);
             final ActionDescription absentState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     PresenceState.newBuilder().setValue(State.ABSENT).build(),
@@ -99,14 +101,13 @@ public class BCOTrainDataGeneratorLauncher {
             boolean present = false;
 
 
-            LOGGER.info("generate actions...");
+            LOGGER.info("generate "+ trainingSetCounter + " training sets.");
 
-            while (!Thread.interrupted()) {
+            while (!Thread.interrupted() && conditionCounter <= trainingSetCounter) {
 
-                LOGGER.info("handle present == " + present);
+                LOGGER.info("=== generate condition {} for training set {} ===", (present ? "PRESENT" : "ABSENT"), (conditionCounter + 1));
 
                 try {
-
                     // check condition
                     if (present) {
 
@@ -127,6 +128,7 @@ public class BCOTrainDataGeneratorLauncher {
                             // they is leaving the room
                             location.applyAction(absentState).get();
                         }
+                        conditionCounter++;
                     } else {
                         // random order
                         if (random.nextBoolean()) {
@@ -152,9 +154,9 @@ public class BCOTrainDataGeneratorLauncher {
                 present = !present;
                 waitUntilNextAction();
             }
-
+            LOGGER.info("generate finished.");
         } catch (InterruptedException e) {
-            // halt
+            LOGGER.info("generate canceled by user.");
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Training data generation failed!", ex, LOGGER);
         }
