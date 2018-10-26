@@ -35,7 +35,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class ServiceStateObserver implements Observer<DataProvider<Message>, Message> {
+public abstract class ServiceStateObserver implements Observer<ServiceStateProvider<Message>, Message> {
 
     private final boolean filterEmptyUpdates;
 
@@ -44,7 +44,7 @@ public abstract class ServiceStateObserver implements Observer<DataProvider<Mess
     }
 
     @Override
-    public void update(DataProvider<Message> source, Message serviceData) throws Exception {
+    public void update(ServiceStateProvider<Message> source, Message serviceData) throws Exception {
         if(filterEmptyUpdates && ProtoBufFieldProcessor.isMessageEmpty(serviceData)) {
             return;
         }
@@ -52,5 +52,5 @@ public abstract class ServiceStateObserver implements Observer<DataProvider<Mess
         updateServiceData(source, serviceData);
     }
 
-    public abstract void updateServiceData(DataProvider<Message> source, Message data) throws Exception;
+    public abstract void updateServiceData(ServiceStateProvider<Message> source, Message data) throws Exception;
 }
