@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -66,7 +66,6 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -128,6 +127,11 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 unitDataObservableMap.get(serviceTempus).notifyObservers(data1);
             });
 
+            // skip registration of service state observable if tempus unknown
+            if (serviceTempus == ServiceTempus.UNKNOWN) {
+                continue;
+            }
+
             this.serviceTempusServiceTypeObservableMap.put(serviceTempus, new HashMap<>());
             this.addDataObserver(serviceTempus, (source, data1) -> {
                 final Set<ServiceType> serviceTypeSet = new HashSet<>();
@@ -145,7 +149,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                         Message serviceData = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
                         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
                     } catch (CouldNotPerformException ex) {
-                        logger.warn("Could not notify state update for service[" + serviceDescription.getServiceType() + "] in tempus["+serviceTempus.name()+"]", ex);
+                        logger.warn("Could not notify state update for service[" + serviceDescription.getServiceType() + "] in tempus[" + serviceTempus.name() + "]", ex);
                     }
                 }
             });
@@ -277,12 +281,34 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
     @Override
     public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) {
-        serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+        if (serviceTempus == ServiceTempus.UNKNOWN) {
+            // if unknown tempus add observer on all other tempi
+            for (ServiceTempus value : ServiceTempus.values()) {
+                if (value == ServiceTempus.UNKNOWN) {
+                    continue;
+                }
+
+                addServiceStateObserver(value, serviceType, observer);
+            }
+        } else {
+            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+        }
     }
 
     @Override
     public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) {
-        serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+        if (serviceTempus == ServiceTempus.UNKNOWN) {
+            // if unknown tempus remove observer on all other tempi
+            for (ServiceTempus value : ServiceTempus.values()) {
+                if (value == ServiceTempus.UNKNOWN) {
+                    continue;
+                }
+
+                removeServiceStateObserver(value, serviceType, observer);
+            }
+        } else {
+            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+        }
     }
 
     @Override
@@ -337,6 +363,11 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         // register service observable which are not handled yet.
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
             unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
+
+            // skip creation of service state observable if tempus unknown
+            if(serviceTempus == ServiceTempus.UNKNOWN) {
+                continue;
+            }
 
             for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
 
@@ -657,6 +688,11 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
 
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
+            // skip unknown tempus
+            if(serviceTempus == ServiceTempus.UNKNOWN) {
+                continue;
+            }
+
             // shutdown service observer
             for (final MessageObservable serviceObservable : serviceTempusServiceTypeObservableMap.get(serviceTempus).values()) {
                 serviceObservable.shutdown();

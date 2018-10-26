@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -148,6 +148,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 unitDataObservableMap.get(serviceTempus).notifyObservers(data);
             });
 
+            if (serviceTempus == ServiceTempus.UNKNOWN) {
+                continue;
+            }
             serviceTempusServiceTypeObservableMap.put(serviceTempus, new HashMap<>());
         }
         this.unitRegistryObserver = new Observer<DataProvider<UnitRegistryData>, UnitRegistryData>() {
@@ -250,6 +253,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         super.notifyDataUpdate(data);
 
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
+            if (serviceTempus == ServiceTempus.UNKNOWN) {
+                continue;
+            }
+
             final Set<ServiceType> serviceTypeSet = new HashSet<>();
             for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 
@@ -320,16 +327,22 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
 
+            if (serviceTempus == ServiceTempus.UNKNOWN) {
+                continue;
+            }
             for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
 
                 // create observable if new
                 if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getServiceType())) {
-                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable<>(new ServiceStateProvider<>(serviceDescription.getServiceType(),this)));
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable<>(new ServiceStateProvider<>(serviceDescription.getServiceType(), this)));
                 }
             }
         }
 
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
+            if (serviceTempus == ServiceTempus.UNKNOWN) {
+                continue;
+            }
             // cleanup service observable related to new unit template
             outer:
             for (final ServiceType serviceType : serviceTempusServiceTypeObservableMap.get(serviceTempus).keySet()) {
@@ -734,12 +747,34 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public void addServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer<ServiceStateProvider<Message>, Message> observer) {
-        serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+        if (serviceTempus == ServiceTempus.UNKNOWN) {
+            // if unknown tempus add observer on all other tempi
+            for (ServiceTempus value : ServiceTempus.values()) {
+                if (value == ServiceTempus.UNKNOWN) {
+                    continue;
+                }
+
+                addServiceStateObserver(value, serviceType, observer);
+            }
+        } else {
+            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+        }
     }
 
     @Override
     public void removeServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer<ServiceStateProvider<Message>, Message> observer) {
-        serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+        if (serviceTempus == ServiceTempus.UNKNOWN) {
+            // if unknown tempus remove observer on all other tempi
+            for (ServiceTempus value : ServiceTempus.values()) {
+                if (value == ServiceTempus.UNKNOWN) {
+                    continue;
+                }
+
+                removeServiceStateObserver(value, serviceType, observer);
+            }
+        } else {
+            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+        }
     }
 
     @Override
@@ -762,6 +797,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
         // shutdown service observer
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
+            if (serviceTempus == ServiceTempus.UNKNOWN) {
+                continue;
+            }
+
             for (final MessageObservable serviceObservable : serviceTempusServiceTypeObservableMap.get(serviceTempus).values()) {
                 serviceObservable.shutdown();
             }
