@@ -25,8 +25,10 @@ package org.openbase.bco.dal.remote.printer;
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.remote.printer.jp.JPOutputDirectory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -47,6 +49,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -65,6 +68,7 @@ public class BCOLogger extends UnitStatePrinter {
 
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
+        JPService.registerProperty(JPOutputDirectory.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
         JPService.registerProperty(JPRSBHost.class);
@@ -90,8 +94,11 @@ public class BCOLogger extends UnitStatePrinter {
 
     private static PrintStream getModelPrintStream() {
         try {
-            return new PrintStream(new FileOutputStream("/home/divine/workspace/prolog/bco-rule-learner/model.pl", false));
-        } catch (FileNotFoundException ex) {
+            if (!JPService.getProperty(JPOutputDirectory.class).isParsed()) {
+                return System.out;
+            }
+            return new PrintStream(new FileOutputStream(new File(JPService.getProperty(JPOutputDirectory.class).getValue(), "bco-model.pl"), false));
+        } catch (FileNotFoundException | JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Error while loading model file, use system out instead.", ex, LOGGER);
             return System.out;
         }
@@ -99,8 +106,11 @@ public class BCOLogger extends UnitStatePrinter {
 
     private static PrintStream getTransitionPrintStream() {
         try {
-            return new PrintStream(new FileOutputStream("/home/divine/workspace/prolog/bco-rule-learner/transitions.pl", false));
-        } catch (FileNotFoundException ex) {
+            if (!JPService.getProperty(JPOutputDirectory.class).isParsed()) {
+                return System.out;
+            }
+            return new PrintStream(new FileOutputStream(new File(JPService.getProperty(JPOutputDirectory.class).getValue(), "transitions.pl"), false));
+        } catch (FileNotFoundException | JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Error while loading transitions file, use system out instead.", ex, LOGGER);
             return System.out;
         }
