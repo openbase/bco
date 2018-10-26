@@ -56,6 +56,8 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.HSBColorType.HSBColor;
 
 import java.util.Random;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -103,43 +105,48 @@ public class BCOTrainDataGeneratorLauncher {
 
                 LOGGER.info("handle present == " + present);
 
-                // check condition
-                if (present) {
+                try {
 
-                    // random order
-                    if (random.nextBoolean()) {
-                        // human leaving the room
-                        location.applyAction(absentState);
-                        // and after a while
-                        waitBetweenActions();
-                        // they is switching the light off.
-                        location.setPowerState(PowerState.State.OFF, UnitType.LIGHT);
-                    } else {
+                    // check condition
+                    if (present) {
 
-                        // human is switching the light off.
-                        location.setPowerState(PowerState.State.OFF, UnitType.LIGHT);
-                        // and after a while
-                        waitBetweenActions();
-                        // they is leaving the room
-                        location.applyAction(absentState);
-                    }
-                } else {
-                    // random order
-                    if (random.nextBoolean()) {
-                        // human entering the room
-                        location.applyAction(presentState);
-                        // and after a while
-                        waitBetweenActions();
-                        // they is switching the light on.
-                        location.setPowerState(PowerState.State.ON, UnitType.LIGHT);
+                        // random order
+                        if (random.nextBoolean()) {
+                            // human leaving the room
+                            location.applyAction(absentState).get();
+                            // and after a while
+                            waitBetweenActions();
+                            // they is switching the light off.
+                            location.setPowerState(PowerState.State.OFF, UnitType.LIGHT).get();
+                        } else {
+
+                            // human is switching the light off.
+                            location.setPowerState(PowerState.State.OFF, UnitType.LIGHT).get();
+                            // and after a while
+                            waitBetweenActions();
+                            // they is leaving the room
+                            location.applyAction(absentState).get();
+                        }
                     } else {
-                        // human is switching the light on
-                        location.setPowerState(PowerState.State.ON, UnitType.LIGHT);
-                        // and after a while
-                        waitBetweenActions();
-                        // they is entering the room
-                        location.applyAction(presentState);
+                        // random order
+                        if (random.nextBoolean()) {
+                            // human entering the room
+                            location.applyAction(presentState).get();
+                            // and after a while
+                            waitBetweenActions();
+                            // they is switching the light on.
+                            location.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
+                        } else {
+                            // human is switching the light on
+                            location.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
+                            // and after a while
+                            waitBetweenActions();
+                            // they is entering the room
+                            location.applyAction(presentState).get();
+                        }
                     }
+                } catch (CancellationException | ExecutionException ex) {
+                    ExceptionPrinter.printHistory("generator run skipped!", ex, LOGGER);
                 }
                 // toggle condition
                 present = !present;
