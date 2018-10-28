@@ -59,7 +59,7 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
         }
         if (!locationId.equals(connectionUnitConfig.getPlacementConfig().getLocationId())) {
             PlacementConfig.Builder placement = connectionUnitConfig.getPlacementConfig().toBuilder().setLocationId(locationId);
-            throw new EntryModification(entry.setMessage(connectionUnitConfig.setPlacementConfig(placement)), this);
+            throw new EntryModification(entry.setMessage(connectionUnitConfig.setPlacementConfig(placement), this), this);
         }
     }
 

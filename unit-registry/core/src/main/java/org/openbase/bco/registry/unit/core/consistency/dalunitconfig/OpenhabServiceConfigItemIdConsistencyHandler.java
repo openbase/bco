@@ -126,7 +126,7 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(dalUnitConfig), this);
+            throw new EntryModification(entry.setMessage(dalUnitConfig, this), this);
         }
     }
 

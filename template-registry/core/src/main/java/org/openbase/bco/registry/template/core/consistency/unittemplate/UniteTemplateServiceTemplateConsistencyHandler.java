@@ -87,7 +87,7 @@ public class UniteTemplateServiceTemplateConsistencyHandler extends AbstractProt
         if (modification) {
             unitTemplate.clearServiceDescription();
             unitTemplate.addAllServiceDescription(serviceDescriptionList);
-            throw new EntryModification(entry.setMessage(unitTemplate), this);
+            throw new EntryModification(entry.setMessage(unitTemplate, this), this);
         }
     }
 

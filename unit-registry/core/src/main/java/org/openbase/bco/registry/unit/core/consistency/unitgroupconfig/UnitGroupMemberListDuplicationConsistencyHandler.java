@@ -56,7 +56,7 @@ public class UnitGroupMemberListDuplicationConsistencyHandler extends AbstractPr
 
         if (modification) {
             unitGroupConfig.addAllMemberId(memberIds);
-            throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
+            throw new EntryModification(entry.setMessage(unitGroupUnitConfig, this), this);
         }
     }
 }

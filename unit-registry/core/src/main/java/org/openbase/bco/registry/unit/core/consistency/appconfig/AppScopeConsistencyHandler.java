@@ -81,7 +81,7 @@ public class AppScopeConsistencyHandler extends AbstractProtoBufRegistryConsiste
                 throw new InvalidStateException("Two apps [" + appUnitConfig + "][" + appMap.get(ScopeGenerator.generateStringRep(newScope)) + "] are registered with the same label and location");
             } else {
                 appMap.put(ScopeGenerator.generateStringRep(newScope), appUnitConfig);
-                entry.setMessage(appUnitConfig.toBuilder().setScope(newScope));
+                entry.setMessage(appUnitConfig.toBuilder().setScope(newScope), this);
                 throw new EntryModification(entry, this);
             }
         }

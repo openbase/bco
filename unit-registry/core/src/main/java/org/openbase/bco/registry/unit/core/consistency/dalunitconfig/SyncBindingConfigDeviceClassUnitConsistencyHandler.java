@@ -100,7 +100,7 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(dalUnitConfig.build()), this);
+            throw new EntryModification(entry.setMessage(dalUnitConfig.build(), this), this);
         }
     }
 }

@@ -96,7 +96,7 @@ public class DalUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyH
                 // Setup device label if unit has no label configured.
                 if (!dalUnitConfig.hasLabel() || LabelProcessor.isEmpty(dalUnitConfig.getLabel())) {
                     if (DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, hostUnitConfig, deviceClass, hasDuplicatedUnitType)) {
-                        throw new EntryModification(entry.setMessage(dalUnitConfig), this);
+                        throw new EntryModification(entry.setMessage(dalUnitConfig, this), this);
                     }
                 }
 
@@ -107,7 +107,7 @@ public class DalUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyH
                     oldUnitHostLabelMap.put(dalUnitConfig.getId(), hostUnitConfig.getLabel());
                     if (dalUnitConfig.getLabel().equals(oldLabel)) {
                         // dal unit label is still the same
-                        throw new EntryModification(entry.setMessage(dalUnitConfig.setLabel(hostUnitConfig.getLabel())), this);
+                        throw new EntryModification(entry.setMessage(dalUnitConfig.setLabel(hostUnitConfig.getLabel()), this), this);
                     }
                 }
             } else if (appRegistry.contains(dalUnitConfig.getUnitHostId())) {

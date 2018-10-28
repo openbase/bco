@@ -79,7 +79,7 @@ public class AgentScopeConsistencyHandler extends AbstractProtoBufRegistryConsis
                 throw new InvalidStateException("Two agents [" + agentUnitConfig + "][" + agentMap.get(ScopeGenerator.generateStringRep(newScope)) + "] are registered with the same label and location");
             } else {
                 agentMap.put(ScopeGenerator.generateStringRep(newScope), agentUnitConfig);
-                entry.setMessage(agentUnitConfig.toBuilder().setScope(newScope));
+                entry.setMessage(agentUnitConfig.toBuilder().setScope(newScope), this);
                 throw new EntryModification(entry, this);
             }
         }

@@ -70,7 +70,7 @@ public class UnitLocationIdConsistencyHandler extends AbstractProtoBufRegistryCo
             }
 
             // setup root location
-            throw new EntryModification(entry.setMessage(unitConfig.setPlacementConfig(unitConfig.getPlacementConfig().toBuilder().setLocationId(rootLocationId))), this);
+            throw new EntryModification(entry.setMessage(unitConfig.setPlacementConfig(unitConfig.getPlacementConfig().toBuilder().setLocationId(rootLocationId)), this), this);
         }
     }
 }

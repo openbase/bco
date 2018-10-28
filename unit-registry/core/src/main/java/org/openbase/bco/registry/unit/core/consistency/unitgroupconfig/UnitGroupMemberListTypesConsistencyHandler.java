@@ -120,7 +120,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         unitGroup.addAllMemberId(memberIds);
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
+            throw new EntryModification(entry.setMessage(unitGroupUnitConfig, this), this);
         }
     }
 

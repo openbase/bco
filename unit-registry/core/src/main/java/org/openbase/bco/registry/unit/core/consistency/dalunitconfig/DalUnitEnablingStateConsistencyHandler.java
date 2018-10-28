@@ -75,14 +75,14 @@ public class DalUnitEnablingStateConsistencyHandler extends AbstractProtoBufRegi
         if (oldHostEnablingStateMap.get(registry.isSandbox()).get(dalUnitConfig.getId()) != deviceUnitConfig.getEnablingState()) {
             oldHostEnablingStateMap.get(registry.isSandbox()).put(dalUnitConfig.getId(), deviceUnitConfig.getEnablingState());
             if (deviceUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
-                throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setEnablingState(deviceUnitConfig.getEnablingState())), this);
+                throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setEnablingState(deviceUnitConfig.getEnablingState()), this), this);
             }
         }
 
         if (deviceUnitConfig.getEnablingState().getValue() == EnablingState.State.DISABLED) {
             if (dalUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
                 EnablingState disabled = EnablingState.newBuilder().setValue(EnablingState.State.DISABLED).build();
-                throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setEnablingState(disabled)), this);
+                throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setEnablingState(disabled), this), this);
             }
         }
     }

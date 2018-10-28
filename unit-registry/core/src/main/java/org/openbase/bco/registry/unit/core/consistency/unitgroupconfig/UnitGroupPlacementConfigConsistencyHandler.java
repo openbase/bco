@@ -160,7 +160,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         PlacementConfig newPlacementConfig = updatePlacementConfig(placementConfig, minPosition, dimensions);
         if (!placementConfig.equals(newPlacementConfig)) {
             unitConfig.setPlacementConfig(newPlacementConfig);
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 

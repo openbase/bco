@@ -89,7 +89,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
         // verify and update unit ids
         if (generateListHash(locationConfig.getUnitIdList()) != generateListHash(lookupUnitIds)) {
             locationConfig.clearUnitId().addAllUnitId(lookupUnitIds);
-            entry.setMessage(locationUnitConfig);
+            entry.setMessage(locationUnitConfig, this);
             throw new EntryModification(entry, this);
         }
     }

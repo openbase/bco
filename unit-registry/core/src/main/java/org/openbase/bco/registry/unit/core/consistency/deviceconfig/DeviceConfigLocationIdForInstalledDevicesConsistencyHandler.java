@@ -57,7 +57,7 @@ public class DeviceConfigLocationIdForInstalledDevicesConsistencyHandler extends
 
         if (deviceConfig.getInventoryState().getValue() == InventoryState.State.INSTALLED && !deviceConfig.getInventoryState().getLocationId().equals(unitConfig.getPlacementConfig().getLocationId())) {
             deviceConfig.setInventoryState(deviceConfig.getInventoryStateBuilder().setLocationId(unitConfig.getPlacementConfig().getLocationId()));
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 }

@@ -51,7 +51,7 @@ public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyH
         // check if root flag is missing for root node.
         if (locationUnitConfig.getPlacementConfig().hasLocationId() && locationUnitConfig.getPlacementConfig().getLocationId().equals(locationUnitConfig.getId()) && !locationConfig.getRoot()) {
             locationConfig.setRoot(true);
-            entry.setMessage(locationUnitConfig.setPlacementConfig(locationUnitConfig.getPlacementConfig().toBuilder()));
+            entry.setMessage(locationUnitConfig.setPlacementConfig(locationUnitConfig.getPlacementConfig().toBuilder()), this);
             throw new EntryModification(entry, this);
         }
 
@@ -75,14 +75,14 @@ public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyH
 
             // delete invalid root flag for current location.
             locationConfig.setRoot(false);
-            entry.setMessage(locationUnitConfig);
+            entry.setMessage(locationUnitConfig, this);
             throw new EntryModification(entry, this);
         }
 
         // check if root field is available
         if (!locationConfig.hasRoot()) {
             locationConfig.setRoot(false);
-            throw new EntryModification(entry.setMessage(locationUnitConfig), this);
+            throw new EntryModification(entry.setMessage(locationUnitConfig, this), this);
         }
     }
 }

@@ -101,7 +101,7 @@ public class GroupPermissionConsistencyHandler extends AbstractProtoBufRegistryC
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 }

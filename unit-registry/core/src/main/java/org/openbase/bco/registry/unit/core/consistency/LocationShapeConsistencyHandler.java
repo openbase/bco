@@ -128,7 +128,7 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
         Shape newShape = updateCeilingAndLinks(shape, unitTransformation);
         if (!shape.equals(newShape)) {
             unitConfig.getPlacementConfigBuilder().setShape(newShape);
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 

@@ -49,13 +49,13 @@ public class ExecutableUnitAutostartConsistencyHandler extends AbstractProtoBufR
             case APP:
                 if (!unitConfig.getAppConfig().hasAutostart()) {
                     unitConfig.getAppConfigBuilder().setAutostart(DEFAULT_AUTOSTART_STATE);
-                    throw new EntryModification(entry.setMessage(unitConfig), this);
+                    throw new EntryModification(entry.setMessage(unitConfig, this), this);
                 }
                 break;
             case AGENT:
                 if (!unitConfig.getAgentConfig().hasAutostart()) {
                     unitConfig.getAgentConfigBuilder().setAutostart(DEFAULT_AUTOSTART_STATE);
-                    throw new EntryModification(entry.setMessage(unitConfig), this);
+                    throw new EntryModification(entry.setMessage(unitConfig, this), this);
                 }
                 break;
             default:

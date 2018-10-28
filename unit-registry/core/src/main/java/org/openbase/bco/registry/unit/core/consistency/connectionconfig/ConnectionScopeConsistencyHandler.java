@@ -52,7 +52,7 @@ public class ConnectionScopeConsistencyHandler extends AbstractProtoBufRegistryC
         Scope newScope = ScopeGenerator.generateConnectionScope(connectionUnitConfig, locationRegistry.getMessage(connectionUnitConfig.getPlacementConfig().getLocationId()));
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(connectionUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
-            entry.setMessage(connectionUnitConfig.toBuilder().setScope(newScope));
+            entry.setMessage(connectionUnitConfig.toBuilder().setScope(newScope), this);
             throw new EntryModification(entry, this);
         }
     }

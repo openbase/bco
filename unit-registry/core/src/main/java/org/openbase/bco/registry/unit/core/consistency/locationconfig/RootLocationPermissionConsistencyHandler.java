@@ -78,7 +78,7 @@ public class RootLocationPermissionConsistencyHandler extends AbstractProtoBufRe
         // the consistency handler can only apply the following changes if the needed authorization groups are already registered
         if (!aliasIdMap.containsKey(UnitRegistry.ADMIN_USER_ALIAS.toLowerCase()) || !aliasIdMap.containsKey(UnitRegistry.BCO_GROUP_ALIAS.toLowerCase())) {
             if (modification) {
-                throw new EntryModification(entry.setMessage(unitConfig), this);
+                throw new EntryModification(entry.setMessage(unitConfig, this), this);
             } else {
                 return;
             }
@@ -127,7 +127,7 @@ public class RootLocationPermissionConsistencyHandler extends AbstractProtoBufRe
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 }

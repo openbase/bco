@@ -80,7 +80,7 @@ public class UnitPermissionCleanerConsistencyHandler extends AbstractProtoBufReg
             }
 
             if (modification) {
-                throw new EntryModification(entry.setMessage(unitConfig), this);
+                throw new EntryModification(entry.setMessage(unitConfig, this), this);
             }
         }
     }

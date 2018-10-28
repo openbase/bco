@@ -49,7 +49,7 @@ public class DeviceInventoryStateConsistencyHandler extends AbstractProtoBufRegi
 
         if (!unitConfig.getDeviceConfig().hasInventoryState() || !unitConfig.getDeviceConfig().getInventoryState().hasValue()) {
             unitConfig.getDeviceConfigBuilder().setInventoryState(DEFAULT_INVENTORY_STATE);
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 }
