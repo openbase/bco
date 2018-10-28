@@ -68,7 +68,7 @@ public class CachedActivityRegistryRemote {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
             getRegistry().reinit(REMOTE_LOCK);
-            getRegistry().requestData().get(10, TimeUnit.SECONDS);
+            getRegistry().requestData().get(30, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedActivityRegistryRemote.class.getSimpleName() + "!", ex);
         }
