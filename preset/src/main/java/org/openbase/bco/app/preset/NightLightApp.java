@@ -64,7 +64,7 @@ public class NightLightApp extends AbstractAppController {
 
     private SyncObject locationMapLock = new SyncObject("LocationMapLock");
 
-    private Map<LocationRemote, Observer<DataProvider<LocationData>, LocationData>> locationMap;
+    private Map<LocationRemote, Observer> locationMap;
 
     public NightLightApp() throws InstantiationException, InterruptedException {
         super(NightLightApp.class);
