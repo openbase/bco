@@ -71,7 +71,7 @@ public class LocationUtils {
             }
 
             if (modified) {
-                throw new EntryModification(detectedRootLocationConfigEntry.setMessage(detectedRootLocationConfigBuilder), consistencyHandler);
+                throw new EntryModification(detectedRootLocationConfigEntry.setMessage(detectedRootLocationConfigBuilder, consistencyHandler), consistencyHandler);
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not validate root location!", ex);

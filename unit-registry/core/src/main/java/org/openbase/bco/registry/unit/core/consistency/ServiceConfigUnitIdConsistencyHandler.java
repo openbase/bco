@@ -57,7 +57,7 @@ public class ServiceConfigUnitIdConsistencyHandler extends AbstractProtoBufRegis
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 }

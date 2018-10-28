@@ -62,7 +62,7 @@ public class UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler exte
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 

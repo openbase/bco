@@ -79,7 +79,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
             if (registry.isSandbox()) {
                 unitTypeAliasNumberMap = copy;
             }
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 

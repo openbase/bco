@@ -67,7 +67,7 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
             // add default label
             UnitConfig.Builder unitConfigBuilder = unitConfig.toBuilder().clearLabel();
             LabelProcessor.addLabel(unitConfigBuilder.getLabelBuilder(), Locale.ENGLISH, generateDefaultLabel(unitConfig));
-            throw new EntryModification(entry.setMessage(unitConfigBuilder), this);
+            throw new EntryModification(entry.setMessage(unitConfigBuilder, this), this);
         }
 
         if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {

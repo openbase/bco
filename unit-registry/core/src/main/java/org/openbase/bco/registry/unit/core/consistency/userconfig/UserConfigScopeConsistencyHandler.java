@@ -50,7 +50,7 @@ public class UserConfigScopeConsistencyHandler extends AbstractProtoBufRegistryC
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(userUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
-            throw new EntryModification(entry.setMessage(userUnitConfig.toBuilder().setScope(newScope)), this);
+            throw new EntryModification(entry.setMessage(userUnitConfig.toBuilder().setScope(newScope), this), this);
         }
     }
 }

@@ -62,7 +62,7 @@ public class AuthorziationGroupDuplicateMemberConsistencyHandler extends Abstrac
         if(modification) {
             authorizationGroup.clearMemberId();
             authorizationGroup.addAllMemberId(memberIdSet);
-            throw new EntryModification(entry.setMessage(authorizationGroupUnitConfig), this);
+            throw new EntryModification(entry.setMessage(authorizationGroupUnitConfig, this), this);
         }
     }
     

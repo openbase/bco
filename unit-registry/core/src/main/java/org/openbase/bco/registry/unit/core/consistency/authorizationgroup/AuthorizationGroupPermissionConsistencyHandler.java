@@ -50,7 +50,7 @@ public class AuthorizationGroupPermissionConsistencyHandler extends AbstractProt
         UnitConfig authorizationGroupUnitConfig = entry.getMessage();
 
         if (!authorizationGroupUnitConfig.hasPermissionConfig()) {
-            entry.setMessage(authorizationGroupUnitConfig.toBuilder().setPermissionConfig(generateDefaultPermissionConfig(authorizationGroupUnitConfig)));
+            entry.setMessage(authorizationGroupUnitConfig.toBuilder().setPermissionConfig(generateDefaultPermissionConfig(authorizationGroupUnitConfig)), this);
             throw new EntryModification(entry, this);
         }
     }

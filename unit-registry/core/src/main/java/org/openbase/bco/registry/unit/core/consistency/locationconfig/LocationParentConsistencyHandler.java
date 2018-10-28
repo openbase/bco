@@ -58,7 +58,7 @@ public class LocationParentConsistencyHandler extends AbstractProtoBufRegistryCo
 
         // check if parent is registered.
         if (!entryMap.containsKey(unitLocationConfig.getPlacementConfig().getLocationId())) {
-            entry.setMessage(unitLocationConfig.setPlacementConfig(unitLocationConfig.getPlacementConfig().toBuilder().clearLocationId()));
+            entry.setMessage(unitLocationConfig.setPlacementConfig(unitLocationConfig.getPlacementConfig().toBuilder().clearLocationId()), this);
             throw new EntryModification("Parent[" + unitLocationConfig.getPlacementConfig().getLocationId() + "] of child[" + unitLocationConfig.getId() + "] is unknown! Entry will moved to root location!", entry, this);
         }
 
@@ -66,7 +66,7 @@ public class LocationParentConsistencyHandler extends AbstractProtoBufRegistryCo
         IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> parent = registry.get(unitLocationConfig.getPlacementConfig().getLocationId());
         if (parent != null && !parentHasChild(parent.getMessage(), unitLocationConfig.build()) && !parent.getMessage().getPlacementConfig().getLocationId().equals(unitLocationConfig.getId())) {
             LocationConfig.Builder parentLocationConfig = parent.getMessage().getLocationConfig().toBuilder().addChildId(unitLocationConfig.getId());
-            parent.setMessage(parent.getMessage().toBuilder().setLocationConfig(parentLocationConfig));
+            parent.setMessage(parent.getMessage().toBuilder().setLocationConfig(parentLocationConfig), this);
             throw new EntryModification("Parent[" + parent.getId() + "] does not know Child[" + unitLocationConfig.getId() + "]", parent, this);
         }
     }

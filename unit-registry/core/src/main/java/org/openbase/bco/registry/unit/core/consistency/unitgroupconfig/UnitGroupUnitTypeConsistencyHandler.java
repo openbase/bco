@@ -54,11 +54,11 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
             if (unitGroup.getServiceDescriptionList().isEmpty()) {
                 final UnitTemplate template = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitGroup.getUnitType());
                 unitGroup.addAllServiceDescription(template.getServiceDescriptionList());
-                throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
+                throw new EntryModification(entry.setMessage(unitGroupUnitConfig, this), this);
             }
             if (!unitTemplateHasSameServices(unitGroup.getUnitType(), unitGroup.getServiceDescriptionList())) {
                 unitGroup.setUnitType(UnitType.UNKNOWN);
-                throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
+                throw new EntryModification(entry.setMessage(unitGroupUnitConfig, this), this);
             }
         }
     }

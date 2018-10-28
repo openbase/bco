@@ -59,7 +59,7 @@ public class BoundingBoxConsistencyHandler extends AbstractProtoBufRegistryConsi
         //detect changes
         if (!shape.getBoundingBox().equals(newBoundingBox)) {
             unitConfig.getPlacementConfigBuilder().getShapeBuilder().setBoundingBox(newBoundingBox);
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 

@@ -90,7 +90,7 @@ public class TileConnectionIdConsistencyHandler extends AbstractProtoBufRegistry
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(locationUnitConfig), this);
+            throw new EntryModification(entry.setMessage(locationUnitConfig, this), this);
         }
     }
 }

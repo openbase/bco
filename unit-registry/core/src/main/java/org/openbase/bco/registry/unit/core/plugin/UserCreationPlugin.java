@@ -196,6 +196,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         userConfig.setFirstName("System");
         userConfig.setLastName("User");
         userConfig.setUserName(BCO_USERNAME);
+        userConfig.setSystemUser(true);
 
         return getRegistry().register(unitConfig.build());
     }

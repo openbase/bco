@@ -60,7 +60,7 @@ public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryCon
                 childIds.remove(childLocationId);
                 locationConfig.clearChildId();
                 locationConfig.addAllChildId(childIds);
-                throw new EntryModification("Child location removed because registered ChildLocation[" + childLocationId + "] for ParentLocation[" + locationUnitConfig.getId() + "] does not exists.", entry.setMessage(locationUnitConfig), this);
+                throw new EntryModification("Child location removed because registered ChildLocation[" + childLocationId + "] for ParentLocation[" + locationUnitConfig.getId() + "] does not exists.", entry.setMessage(locationUnitConfig, this), this);
             }
 
             // check if given child is not parent location otherwise remove child.
@@ -68,7 +68,7 @@ public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryCon
                 List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
                 childIds.remove(childLocationId);
                 locationConfig.clearChildId().addAllChildId(childIds);
-                throw new EntryModification(entry.setMessage(locationUnitConfig), this);
+                throw new EntryModification(entry.setMessage(locationUnitConfig, this), this);
             }
 
             childLocationConfig = registry.getMessage(childLocationId);
@@ -78,7 +78,7 @@ public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryCon
                 List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
                 childIds.remove(childLocationId);
                 locationConfig.clearChildId().addAllChildId(childIds);
-                throw new EntryModification(entry.setMessage(locationUnitConfig), this);
+                throw new EntryModification(entry.setMessage(locationUnitConfig, this), this);
 
             }
         }

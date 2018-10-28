@@ -99,7 +99,7 @@ public class DalUnitLocationIdConsistencyHandler extends AbstractProtoBufRegistr
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(dalUnitConfig), this);
+            throw new EntryModification(entry.setMessage(dalUnitConfig, this), this);
         }
     }
 }

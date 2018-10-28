@@ -56,7 +56,7 @@ public class AppLocationConsistencyHandler extends AbstractProtoBufRegistryConsi
         if (!app.hasPlacementConfig() || !app.getPlacementConfig().hasLocationId() || app.getPlacementConfig().getLocationId().isEmpty()) {
             String rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
             PlacementConfig rootPlacement = PlacementConfig.newBuilder().setLocationId(rootLocationId).build();
-            throw new EntryModification(entry.setMessage(app.toBuilder().setPlacementConfig(rootPlacement)), this);
+            throw new EntryModification(entry.setMessage(app.toBuilder().setPlacementConfig(rootPlacement), this), this);
         }
 
         // verify if configured location exists.
@@ -71,7 +71,7 @@ public class AppLocationConsistencyHandler extends AbstractProtoBufRegistryConsi
             // recover agent location with root location.
             String rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
             PlacementConfig rootPlacement = PlacementConfig.newBuilder().setLocationId(rootLocationId).build();
-            throw new EntryModification(entry.setMessage(app.toBuilder().setPlacementConfig(rootPlacement)), this);
+            throw new EntryModification(entry.setMessage(app.toBuilder().setPlacementConfig(rootPlacement), this), this);
         }
     }
 }

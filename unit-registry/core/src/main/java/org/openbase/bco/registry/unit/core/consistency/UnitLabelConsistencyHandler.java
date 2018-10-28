@@ -54,7 +54,7 @@ public class UnitLabelConsistencyHandler extends AbstractProtoBufRegistryConsist
         Label.Builder formattedLabel = LabelProcessor.format(unitConfig.getLabel().toBuilder());
         if (!unitConfig.getLabel().equals(formattedLabel.build())) {
             unitConfig.setLabel(formattedLabel);
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 }

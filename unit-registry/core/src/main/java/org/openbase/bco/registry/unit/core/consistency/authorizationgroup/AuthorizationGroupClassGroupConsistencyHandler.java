@@ -142,7 +142,7 @@ public class AuthorizationGroupClassGroupConsistencyHandler extends AbstractProt
         if (modification) {
             authorizationGroupConfig.clearMemberId();
             authorizationGroupConfig.addAllMemberId(memberIdList);
-            throw new EntryModification(entry.setMessage(authorizationGroup), this);
+            throw new EntryModification(entry.setMessage(authorizationGroup, this), this);
         }
     }
 }

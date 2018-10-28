@@ -53,7 +53,7 @@ public class DeviceBoundToHostConsistencyHandler extends AbstractProtoBufRegistr
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(deviceUnitConfig), this);
+            throw new EntryModification(entry.setMessage(deviceUnitConfig, this), this);
         }
     }
 }

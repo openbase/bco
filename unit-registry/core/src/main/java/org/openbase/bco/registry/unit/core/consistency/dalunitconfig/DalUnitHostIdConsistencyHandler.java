@@ -65,7 +65,7 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
 
             // generate host id for virtual units
             if (UnitConfigProcessor.isDalUnit(dalUnitConfig)) {
-                throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setUnitHostId(dalUnitConfig.getId())), this);
+                throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setUnitHostId(dalUnitConfig.getId()), this), this);
             }
 
             throw new VerificationFailedException("DalUnitConfig [" + dalUnitConfig + "] has no unitHostId!");

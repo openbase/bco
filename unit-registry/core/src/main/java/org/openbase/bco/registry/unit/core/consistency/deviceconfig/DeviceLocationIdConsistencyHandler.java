@@ -62,7 +62,7 @@ public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistry
         // setup base location of device has no location configured.
         if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
             unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(LocationUtils.getRootLocation(locationRegistry.getMessages()).getId()));
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
 
         // verify if configured location exists.
@@ -76,7 +76,7 @@ public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistry
             }
             // recover device location with root location.
             unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(LocationUtils.getRootLocation(locationRegistry.getMessages()).getId()));
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 

@@ -74,7 +74,7 @@ public class AuthorizationGroupAdminAndBCOConsistencyHandler extends AbstractPro
             memberIdList.add(userId);
             authorizationGroupConfig.getAuthorizationGroupConfigBuilder().clearMemberId();
             authorizationGroupConfig.getAuthorizationGroupConfigBuilder().addAllMemberId(memberIdList);
-            throw new EntryModification(entry.setMessage(authorizationGroupConfig), this);
+            throw new EntryModification(entry.setMessage(authorizationGroupConfig, this), this);
         }
     }
 }

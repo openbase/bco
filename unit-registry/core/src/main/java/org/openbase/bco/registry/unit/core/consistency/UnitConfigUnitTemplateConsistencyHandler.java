@@ -70,7 +70,7 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 

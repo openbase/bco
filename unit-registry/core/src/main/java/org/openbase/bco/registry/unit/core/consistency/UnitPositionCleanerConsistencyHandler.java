@@ -49,7 +49,7 @@ public class UnitPositionCleanerConsistencyHandler extends AbstractProtoBufRegis
             final Pose pose = unitConfig.getPlacementConfig().getPosition();
             if (pose.getTranslation().getX() == 0 && pose.getTranslation().getY() == 0 && pose.getTranslation().getZ() == 0) {
                 unitConfig.getPlacementConfigBuilder().clearPosition();
-                throw new EntryModification(entry.setMessage(unitConfig), this);
+                throw new EntryModification(entry.setMessage(unitConfig, this), this);
             }
         }
     }

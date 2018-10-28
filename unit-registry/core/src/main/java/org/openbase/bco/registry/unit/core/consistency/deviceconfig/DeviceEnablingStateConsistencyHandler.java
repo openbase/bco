@@ -69,7 +69,7 @@ public class DeviceEnablingStateConsistencyHandler extends AbstractProtoBufRegis
         if (deviceConfig.getInventoryState().getValue() != InventoryState.State.INSTALLED) {
             if (deviceUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
                 EnablingState disabled = EnablingState.newBuilder().setValue(EnablingState.State.DISABLED).build();
-                throw new EntryModification(entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(disabled)), this);
+                throw new EntryModification(entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(disabled), this), this);
             }
         }
 
@@ -77,7 +77,7 @@ public class DeviceEnablingStateConsistencyHandler extends AbstractProtoBufRegis
             oldInventoryStateMap.get(registry.isSandbox()).put(deviceUnitConfig.getId(), deviceConfig.getInventoryState().getValue());
             if (deviceConfig.getInventoryState().getValue() == InventoryState.State.INSTALLED) {
                 EnablingState enabled = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-                throw new EntryModification(entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(enabled)), this);
+                throw new EntryModification(entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(enabled), this), this);
             }
         }
     }

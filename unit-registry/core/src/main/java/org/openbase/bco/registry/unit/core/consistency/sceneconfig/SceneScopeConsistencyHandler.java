@@ -64,7 +64,7 @@ public class SceneScopeConsistencyHandler extends AbstractProtoBufRegistryConsis
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(sceneUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
-            throw new EntryModification(entry.setMessage(sceneUnitConfig.toBuilder().setScope(newScope)), this);
+            throw new EntryModification(entry.setMessage(sceneUnitConfig.toBuilder().setScope(newScope), this), this);
         }
     }
 }

@@ -70,7 +70,7 @@ public class AccessPermissionConsistencyHandler extends AbstractProtoBufRegistry
             }
 
             if (modification) {
-                throw new EntryModification(entry.setMessage(unitConfig), this);
+                throw new EntryModification(entry.setMessage(unitConfig, this), this);
             }
         }
     }

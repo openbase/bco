@@ -80,7 +80,7 @@ public class DalUnitScopeConsistencyHandler extends AbstractProtoBufRegistryCons
         unitScopeMap.put(ScopeGenerator.generateStringRep(dalUnitConfig.getScope()), dalUnitConfig.build());
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(dalUnitConfig), this);
+            throw new EntryModification(entry.setMessage(dalUnitConfig, this), this);
         }
     }
 

@@ -62,7 +62,7 @@ public class UnitGroupScopeConsistencyHandler extends AbstractProtoBufRegistryCo
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(unitGroupUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
-            entry.setMessage(unitGroupUnitConfig.toBuilder().setScope(newScope));
+            entry.setMessage(unitGroupUnitConfig.toBuilder().setScope(newScope), this);
             throw new EntryModification(entry, this);
         }
     }

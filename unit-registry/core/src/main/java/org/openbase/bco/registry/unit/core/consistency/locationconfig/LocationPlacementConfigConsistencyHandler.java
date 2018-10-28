@@ -42,7 +42,7 @@ public class LocationPlacementConfigConsistencyHandler extends AbstractProtoBufR
 
         // check if placement exists, otherwise create.
         if (!locationConfig.hasPlacementConfig()) {
-            throw new EntryModification(entry.setMessage(locationConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder())), this);
+            throw new EntryModification(entry.setMessage(locationConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder()), this), this);
         }
     }
 }

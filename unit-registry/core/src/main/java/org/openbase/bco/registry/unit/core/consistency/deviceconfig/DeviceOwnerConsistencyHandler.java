@@ -54,7 +54,7 @@ public class DeviceOwnerConsistencyHandler extends AbstractProtoBufRegistryConsi
                 !unitRegistry.contains(unitConfig.getPermissionConfig().getOwnerId())) {
             // remove unknown owner
             unitConfig.getPermissionConfigBuilder().clearOwnerId();
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
 }

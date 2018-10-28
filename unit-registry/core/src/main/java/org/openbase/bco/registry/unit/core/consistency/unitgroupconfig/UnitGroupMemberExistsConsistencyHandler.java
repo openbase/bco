@@ -92,7 +92,7 @@ public class UnitGroupMemberExistsConsistencyHandler extends AbstractProtoBufReg
         unitGroup.addAllMemberId(unitConfigsIds);
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
+            throw new EntryModification(entry.setMessage(unitGroupUnitConfig, this), this);
         }
     }
 
