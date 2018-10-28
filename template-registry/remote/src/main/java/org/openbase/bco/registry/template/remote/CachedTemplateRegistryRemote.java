@@ -65,7 +65,7 @@ public class CachedTemplateRegistryRemote {
     public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             getRegistry().reinit(REMOTE_LOCK);
-            getRegistry().requestData().get(10, TimeUnit.SECONDS);
+            getRegistry().requestData().get(30, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedTemplateRegistryRemote.class.getSimpleName() + "!", ex);
         }

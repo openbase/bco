@@ -69,7 +69,7 @@ public class CachedUnitRegistryRemote {
     public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             getRegistry().reinit(REMOTE_LOCK);
-            getRegistry().requestData().get(10, TimeUnit.SECONDS);
+            getRegistry().requestData().get(30, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedUnitRegistryRemote.class.getSimpleName() + "!", ex);
         }
