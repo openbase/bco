@@ -113,7 +113,6 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
      *
      * @param unitConfig The unitConfig which is verified.
      * @return True if the currently logged in user has read permissions and else false.
-     * @throws CouldNotPerformException It the read permissions for the unit cannot be computed.
      */
     @Override
     public boolean match(UnitConfig unitConfig) {
