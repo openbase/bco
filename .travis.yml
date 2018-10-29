@@ -46,7 +46,7 @@ after_deploy:
              ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
          curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
          # trigger upstream projects
-         sh trigger-travis.sh openbase bco.manager $TRAVIS_ACCESS_TOKEN
+         sh trigger-travis.sh openbase bco.device $TRAVIS_ACCESS_TOKEN
          sh trigger-travis.sh openbase bco.bcozy $TRAVIS_ACCESS_TOKEN
          sh trigger-travis.sh openbase bco.eveson $TRAVIS_ACCESS_TOKEN
          sh trigger-travis.sh openbase bco.ontology.lib $TRAVIS_ACCESS_TOKEN
