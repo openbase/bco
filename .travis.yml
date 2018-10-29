@@ -24,21 +24,21 @@ notifications:
         on_success: change
         rooms:
             - openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#build
-            #- openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#bco-manager
+            #- openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#bco-device
 
 deploy:
   - provider: script
     skip_cleanup: true
     script: .travis/deploy.sh
     on:
-        repo: openbase/bco.manager
+        repo: openbase/bco.device
         branch: master
         jdk: oraclejdk8
   - provider: script
     skip_cleanup: true
     script: .travis/deploy.sh
     on:
-        repo: openbase/bco.manager
+        repo: openbase/bco.device
         tags: true
         jdk: oraclejdk8
         
@@ -48,7 +48,6 @@ after_deploy:
              ($TRAVIS_PULL_REQUEST == false) &&
              ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
          curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-
          # trigger upstream projects
-         # sh trigger-travis.sh openbase bco.bcozy $TRAVIS_ACCESS_TOKEN
+         sh trigger-travis.sh openbase bco.app $TRAVIS_ACCESS_TOKEN
        fi
