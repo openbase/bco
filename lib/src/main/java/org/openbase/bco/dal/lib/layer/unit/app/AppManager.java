@@ -40,10 +40,8 @@ public interface AppManager extends HostUnitManager {
      * Note: Mainly used for accessing the controller via test routines.
      *
      * @return the controller registry.
-     *
-     * @throws NotAvailableException is thrown if the controller registry is not available.
      */
-    UnitControllerRegistry<AppController> getAppControllerRegistry() throws NotAvailableException;
+    UnitControllerRegistry<AppController> getAppControllerRegistry();
 
     /**
      * All apps will be supported by default. Feel free to overwrite method

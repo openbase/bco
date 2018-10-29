@@ -1,4 +1,4 @@
-package org.openbase.app.test.agent;
+package org.openbase.bco.dal.control.layer.unit.agent;
 
 /*
  * #%L
@@ -32,10 +32,10 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 
-public class AgentManagerLauncher extends AbstractLauncher<org.openbase.app.test.agent.AgentManagerImpl> {
+public class AgentManagerLauncher extends AbstractLauncher<AgentManagerImpl> {
 
     public AgentManagerLauncher() throws InstantiationException {
-        super(AgentManager.class, org.openbase.app.test.agent.AgentManagerImpl.class);
+        super(AgentManager.class, AgentManagerImpl.class);
     }
 
     @Override
@@ -45,10 +45,8 @@ public class AgentManagerLauncher extends AbstractLauncher<org.openbase.app.test
 
     /**
      * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+    public static void main(final String[] args) {
         BCO.printLogo();
         AbstractLauncher.main(args, AgentManager.class, AgentManagerLauncher.class);
     }

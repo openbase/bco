@@ -1,4 +1,4 @@
-package org.openbase.app.test.app;
+package org.openbase.bco.dal.control.layer.unit.app;
 
 import org.openbase.bco.dal.lib.layer.unit.app.AppManager;
 import org.openbase.bco.registry.lib.BCO;

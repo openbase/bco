@@ -40,10 +40,8 @@ public interface DeviceManager extends HostUnitManager, DeviceFactoryProvider {
      * Note: Mainly used for accessing the controller via test routines.
      *
      * @return the controller registry.
-     *
-     * @throws NotAvailableException is thrown if the controller registry is not available.
      */
-    UnitControllerRegistry<DeviceController> getDeviceControllerRegistry() throws NotAvailableException;
+    UnitControllerRegistry<DeviceController> getDeviceControllerRegistry();
 
     /**
      * Enables access of the controller registry of this manager.
@@ -51,10 +49,8 @@ public interface DeviceManager extends HostUnitManager, DeviceFactoryProvider {
      * Note: Mainly used for accessing the controller via test routines.
      *
      * @return the controller registry.
-     *
-     * @throws NotAvailableException is thrown if the controller registry is not available.
      */
-    UnitControllerRegistry<UnitController<?, ?>> getUnitControllerRegistry() throws NotAvailableException;
+    UnitControllerRegistry<UnitController<?, ?>> getUnitControllerRegistry();
 
     /**
      * All devices will be supported by default. Feel free to overwrite method

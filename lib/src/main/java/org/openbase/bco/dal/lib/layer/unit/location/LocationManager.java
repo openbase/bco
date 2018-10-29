@@ -37,8 +37,6 @@ public interface LocationManager {
      * Note: Mainly used for accessing the controller via test routines.
      *
      * @return the controller registry.
-     *
-     * @throws NotAvailableException is thrown if the controller registry is not available.
      */
     UnitControllerRegistry<LocationController> getLocationControllerRegistry();
 
@@ -48,8 +46,6 @@ public interface LocationManager {
      * Note: Mainly used for accessing the controller via test routines.
      *
      * @return the controller registry.
-     *
-     * @throws NotAvailableException is thrown if the controller registry is not available.
      */
     UnitControllerRegistry<ConnectionController> getConnectionControllerRegistry();
 }

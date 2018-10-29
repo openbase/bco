@@ -1,4 +1,4 @@
-package org.openbase.app.test.agent;
+package org.openbase.bco.dal.control.layer.unit.agent;
 
 /*
  * #%L
@@ -35,7 +35,6 @@ import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
@@ -90,7 +89,7 @@ public class AgentManagerImpl implements AgentManager, Launchable<Void>, VoidIni
     }
 
     @Override
-    public UnitControllerRegistry<AgentController> getAgentControllerRegistry() throws NotAvailableException {
+    public UnitControllerRegistry<AgentController> getAgentControllerRegistry() {
         return agentControllerRegistry;
     }
 }
