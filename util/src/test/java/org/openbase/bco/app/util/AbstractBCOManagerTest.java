@@ -21,10 +21,10 @@ package org.openbase.bco.app.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.app.test.app.AppManagerLauncher;
-import org.openbase.app.test.agent.AgentManagerLauncher;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
+import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;

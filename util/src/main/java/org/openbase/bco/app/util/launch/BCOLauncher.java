@@ -21,9 +21,9 @@ package org.openbase.bco.app.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.app.test.app.AppManagerLauncher;
-import org.openbase.app.test.agent.AgentManagerLauncher;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
+import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
+import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
 import org.openbase.bco.registry.lib.BCO;

@@ -21,6 +21,7 @@ package org.openbase.app.test.app;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.remote.layer.unit.app.AppRemote;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -47,7 +48,7 @@ public class AppRemoteTest {
     
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AppRemoteTest.class);
 
-    private static org.openbase.app.test.app.AppManagerLauncher appManagerLauncher;
+    private static AppManagerLauncher appManagerLauncher;
     private static AppRemote appRemote;
     private static MockRegistry registry;
 

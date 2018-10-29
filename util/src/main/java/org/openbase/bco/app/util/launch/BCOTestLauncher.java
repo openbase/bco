@@ -22,9 +22,9 @@ package org.openbase.bco.app.util.launch;
  * #L%
  */
 
-import org.openbase.app.test.app.AppManagerLauncher;
-import org.openbase.app.test.agent.AgentManagerLauncher;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
+import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
+import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;

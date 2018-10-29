@@ -21,6 +21,7 @@ package org.openbase.app.test.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.control.layer.unit.agent.AgentControllerFactoryImpl;
 import org.openbase.bco.dal.lib.jp.JPAgentId;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;

@@ -22,29 +22,16 @@ package org.openbase.bco.app.util.launch;
  * #L%
  */
 
-import org.openbase.app.test.agent.AgentManagerLauncher;
-import org.openbase.app.test.app.AppManagerLauncher;
-import org.openbase.bco.authentication.core.AuthenticatorLauncher;
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
-import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
-import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
-import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
-import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
-import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
-import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
