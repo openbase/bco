@@ -107,6 +107,7 @@ public class ActionImpl implements SchedulableAction {
 
     @Override
     public void init(final ActionDescription actionDescription) throws InitializationException {
+        LOGGER.info("================================================================================");
         try {
             actionDescriptionBuilder = actionDescription.toBuilder();
 
@@ -233,8 +234,6 @@ public class ActionImpl implements SchedulableAction {
             actionTask = GlobalCachedExecutorService.submit(() -> {
                 try {
                     synchronized (executionSync) {
-
-                        LOGGER.info("================================================================================");
 
                         // Initiate
                         updateActionState(ActionState.State.INITIATING);
