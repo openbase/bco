@@ -83,10 +83,18 @@ public class UnitModelPrinter {
             if (printHeader) {
                 outputConsumer.consume("/**\n" +
                         " * Unit Templates\n" +
-                        " * --> syntax: unit_template(unit_type, [service_type]).\n" +
+                        " * --> syntax: unit_template(unit_type, [service_type], physical_properties).\n" +
                         " */");
             }
             for (UnitTemplate unitTemplate : Registries.getTemplateRegistry(true).getUnitTemplates()) {
+                // detect physical properties
+                String physicalProperties;
+                try {
+                    physicalProperties = new MetaConfigVariableProvider("UnitTemplate", unitTemplate.getMetaConfig()).getValue("PHYSICAL_PROPERTIES");
+                } catch (CouldNotPerformException ex) {
+                    // if not available just leave it empty
+                    physicalProperties = "";
+                }
                 outputConsumer.consume("unit_template("
                         + unitTemplate.getType().name().toLowerCase() + ", ["
                         + StringProcessor.transformCollectionToString(
@@ -94,7 +102,8 @@ public class UnitModelPrinter {
                         serviceDescription -> serviceDescription.getServiceType().name().toLowerCase(),
                         ", ",
                         (ServiceDescription sd) -> sd.getPattern() != ServicePattern.PROVIDER)
-                        + "]).");
+                        + "], " +
+                        "[" + physicalProperties + "]).");
             }
 
             // print service type mapping
@@ -102,18 +111,11 @@ public class UnitModelPrinter {
                 outputConsumer.consume("");
                 outputConsumer.consume("/**\n" +
                         " * Service Templates\n" +
-                        " * --> syntax: service_template(service_type, [service_state_values], physical_properties).\n" +
+                        " * --> syntax: service_template(service_type, [service_state_values]).\n" +
                         " */");
             }
             for (ServiceTemplate serviceTemplate : Registries.getTemplateRegistry(true).getServiceTemplates()) {
-                // detect physical properties
-                String physicalProperties;
-                try {
-                    physicalProperties = new MetaConfigVariableProvider("ServiceTemplate", serviceTemplate.getMetaConfig()).getValue("PHYSICAL_PROPERTIES");
-                } catch (CouldNotPerformException ex) {
-                    // if not available just leave it empty
-                    physicalProperties = "";
-                }
+
                 try {
                     // print discrete service state values
                     outputConsumer.consume("service_template("
@@ -121,8 +123,7 @@ public class UnitModelPrinter {
                             Services.getServiceStateEnumValues(serviceTemplate.getType())
                             , (ProtocolMessageEnum o) -> o.getValueDescriptor().getName().toLowerCase(),
                             ", ",
-                            type -> type.getValueDescriptor().getName().equals("UNKNOWN")) + "], " +
-                            "[" + physicalProperties + "]).");
+                            type -> type.getValueDescriptor().getName().equals("UNKNOWN")) + "]).");
                 } catch (CouldNotPerformException ex) {
                     try {
                         // print continuous service state values
@@ -130,8 +131,7 @@ public class UnitModelPrinter {
                                 serviceTemplate.getType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
                                 Services.getServiceStateFieldDataTypes(serviceTemplate.getType()),
                                 (String o) -> o.toLowerCase(),
-                                ", ") + "], " +
-                                "[" + physicalProperties + "]).");
+                                ", ") + "]).");
                     } catch (CouldNotPerformException exx) {
                         try {
                             MultiException.checkAndThrow(() -> "Skip ServiceState[" + serviceTemplate.getType().name() + "]", MultiException.push(UnitModelPrinter.class, ex, MultiException.push(UnitModelPrinter.class, exx, null)));

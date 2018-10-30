@@ -701,7 +701,7 @@ public class Services extends ServiceStateProcessor {
         try {
             timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS));
         } catch (NotAvailableException ex) {
-            timestamp = "na";
+            timestamp = "-1";
         }
         for (String stateValue : resolveStateValue(serviceState)) {
             values.add(serviceType.name().toLowerCase() + ", " + timestamp + ", " + stateValue);
