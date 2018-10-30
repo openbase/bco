@@ -102,7 +102,7 @@ public class UnitModelPrinter {
                 outputConsumer.consume("");
                 outputConsumer.consume("/**\n" +
                         " * Service Templates\n" +
-                        " * --> syntax: service_template(service_type, [service_state_values]).\n" +
+                        " * --> syntax: service_template(service_type, [service_state_values], physical_properties).\n" +
                         " */");
             }
             for (ServiceTemplate serviceTemplate : Registries.getTemplateRegistry(true).getServiceTemplates()) {
@@ -150,12 +150,12 @@ public class UnitModelPrinter {
                         " * --> syntax: unit(unit_id, unit_alias, unit_type, parent_location, [labels], [operation_services], [provider_services]).\n" +
                         " */");
             }
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LOCATION)) {
-                outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
+                outputConsumer.consume( "unit("
                         + "'" + unitConfig.getId() + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
-                        + "'" + unitConfig.getPlacementConfig().getLocationId() + "', "
-                        + "'" + unitConfig.getUnitType().name().toLowerCase() + "', ["
+                        + "'" + unitConfig.getUnitType().name().toLowerCase() + "', "
+                        + "'" + unitConfig.getPlacementConfig().getLocationId() + "', ["
                         + StringProcessor.transformCollectionToString(unitConfig.getLabel().getEntryList(), mapFieldEntry -> mapFieldEntry.getKey() + "='" + mapFieldEntry.getValue(0) + "'", ", ") + "], ["
                         + StringProcessor.transformCollectionToString(unitConfig.getServiceConfigList(), serviceConfig -> "'" + serviceConfig.getServiceDescription().getServiceType().name().toLowerCase() + "'", ", ", (Filter<ServiceConfig>) serviceConfig -> serviceConfig.getServiceDescription().getPattern() == ServicePattern.OPERATION) + "], ["
                         + StringProcessor.transformCollectionToString(unitConfig.getServiceConfigList(), serviceConfig -> "'" + serviceConfig.getServiceDescription().getServiceType().name().toLowerCase() + "'", ", ", (Filter<ServiceConfig>) serviceConfig -> serviceConfig.getServiceDescription().getPattern() == ServicePattern.PROVIDER) + "]"
@@ -211,7 +211,7 @@ public class UnitModelPrinter {
                             }
                         },
                         ", ")
-                        + "], move).");
+                        + "]).");
             }
             if (printHeader) {
                 outputConsumer.consume("");

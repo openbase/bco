@@ -83,10 +83,10 @@ public class UnitStatePrinter implements DefaultInitializable {
     public void init() throws InitializationException, InterruptedException {
         try {
 
-            // print initial unit states
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
-                print(Units.getUnit(unitConfig, true));
-            }
+//            // print initial unit states
+//            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
+//                print(Units.getUnit(unitConfig, true));
+//            }
 
             customUnitPool.init();
             customUnitPool.addObserver(unitStateObserver);
@@ -126,7 +126,7 @@ public class UnitStatePrinter implements DefaultInitializable {
                 initiator = Services.getResponsibleAction(serviceState).getActionInitiator().getInitiatorType().name().toLowerCase();
             } catch (NotAvailableException ex) {
                 // in this case we use the system as initiator because responsible actions are not available for pure provider services and those are always system generated.
-                initiator = "system+";
+                initiator = "system";
             }
 
             final List<String> states = Services.generateServiceStateStringRepresentation(serviceState, serviceType);
@@ -135,7 +135,7 @@ public class UnitStatePrinter implements DefaultInitializable {
 //            }
             for (String extractServiceState : states) {
 
-                final String transition = "transition('" + unit.getId() + "', " + unit.getConfig().getAlias(0) + "', " + unit.getUnitType().name().toLowerCase() + ", " + initiator + ", " + extractServiceState + ").";
+                final String transition = "transition('" + unit.getId() + "', '" + unit.getConfig().getAlias(0) + "', " + unit.getUnitType().name().toLowerCase() + ", " + initiator + ", " + extractServiceState + ").";
                 if (printStream != null) {
                     printStream.println(transition);
                 }
