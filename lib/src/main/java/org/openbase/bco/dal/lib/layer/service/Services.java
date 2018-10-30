@@ -383,6 +383,10 @@ public class Services extends ServiceStateProcessor {
         return (Message) invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance);
     }
 
+    public static Message invokeProviderServiceMethod(final ServiceType serviceType, final ServiceTempus serviceTempus, final Object instance) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+        return (Message) invokeServiceMethod(serviceType, ServicePattern.PROVIDER, serviceTempus, instance);
+    }
+
     public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, ServicePattern.OPERATION, instance, arguments);
     }
