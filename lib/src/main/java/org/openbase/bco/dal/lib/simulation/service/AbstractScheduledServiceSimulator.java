@@ -53,7 +53,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends GeneratedMessage> extends AbstractServiceSimulator {
 
     private final static long DEFAULT_STARTUP_DELAY = 15000;
-    public static final long DEFAULT_CHANGE_RATE = TimeUnit.MINUTES.toMillis(10);
+    public static final long DEFAULT_CHANGE_RATE = TimeUnit.MINUTES.toMillis(3);
     public static final long BENCHMARK_CHANGE_RATE = 1000;
 
     protected final static Random RANDOM = new Random(System.currentTimeMillis());
