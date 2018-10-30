@@ -30,18 +30,19 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
+import org.openbase.jul.iface.Transformer;
+import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -61,7 +62,7 @@ public class BCOLogger extends UnitStatePrinter {
 
     public BCOLogger() throws InstantiationException {
         super(getTransitionPrintStream());
-        this.printStaticRelations(getModelPrintStream());
+        UnitModelPrinter.printStaticRelations(getModelPrintStream());
     }
 
     public static void main(String[] args) throws InstantiationException, InterruptedException, InitializationException {
@@ -113,111 +114,6 @@ public class BCOLogger extends UnitStatePrinter {
         } catch (FileNotFoundException | JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Error while loading transitions file, use system out instead.", ex, LOGGER);
             return System.out;
-        }
-    }
-
-    private void printStaticRelations(final PrintStream printStream) {
-        try {
-            // print unit templates
-            printStream.println("/**\n" +
-                    " * Unit Templates\n" +
-                    " * --> syntax: unit(unit_type, [service_type]).\n" +
-                    " */");
-            for (UnitTemplate unitTemplate : Registries.getTemplateRegistry(true).getUnitTemplates()) {
-                printStream.println("unit("
-                        + unitTemplate.getType().name().toLowerCase() + ", ["
-                        + StringProcessor.transformCollectionToString(
-                        unitTemplate.getServiceDescriptionList(),
-                        serviceDescription -> serviceDescription.getServiceType().name().toLowerCase(),
-                        ", ",
-                        (ServiceDescription sd) -> sd.getPattern() != ServicePattern.PROVIDER)
-                        + "]).");
-            }
-            printStream.println();
-
-            // print service type mapping
-            printStream.println("/**\n" +
-                    " * Service Templates\n" +
-                    " * --> syntax: service(service_type, [service_state_values]).\n" +
-                    " */");
-            for (ServiceTemplate serviceTemplate : Registries.getTemplateRegistry(true).getServiceTemplates()) {
-                try {
-                    // print discrete service state values
-                    printStream.println("service("
-                            + serviceTemplate.getType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
-                            Services.getServiceStateEnumValues(serviceTemplate.getType())
-                            , (ProtocolMessageEnum o) -> o.getValueDescriptor().getName().toLowerCase(),
-                            ", ",
-                            type -> type.getValueDescriptor().getName().equals("UNKNOWN"))
-                            + "]).");
-                } catch (CouldNotPerformException ex) {
-                    try {
-                        // print continuous service state values
-                        printStream.println("service(" +
-                                serviceTemplate.getType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
-                                Services.getServiceStateFieldDataTypes(serviceTemplate.getType()),
-                                (String o) -> o.toLowerCase(),
-                                ", "
-                        ) + "]).");
-                    } catch (CouldNotPerformException exx) {
-                        try {
-                            MultiException.checkAndThrow(() -> "Skip ServiceState[" + serviceTemplate.getType().name() + "]", MultiException.push(this, ex, MultiException.push(this, exx, null)));
-                        } catch (CouldNotPerformException exxx) {
-                            ExceptionPrinter.printHistory(exxx, LOGGER, LogLevel.WARN);
-                        }
-                    }
-                }
-            }
-            printStream.println();
-
-            // print locations
-            printStream.println("/**\n" +
-                    " * Locations\n" +
-                    " * --> syntax: location(unit_id, unit_alias, location_type, [labels]).\n" +
-                    " */");
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LOCATION)) {
-                printStream.println(unitConfig.getUnitType().name().toLowerCase() + "("
-                        + "'" + unitConfig.getId() + "', "
-                        + "'" + unitConfig.getAlias(0) + "', "
-                        + "'" + unitConfig.getLocationConfig().getType().name().toLowerCase() + "', ["
-                        + StringProcessor.transformCollectionToString(
-                        unitConfig.getLabel().getEntryList(),
-                        mapFieldEntry -> mapFieldEntry.getKey() + "='" + mapFieldEntry.getValue(0) + "'",
-                        ", ")
-                        + "]).");
-            }
-            printStream.println();
-
-            // print connections
-            printStream.println("/**\n" +
-                    " * Connections\n" +
-                    " * --> syntax: connection(unit_id, unit_alias, connection_type, [labels], [locations]).\n" +
-                    " */");
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.CONNECTION)) {
-                printStream.println(unitConfig.getUnitType().name().toLowerCase() + "("
-                        + "'" + unitConfig.getId() + "', "
-                        + "'" + unitConfig.getAlias(0) + "', "
-                        + "'" + unitConfig.getConnectionConfig().getType().name().toLowerCase() + "', ["
-                        + StringProcessor.transformCollectionToString(
-                        unitConfig.getLabel().getEntryList(),
-                        mapFieldEntry -> mapFieldEntry.getKey() + "='" + mapFieldEntry.getValue(0) + "'",
-                        ", ")
-                        + "], ["
-                        + StringProcessor.transformCollectionToString(
-                        unitConfig.getConnectionConfig().getTileIdList(),
-                        tile_id -> {
-                            try {
-                                return "'" + Registries.getUnitRegistry().getUnitConfigById(tile_id, UnitType.LOCATION).getId() + "'";
-                            } catch (CouldNotPerformException e) {
-                                return "na";
-                            }
-                        },
-                        ", ")
-                        + "], move).");
-            }
-            printStream.println();
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory("Could not print unit templates.", ex, LOGGER);
         }
     }
 }

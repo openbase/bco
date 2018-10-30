@@ -23,8 +23,6 @@ package org.openbase.bco.dal.remote.printer;
  */
 
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -39,22 +37,15 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.DefaultInitializable;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.pattern.consumer.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
 import java.io.PrintStream;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Objects;
 
 public class UnitStatePrinter implements DefaultInitializable {
 
@@ -63,10 +54,24 @@ public class UnitStatePrinter implements DefaultInitializable {
     private final CustomUnitPool customUnitPool;
     private final Observer<ServiceStateProvider<Message>, Message> unitStateObserver;
     private final PrintStream printStream;
+    private final Consumer<String> outputConsumer;
+    private boolean headerPrinted = false;
 
     public UnitStatePrinter(final PrintStream printStream, final Filter<UnitConfig>... filters) throws InstantiationException {
         try {
+            this.outputConsumer = null;
             this.printStream = printStream;
+            this.customUnitPool = new CustomUnitPool(filters);
+            this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
+    public UnitStatePrinter(final Consumer<String> outputConsumer, final Filter<UnitConfig>... filters) throws InstantiationException {
+        try {
+            this.outputConsumer = outputConsumer;
+            this.printStream = null;
             this.customUnitPool = new CustomUnitPool(filters);
             this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
         } catch (CouldNotPerformException ex) {
@@ -77,6 +82,12 @@ public class UnitStatePrinter implements DefaultInitializable {
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
+
+            // print initial unit states
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
+                print(Units.getUnit(unitConfig, true));
+            }
+
             customUnitPool.init();
             customUnitPool.addObserver(unitStateObserver);
         } catch (CouldNotPerformException ex) {
@@ -84,7 +95,11 @@ public class UnitStatePrinter implements DefaultInitializable {
         }
     }
 
-    private void print(Unit unit, Message data) {
+    private void print(Unit<?> unit) throws NotAvailableException {
+        print(unit, unit.getData());
+    }
+
+    private void print(Unit<?> unit, Message data) {
         try {
             for (ServiceDescription serviceDescription : unit.getUnitTemplate().getServiceDescriptionList()) {
                 print(unit, serviceDescription.getServiceType(), data);
@@ -94,20 +109,18 @@ public class UnitStatePrinter implements DefaultInitializable {
         }
     }
 
-    private boolean headerPrinted = false;
 
-    private void print(Unit unit, ServiceType serviceType, Message serviceState) {
+    private void print(Unit<?> unit, ServiceType serviceType, Message serviceState) {
 
         // print header
-        if (!headerPrinted) {
+        if (printStream != null && !headerPrinted) {
             headerPrinted = true;
             printStream.println("/**\n" +
                     " * Service State Transitions\n" +
-                    " * --> syntax: transition(unit_id, unit_type, initiator[system/user], service_state, [service_value]).\n" +
+                    " * --> syntax: transition(unit_id, unit_alias, unit_type, initiator[system/user], service_type, timestamp, service_value_type=service_value).\n" +
                     " */");
         }
         try {
-
             String initiator;
             try {
                 initiator = Services.getResponsibleAction(serviceState).getActionInitiator().getInitiatorType().name().toLowerCase();
@@ -121,7 +134,15 @@ public class UnitStatePrinter implements DefaultInitializable {
 //                printStream.println("===========================================================================================================");
 //            }
             for (String extractServiceState : states) {
-                printStream.println("transition('" + unit.getId() + "', " + unit.getUnitType().name().toLowerCase() + ", " +initiator + ", " + extractServiceState + ").");
+
+                final String transition = "transition('" + unit.getId() + "', " + unit.getConfig().getAlias(0) + "', " + unit.getUnitType().name().toLowerCase() + ", " + initiator + ", " + extractServiceState + ").";
+                if (printStream != null) {
+                    printStream.println(transition);
+                }
+
+                if (outputConsumer != null) {
+                    outputConsumer.consume(transition);
+                }
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not print " + serviceType.name() + " of " + unit, ex, LOGGER);
