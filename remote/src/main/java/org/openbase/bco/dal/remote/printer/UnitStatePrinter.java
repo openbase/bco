@@ -23,9 +23,12 @@ package org.openbase.bco.dal.remote.printer;
  */
 
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
@@ -41,7 +44,9 @@ import org.openbase.jul.pattern.consumer.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.PrintStream;
@@ -82,21 +87,28 @@ public class UnitStatePrinter implements DefaultInitializable {
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
+            // print initial unit states
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
+                final UnitRemote<?> unit = Units.getUnit(unitConfig, true);
 
-//            // print initial unit states
-//            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
-//                print(Units.getUnit(unitConfig, true));
-//            }
+                try {
+                    for (ServiceDescription serviceDescription : unit.getUnitTemplate().getServiceDescriptionList()) {
+
+                        if(serviceDescription.getPattern() != ServicePattern.PROVIDER) {
+                            continue;
+                        }
+                        print(unit, serviceDescription.getServiceType(), Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), ServiceTempus.CURRENT, unit));
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not print " + unit, ex, LOGGER);
+                }
+            }
 
             customUnitPool.init();
             customUnitPool.addObserver(unitStateObserver);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-    }
-
-    private void print(Unit<?> unit) throws NotAvailableException {
-        print(unit, unit.getData());
     }
 
     private void print(Unit<?> unit, Message data) {
