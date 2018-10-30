@@ -24,6 +24,8 @@ package org.openbase.bco.app.util.launch;
 
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
+import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.lib.BCO;
@@ -75,6 +77,7 @@ public class BCOTrainDataGeneratorLauncher {
             final int trainingSetCounter = 10;
             int conditionCounter = 0;
             LocationRemote location = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("location-3"), true, Units.LOCATION);
+            ColorableLightRemote light = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("ColorableLight-5"), true, Units.COLORABLE_LIGHT);
             final ActionDescription absentState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     PresenceState.newBuilder().setValue(State.ABSENT).build(),
                     ServiceType.PRESENCE_STATE_SERVICE,
@@ -105,11 +108,13 @@ public class BCOTrainDataGeneratorLauncher {
                             // and after a while
                             waitBetweenActions();
                             // they is switching the light off.
-                            location.setPowerState(PowerState.State.OFF, UnitType.LIGHT).get();
+//                            location.setPowerState(PowerState.State.OFF, UnitType.LIGHT).get();
+                            light.setPowerState(PowerState.State.OFF).get();
                         } else {
 
                             // human is switching the light off.
-                            location.setPowerState(PowerState.State.OFF, UnitType.LIGHT).get();
+//                            location.setPowerState(PowerState.State.OFF, UnitType.LIGHT).get();
+                            light.setPowerState(PowerState.State.OFF).get();
                             // and after a while
                             waitBetweenActions();
                             // they is leaving the room
@@ -124,10 +129,12 @@ public class BCOTrainDataGeneratorLauncher {
                             // and after a while
                             waitBetweenActions();
                             // they is switching the light on.
-                            location.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
+//                            location.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
+                            light.setPowerState(PowerState.State.ON).get();
                         } else {
                             // human is switching the light on
-                            location.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
+//                            location.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
+                            light.setPowerState(PowerState.State.ON).get();
                             // and after a while
                             waitBetweenActions();
                             // they is entering the room
@@ -146,7 +153,9 @@ public class BCOTrainDataGeneratorLauncher {
             LOGGER.info("generate canceled by user.");
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Training data generation failed!", ex, LOGGER);
+            System.exit(1);
         }
+        System.exit(0);
     }
 
     private static void waitBetweenActions() throws InterruptedException {
