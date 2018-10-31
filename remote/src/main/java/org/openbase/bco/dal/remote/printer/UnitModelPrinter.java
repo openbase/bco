@@ -90,7 +90,10 @@ public class UnitModelPrinter {
                 // detect physical properties
                 String physicalProperties;
                 try {
+                    // lookup
                     physicalProperties = new MetaConfigVariableProvider("UnitTemplate", unitTemplate.getMetaConfig()).getValue("PHYSICAL_PROPERTIES");
+                    // format
+                    physicalProperties = physicalProperties.toLowerCase().replaceAll(",", ", ");
                 } catch (CouldNotPerformException ex) {
                     // if not available just leave it empty
                     physicalProperties = "";
