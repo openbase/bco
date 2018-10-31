@@ -160,8 +160,8 @@ public class UnitModelPrinter {
                         + "'" + unitConfig.getUnitType().name().toLowerCase() + "', "
                         + "'" + unitConfig.getPlacementConfig().getLocationId() + "', ["
                         + StringProcessor.transformCollectionToString(unitConfig.getLabel().getEntryList(), mapFieldEntry -> mapFieldEntry.getKey() + "='" + mapFieldEntry.getValue(0) + "'", ", ") + "], ["
-                        + StringProcessor.transformCollectionToString(unitConfig.getServiceConfigList(), serviceConfig -> "'" + serviceConfig.getServiceDescription().getServiceType().name().toLowerCase() + "'", ", ", (Filter<ServiceConfig>) serviceConfig -> serviceConfig.getServiceDescription().getPattern() == ServicePattern.OPERATION) + "], ["
-                        + StringProcessor.transformCollectionToString(unitConfig.getServiceConfigList(), serviceConfig -> "'" + serviceConfig.getServiceDescription().getServiceType().name().toLowerCase() + "'", ", ", (Filter<ServiceConfig>) serviceConfig -> serviceConfig.getServiceDescription().getPattern() == ServicePattern.PROVIDER) + "]"
+                        + StringProcessor.transformCollectionToString(unitConfig.getServiceConfigList(), serviceConfig -> "'" + serviceConfig.getServiceDescription().getServiceType().name().toLowerCase() + "'", ", ", (Filter<ServiceConfig>) serviceConfig -> serviceConfig.getServiceDescription().getPattern() != ServicePattern.OPERATION) + "], ["
+                        + StringProcessor.transformCollectionToString(unitConfig.getServiceConfigList(), serviceConfig -> "'" + serviceConfig.getServiceDescription().getServiceType().name().toLowerCase() + "'", ", ", (Filter<ServiceConfig>) serviceConfig -> serviceConfig.getServiceDescription().getPattern() != ServicePattern.PROVIDER) + "]"
                         + ")."
                 );
             }
