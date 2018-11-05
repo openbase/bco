@@ -22,9 +22,17 @@ package org.openbase.bco.device.openhab.manager;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
+import org.openbase.bco.dal.remote.printer.jp.JPOutputDirectory;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBThreadPooling;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDeviceManager> {
@@ -36,6 +44,13 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
     @Override
     protected void loadProperties() {
         JPService.registerProperty(JPOpenHABURI.class);
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPCredentialsDirectory.class);
+        JPService.registerProperty(JPRSBHost.class);
+        JPService.registerProperty(JPRSBPort.class);
+        JPService.registerProperty(JPRSBTransport.class);
+        JPService.registerProperty(JPUnitAllocation.class);
+        JPService.registerProperty(JPRSBThreadPooling.class);
     }
 
     /**
