@@ -81,12 +81,12 @@ public class ActivationStateSceneMapper extends AbstractServiceStateTraitMapper<
 
     @Override
     public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) {
-        switch (unitConfig.getUnitType()) {
-            case SCENE:
-                jsonObject.addProperty(REVERSIBLE_KEY, false);
-                break;
-            default:
-                jsonObject.addProperty(REVERSIBLE_KEY, true);
-        }
+//        switch (unitConfig.getUnitType()) {
+//            case SCENE:
+//                jsonObject.addProperty(REVERSIBLE_KEY, false);
+//                break;
+//            default:
+        jsonObject.addProperty(REVERSIBLE_KEY, true);
+//        }
     }
 }
