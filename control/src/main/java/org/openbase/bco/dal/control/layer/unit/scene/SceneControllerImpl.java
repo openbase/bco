@@ -23,10 +23,10 @@ package org.openbase.bco.dal.control.layer.unit.scene;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.scene.SceneController;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.dal.lib.layer.unit.scene.SceneController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -60,6 +60,7 @@ import java.util.logging.Logger;
  */
 public class SceneControllerImpl extends AbstractExecutableBaseUnitController<SceneData, SceneData.Builder> implements SceneController {
 
+
     public static final long ACTION_EXECUTION_TIMEOUT = 15000;
 
     static {
@@ -71,13 +72,15 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     private final Object buttonObserverLock = new SyncObject("ButtonObserverLock");
     private final Set<ButtonRemote> buttonRemoteSet;
     private final Observer<DataProvider<ButtonData>, ButtonData> buttonObserver;
-    private final RemoteActionPool remoteActionPool;
+    private final RemoteActionPool requiredActionPool;
+    private final RemoteActionPool optionalActionPool;
 
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
         this.buttonRemoteSet = new HashSet<>();
-        this.remoteActionPool = new RemoteActionPool(this);
+        this.requiredActionPool = new RemoteActionPool(this);
+        this.optionalActionPool = new RemoteActionPool(this);
         this.buttonObserver = (final DataProvider<ButtonData> source, ButtonData data) -> {
 
             // skip initial button state synchronization during system startup
@@ -141,12 +144,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
         }
-
-        final List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>();
-        serviceStateDescriptionList.addAll(config.getSceneConfig().getRequiredServiceStateDescriptionList());
-        serviceStateDescriptionList.addAll(config.getSceneConfig().getOptionalServiceStateDescriptionList());
-        remoteActionPool.initViaServiceStateDescription(serviceStateDescriptionList);
-
+        requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList());
+        optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList());
         return config;
     }
 
@@ -174,13 +173,15 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     @Override
     protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Execute: {}", LabelProcessor.getBestMatch(getConfig().getLabel()));
-        remoteActionPool.execute(activationState.getResponsibleAction());
+        requiredActionPool.execute(activationState.getResponsibleAction());
+        optionalActionPool.execute(activationState.getResponsibleAction());
     }
 
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Stop: {}", LabelProcessor.getBestMatch(getConfig().getLabel()));
-        remoteActionPool.stop();
+        requiredActionPool.stop();
+        optionalActionPool.stop();
     }
 
     @Override
