@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/../bco.dal" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.dal/control" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.dal/example" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.dal/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.dal/remote" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.dal/task" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.dal/test" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.dal/visual" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../bco.device" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../bco.device/openhab" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app" charset="UTF-8" />
@@ -97,6 +105,5 @@
     <file url="file://$PROJECT_DIR$/module/jul/visual" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/visual/javafx" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/visual/swing" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/openhab-binding-rsb" charset="UTF-8" />
   </component>
 </project>

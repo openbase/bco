@@ -9,12 +9,12 @@
         <module name="authentication.core" />
         <module name="authentication.lib" />
         <module name="authentication.test" />
-        <module name="bco" />
         <module name="bco.app.cloud.connector" />
         <module name="bco.app.manager" />
         <module name="bco.app.preset" />
         <module name="bco.app.test" />
         <module name="bco.app.util" />
+        <module name="bco.authentication" />
         <module name="bco.authentication.core" />
         <module name="bco.authentication.lib" />
         <module name="bco.authentication.test" />
@@ -23,7 +23,6 @@
         <module name="bco.dal.example" />
         <module name="bco.dal.lib" />
         <module name="bco.dal.remote" />
-        <module name="bco.dal.remote (1)" />
         <module name="bco.dal.task" />
         <module name="bco.dal.test" />
         <module name="bco.dal.visual" />
@@ -149,7 +148,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="bco" target="1.8" />
-      <module name="bco.app" target="1.8" />
+      <module name="bco.app and modules.bco.app" target="1.8" />
       <module name="bco.app.cloud.connector" target="1.8" />
       <module name="bco.app.manager" target="1.8" />
       <module name="bco.app.openhab" target="1.8" />
@@ -162,14 +161,25 @@
       <module name="bco.authentication.test" target="1.8" />
       <module name="bco.bcozy" target="1.8" />
       <module name="bco.dal" target="1.8" />
+      <module name="bco.dal and modules.bco.dal.remote" target="1.8" />
+      <module name="bco.dal and modules.bco.dal.task" target="1.8" />
+      <module name="bco.dal and modules.bco.dal.test" target="1.8" />
+      <module name="bco.dal and modules.bco.dal.visual" target="1.8" />
       <module name="bco.dal.control" target="1.8" />
+      <module name="bco.dal.control (1)" target="1.8" />
+      <module name="bco.dal.control (2)" target="1.8" />
       <module name="bco.dal.example" target="1.8" />
+      <module name="bco.dal.example (2)" target="1.8" />
       <module name="bco.dal.lib" target="1.8" />
+      <module name="bco.dal.lib (2)" target="1.8" />
       <module name="bco.dal.remote" target="1.8" />
-      <module name="bco.dal.remote (1)" target="1.8" />
+      <module name="bco.dal.remote (2)" target="1.8" />
       <module name="bco.dal.task" target="1.8" />
+      <module name="bco.dal.task (2)" target="1.8" />
       <module name="bco.dal.test" target="1.8" />
+      <module name="bco.dal.test (2)" target="1.8" />
       <module name="bco.dal.visual" target="1.8" />
+      <module name="bco.dal.visual (2)" target="1.8" />
       <module name="bco.device" target="1.8" />
       <module name="bco.device.openhab" target="1.8" />
       <module name="bco.eveson" target="1.8" />
@@ -217,23 +227,51 @@
       <module name="bco.manager.user.test" target="1.8" />
       <module name="bco.manager.util" target="1.8" />
       <module name="bco.ontology" target="1.8" />
+      <module name="bco.ontology and modules.bco.ontology.visual" target="1.8" />
       <module name="bco.ontology.lib" target="1.8" />
       <module name="bco.ontology.owl" target="1.8" />
       <module name="bco.ontology.visual" target="1.8" />
-      <module name="bco.psc" target="1.5" />
+      <module name="bco.psc and modules.bco.psc" target="1.5" />
+      <module name="bco.psc and modules.bco.psc.control" target="1.8" />
+      <module name="bco.psc and modules.bco.psc.identification" target="1.8" />
+      <module name="bco.psc and modules.bco.psc.lib" target="1.8" />
+      <module name="bco.psc and modules.bco.psc.ray-extractor" target="1.8" />
+      <module name="bco.psc and modules.bco.psc.skeleton-merging" target="1.8" />
+      <module name="bco.psc and modules.bco.psc.util" target="1.8" />
       <module name="bco.psc.control" target="1.8" />
       <module name="bco.psc.identification" target="1.8" />
       <module name="bco.psc.lib" target="1.8" />
       <module name="bco.psc.ray-extractor" target="1.8" />
       <module name="bco.psc.skeleton-merging" target="1.8" />
       <module name="bco.psc.util" target="1.8" />
-      <module name="bco.registry" target="1.8" />
-      <module name="bco.registry.activity" target="1.8" />
+      <module name="bco.registry and modules.bco.registry" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.activity and modules.bco.registry.activity" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.activity and modules.bco.registry.activity.core" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.activity and modules.bco.registry.activity.lib" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.activity and modules.bco.registry.activity.remote" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.activity and modules.bco.registry.activity.test" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.class and modules.bco.registry.class" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.class and modules.bco.registry.class.core" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.class and modules.bco.registry.class.lib" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.class and modules.bco.registry.class.remote" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.class and modules.bco.registry.class.test" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.lib" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.remote" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.template and modules.bco.registry.template" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.template and modules.bco.registry.template.core" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.template and modules.bco.registry.template.lib" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.template and modules.bco.registry.template.remote" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.template and modules.bco.registry.template.test" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.unit and modules.bco.registry.unit" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.unit and modules.bco.registry.unit.core" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.unit and modules.bco.registry.unit.lib" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.unit and modules.bco.registry.unit.remote" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.unit and modules.bco.registry.unit.test" target="1.8" />
+      <module name="bco.registry and modules.bco.registry.util" target="1.8" />
       <module name="bco.registry.activity.core" target="1.8" />
       <module name="bco.registry.activity.lib" target="1.8" />
       <module name="bco.registry.activity.remote" target="1.8" />
       <module name="bco.registry.activity.test" target="1.8" />
-      <module name="bco.registry.class" target="1.8" />
       <module name="bco.registry.class.core" target="1.8" />
       <module name="bco.registry.class.lib" target="1.8" />
       <module name="bco.registry.class.remote" target="1.8" />
@@ -241,12 +279,10 @@
       <module name="bco.registry.editor" target="1.8" />
       <module name="bco.registry.lib" target="1.8" />
       <module name="bco.registry.remote" target="1.8" />
-      <module name="bco.registry.template" target="1.8" />
       <module name="bco.registry.template.core" target="1.8" />
       <module name="bco.registry.template.lib" target="1.8" />
       <module name="bco.registry.template.remote" target="1.8" />
       <module name="bco.registry.template.test" target="1.8" />
-      <module name="bco.registry.unit" target="1.8" />
       <module name="bco.registry.unit.core" target="1.8" />
       <module name="bco.registry.unit.lib" target="1.8" />
       <module name="bco.registry.unit.remote" target="1.8" />
