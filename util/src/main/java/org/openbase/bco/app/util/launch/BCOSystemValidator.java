@@ -118,7 +118,7 @@ public class BCOSystemValidator {
                     try {
                         return trueFirstBooleanComparator.compare(unitRemote.isDalUnit(), t1.isDalUnit());
                     } catch (CouldNotPerformException ex) {
-                        LOGGER.warn("Could not compare unit[" + unitRemote + "] and unit[" + t1 + "]", ex);
+                        ExceptionPrinter.printHistory("Could not compare unit[" + unitRemote + "] and unit[" + t1 + "]", ex, LOGGER, LogLevel.WARN);
                         return 0;
                     }
                 });
