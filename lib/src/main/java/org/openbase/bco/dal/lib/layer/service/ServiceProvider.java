@@ -55,17 +55,57 @@ public interface ServiceProvider<ST extends Message> {
     @RPCMethod(legacy = true)
     Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
 
+    /**
+     * Method applies the action on this instance.
+     *
+     * @param actionDescriptionBuilder the description builder of the action.
+     *
+     * @return a future which gives feedback about the action execution state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be applied.
+     */
     default Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
         return applyAction(actionDescriptionBuilder.build());
     }
 
+    /**
+     * Method applies the action on this instance.
+     *
+     * @param actionParameter the needed parameters to generate a new action.
+     *
+     * @return a future which gives feedback about the action execution state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be applied.
+     */
     default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
     }
 
+    /**
+     * Method enables the registration of an observer which is notified in case the service state changes.
+     *
+     * @param serviceType the type of service to observe.
+     * @param observer    the observer to inform about changes.
+     */
     void addServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer);
 
+    /**
+     * Method remove an already registered service state observer.
+     * The call just returns without any action in case the given observer was never registered.
+     *
+     * @param serviceType the service type where the observer was registered on.
+     * @param observer    the observer to remove.
+     */
     void removeServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer);
 
+    /**
+     * Method returns the current service state of the referred {@code service type}.
+     *
+     * @param serviceType the type to define the service.
+     *
+     * @return the current service state.
+     *
+     * @throws NotAvailableException is thrown if the current service state is unknown.
+     */
     ST getServiceState(final ServiceType serviceType) throws NotAvailableException;
 }

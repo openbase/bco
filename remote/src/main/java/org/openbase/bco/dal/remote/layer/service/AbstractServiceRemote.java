@@ -55,7 +55,9 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -83,6 +85,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private boolean active;
     private boolean filterInfrastructureUnits;
     private final ServiceType serviceType;
+    private ServiceTemplate serviceTemplate;
     private long connectionPing;
     private final Class<ST> serviceDataClass;
     private final Map<String, UnitRemote<?>> unitRemoteMap;
@@ -288,6 +291,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Note: Method blocks until the template registry is available to resolve further properties.
      *
      * @param unitConfig {@inheritDoc}
      *
@@ -318,7 +323,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             if (!unitRemoteTypeMap.containsKey(unitRemote.getUnitType())) {
                 unitRemoteTypeMap.put(unitRemote.getUnitType(), new ArrayList());
-                for (UnitType superType : Registries.getTemplateRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                for (UnitType superType : Registries.getTemplateRegistry(true).getSuperUnitTypes(unitRemote.getUnitType())) {
                     if (!unitRemoteTypeMap.containsKey(superType)) {
                         unitRemoteTypeMap.put(superType, new ArrayList<>());
                     }
@@ -745,7 +750,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
         try {
             // generate builder
-            final Message.Builder stateBuilder = Services.generateServiceStateBuilder(getServiceType(), neutralState);
+            final Message.Builder stateBuilder = Services.generateServiceStateBuilder(getCommunicationType(), neutralState);
 
             // lookup field descriptors
             final FieldDescriptor valueDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
@@ -774,7 +779,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 }
 
                 // handle state
-                final Message state = (Message) Services.invokeProviderServiceMethod(getServiceType(), service);
+                final Message state = Services.invokeProviderServiceMethod(getServiceType(), service);
                 if (state.getField(valueDescriptor).equals(effectiveState.getValueDescriptor())) {
                     stateBuilder.setField(valueDescriptor, state.getField(valueDescriptor));
                 }
@@ -1051,6 +1056,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceType {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws NotAvailableException {@inheritDoc}
+     */
     @Override
     public ST getServiceState(ServiceType serviceType) throws NotAvailableException {
         if (serviceType != this.serviceType) {
@@ -1059,8 +1073,25 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         return getData();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public ServiceProvider getServiceProvider() {
         return this;
+    }
+
+    public ServiceTemplate getServiceTemplate() throws NotAvailableException {
+        if(serviceTemplate == null) {
+            // setup service template
+            try {
+                serviceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(serviceType);
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("ServiceRemote", "ServiceTemplate", ex);
+            }
+        }
+        return serviceTemplate;
     }
 }

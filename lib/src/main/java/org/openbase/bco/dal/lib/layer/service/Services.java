@@ -196,6 +196,22 @@ public class Services extends ServiceStateProcessor {
     }
 
     /**
+     * Method generates a new service state builder related to the given {@code comman}.
+     *
+     * @param communicationType the communication type of the service state.
+     *
+     * @throws CouldNotPerformException is thrown if something went wrong during the generation.
+     */
+    public static GeneratedMessage.Builder generateServiceStateBuilder(final CommunicationType communicationType) throws CouldNotPerformException {
+        try {
+            // create new service state builder
+            return (GeneratedMessage.Builder) Services.getServiceStateClass(communicationType).getMethod("newBuilder").invoke(null);
+        } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
+            throw new CouldNotPerformException("Could not generate service state builder from CommunicationType[" + communicationType + "]!", ex);
+        }
+    }
+
+    /**
      * Method generates a new service state builder related to the given {@code serviceType}.
      *
      * @param serviceType the service type of the service state.
@@ -237,6 +253,34 @@ public class Services extends ServiceStateProcessor {
             throw new CouldNotPerformException("Could not build service state!", ex);
         }
     }
+
+    /**
+     * Method generates a new service state builder related to the given {@code serviceType} and initializes this instance with the given {@code stateValue}.
+     *
+     * @param <SC>        the service class of the service state.
+     * @param <SV>        the state enum of the service.
+     * @param communicationType the communication type of the service state.
+     * @param stateValue  a compatible state value related to the given service state.
+     *
+     * @return a new service state initialized with the state value.
+     *
+     * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
+     */
+    public static <SC extends GeneratedMessage.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final CommunicationType communicationType, SV stateValue) throws CouldNotPerformException {
+        try {
+            // create new service state builder
+            GeneratedMessage.Builder serviceStateBuilder = generateServiceStateBuilder(communicationType);
+
+            // set service state value
+            serviceStateBuilder.getClass().getMethod("setValue", stateValue.getClass()).invoke(serviceStateBuilder, stateValue);
+
+            // return
+            return (SC) serviceStateBuilder;
+        } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
+            throw new CouldNotPerformException("Could not build service state!", ex);
+        }
+    }
+
 
     /**
      * Method builds a new service state related to the given {@code serviceType} and initializes this instance with the given {@code stateValue}.
@@ -329,7 +373,6 @@ public class Services extends ServiceStateProcessor {
             throw new CouldNotPerformException("Could not detect service method[" + messageName + "]!", ex);
         }
     }
-
 
     public static Method detectServiceMethod(final ServiceDescription description, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         return detectServiceMethod(description, ServiceTempus.CURRENT, instanceClass, argumentClasses);

@@ -40,6 +40,8 @@ import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -76,7 +78,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      *
      * @return an unmodifiable collection of unit remotes limited limited to the type and service interface.
      *
-     * @throws NotAvailableException          thrown if the type of an internally used unit remote is not available
+     * @throws NotAvailableException thrown if the type of an internally used unit remote is not available
      */
     Collection<UnitRemote> getInternalUnits(UnitType unitType) throws CouldNotPerformException;
 
@@ -103,6 +105,12 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      */
     Collection<S> getServices(final UnitType unitType);
 
+
+    /**
+     * Method returns true if this service remote is already connected to any unit remotes to observe service states.
+     *
+     * @return true if connected to any unit remotes, otherwise false.
+     */
     boolean hasInternalRemotes();
 
     /**
@@ -150,7 +158,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
     void removeUnit(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
 
     /**
-     * Method blocks until an initial data message was dataObserverreceived from every remote controller.
+     * Method blocks until an initial data message was received from every remote controller.
      *
      * @throws CouldNotPerformException is thrown if any error occurs.
      * @throws InterruptedException     is thrown in case the thread is externally interrupted.
@@ -170,6 +178,14 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
     @Override
     void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param waitForData {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
+     */
     @Override
     default void activate(boolean waitForData) throws CouldNotPerformException, InterruptedException {
         activate();
@@ -283,5 +299,25 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
     @Override
     default Future<ActionDescription> applyAction(final ActionDescription actionDescriptionBuilder) throws CouldNotPerformException {
         return applyAction(actionDescriptionBuilder.toBuilder());
+    }
+
+    /**
+     * Method returns the service template of the service represented by this service remote.
+     *
+     * @return the service template.
+     *
+     * @throws NotAvailableException is thrown if the service template is not yet available. This is the case when the template registry is offline or not connected yet.
+     */
+    ServiceTemplate getServiceTemplate() throws NotAvailableException;
+
+    /**
+     * Method returns the communication type of this service remote.
+     *
+     * @return the communication type of the remote.
+     *
+     * @throws NotAvailableException is thrown if the service template is not available to resolve the communication type.
+     */
+    default CommunicationType getCommunicationType() throws NotAvailableException {
+        return getServiceTemplate().getCommunicationType();
     }
 }
