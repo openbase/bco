@@ -29,6 +29,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -78,7 +80,7 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
         } catch (InvalidStateException ex) {
             // registry already shutting down during removal which will clear the entries anyway.
         } catch (MultiException ex) {
-            logger.warn("Could not deregister all unit controller during shutdown!", ex);
+            ExceptionPrinter.printHistory("Could not deregister all unit controller during shutdown!", ex, logger, LogLevel.WARN);
         }
         super.shutdown();
     }

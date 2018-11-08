@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
@@ -136,11 +137,9 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                     HSBColor hsbColor = HSBColor.newBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness).build();
                     neutralWhite = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsbColor).build();
                 } catch (CouldNotPerformException ex) {
-                    logger.warn("Could not parse [" + neutralWhiteString + "] as neutral white! Please define as <h, s, b>", ex);
-                    throw new NotAvailableException("NeutralWhite");
+                    throw new NotAvailableException("Color", "NeutralWhite", new CouldNotPerformException("Could not parse [" + neutralWhiteString + "] as neutral white! Please define as <h, s, b>"));
                 } catch (NumberFormatException ex) {
-                    logger.warn("Could not parse [" + neutralWhiteString + "] as doubles and thus as NeutralWhite!", ex);
-                    throw new NotAvailableException("NeutralWhite");
+                    throw new NotAvailableException("Color", "NeutralWhite", new CouldNotPerformException("Could not parse [" + neutralWhiteString + "] as doubles and thus as NeutralWhite!"));
                 }
             } catch (NotAvailableException ex) {
                 neutralWhite = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;

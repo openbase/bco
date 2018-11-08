@@ -33,6 +33,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -218,7 +219,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         internalBuilder.getLocalPositionStateBuilder().addLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId());
                         copyResponsibleAction(PRESENCE_STATE_SERVICE, LOCAL_POSITION_STATE_SERVICE, internalBuilder);
                     } catch (CouldNotPerformException ex) {
-                        logger.warn("Could not update local position state location id because of user transit update", ex);
+                        ExceptionPrinter.printHistory("Could not update local position state location id because of user transit update", ex, logger, LogLevel.WARN);
                     }
                 }
                 break;

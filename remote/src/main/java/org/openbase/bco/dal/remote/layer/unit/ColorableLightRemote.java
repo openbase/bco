@@ -140,11 +140,9 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
                     HSBColor hsbColor = HSBColor.newBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness).build();
                     neutralWhite = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor).build();
                 } catch (CouldNotPerformException ex) {
-                    logger.warn("Could not parse [" + neutralWhiteString + "] as neutral white! Please define as <h, s, b>", ex);
-                    throw new NotAvailableException("NeutralWhite");
+                    throw new NotAvailableException("Color", "NeutralWhite", new CouldNotPerformException("Could not parse [" + neutralWhiteString + "] as neutral white! Please define as <h, s, b>"));
                 } catch (NumberFormatException ex) {
-                    logger.warn("Could not parse [" + neutralWhiteString + "] as doubles and thus as NeutralWhite!", ex);
-                    throw new NotAvailableException("NeutralWhite");
+                    throw new NotAvailableException("Color", "NeutralWhite", new CouldNotPerformException("Could not parse [" + neutralWhiteString + "] as doubles and thus as NeutralWhite!"));
                 }
             } catch (NotAvailableException ex) {
                 neutralWhite = DEFAULT_NEUTRAL_WHITE_COLOR;
