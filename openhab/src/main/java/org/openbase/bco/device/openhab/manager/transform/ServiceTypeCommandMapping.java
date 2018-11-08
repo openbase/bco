@@ -118,7 +118,7 @@ public class ServiceTypeCommandMapping {
                         Class<Command> commandClass = (Class<Command>) ServiceTypeCommandMapping.class.getClassLoader().loadClass(className);
                         MAP.get(serviceTemplate.getType()).add(commandClass);
                     } catch (ClassNotFoundException ex) {
-                        LOGGER.warn("Command class[" + commandTypeClass + "] for service type[" + serviceTemplate.getType().name() + "] not available", ex);
+                        ExceptionPrinter.printHistory("Command class[" + commandTypeClass + "] for service type[" + serviceTemplate.getType().name() + "] not available", ex, LOGGER, LogLevel.WARN);
                     }
                 }
             }

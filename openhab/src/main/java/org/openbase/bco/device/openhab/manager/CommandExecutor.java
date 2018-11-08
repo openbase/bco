@@ -72,7 +72,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
         try {
             applyStateUpdate(itemName, state);
         } catch (CouldNotPerformException ex) {
-            LOGGER.warn("Could not apply state update[" + state + "] for item[" + itemName + "]", ex);
+            ExceptionPrinter.printHistory("Could not apply state update[" + state + "] for item[" + itemName + "]", ex, LOGGER, LogLevel.WARN);
         }
     }
 
