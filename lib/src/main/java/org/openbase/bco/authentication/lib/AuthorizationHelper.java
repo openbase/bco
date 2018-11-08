@@ -26,6 +26,8 @@ import com.google.protobuf.ProtocolStringList;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
@@ -133,7 +135,7 @@ public class AuthorizationHelper {
                 } catch (CouldNotPerformException exx) {
                     scope = "?";
                 }
-                LOGGER.warn("PermissionConfig of Unit[" + scope + "] is denied!", ex);
+                ExceptionPrinter.printHistory("PermissionConfig of Unit[" + scope + "] is denied!", ex, LOGGER, LogLevel.WARN);
                 return false;
             }
         }
@@ -141,7 +143,7 @@ public class AuthorizationHelper {
         try {
             return canDo(getPermissionConfig(unitConfig, locations), userId, groups, locations, type);
         } catch (CouldNotPerformException ex) {
-            LOGGER.warn("can not perform the canDo check! Permission will be denied!", ex);
+            ExceptionPrinter.printHistory("can not perform the canDo check! Permission will be denied!", ex, LOGGER, LogLevel.WARN);
             return false;
         }
     }

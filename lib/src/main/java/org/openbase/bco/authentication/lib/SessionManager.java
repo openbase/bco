@@ -126,7 +126,7 @@ public class SessionManager implements Shutdownable {
             // register shutdown hook
             Shutdownable.registerShutdownHook(this);
         } catch (CouldNotPerformException ex) {
-            LOGGER.warn("Could not register session manager shutdown hook", ex);
+            ExceptionPrinter.printHistory("Could not register session manager shutdown hook", ex, LOGGER, LogLevel.WARN);
         }
         // create login observable
         this.loginObservable = new ObservableImpl<>(this);
@@ -137,7 +137,7 @@ public class SessionManager implements Shutdownable {
         try {
             this.credentialStore.init(STORE_FILENAME);
         } catch (CouldNotPerformException ex) {
-            LOGGER.warn("Could not init credential store for session manager", ex);
+            ExceptionPrinter.printHistory("Could not init credential store for session manager", ex, LOGGER, LogLevel.WARN);
         }
     }
 
@@ -375,11 +375,11 @@ public class SessionManager implements Shutdownable {
                         try {
                             renewTicket();
                         } catch (CouldNotPerformException ex) {
-                            LOGGER.warn("Could not renew ticket", ex);
+                            ExceptionPrinter.printHistory("Could not renew ticket", ex, LOGGER, LogLevel.WARN);
                         }
                     }, delay, delay, TimeUnit.MILLISECONDS);
                 } catch (JPNotAvailableException ex) {
-                    LOGGER.warn("Could not start ticket renewal task", ex);
+                    ExceptionPrinter.printHistory("Could not start ticket renewal task", ex, LOGGER, LogLevel.WARN);
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -429,7 +429,7 @@ public class SessionManager implements Shutdownable {
                     // return because the login notifies observer already
                     return;
                 } catch (CouldNotPerformException ex) {
-                    LOGGER.warn("Could not login as client again after user logout", ex);
+                    ExceptionPrinter.printHistory("Could not login as client again after user logout", ex, LOGGER, LogLevel.WARN);
                 }
             }
         } else if (this.clientId != null) {
@@ -467,7 +467,7 @@ public class SessionManager implements Shutdownable {
         try {
             loginObservable.notifyObservers(getUserAtClientId());
         } catch (CouldNotPerformException ex) {
-            LOGGER.warn("Could not notify logout to observer", ex);
+            ExceptionPrinter.printHistory("Could not notify logout to observer", ex, LOGGER, LogLevel.WARN);
         }
     }
 
