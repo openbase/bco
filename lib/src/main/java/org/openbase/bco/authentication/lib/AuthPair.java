@@ -22,8 +22,7 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
-import javafx.util.Pair;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.pattern.Pair;
 
 /**
  * A pair of authentication and authorization user.
