@@ -23,8 +23,6 @@ package org.openbase.bco.registry.unit.core.consistency.appconfig;
  */
 import java.util.HashMap;
 import java.util.Map;
-
-import javafx.beans.DefaultProperty;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
