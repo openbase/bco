@@ -127,7 +127,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
     }
 
     private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
-    protected ActionDescription generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceArgumentBuilder) throws CouldNotPerformException {
+    protected ActionDescription.Builder generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceArgumentBuilder) throws CouldNotPerformException {
         Message serviceArgument = serviceArgumentBuilder.build();
         try {
             return ActionDescriptionProcessor.generateActionDescriptionBuilder(getDefaultActionParameter().toBuilder()
@@ -135,8 +135,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
                             .setServiceType(serviceType)
                             .setUnitType(unitType)
                             .setServiceAttributeType(protoBufJSonProcessor.getServiceAttributeType(serviceArgument))
-                            .setServiceAttribute(protoBufJSonProcessor.serialize(serviceArgument))))
-                    .build();
+                            .setServiceAttribute(protoBufJSonProcessor.serialize(serviceArgument))));
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate action!", ex);
         }
