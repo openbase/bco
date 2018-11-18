@@ -78,7 +78,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
     private void alarmRoutine() throws CouldNotPerformException, ExecutionException, InterruptedException{
         taskActionDescriptionLightPower =  locationRemote.applyAction(generateAction(UnitType.LIGHT,
                 ServiceType.POWER_STATE_SERVICE,
-                PowerState.newBuilder().setValue(PowerState.State.ON)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+                PowerState.newBuilder().setValue(PowerState.State.ON)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
         // TODO: Set brightnessState as soon as it is supported
 //        taskActionDescriptionLightBrightness =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
 //                ServiceType.BRIGHTNESS_STATE_SERVICE,
@@ -89,7 +89,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
 //                ColorState.newBuilder().setColor(color)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
         taskActionDescriptionBlinds =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
                 ServiceType.BLIND_STATE_SERVICE,
-                BlindState.newBuilder().setOpeningRatio(100)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+                BlindState.newBuilder().setOpeningRatio(100)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
     }
 
     @Override

@@ -71,7 +71,7 @@ public class PresenceLightAgent extends AbstractTriggerableAgent {
     void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.ON))).get();
+                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.ON)).setExecutionTimePeriod(Long.MAX_VALUE)).get();
                 break;
             case DEACTIVE:
                 if(taskActionDescription != null) {
