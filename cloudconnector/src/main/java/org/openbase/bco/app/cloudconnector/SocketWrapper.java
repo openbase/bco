@@ -194,12 +194,12 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         try {
             // parse as json
             final JsonElement parse = jsonParser.parse((String) request);
-            LOGGER.info("Request: " + gson.toJson(parse));
+            LOGGER.trace("Request: {}", gson.toJson(parse));
 
             // handle request and create response
             final JsonObject jsonObject = FulfillmentHandler.handleRequest(parse.getAsJsonObject(), userId, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
             final String response = gson.toJson(jsonObject);
-            LOGGER.info("Handler produced response: " + response);
+            LOGGER.trace("Handler produced response: {}", response);
             // send back response
             acknowledgement.call(response);
         } catch (Exception ex) {
@@ -264,7 +264,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 return;
             }
 
-            LOGGER.debug("Send loginInfo [" + gson.toJson(loginInfo) + "]");
+            LOGGER.trace("Send login info [" + gson.toJson(loginInfo) + "]");
             socket.emit(LOGIN_EVENT, gson.toJson(loginInfo), (Ack) objects -> {
                 try {
                     final JsonObject response = jsonParser.parse(objects[0].toString()).getAsJsonObject();
@@ -275,7 +275,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                         // trigger initial database sync
                         requestSync();
                     } else {
-                        LOGGER.info("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY));
+                        LOGGER.warn("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY));
                         loginFuture.completeExceptionally(new CouldNotPerformException("Could not login user[" + userId + "] at BCO Cloud: " + response.get(ERROR_KEY)));
                     }
                 } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
@@ -312,7 +312,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private void handleRelocating(final Object object, final Ack ack) {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("Received relocation request:\n" + gson.toJson(data));
+        LOGGER.trace("Received relocation request:\n {}", gson.toJson(data));
 
         if (!data.has(CURRENT_LABEL_KEY)) {
             respond(ack, "Welches Gerät soll verschoben werden? Sage zum Beispiel: Der Deckenfluter steht im Wohnzimmer.", true);
@@ -389,7 +389,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
     }
 
     private void enableAgain(final Future<UnitConfig> unitConfigFuture, final int currentRequestNumber) {
-        LOGGER.info("Trigger enable task");
+        LOGGER.trace("Trigger enable task");
         GlobalCachedExecutorService.submit(() -> {
             try {
                 final UnitConfig.Builder currentUnit = unitConfigFuture.get().toBuilder();
@@ -443,7 +443,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private void handleRenaming(final Object object, final Ack ack) {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("Received renaming request:\n" + gson.toJson(data));
+        LOGGER.trace("Received renaming request:\n {}", gson.toJson(data));
 
         if (!data.has(CURRENT_LABEL_KEY)) {
             respond(ack, "Welches Gerät soll ich umbenennen? Sage zum Beispiel die Deckenlampe soll jetzt Deckenlicht heißen.", true);
@@ -513,7 +513,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private void handleUserTransitUpdate(final Object object, final Ack acknowledgement) {
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("User [{}] received user transit request: {}", userId, gson.toJson(data));
+        LOGGER.trace("User [{}] received user transit request: {}", userId, gson.toJson(data));
         try {
             if (!data.has("userTransit")) {
                 throw new NotAvailableException("UserTransitState");
@@ -550,7 +550,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private void handleActivity(final Object object, final Ack acknowledgement) {
         final JsonObject params = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("User [{}] received set activities request: {}", userId, gson.toJson(params));
+        LOGGER.trace("User [{}] received set activities request: {}", userId, gson.toJson(params));
         try {
             LocalPositionState localPositionState = null;
             String errorResponse = "";
@@ -687,7 +687,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
     private void handleActivityCancellation(final Object object, final Ack acknowledgement) {
         final JsonObject params = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("User [{}] received cancel activities request: {}", userId, gson.toJson(params));
+        LOGGER.trace("User [{}] received cancel activities request: {}", userId, gson.toJson(params));
         try {
             final JsonArray activities = params.get("activity").getAsJsonArray();
 
@@ -811,7 +811,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 //        long startingTime = System.currentTimeMillis();
 
         final JsonObject data = jsonParser.parse(object.toString()).getAsJsonObject();
-        LOGGER.info("User [{}] received scene registration request: {}", userId, gson.toJson(data));
+        LOGGER.trace("User [{}] received scene registration request: {}", userId, gson.toJson(data));
         final UnitConfig.Builder sceneUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.SCENE);
 
         UnitConfig location;
