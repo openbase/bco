@@ -107,7 +107,7 @@ public class IlluminationLightSavingAgent extends AbstractTriggerableAgent {
             UnitGroupRemote ambientLightGroup = unitsByLabel.get(0);
             taskActionDescription = ambientLightGroup.applyAction(generateAction(UnitType.UNKNOWN,
                     ServiceType.POWER_STATE_SERVICE,
-                    PowerState.newBuilder().setValue(PowerState.State.OFF)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+                    PowerState.newBuilder().setValue(PowerState.State.OFF)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
             // Wait for a bit, so the system can recognize the change in illuminance after turning off AmbientLightGroup
             Thread.sleep(SLEEP_MILLI);
         }
@@ -117,7 +117,7 @@ public class IlluminationLightSavingAgent extends AbstractTriggerableAgent {
             }
             taskActionDescription = locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
                     ServiceType.POWER_STATE_SERVICE,
-                    PowerState.newBuilder().setValue(PowerState.State.OFF)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+                    PowerState.newBuilder().setValue(PowerState.State.OFF)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
 
         }
     }

@@ -68,7 +68,7 @@ public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
     void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF))).get();
+                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF)).setExecutionTimePeriod(Long.MAX_VALUE)).get();
                 break;
             case DEACTIVE:
                 if (taskActionDescription != null) {

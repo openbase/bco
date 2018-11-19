@@ -87,7 +87,7 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
             case ACTIVE:
                 taskActionDescription = locationRemote.applyAction(generateAction(UnitType.TEMPERATURE_CONTROLLER,
                         ServiceType.TEMPERATURE_STATE_SERVICE,
-                        TemperatureState.newBuilder().setTemperature(energySavingTemperature)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+                        TemperatureState.newBuilder().setTemperature(energySavingTemperature)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
                 break;
             case DEACTIVE:
                 if(taskActionDescription != null) {
