@@ -72,7 +72,7 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
 
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
-        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
+        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin", true);
 
         thingDeviceUnitSynchronization.activate();
         deviceUnitThingSynchronization.activate();

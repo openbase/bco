@@ -129,9 +129,10 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         unitConfig.getDeviceConfigBuilder().setDeviceClassId(deviceClass.getId());
         unitConfig.getDeviceConfigBuilder().getInventoryStateBuilder().setValue(State.INSTALLED).setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
+        String locationId = Registries.getUnitRegistry().getRootLocationConfig().getId();
         // update location according to thing
         if (thingDTO.location != null) {
-            String locationId = SynchronizationProcessor.getLocationForThing(thingDTO).getId();
+            locationId = SynchronizationProcessor.getLocationForThing(thingDTO).getId();
 
             unitConfig.getDeviceConfigBuilder().getInventoryStateBuilder().setLocationId(locationId);
             unitConfig.getPlacementConfigBuilder().setLocationId(locationId);
@@ -139,9 +140,16 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             logger.info("Thing has no location defined so it will be added at the root location");
         }
 
-        //TODO: which language to use
         // update label according to thing
+        //TODO: which language to use
         LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, thingDTO.label);
+        // check if label is already taken
+        for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(thingDTO.label, locationId, false)) {
+            if(config.getUnitType() == UnitType.DEVICE) {
+                unitConfig.clearLabel();
+                break;
+            }
+        }
 
         // add thing uid to meta config to have a mapping between thing and device
         unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
