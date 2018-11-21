@@ -34,6 +34,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -41,6 +42,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Synchronization for things managed by the bco binding.
@@ -71,12 +73,12 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
         // update unit label and location if needed
         final UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getUnitConfigById(getUnitId(identifiableEnrichedThingDTO.getDTO())).toBuilder();
         if (SynchronizationProcessor.updateUnitToThing(identifiableEnrichedThingDTO.getDTO(), unitConfig)) {
-            Registries.getUnitRegistry().updateUnitConfig(unitConfig.build());
-//            try {
-//                Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
-//            } catch (ExecutionException ex) {
-//                throw new CouldNotPerformException("Could not update device[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
-//            }
+//            Registries.getUnitRegistry().updateUnitConfig(unitConfig.build());
+            try {
+                Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not update device[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+            }
         }
     }
 
@@ -90,12 +92,12 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
     public void remove(final IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
         logger.info("Remove {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(getUnitId(identifiableEnrichedThingDTO.getDTO()));
-        Registries.getUnitRegistry().removeUnitConfig(unitConfig);
-//        try {
-//            Registries.getUnitRegistry().removeUnitConfig(unitConfig).get();
-//        } catch (ExecutionException ex) {
-//            throw new CouldNotPerformException("Could not remove unit " + UnitConfigProcessor.getDefaultAlias(unitConfig, "?"), ex);
-//        }
+//        Registries.getUnitRegistry().removeUnitConfig(unitConfig);
+        try {
+            Registries.getUnitRegistry().removeUnitConfig(unitConfig).get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not remove unit " + UnitConfigProcessor.getDefaultAlias(unitConfig, "?"), ex);
+        }
     }
 
     @Override

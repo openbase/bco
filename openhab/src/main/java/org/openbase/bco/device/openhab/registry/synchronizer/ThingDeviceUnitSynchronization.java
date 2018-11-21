@@ -31,12 +31,13 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import rst.domotic.state.InventoryStateType.InventoryState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
@@ -89,27 +90,27 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         final ThingDTO thingDTO = identifiableEnrichedThingDTO.getDTO();
 
         // handle initial sync
-        if (isInitialSync()) {
-            try {
-                final UnitConfig deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(thingDTO);
-                // create items for dal units of the device
-                for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
-                    SynchronizationProcessor.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thingDTO);
-                }
-                return;
-            } catch (NotAvailableException ex) {
-                // go on to register a device for thing
-            }
-        }
-
+//        if (isInitialSync()) {
         try {
-            SynchronizationProcessor.getDeviceForThing(thingDTO);
+            final UnitConfig deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(thingDTO);
+            // create items for dal units of the device
+            for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+                SynchronizationProcessor.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thingDTO);
+            }
+//            return;
         } catch (NotAvailableException ex) {
-            GlobalCachedExecutorService.submit(() -> {
-                registerDevice(thingDTO);
-                return null;
-            });
+            // go on to register a device for thing
+            registerDevice(thingDTO);
         }
+//        }
+
+//        try {
+//            SynchronizationProcessor.getDeviceForThing(thingDTO);
+//        } catch (NotAvailableException ex) {
+//            GlobalCachedExecutorService.submit(() -> {
+//                return null;
+//            });
+//        }
     }
 
     private void registerDevice(ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
@@ -145,9 +146,31 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, thingDTO.label);
         // check if label is already taken
         for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(thingDTO.label, locationId, false)) {
-            if(config.getUnitType() == UnitType.DEVICE) {
-                unitConfig.clearLabel();
-                break;
+            // only check if a device has the same label
+            if (config.getUnitType() == UnitType.DEVICE) {
+                if (!config.getDeviceConfig().getDeviceClassId().equalsIgnoreCase(deviceClass.getId())) {
+                    // device with same label exists but has a different device class, so try to register it without a label
+                    unitConfig.clearLabel();
+                    break;
+                }
+
+                // device with same location, label and class exists so check if it is already connected to a thing
+                final MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider(config.getAlias(0) + "MetaConfig", config.getMetaConfig());
+                try {
+                    final String thingUID = metaConfigVariableProvider.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY);
+                    // same class, label and location but meta config entry differs
+                    // else it should have matched before calling this method so print an error
+                    logger.error("Could not register device for thing {}. Device {} has the same class, location and label but corresponds to the different thins {}", thingDTO.UID, config.getAlias(0), thingUID);
+                } catch (NotAvailableException ex) {
+                    // thing matches to device but the meta config entry is missing so add it
+                    final Builder builder = config.toBuilder();
+                    builder.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
+                    try {
+                        Registries.getUnitRegistry().updateUnitConfig(builder.build()).get();
+                    } catch (ExecutionException e) {
+                        throw new CouldNotPerformException("Could not update OPENHAB_THING_UID_KEY in device " + config.getAlias(0));
+                    }
+                }
             }
         }
 
@@ -181,12 +204,11 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         }
 
         // remove device
-        Registries.getUnitRegistry().removeUnitConfig(deviceUnitConfig);
-//        try {
-//            Registries.getUnitRegistry().removeUnitConfig(deviceUnitConfig).get();
-//        } catch (ExecutionException ex) {
-//            throw new CouldNotPerformException("Could not remove device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
-//        }
+        try {
+            Registries.getUnitRegistry().removeUnitConfig(deviceUnitConfig).get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not remove device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+        }
     }
 
     @Override
