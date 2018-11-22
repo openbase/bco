@@ -50,20 +50,20 @@ public class ItemUnitSynchronization extends AbstractSynchronizer<String, Identi
 
     @Override
     public void update(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
-        logger.info("Update {} ...", identifiableEnrichedItemDTO.getDTO().name);
+        logger.trace("Synchronize update {} ...", identifiableEnrichedItemDTO.getDTO().name);
         validateAndUpdateItem(identifiableEnrichedItemDTO.getDTO());
     }
 
     @Override
     public void register(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
-        logger.info("Register {} ...", identifiableEnrichedItemDTO.getDTO().name);
+        logger.trace("Synchronize registration {} ...", identifiableEnrichedItemDTO.getDTO().name);
         // do nothing because items are registers by the thing synchronization
         validateAndUpdateItem(identifiableEnrichedItemDTO.getDTO());
     }
 
     @Override
     public void remove(final IdentifiableEnrichedItemDTO identifiableEnrichedItemDTO) throws CouldNotPerformException {
-        logger.info("Remove {} ...", identifiableEnrichedItemDTO.getDTO().name);
+        logger.trace("Synchronize removal {} ...", identifiableEnrichedItemDTO.getDTO().name);
         final OpenHABItemNameMetaData metaData = new OpenHABItemNameMetaData(identifiableEnrichedItemDTO.getId());
 
         try {

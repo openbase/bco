@@ -97,7 +97,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      */
     @Override
     public void update(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        logger.info("Update {} ...", identifiableMessage);
+        logger.trace("Synchronize update {} ...", identifiableMessage);
         // update thing label and location if needed
         final UnitConfig deviceUnitConfig = identifiableMessage.getMessage();
         try {
@@ -120,7 +120,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      */
     @Override
     public void register(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException, InterruptedException {
-        logger.info("Register {} ...", identifiableMessage);
+        logger.trace("Synchronize registration {} ...", identifiableMessage);
         // if this is the initial sync make sure that things and devices are synced
         if (isInitialSync()) {
             update(identifiableMessage);
@@ -152,7 +152,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      */
     @Override
     public void remove(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        logger.info("Remove {} ...", identifiableMessage);
+        logger.trace("Synchronize removal {} ...", identifiableMessage);
         // remove thing belonging to the device
         final UnitConfig deviceUnitConfig = identifiableMessage.getMessage();
 

@@ -67,7 +67,7 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
 
     @Override
     public void update(final IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
-        logger.info("Update {} ...", identifiableEnrichedThingDTO.getDTO().UID);
+        logger.trace("Synchronize update {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         // validate items for thing, this is needed because channels for e.g. locations can change during runtime e.g. because they contain new units
         registerAndValidateItems(identifiableEnrichedThingDTO.getDTO());
         // update unit label and location if needed
@@ -84,13 +84,13 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
 
     @Override
     public void register(final IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException {
-        logger.info("Register {} ...", identifiableEnrichedThingDTO.getDTO().UID);
+        logger.trace("Synchronize registration {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         registerAndValidateItems(identifiableEnrichedThingDTO.getDTO());
     }
 
     @Override
     public void remove(final IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
-        logger.info("Remove {} ...", identifiableEnrichedThingDTO.getDTO().UID);
+        logger.trace("Synchronize removal {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(getUnitId(identifiableEnrichedThingDTO.getDTO()));
 //        Registries.getUnitRegistry().removeUnitConfig(unitConfig);
         try {
