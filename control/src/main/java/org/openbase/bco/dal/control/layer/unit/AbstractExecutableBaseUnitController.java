@@ -143,18 +143,26 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         @Override
         public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
 
-            logger.debug("setActivationState: {}", activationState.getValue().name());
+            logger.trace("setActivationState: {}", activationState.getValue().name());
             synchronized (executionLock) {
 
                 // filter events that do not change anything
                 if (activationState.getValue() == getActivationState().getValue()) {
-                    logger.debug("skip already applied state: {}", activationState.getValue().name());
+                    logger.trace("skip already applied state: {}", activationState.getValue().name());
                     return CompletableFuture.completedFuture(null);
                 }
 
                 final ActivationState fallbackActivationState = getActivationState();
 
                 if (activationState.getValue() == ActivationState.State.ACTIVE) {
+
+                    // make sure timestamp is updated.
+                    try {
+                        logger.trace("inform about " + activationState.getValue().name());
+                        applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                    } catch (CouldNotPerformException ex) {
+                        throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activationState.getValue().name()) + " " + this, ex);
+                    }
 
                     // filter duplicated execution
                     if (isExecuting()) {
@@ -196,15 +204,14 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                         ExceptionPrinter.printHistory("stop failed", ex, logger);
                         return FutureProcessor.canceledFuture(ex);
                     }
-                }
-
-                try {
-                    applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activationState.getValue().name()) + " " + this, ex);
+                    try {
+                        logger.trace("inform about " + activationState.getValue().name());
+                        applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                    } catch (CouldNotPerformException ex) {
+                        throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activationState.getValue().name()) + " " + this, ex);
+                    }
                 }
             }
-
             return CompletableFuture.completedFuture(null);
         }
 
