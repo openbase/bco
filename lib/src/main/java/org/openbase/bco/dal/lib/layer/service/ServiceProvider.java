@@ -43,6 +43,8 @@ import java.util.concurrent.Future;
  */
 public interface ServiceProvider<ST extends Message> {
 
+    // todo release: Remove  CouldNotPerformException and reflect issues via future type.
+
     /**
      * Method applies the action on this instance.
      *
