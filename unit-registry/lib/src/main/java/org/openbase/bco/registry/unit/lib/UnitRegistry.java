@@ -44,7 +44,6 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import org.slf4j.LoggerFactory;
-import rst.language.LabelType.Label;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
@@ -59,6 +58,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import rst.language.LabelType.Label;
 import rst.math.Vec3DDoubleType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.rsb.ScopeType.Scope;
@@ -219,7 +219,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @return the unit config referred by the alias.
      *
-     * @throws NotAvailableException    is thrown if no unit is matching the given alias.
+     * @throws NotAvailableException is thrown if no unit is matching the given alias.
      */
     @RPCMethod
     UnitConfig getUnitConfigByAlias(final String unitAlias) throws NotAvailableException;
@@ -235,7 +235,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @return the unit config referred by the alias.
      *
-     * @throws NotAvailableException    is thrown if no unit is matching the given alias.
+     * @throws NotAvailableException is thrown if no unit is matching the given alias.
      */
     UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException;
 
@@ -1029,32 +1029,46 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     }
 
     /**
-     * Method returns all unit configurations which are direct or recursive
-     * related to the given location id and an instance of the given unit type.
-     * Label resolving is done case insensitive!
+     * Method returns all unit configurations which are direct or recursive related to the given location id and an
+     * instance of the given unit type. If the unit type is unknown or location, all child locations of the provided
+     * locations are resolved.
      *
-     * @param type
-     * @param locationConfigId
+     * @param unitType   the unit type after which unit configs are filtered.
+     * @param locationId the location inside which unit configs are resolved.
      *
      * @return A collection of unit configs.
      *
      * @throws CouldNotPerformException is thrown if the request fails.
-     * @throws NotAvailableException
      */
-    default List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
-        List<UnitConfig> unitConfigList = new ArrayList<>();
-        UnitConfig unitConfig;
+    default List<UnitConfig> getUnitConfigsByLocation(final UnitType unitType, final String locationId) throws CouldNotPerformException {
+        final List<UnitConfig> unitConfigList = new ArrayList<>();
+        final UnitConfig location = getUnitConfigById(locationId);
 
-        for (String unitConfigId : getUnitConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
-            try {
-                unitConfig = getUnitConfigById(unitConfigId);
-                if (unitConfig.getUnitType().equals(type) || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(type).contains(unitConfig.getUnitType())) {
-                    unitConfigList.add(unitConfig);
+        // if unit type is unknown or location resolve all child locations
+        if (unitType == UnitType.UNKNOWN || unitType == UnitType.LOCATION) {
+            for (final String childId : location.getLocationConfig().getChildIdList()) {
+                unitConfigList.add(getUnitConfigById(childId));
+            }
+
+            for (int i = 0; i < unitConfigList.size(); i++) {
+                for (final String childId : unitConfigList.get(i).getLocationConfig().getChildIdList()) {
+                    unitConfigList.add(getUnitConfigById(childId));
                 }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by UnitRegitryRemote!", ex), LoggerFactory.getLogger(UnitRegistry.class));
             }
         }
+
+        // if unit type is not location resolve all units with given type inside the location
+        if (unitType != UnitType.LOCATION) {
+            UnitConfig unitConfig;
+            for (final String unitConfigId : getUnitConfigById(locationId).getLocationConfig().getUnitIdList()) {
+                unitConfig = getUnitConfigById(unitConfigId);
+                if (unitType == UnitType.UNKNOWN || unitConfig.getUnitType().equals(unitType) || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(unitType).contains(unitConfig.getUnitType())) {
+                    unitConfigList.add(unitConfig);
+                }
+            }
+        }
+
+
         return unitConfigList;
     }
 
