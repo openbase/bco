@@ -209,17 +209,17 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
         for (Category category : getActionDescription().getCategoryList()) {
             switch (category) {
                 case ECONOMY:
-                    emphasisValue += Math.max(emphasisValue, emphasisState.getEconomy());
+                    emphasisValue = Math.max(emphasisValue, emphasisState.getEconomy());
                     break;
                 case COMFORT:
-                    emphasisValue += Math.max(emphasisValue, emphasisState.getComfort());
+                    emphasisValue = Math.max(emphasisValue, emphasisState.getComfort());
                     break;
                 case SECURITY:
-                    emphasisValue += Math.max(emphasisValue, emphasisState.getSecurity());
+                    emphasisValue = Math.max(emphasisValue, emphasisState.getSecurity());
                     break;
                 case SAVETY:
                     // because {@code emphasisValue} is max 1.0 we add 10 to force the safety category.
-                    emphasisValue += 10;
+                    emphasisValue = 10;
                     break;
             }
         }

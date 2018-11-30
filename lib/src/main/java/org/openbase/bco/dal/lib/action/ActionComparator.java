@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -33,10 +33,11 @@ import rst.domotic.state.EmphasisStateType.EmphasisState;
 import java.util.Comparator;
 
 /**
- * Comparator can be used to sort action by there ranking.
- *
+ * Comparator can be used to sort action by there ranking. It makes sure that actions with higher priorities are
+ * at the beginning of the list after sorting.
+ * <p>
  * Actions are compared by:
- *
+ * <p>
  * 1.Priority
  * 2.EmphasisCategory
  * 3.IndividualRanking
@@ -63,50 +64,64 @@ public class ActionComparator implements Comparator<Action> {
     }
 
     /**
-     * Compares to actions by its 1.Priority 2.EmphasisCategory and 3.IndividualRanking
+     * Compares two actions by its 1.Priority 2.EmphasisCategory and 3.IndividualRanking.
      *
-     * @param targetAction    the action to rank.
-     * @param referenceAction the action to compare with.
+     * @param action1 the first action to compare.
+     * @param action2 the second action to compare with.
      *
      * @return a int value between [-11 vv 11]
      */
     @Override
-    public int compare(final Action targetAction, final Action referenceAction) {
+    public int compare(final Action action1, final Action action2) {
         try {
+            // resolve original initiators of actions
+            final InitiatorType initiatorType1 = action1.getActionDescription().getActionChainList().isEmpty() ? action1.getActionDescription().getActionInitiator().getInitiatorType() : action1.getActionDescription().getActionChain(0).getActionInitiator().getInitiatorType();
+            final InitiatorType initiatorType2 = action2.getActionDescription().getActionChainList().isEmpty() ? action2.getActionDescription().getActionInitiator().getInitiatorType() : action2.getActionDescription().getActionChain(0).getActionInitiator().getInitiatorType();
+
             // compute ranking via priority
-            // the priority of this action by subtracting the priority of the given action. If this action is initiated by a human it gets an extra point.
-            int priority = targetAction.getActionDescription().getPriority().getNumber() + ((targetAction.getActionDescription().getActionInitiator().getInitiatorType() == InitiatorType.HUMAN) ? 1 : 0) - referenceAction.getActionDescription().getPriority().getNumber();
+            // the priority of this action by subtracting the priority of the given action. If this action is initiated by a human it gets an extra half-point.
+            // it does not get a full extra point so that there are no conflicts between human and system
+            double priority1 = action1.getActionDescription().getPriority().getNumber() + ((initiatorType1 == InitiatorType.HUMAN) ? 0.5 : 0);
+            double priority2 = action2.getActionDescription().getPriority().getNumber() + ((initiatorType2 == InitiatorType.HUMAN) ? 0.5 : 0);
+
+            // make sure that diff is -1, 0 or 1
+            int priority = (int) Math.signum(priority2 - priority1);
 
             // if no conflict is detected than just return the priority as ranking
             if (priority != 0) {
                 return priority;
             }
 
-            EmphasisState emphasisState;
+            // conflict can only exist if both are human or system
+            if (initiatorType1 == InitiatorType.SYSTEM) {
+                // if both actions are initiated by system try to resolve by emphasis
 
-            try {
-                emphasisState = emphasisStateProvider.get();
-            } catch (CouldNotPerformException | InterruptedException ex) {
+                EmphasisState emphasisState;
 
-                if (ex instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
+                try {
+                    emphasisState = emphasisStateProvider.get();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+
+                    if (ex instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
+                    // create mock-up to guarantee safety operations
+                    emphasisState = EmphasisState.newBuilder().setEconomy(1d / 3d).setSecurity(1d / 3d).setComfort(1d / 3d).build();
                 }
-                // create mockup to guarantee safety operations
-                emphasisState = EmphasisState.newBuilder().setEconomy(1d / 3d).setSecurity(1d / 3d).setComfort(1d / 3d).build();
+
+                // make sure that diff is -1, 0 or 1
+                int emphasis = (int) Math.signum(action2.getEmphasisValue(emphasisState) - action1.getEmphasisValue(emphasisState));
+
+                // if no conflict is detected than just return the emphasis as ranking
+                if (emphasis != 0) {
+                    return emphasis;
+                }
+
+                //TODO: resolve conflict between agents
             }
 
-            double emphasis = targetAction.getEmphasisValue(emphasisState) - referenceAction.getEmphasisValue(emphasisState);
-
-            // if no conflict is detected than just return the emphasis as ranking
-            if (emphasis != 0) {
-                // multiply with 100 to project 0-1 scale to valid in value
-                return (int) (emphasis * 100);
-            }
-
-            // todo implement individual action scheduling to avoid conflicts.
-            LOGGER.warn("Conflict between {} and {} detected!", targetAction, referenceAction);
-
-            return (int) (targetAction.getCreationTime() - referenceAction.getCreationTime());
+            // resolve conflicts between humans or systems by prioritizing newer actions
+            return (int) Math.signum(action2.getCreationTime() - action1.getCreationTime());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not compare actions!", ex, LOGGER);
         }
