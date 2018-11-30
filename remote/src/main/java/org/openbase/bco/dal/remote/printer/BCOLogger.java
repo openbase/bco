@@ -27,6 +27,7 @@ import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.remote.printer.jp.JPOutputDirectory;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.JPDebugMode;
@@ -86,6 +87,7 @@ public class BCOLogger extends UnitStatePrinter {
         LOGGER.info("Start " + APP_NAME + "...");
 
         try {
+            BCOLogin.autoLogin(true);
             new BCOLogger().init();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
