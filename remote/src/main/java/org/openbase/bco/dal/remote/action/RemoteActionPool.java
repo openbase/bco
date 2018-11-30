@@ -25,11 +25,12 @@ package org.openbase.bco.dal.remote.action;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,14 +45,11 @@ import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 public class RemoteActionPool {
 
-    public static final long ACTION_EXECUTION_TIMEOUT = 15000;
+    public static final long ACTION_EXECUTION_TIMEOUT = 3000;
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
@@ -104,7 +102,32 @@ public class RemoteActionPool {
         }
     }
 
-    public void execute(final ActionDescription causeActionDescription) throws CouldNotPerformException, InterruptedException {
+    /**
+     * Executes all previously registered actions within this pool while the given {@code causeActionDescription} is used as cause for each action.
+     * @return a future object referring the submission state.
+     */
+    public MultiFuture<ActionDescription> execute() {
+        return execute(null, false);
+    }
+
+    /**
+     * Executes all previously registered actions within this pool while the given {@code causeActionDescription} is used as cause for each action.
+     * @param causeActionDescription refers the causing action of this execution.
+     * @return a future object referring the submission state.
+     */
+    public MultiFuture<ActionDescription> execute(final ActionDescription causeActionDescription) {
+        return execute(causeActionDescription, false);
+    }
+
+    /**
+     * Executes all previously registered actions within this pool while the given {@code causeActionDescription} is used as cause for each action.
+     * @param causeActionDescription refers the causing action of this execution.
+     * @param cancelSubmissionAfterTimeout If true, the submission of each action is verified and canceled after a timeout of {@code RemoteActionPool.ACTION_EXECUTION_TIMEOUT}.
+     * @return a future object referring the submission state.
+     */
+    public MultiFuture<ActionDescription> execute(final ActionDescription causeActionDescription, final boolean cancelSubmissionAfterTimeout){
+
+        final List<Future<ActionDescription>> submissionFutureList = new ArrayList<>();
 
         synchronized (actionListSync) {
 
@@ -113,41 +136,49 @@ public class RemoteActionPool {
             }
 
             for (final RemoteAction action : remoteActionList) {
-                action.execute(causeActionDescription);
+                submissionFutureList.add(action.execute(causeActionDescription));
             }
         }
 
-        MultiException.ExceptionStack exceptionStack = null;
-
-        try {
-            LOGGER.info("Waiting for action finalisation...");
-
-            long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
-            long timeout;
-            for (final RemoteAction action : remoteActionList) {
-                if (action.isDone()) {
-                    continue;
-                }
-                LOGGER.info("Waiting for action [" + action.getActionDescription().getServiceStateDescription().getServiceAttributeType() + "]");
+        // handle auto cancellation after timeout
+        if (cancelSubmissionAfterTimeout) {
+            submissionFutureList.add(GlobalCachedExecutorService.submit(() -> {
                 try {
-                    timeout = checkStart - System.currentTimeMillis();
-                    if (timeout <= 0) {
-                        throw new RejectedException("Rejected because of scene timeout.");
+                    LOGGER.info("Waiting for action submission...");
+
+                    long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
+                    long timeout;
+                    for (final RemoteAction action : remoteActionList) {
+                        if (action.isDone()) {
+                            continue;
+                        }
+                        LOGGER.info("Waiting for action submission[" + action + "]");
+                        try {
+                            timeout = checkStart - System.currentTimeMillis();
+                            if (timeout <= 0) {
+                                throw new RejectedException("Rejected because of scene timeout.");
+                            }
+
+                            action.waitForSubmission(timeout, TimeUnit.MILLISECONDS);
+                        } catch (TimeoutException ex) {
+                            // will be handled anyway
+                        }
                     }
-                    action.getActionFuture().get(timeout, TimeUnit.MILLISECONDS);
-                } catch (ExecutionException | TimeoutException ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
+                } catch (CouldNotPerformException | CancellationException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Remote pool action execution failed!", ex), LOGGER);
+                } finally {
+                    // cancel all actions which could not be submitted
+                    for (final RemoteAction action : remoteActionList) {
+                        if (!action.isSubmissionDone()) {
+                            action.cancel();
+                        }
+                    }
                 }
-            }
-        } catch (CouldNotPerformException | CancellationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Remote pool action execution failed!", ex), LOGGER);
-        } finally {
-            for (final RemoteAction action : remoteActionList) {
-                if (!action.getActionFuture().isDone()) {
-                    action.cancel();
-                }
-            }
+                return null;
+            }));
         }
+
+        return new MultiFuture<>(submissionFutureList);
     }
 
     public void stop() {
@@ -155,6 +186,30 @@ public class RemoteActionPool {
             if (action.isRunning()) {
                 action.cancel();
             }
+        }
+    }
+
+    public void waitUntilDone() throws CouldNotPerformException, InterruptedException {
+        for (final RemoteAction action : remoteActionList) {
+            action.waitUntilDone();
+        }
+    }
+
+    public void waitForSubmission() throws CouldNotPerformException, InterruptedException {
+        for (final RemoteAction action : remoteActionList) {
+            action.waitForSubmission();
+        }
+    }
+
+    public void addActionDescriptionObserver(final Observer<RemoteAction, ActionDescription> observer) {
+        for (final RemoteAction action : remoteActionList) {
+            action.addActionDescriptionObserver(observer);
+        }
+    }
+
+    public void removeActionDescriptionObserver(final Observer<RemoteAction, ActionDescription> observer) {
+        for (final RemoteAction action : remoteActionList) {
+            action.removeActionDescriptionObserver(observer);
         }
     }
 }

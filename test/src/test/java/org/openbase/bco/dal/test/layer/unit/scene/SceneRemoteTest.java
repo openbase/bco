@@ -508,7 +508,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         SceneRemote sceneRemote = Units.getUnitsByLabel(sceneLabel, true, Units.SCENE).get(0);
         sceneRemote.addDataObserver(notifyChangeObserver);
         waitForSceneExecution(sceneRemote.setActivationState(ACTIVATE));
-        waitForSceneExecution(sceneRemote.setActivationState(State.DEACTIVE));
+        //waitForSceneExecution(sceneRemote.setActivationState(State.DEACTIVE));
         sceneRemote.requestData().get();
 //        assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
         sceneRemote.removeDataObserver(notifyChangeObserver);
@@ -516,7 +516,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
     private void waitForSceneExecution(final Future<ActionDescription> actionFuture) throws CouldNotPerformException {
         try {
-            new RemoteAction(actionFuture).waitForFinalization();
+            new RemoteAction(actionFuture).waitUntilDone();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
