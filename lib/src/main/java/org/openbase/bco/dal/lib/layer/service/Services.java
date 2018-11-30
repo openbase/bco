@@ -586,10 +586,11 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleAction the action to setup.
      * @param serviceState      the message which is updated with the given responsible action.
      * @param <M>               the type of the service state message.
+     * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      *
      * @return the modified message instance.
      */
-    public static <M extends Message> M setResponsibleAction(final ActionDescription responsibleAction, final M serviceState) {
+    public static <M extends Message> M setResponsibleAction(final ActionDescription responsibleAction, final M serviceState) throws NotAvailableException {
         return (M) setResponsibleAction(responsibleAction, serviceState.toBuilder()).build();
     }
 
@@ -599,10 +600,11 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleAction   the action to setup.
      * @param serviceStateBuilder the builder which is updated with the given responsible action.
      * @param <B>                 the type of the service state builder.
+     * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      *
      * @return the modified builder instance.
      */
-    public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) {
+    public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) throws NotAvailableException {
         serviceStateBuilder.setField(ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME), responsibleAction);
         return serviceStateBuilder;
     }
