@@ -91,6 +91,7 @@ import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.ActionStateType.ActionState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -532,7 +533,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // handle if action was not found
                 if (actionToCancel == null) {
                     logger.debug("Can not cancel an unknown action, but than its not executing anyway.");
-                    CompletableFuture.completedFuture(actionDescription);
+                    return CompletableFuture.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.UNKNOWN).build()).build());
                 }
 
                 // cancel the action which triggers automatically a reschedule.
@@ -647,19 +648,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     }
 
                     // execute action with highest ranking
-                    try {
-                        nextAction.execute();
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute " + nextAction + "!", ex), logger);
-                        nextAction = null;
-                    }
+                    nextAction.execute();
                 }
 
                 // skip if actions is not available e.g. the first action failed and no second one is available.
                 if (nextAction == null) {
                     return null;
                 }
-
 
                 // remove duplicated actions of the same initiator unit.
                 if (actionToSchedule != null) {
@@ -810,7 +805,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public void applyDataUpdate(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException {
-        logger.debug("Apply service[" + serviceType + "] update[" + serviceState + "] for " + this + ".");
+        logger.trace("Apply service[" + serviceType + "] update[" + serviceState + "] for " + this + ".");
 
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
