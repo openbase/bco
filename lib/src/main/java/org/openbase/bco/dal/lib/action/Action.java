@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -145,6 +146,23 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
     }
 
     /**
+     * Check if the action is currently scheduled.
+     *
+     * @return true if running and false if never started, currently executing or already terminated.
+     */
+    default boolean isScheduled() {
+        try {
+            switch (getActionState()) {
+                case SCHEDULED:
+                    return true;
+            }
+        } catch (NotAvailableException ex) {
+            // not done if available
+        }
+        return false;
+    }
+
+    /**
      * Check if the action is currently executing or scheduled.
      *
      * @return true if running and false if never started or already terminated.
@@ -184,7 +202,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
 
     Future<ActionDescription> cancel();
 
-    void waitUntilFinish() throws InterruptedException;
+    void waitUntilDone() throws CouldNotPerformException, InterruptedException;
 
     default double getEmphasisValue(final EmphasisState emphasisState) throws NotAvailableException {
         double emphasisValue = 0;
