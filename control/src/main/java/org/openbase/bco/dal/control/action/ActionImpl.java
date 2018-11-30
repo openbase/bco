@@ -299,7 +299,7 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
-    public void waitUntilFinish() throws InterruptedException {
+    public void waitUntilDone() throws InterruptedException {
         synchronized (executionSync) {
             if (!isExecuting()) {
                 return;
@@ -344,7 +344,7 @@ public class ActionImpl implements SchedulableAction {
 
         return GlobalCachedExecutorService.submit(() -> {
             actionTask.cancel(true);
-            waitUntilFinish();
+            waitUntilDone();
             unit.reschedule();
             return null;
         });
