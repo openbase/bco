@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -620,42 +620,34 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 }
 
                 // sort valid actions by priority
-                Collections.sort(scheduledActionList, actionComparator);
+                scheduledActionList.sort(actionComparator);
 
                 // detect action with highest ranking
-                SchedulableAction nextAction = null;
-                for (int i = 0; i < scheduledActionList.size(); i++) {
+                SchedulableAction nextAction = scheduledActionList.get(0);
 
-                    nextAction = scheduledActionList.get(i);
+                // handle current action
+                if (currentAction != null) {
 
-                    // handle current action
-                    if (currentAction != null) {
-
-                        // if the next action is still the same than we are finished
-                        if (nextAction == currentAction) {
-                            return currentAction;
-                        }
-
-                        // cancel the current action
-                        currentAction.cancel();
-
-                        // if still valid than schedule again for later execution.
-                        if (currentAction.isValid()) {
-                            currentAction.schedule();
-                        } else {
-                            actionsToRemoveList.add(currentAction);
-                        }
+                    // if the next action is still the same than we are finished
+                    if (nextAction == currentAction) {
+                        return currentAction;
                     }
 
-                    // execute action with highest ranking
-                    nextAction.execute();
+                    // cancel the current action
+                    currentAction.cancel();
+
+                    // if still valid than schedule again for later execution.
+                    if (currentAction.isValid()) {
+                        currentAction.schedule();
+                    } else {
+                        actionsToRemoveList.add(currentAction);
+                    }
                 }
 
-                // skip if actions is not available e.g. the first action failed and no second one is available.
-                if (nextAction == null) {
-                    return null;
-                }
+                // execute action with highest ranking
+                nextAction.execute();
 
+                //TODO: rethink - initiator from chain, remove before selection of next action, take the newest action (creation time)
                 // remove duplicated actions of the same initiator unit.
                 if (actionToSchedule != null) {
                     final String initiatorId;
