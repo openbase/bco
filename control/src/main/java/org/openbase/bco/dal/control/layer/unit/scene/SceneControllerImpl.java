@@ -23,11 +23,15 @@ package org.openbase.bco.dal.control.layer.unit.scene;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.scene.SceneController;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -35,11 +39,13 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.state.ButtonStateType.ButtonState.State;
@@ -48,10 +54,10 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -172,9 +178,43 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        logger.debug("Execute: {}", LabelProcessor.getBestMatch(getConfig().getLabel()));
-        requiredActionPool.execute(activationState.getResponsibleAction());
-        optionalActionPool.execute(activationState.getResponsibleAction());
+        logger.error("Execute req: {}", LabelProcessor.getBestMatch(getConfig().getLabel()));
+        final MultiFuture<ActionDescription> requiredActionsFuture = requiredActionPool.execute(activationState.getResponsibleAction(), true);
+        logger.error("Execute: ops", LabelProcessor.getBestMatch(getConfig().getLabel()));
+        final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(activationState.getResponsibleAction(), true);
+
+        // legacy handling
+        final ActivationState deactivated = ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
+        try {
+            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
+                requiredActionsFuture.get();
+                optionalActionsFuture.get();
+                stop(deactivated);
+                applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
+
+                return;
+            }
+        } catch (JPNotAvailableException e) {
+            // just continue with default strategy
+        } catch (ExecutionException e) {
+            activationStateOperationService.setActivationState(deactivated);
+            return;
+        }
+        logger.error("perform action observation");
+
+        final Observer<RemoteAction, ActionDescription> requiredActionPoolObserver = new Observer<RemoteAction, ActionDescription>() {
+            @Override
+            public void update(RemoteAction source, ActionDescription data) throws Exception {
+                if (source.isDone()&& source.isScheduled()) {
+                    requiredActionPool.removeActionDescriptionObserver(this);
+                    logger.error("deactivate scene because at least one required state can not be reached.");
+                    activationStateOperationService.setActivationState(deactivated);
+                }
+            }
+        };
+
+        requiredActionPool.addActionDescriptionObserver(requiredActionPoolObserver);
+
     }
 
     @Override
