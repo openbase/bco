@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -864,10 +864,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             newState = newState.toBuilder().setField(descriptor, newState.getField(descriptor)).build();
 
             // copy latestValueOccurrence map from current state, only if available
-            Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
-            if (latestValueOccurrenceField != null) {
-                Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
-                newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
+            try {
+                Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
+                if (latestValueOccurrenceField != null) {
+                    Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
+                    newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
+                }
+            } catch (NotAvailableException ex) {
+                // skip update if field is missing
+                ExceptionPrinter.printHistory("Latest value occurrency field update skipped!", ex, logger);
             }
 
             // update the current state
