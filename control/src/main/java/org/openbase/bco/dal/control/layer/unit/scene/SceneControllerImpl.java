@@ -191,13 +191,13 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 optionalActionsFuture.get();
                 stop(deactivated);
                 applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
-
                 return;
             }
         } catch (JPNotAvailableException e) {
             // just continue with default strategy
         } catch (ExecutionException e) {
-            activationStateOperationService.setActivationState(deactivated);
+            stop(deactivated);
+            applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
             return;
         }
         logger.error("perform action observation");
@@ -208,7 +208,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 if (source.isDone()&& source.isScheduled()) {
                     requiredActionPool.removeActionDescriptionObserver(this);
                     logger.error("deactivate scene because at least one required state can not be reached.");
-                    activationStateOperationService.setActivationState(deactivated);
+                    stop(deactivated);
+                    applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
                 }
             }
         };
