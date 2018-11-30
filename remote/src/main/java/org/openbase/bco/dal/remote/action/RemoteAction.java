@@ -22,21 +22,28 @@ package org.openbase.bco.dal.remote.action;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.iface.Initializable;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.pattern.ObservableImpl;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionParameterType.ActionParameter;
+import rst.domotic.unit.location.LocationDataType.LocationData;
 
+import java.util.Collection;
 import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
 
@@ -46,18 +53,35 @@ import java.util.concurrent.TimeoutException;
 public class RemoteAction implements Action {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAction.class);
-    private final SyncObject executionSync = new SyncObject(RemoteAction.class);
+    private final SyncObject executionSync = new SyncObject("ExecutionSync");
     private final ActionParameter.Builder actionParameterBuilder;
-    private Future<ActionDescription> actionFuture;
+    private ActionDescription actionDescription;
     private Unit<?> targetUnit;
+    private Future<ActionDescription> futureObservationTask;
+    private final ObservableImpl<RemoteAction, ActionDescription> actionDecriptionObservable;
+    private final Observer unitObserver = (source, data) -> {
+        // check if initial actionDescription is available
+        if(RemoteAction.this.actionDescription == null) {
+            return;
+        }
+
+        try {
+            updateActionDescription((Collection<ActionDescription>) ProtoBufFieldProcessor.getRepeatedFieldList("action", (Message) data));
+        } catch (NotAvailableException ex) {
+            ExceptionPrinter.printHistory("Incoming DataType["+data.getClass().getSimpleName()+"] does not provide an action list!", ex, LOGGER, LogLevel.WARN);
+            return;
+        }
+    };
 
     public RemoteAction(final Future<ActionDescription> actionFuture) {
-        this.actionFuture = actionFuture;
         this.actionParameterBuilder = null;
+        this.actionDecriptionObservable = new ObservableImpl<>();
+        this.initFutureObservationTask(actionFuture);
     }
 
     public RemoteAction(final Unit<?> executorUnit, final ActionParameter actionParameter) throws InstantiationException, InterruptedException {
         this.actionParameterBuilder = actionParameter.toBuilder();
+        this.actionDecriptionObservable = new ObservableImpl<>(this);
         try {
             // setup initiator
             this.actionParameterBuilder.getActionInitiatorBuilder().setInitiatorId(executorUnit.getId());
@@ -69,49 +93,72 @@ public class RemoteAction implements Action {
         }
     }
 
-    public Future<ActionDescription> execute(final ActionDescription causeActionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> execute(final ActionDescription causeActionDescription) {
 
         // check if action remote was instantiated via task future.
         if (actionParameterBuilder == null) {
-            throw new NotAvailableException("ActionParameter");
+            return FutureProcessor.canceledFuture(new NotAvailableException("ActionParameter"));
+        }
+
+        if (isRunning()) {
+            return FutureProcessor.canceledFuture(new InvalidStateException("Action is still running and can not be executed twice!"));
         }
 
         synchronized (executionSync) {
-            actionParameterBuilder.setCause(causeActionDescription);
-            return execute();
+            if(causeActionDescription == null) {
+                actionParameterBuilder.clearCause();
+            } else {
+                actionParameterBuilder.setCause(causeActionDescription);
+            }
+            synchronized (executionSync) {
+                try {
+                    return initFutureObservationTask(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
+                } catch (CouldNotPerformException ex) {
+                    return FutureProcessor.canceledFuture(ex);
+                }
+            }
         }
     }
 
     @Override
-    public Future<ActionDescription> execute() throws CouldNotPerformException {
-
-        // check if action remote was instantiated via task future.
-        if (actionParameterBuilder == null) {
-            throw new NotAvailableException("ActionParameter");
-        }
-
-        synchronized (executionSync) {
-            actionFuture = targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build());
-            executionSync.notifyAll();
-            return actionFuture;
-        }
+    public Future<ActionDescription> execute() {
+        return execute(null);
     }
 
-    public void waitForFinalization() throws CouldNotPerformException, InterruptedException {
-        Future currentExecution;
-        synchronized (executionSync) {
-            if (actionFuture == null) {
-                throw new InvalidStateException("No execution running!");
-            }
-            currentExecution = actionFuture;
-        }
+    private Future<ActionDescription> initFutureObservationTask(final Future<ActionDescription> future) {
+        futureObservationTask = GlobalCachedExecutorService.submit(() -> {
+            try {
+                final ActionDescription actionDescription = future.get();
+                synchronized (executionSync) {
+                    RemoteAction.this.actionDescription = actionDescription;
 
-        try {
-            // todo: verify via unit allocation.
-            currentExecution.get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not wait for execution!", ex);
-        }
+                    // configure target unit if needed. This is the case if this remote action was instantiated via a future object.
+                    if(targetUnit == null) {
+                        targetUnit = Units.getUnit(actionDescription.getServiceStateDescription().getUnitId(), false);
+                    }
+
+                    // register action update observation
+                    targetUnit.addDataObserver(unitObserver);
+
+                    executionSync.notifyAll();
+
+                    // because future can already be outdated but the update not received because
+                    // the action id was not yet available we need to trigger an manual update.
+                    updateActionDescription(targetUnit.getActionList());
+                }
+                return actionDescription;
+            } catch (InterruptedException ex) {
+                throw ex;
+            } catch (CancellationException ex) {
+                // in case the action is canceled, this is done via the futureObservationTask which than causes this cancellation exception.
+                // But in this case we need to cancel the initial future as well.
+                future.cancel(true);
+                throw new ExecutionException(ex);
+            } catch (ExecutionException ex) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable("Could not observe "+this+ "!", ex, LOGGER);
+            }
+        });
+        return futureObservationTask;
     }
 
     /**
@@ -121,77 +168,134 @@ public class RemoteAction implements Action {
      */
     @Override
     public ActionDescription getActionDescription() throws NotAvailableException {
-        try {
-            synchronized (executionSync) {
-                if (actionFuture == null) {
-                    throw new NotAvailableException("ActionFuture");
-                }
-                final ActionDescription actionDescription = actionFuture.get(1, TimeUnit.SECONDS);
-                if (actionDescription == null) {
-                    throw new InvalidStateException("Task returned null!");
-                }
-                return actionDescription;
-            }
-        } catch (CouldNotPerformException | ExecutionException | CancellationException | InterruptedException | TimeoutException ex) {
-            if(actionFuture != null && actionFuture.isCancelled()) {
-                LOGGER.warn("Action future was canceled!");
-            }
-            throw new NotAvailableException(this.getClass().getSimpleName(), "ActionDescription", ex);
+        if (actionDescription == null) {
+            throw new NotAvailableException(this.getClass().getSimpleName(), "ActionDescription");
         }
+        return actionDescription;
     }
 
     @Override
     public boolean isValid() {
-        return (actionParameterBuilder!= null || actionFuture != null) && Action.super.isValid();
+        return (actionParameterBuilder!= null || futureObservationTask != null) && Action.super.isValid();
     }
 
     @Override
     public boolean isRunning() {
-        return isValid() && actionFuture != null && (!actionFuture.isDone() || Action.super.isRunning());
+        return isValid() && futureObservationTask != null && (!futureObservationTask.isDone() || Action.super.isRunning());
     }
 
     @Override
     public Future<ActionDescription> cancel() {
         try {
-            if (!actionFuture.isDone()) {
-                actionFuture.cancel(true);
+            synchronized (executionSync) {
+                if (futureObservationTask == null) {
+                    return FutureProcessor.canceledFuture(new InvalidStateException(this + " has never been executed!"));
+                }
+
+                if (!futureObservationTask.isDone()) {
+                    futureObservationTask.cancel(true);
+                }
+                return targetUnit.cancelAction(getActionDescription());
             }
-            return targetUnit.cancelAction(getActionDescription());
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ex);
         }
     }
 
-    @Override
-    public void waitUntilFinish() throws InterruptedException {
-        return;
-        // todo redefine
-        // semantic changed on remote interface.
-        // wait for action not wait for execution
+    private void updateActionDescription(final Collection<ActionDescription> actionDescriptions) {
 
-//        synchronized (executionSync) {
-//            if(actionFuture == null) {
-//                executionSync.wait();
-//            }
-//            try {
-//                actionFuture.get();
-//            } catch (ExecutionException e) {
-//                // failed but still finished
-//            }
-//
-//
-//            if()
-//            // wait until done
-//        }
-    }
-
-    public Future<ActionDescription> getActionFuture() throws NotAvailableException {
-        if (actionFuture == null) {
-            throw new NotAvailableException("Future<ActionDescription>");
+        if(actionDescriptions == null) {
+            LOGGER.warn("Update skipped because no action descriptions passed!");
+            return;
         }
-        return actionFuture;
+
+        // update action description and notify
+        for (ActionDescription actionDescription : actionDescriptions) {
+            if (actionDescription.getId().equals(RemoteAction.this.actionDescription.getId())) {
+                synchronized (executionSync) {
+                    RemoteAction.this.actionDescription = actionDescription;
+
+                    // cleanup observation if action is done.
+                    if(!isRunning()) {
+                        targetUnit.removeDataObserver(unitObserver);
+                    }
+
+                    try {
+                        actionDecriptionObservable.notifyObservers(this, actionDescription);
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not notify all observers!", ex, LOGGER);
+                        return;
+                    }
+                    executionSync.notifyAll();
+                }
+                return;
+            }
+        }
     }
 
+    @Override
+    public void waitUntilDone() throws CouldNotPerformException, InterruptedException {
+        waitForSubmission();
+        synchronized (executionSync) {
+            // wait until done
+            while(actionDescription == null || isRunning() || !isDone()) {
+                executionSync.wait();
+            }
+        }
+    }
+
+    public void waitForSubmission() throws CouldNotPerformException, InterruptedException {
+        synchronized (executionSync) {
+            if (futureObservationTask == null) {
+                throw new InvalidStateException("Action was never executed!");
+            }
+        }
+
+        try {
+            futureObservationTask.get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not wait for submission!", ex);
+        }
+    }
+
+    public void waitForSubmission(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException {
+        synchronized (executionSync) {
+            if (futureObservationTask == null) {
+                throw new InvalidStateException("Action was never executed!");
+            }
+        }
+
+        try {
+            futureObservationTask.get(timeout, timeUnit);
+        } catch (ExecutionException | CancellationException ex) {
+            throw new CouldNotPerformException("Could not wait for submission!", ex);
+        }
+    }
+
+    public boolean isSubmissionDone() {
+        return futureObservationTask != null && futureObservationTask.isDone();
+    }
+
+    public void addActionDescriptionObserver(final Observer<RemoteAction, ActionDescription> observer) {
+        actionDecriptionObservable.addObserver(observer);
+    }
+
+    public void removeActionDescriptionObserver(final Observer<RemoteAction, ActionDescription> observer) {
+        actionDecriptionObservable.removeObserver(observer);
+    }
+
+    /**
+     * Method returns the related unit which will be affected by this action.
+     * @return the target unit.
+     */
+    public Unit<?> getTargetUnit() {
+        return targetUnit;
+    }
+
+    /**
+     * Generates a string representation of this action.
+     * @return a description of this unit.
+     */
     @Override
     public String toString() {
         return Action.toString(this);
