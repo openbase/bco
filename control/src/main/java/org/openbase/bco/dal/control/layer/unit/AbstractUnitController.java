@@ -574,7 +574,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * @return the {@code action} which is ranked as highest one and which is currently allocating this unit.
      */
     public Action reschedule() {
-        return reschedule();
+        return reschedule(null);
     }
 
     /**
