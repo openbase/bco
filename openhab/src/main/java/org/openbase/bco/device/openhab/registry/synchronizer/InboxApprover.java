@@ -28,6 +28,8 @@ import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -64,7 +66,7 @@ public class InboxApprover implements Activatable {
                 OpenHABRestCommunicator.getInstance().approve(discoveryResultDTO.thingUID, discoveryResultDTO.label);
             } catch (NotAvailableException ex) {
                 // no matching device class found so ignore it for now
-                LOGGER.warn("Ignore discovered thing[" + discoveryResultDTO.thingUID + "] because: " + ex.getMessage());
+                ExceptionPrinter.printHistory("Ignore discovered thing[" + discoveryResultDTO.thingUID + "].", ex, LOGGER, LogLevel.WARN);
             }
         };
     }
