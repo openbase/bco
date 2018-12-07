@@ -133,8 +133,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
     default boolean isDone() {
         try {
             switch (getActionState()) {
-                case ABORTED:
-                case EXECUTION_FAILED:
+                case CANCELED:
                 case REJECTED:
                 case FINISHED:
                     return true;
@@ -217,7 +216,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
                 case SECURITY:
                     emphasisValue = Math.max(emphasisValue, emphasisState.getSecurity());
                     break;
-                case SAVETY:
+                case SAFETY:
                     // because {@code emphasisValue} is max 1.0 we add 10 to force the safety category.
                     emphasisValue = 10;
                     break;

@@ -30,12 +30,15 @@ import org.openbase.bco.dal.lib.action.SchedulableAction;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.*;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
@@ -64,8 +67,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
-import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
@@ -78,6 +81,10 @@ public class ActionImpl implements SchedulableAction {
     public static final String SERVICE_ATTRIBUTE_KEY = "SERVICE_ATTRIBUTE";
     public static final String GENERIC_ACTION_LABEL = UNIT_LABEL_KEY + "[" + SERVICE_ATTRIBUTE_KEY + "]";
 
+    /**
+     * Timeout how long it is waited on execution failure until a rescheduling process is triggered.
+     */
+    private static final long EXECUTION_FAILURE_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
     public static final Map<String, String> GENERIC_ACTION_DESCRIPTION_MAP = new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
@@ -215,7 +222,7 @@ public class ActionImpl implements SchedulableAction {
      */
     private boolean isExecuting() {
         synchronized (executionSync) {
-            return actionTask != null && !actionTask.isDone();
+            return actionTask != null && !actionTask.isDone() || getActionState() == State.EXECUTING;
         }
     }
 
@@ -234,60 +241,48 @@ public class ActionImpl implements SchedulableAction {
             actionTask = GlobalCachedExecutorService.submit(() -> {
                 try {
                     synchronized (executionSync) {
-
                         // Initiate
                         updateActionState(ActionState.State.INITIATING);
 
                         try {
-                            try {
-                                boolean hasOperationService = false;
-                                for (ServiceDescription description : unit.getUnitTemplate().getServiceDescriptionList()) {
-                                    if (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == ServicePattern.OPERATION) {
-                                        hasOperationService = true;
-                                        break;
-                                    }
-                                }
-
-                                // only update requested state if it is an operation state, else throw an exception if not in provider control mode
-                                if (!hasOperationService) {
-                                    if (!JPService.getProperty(JPProviderControlMode.class).getValue()) {
-                                        throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
-                                    }
-                                } else {
-                                    setRequestedState();
-                                }
-
-                                // Execute
-                                updateActionState(ActionState.State.EXECUTING);
-
+                            while (!Thread.interrupted()) {
                                 try {
+                                    boolean hasOperationService = false;
+                                    for (ServiceDescription description : unit.getUnitTemplate().getServiceDescriptionList()) {
+                                        if (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == ServicePattern.OPERATION) {
+                                            hasOperationService = true;
+                                            break;
+                                        }
+                                    }
+
+                                    // only update requested state if it is an operation state, else throw an exception if not in provider control mode
+                                    if (!hasOperationService) {
+                                        if (!JPService.getProperty(JPProviderControlMode.class).getValue()) {
+                                            throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
+                                        }
+                                    } else {
+                                        setRequestedState();
+                                    }
+
+                                    // Execute
+                                    updateActionState(ActionState.State.EXECUTING);
+
                                     LOGGER.debug("Wait for execution...");
                                     waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
                                     LOGGER.debug("Execution finished!");
-                                } catch (CouldNotPerformException ex) {
-                                    if (ex.getCause() instanceof InterruptedException) {
-                                        updateActionState(ActionState.State.ABORTED);
-                                    } else {
-                                        updateActionState(ActionState.State.EXECUTION_FAILED);
-                                    }
-                                    throw new ExecutionException(ex);
+                                    break;
+                                } catch (CouldNotPerformException | JPNotAvailableException ex) {
+                                    updateActionState(ActionState.State.EXECUTION_FAILED);
+                                    ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
+                                    Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
                                 }
-                                updateActionState(State.FINISHED);
-                                return getActionDescription();
-                            } catch (final CancellationException ex) {
-                                updateActionState(ActionState.State.REJECTED);
-                                throw ex;
                             }
-                        } catch (CouldNotPerformException ex) {
-                            updateActionState(ActionState.State.ABORTED);
-                            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+                            return getActionDescription();
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                            throw ex;
                         }
                     }
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not execute action!", ex);
-                } catch (InterruptedException ex) {
-                    updateActionState(ActionState.State.ABORTED);
-                    throw ex;
                 } finally {
                     synchronized (executionSync) {
                         actionTask = null;
@@ -301,10 +296,17 @@ public class ActionImpl implements SchedulableAction {
 
     public void waitUntilDone() throws InterruptedException {
         synchronized (executionSync) {
-            if (!isExecuting()) {
-                return;
+            while (!isDone()) {
+                executionSync.wait();
             }
-            executionSync.wait();
+        }
+    }
+
+    public void waitUntilExecuted() throws InterruptedException {
+        synchronized (executionSync) {
+            while (isExecuting()) {
+                executionSync.wait();
+            }
         }
     }
 
@@ -336,16 +338,39 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public Future<ActionDescription> cancel() {
-
-        // return if action is done
-        if (actionTask == null || actionTask.isDone()) {
+        // if action not executing, set to canceled and finish
+        if (!isExecuting()) {
+            updateActionState(State.CANCELED);
             return CompletableFuture.completedFuture(getActionDescription());
         }
 
+        // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
+        updateActionState(State.CANCELING);
+        return GlobalCachedExecutorService.submit(() -> {
+            if (actionTask != null && !actionTask.isDone()) {
+                actionTask.cancel(true);
+                waitUntilExecuted();
+            }
+            updateActionState(State.CANCELED);
+            unit.reschedule();
+            return null;
+        });
+    }
+
+    @Override
+    public Future<ActionDescription> abort() {
+        if (!isExecuting()) {
+            // this should never happen since a task should be executing before it is aborted
+            LOGGER.error("Aborted action was not executing before");
+            return CompletableFuture.completedFuture(getActionDescription());
+        }
+
+        updateActionState(State.ABORTING);
         return GlobalCachedExecutorService.submit(() -> {
             actionTask.cancel(true);
-            waitUntilDone();
-            unit.reschedule();
+            waitUntilExecuted();
+            updateActionState(State.SCHEDULED);
+            // rescheduling is not necessary because aborting is only done when rescheduling
             return null;
         });
     }
@@ -358,9 +383,46 @@ public class ActionImpl implements SchedulableAction {
         updateActionState(State.SCHEDULED);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reject() {
+        updateActionState(State.REJECTED);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void finish() {
+        updateActionState(State.FINISHED);
+    }
+
     private void updateActionState(ActionState.State state) {
-        actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
         LOGGER.info(this + " State[" + state.name() + "]");
+
+        actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
+        try {
+            ServiceStateProcessor.updateLatestValueOccurrence(state.getValueDescriptor(), TimestampProcessor.getCurrentTimestamp(), actionDescriptionBuilder.getActionStateBuilder());
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        }
+
+        synchronized (executionSync) {
+            executionSync.notifyAll();
+        }
+
+        // make sure that state changes to finishing states, scheduled and executing always trigger a notification
+        switch (state) {
+            case CANCELED:
+            case REJECTED:
+            case FINISHED:
+            case SCHEDULED:
+            case EXECUTING:
+                unit.notifyScheduledActionList();
+                break;
+        }
     }
 
     private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {

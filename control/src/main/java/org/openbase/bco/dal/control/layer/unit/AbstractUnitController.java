@@ -27,6 +27,7 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import org.omg.PortableInterceptor.LOCATION_FORWARD;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
@@ -55,8 +56,8 @@ import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
@@ -67,6 +68,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -80,8 +82,10 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator;
 import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import rst.domotic.action.ActionReferenceType.ActionReference;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -103,6 +107,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
@@ -116,6 +122,10 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
 
     private static final SessionManager MOCKUP_SESSION_MANAGER = new SessionManager();
+    /**
+     * Timeout defining how long finished actions will be minimally kept in the action list.
+     */
+    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
@@ -128,12 +138,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
     private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
+    private final ReentrantReadWriteLock actionListNotificationLock = new ReentrantReadWriteLock();
     private final ActionComparator actionComparator;
     private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
     private String classDescription = "";
-    private ArrayList<SchedulableAction> scheduledActionList, actionsToRemoveList;
+    private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
@@ -141,7 +152,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         this.unitDataObservableMap = new HashMap<>();
         this.operationServiceMap = new TreeMap<>();
         this.scheduledActionList = new ArrayList<>();
-        this.actionsToRemoveList = new ArrayList<>();
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             unitDataObservableMap.put(serviceTempus, new UnitDataFilteredObservable<>(this, serviceTempus));
@@ -495,12 +505,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
-
-        // check if an existing action should just be canceled.
-        if (actionDescription.hasId() && !actionDescription.getId().isEmpty() && actionDescription.getCancel()) {
-            return cancelAction(actionDescription);
-        }
-
         try {
             final ActionImpl action = new ActionImpl(actionDescription, this);
             try {
@@ -517,7 +521,17 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
+    @Override
     public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
+        return cancelAction(actionDescription, null);
+    }
+
+    private Future<ActionDescription> cancelAction(final ActionDescription actionDescription, String authenticatedId) {
+        //TODO validate that on other permissions the initiator id is an empty string
+        if (authenticatedId == null) {
+            authenticatedId = "";
+        }
+
         try {
             Action actionToCancel = null;
             synchronized (scheduledActionListLock) {
@@ -536,6 +550,23 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     return CompletableFuture.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.UNKNOWN).build()).build());
                 }
 
+                if (!Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(authenticatedId)) {
+                    // authenticated is not an admin
+                    if (actionToCancel.getActionDescription().getActionInitiator().getInitiatorId().equals(authenticatedId)) {
+                        // authenticated user it not the direct initiator
+                        boolean isAuthorized = false;
+                        for (final ActionReference actionReference : actionToCancel.getActionDescription().getActionChainList()) {
+                            if (actionReference.getActionInitiator().getInitiatorId().equals(authenticatedId)) {
+                                isAuthorized = true;
+                                break;
+                            }
+                        }
+
+                        if (!isAuthorized) {
+                            throw new PermissionDeniedException("User [" + authenticatedId + "] is not allowed to cancel action [" + actionDescription.getId() + "]");
+                        }
+                    }
+                }
                 // cancel the action which triggers automatically a reschedule.
                 return actionToCancel.cancel();
             }
@@ -545,20 +576,17 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     private Future<ActionDescription> scheduleAction(final SchedulableAction actionToSchedule) {
-        return GlobalCachedExecutorService.submit(() -> {
-            synchronized (scheduledActionListLock) {
-                Action executingAction = reschedule(actionToSchedule);
+        Action executingAction = reschedule(actionToSchedule);
 
-                if (actionToSchedule != executingAction) {
-                    logger.info("================================================================================");
-                    if (executingAction == null) {
-                        logger.error("{} seems not to be valid and was excluded from execution of {}.", actionToSchedule, getLabel());
-                    }
-                    logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, getLabel(), getSchedulingIndex(actionToSchedule));
-                }
-                return actionToSchedule.getActionDescription();
+        if (actionToSchedule != executingAction) {
+            logger.info("================================================================================");
+            if (executingAction == null) {
+                logger.error("{} seems not to be valid and was excluded from execution of {}.", actionToSchedule, this);
             }
-        });
+            logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+        }
+
+        return CompletableFuture.completedFuture(actionToSchedule.getActionDescription());
     }
 
     private int getSchedulingIndex(Action action) {
@@ -568,54 +596,106 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     /**
-     * Recalculate the action ranking and execute action with highest ranking if not executing or finished.
-     * If the current action is not finished those will be rejected.
+     * Recalculate the action ranking and execute the action with the highest ranking if not already executing or finished.
+     * If the current action is not finished it will be rejected.
      *
-     * @return the {@code action} which is ranked as highest one and which is currently allocating this unit.
+     * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
+     * If there is no action left to schedule null is returned.
      */
     public Action reschedule() {
         return reschedule(null);
     }
 
     /**
-     * Recalculate the action ranking and execute action with highest ranking if not executing or finished.
-     * If the current action is not finished those will be rejected.
+     * Recalculate the action ranking and execute the action with the highest ranking if not already executing or finished.
+     * If the current action is not finished it will be rejected.
      *
-     * @param actionToSchedule a new action to schedule. If null those will be ignored.
+     * @param actionToSchedule a new action to schedule. If null it will be ignored.
      *
-     * @return the {@code action} which is ranked as highest one and which is currently allocating this unit.
+     * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
+     * If there is no action left to schedule null is returned.
      */
     public Action reschedule(final SchedulableAction actionToSchedule) {
+        logger.warn("Reschedule actions of {}", this);
         synchronized (scheduledActionListLock) {
+            // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
+            actionListNotificationLock.writeLock().lock();
 
             if (actionToSchedule != null) {
+                // test if there is another action already in the list by the same initiator
+                try {
+                    final ActionInitiator newInitiator = ActionDescriptionProcessor.getInitialInitiator(actionToSchedule.getActionDescription());
+                    for (final SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
+                        final ActionInitiator currentInitiator = ActionDescriptionProcessor.getInitialInitiator(schedulableAction.getActionDescription());
+                        if (!newInitiator.getInitiatorId().equals(currentInitiator.getInitiatorId())) {
+                            // actions do not have the same initiator
+                            continue;
+                        }
+
+                        // same initiator - schedule the newer one
+                        if (actionToSchedule.getCreationTime() < schedulableAction.getCreationTime()) {
+                            // new action is actually older than one already scheduled by the same initiator, so reject it
+                            actionToSchedule.reject();
+                            logger.warn("New Action {} from initiator {} is older than a currently scheduled one", actionToSchedule, newInitiator.getInitiatorId());
+                        } else {
+                            logger.warn("Reject old action because of newer one from same initiator");
+                            // actionToSchedule is newer, so reject old one
+                            schedulableAction.reject();
+                        }
+                    }
+                } catch (NotAvailableException ex) {
+                    ExceptionPrinter.printHistory("Could detect initiator or creation time!", ex, logger);
+                }
+
+                // add new action to the list
                 scheduledActionList.add(actionToSchedule);
             }
 
             try {
-                // remove outdated actions
-                for (Action action : new ArrayList<>(scheduledActionList)) {
+                // save if there is at least one action still awaiting execution
+                boolean atLeastOneActionNoteDone = false;
+
+                // reject outdated and finish completed actions
+                for (final SchedulableAction action : scheduledActionList) {
                     if (!action.isValid()) {
-                        scheduledActionList.remove(action);
+                        if (action.getActionState() == State.EXECUTING) {
+                            action.finish();
+                        } else {
+                            logger.warn("Reject action because its invalid");
+                            action.reject();
+                        }
+                    }
+                }
+
+                // remove actions which are in a final state for more than 15 seconds
+                for (final SchedulableAction action : new ArrayList<>(scheduledActionList)) {
+                    if (action.isDone()) {
+                        try {
+                            final Timestamp latestValueOccurrence = ServiceStateProcessor.getLatestValueOccurrence(action.getActionState().getValueDescriptor(), action.getActionDescription().getActionState());
+                            if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(latestValueOccurrence)) > FINISHED_ACTION_REMOVAL_TIMEOUT) {
+                                scheduledActionList.remove(action);
+                            }
+                        } catch (NotAvailableException ex) {
+                            // action timestamp could not be evaluated so print warning and remove action so that it does not stay on the list forever
+                            logger.warn("Remove finished action {} because its finishing time could not be evaluated", action);
+                            scheduledActionList.remove(action);
+                        }
+                    } else {
+                        atLeastOneActionNoteDone = true;
                     }
                 }
 
                 // skip if no actions are available
-                if (scheduledActionList.isEmpty()) {
+                if (!atLeastOneActionNoteDone) {
                     return null;
                 }
 
                 // detect and store current action
                 SchedulableAction currentAction = null;
-                for (int i = 0; i < scheduledActionList.size(); i++) {
-                    try {
-                        if (scheduledActionList.get(i).getActionDescription().getActionState().getValue() == State.EXECUTING) {
-                            currentAction = scheduledActionList.get(i);
-                            continue;
-                        }
-                    } catch (NotAvailableException e) {
-                        // continue if action is invalid
-                        continue;
+                for (final SchedulableAction schedulableAction : scheduledActionList) {
+                    if (schedulableAction.getActionDescription().getActionState().getValue() == State.EXECUTING) {
+                        currentAction = schedulableAction;
+                        break;
                     }
                 }
 
@@ -623,56 +703,21 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 scheduledActionList.sort(actionComparator);
 
                 // detect action with highest ranking
-                SchedulableAction nextAction = scheduledActionList.get(0);
+                final SchedulableAction nextAction = scheduledActionList.get(0);
 
                 // handle current action
                 if (currentAction != null) {
-
                     // if the next action is still the same than we are finished
                     if (nextAction == currentAction) {
                         return currentAction;
                     }
 
-                    // cancel the current action
-                    currentAction.cancel();
-
-                    // if still valid than schedule again for later execution.
-                    if (currentAction.isValid()) {
-                        currentAction.schedule();
-                    } else {
-                        actionsToRemoveList.add(currentAction);
-                    }
+                    // abort the current action
+                    currentAction.abort();
                 }
 
                 // execute action with highest ranking
                 nextAction.execute();
-
-                //TODO: rethink - initiator from chain, remove before selection of next action, take the newest action (creation time)
-                // remove duplicated actions of the same initiator unit.
-                if (actionToSchedule != null) {
-                    final String initiatorId;
-                    try {
-                        initiatorId = actionToSchedule.getActionDescription().getActionInitiator().getInitiatorId();
-                        for (Action action : new ArrayList<>(scheduledActionList)) {
-                            try {
-                                if (action.getActionDescription().getActionInitiator().getInitiatorId().equals(initiatorId) && actionToSchedule != action) {
-                                    if (action == nextAction) {
-                                        scheduledActionList.remove(actionToSchedule);
-                                    } else {
-                                        scheduledActionList.remove(action);
-                                    }
-                                }
-                            } catch (NotAvailableException exx) {
-                                ExceptionPrinter.printHistory("Could not cleanup " + action, exx, logger);
-                            }
-                        }
-                    } catch (NotAvailableException ex) {
-                        ExceptionPrinter.printHistory("Could detect initiator!", ex, logger);
-                    }
-                }
-
-                // cleanup actions
-                scheduledActionList.removeAll(actionsToRemoveList);
 
                 // setup next schedule trigger
                 try {
@@ -683,18 +728,45 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 return nextAction;
             } finally {
-                // update action description list in unit builder
-                try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
-                    final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
-                    dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
-                    for (Action action : scheduledActionList) {
-                        dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, action.getActionDescription());
-                    }
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
+                logger.warn("Update transaction id in reschedule method");
+                try {
+                    updateTransactionId();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update transaction id", ex, logger);
                 }
+                // update action description list in unit builder
+                notifyScheduledActionListUnlocked();
+                // unlock notification lock so that notifications for action state changes are notified again
+                actionListNotificationLock.writeLock().unlock();
             }
         }
+    }
+
+    /**
+     * Update the action list in the data builder and notify.
+     */
+    private void notifyScheduledActionListUnlocked() {
+        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+            final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
+            dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
+            for (final Action action : scheduledActionList) {
+                dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, action.getActionDescription());
+            }
+            logger.warn("Notify unit data with transaction id [" + getTransactionId() + "]");
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
+        }
+    }
+
+    /**
+     * Update the action list in the data builder and notify. Skip updates if the unit is currently rescheduling actions.
+     */
+    public void notifyScheduledActionList() {
+        if (actionListNotificationLock.isWriteLocked()) {
+            return;
+        }
+
+        notifyScheduledActionListUnlocked();
     }
 
     @Override
@@ -702,6 +774,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
             try {
                 final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
+                if (actionDescription.hasId() && !actionDescription.getId().isEmpty() && actionDescription.getCancel()) {
+                    // action should be cancelled, so verify that the authenticated user is either an admin or one of the initiators
+                    try {
+                        return cancelAction(actionDescription, authPair.getAuthenticatedBy()).get();
+                    } catch (ExecutionException ex) {
+                        throw new CouldNotPerformException("Could cancel authenticated action!", ex);
+                    }
+                }
                 final Builder actionDescriptionBuilder = actionDescription.toBuilder();
 
                 // clear auth fields
@@ -857,8 +937,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // verify the service state
             newState = Services.verifyAndRevalidateServiceState(newState);
 
-            updateTransactionId();
-
             // update the action description
             Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             newState = newState.toBuilder().setField(descriptor, newState.getField(descriptor)).build();
@@ -872,7 +950,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 }
             } catch (NotAvailableException ex) {
                 // skip update if field is missing
-                ExceptionPrinter.printHistory("Latest value occurrency field update skipped!", ex, logger);
+                ExceptionPrinter.printHistory("Latest value occurrence field update skipped!", ex, logger);
             }
 
             // update the current state

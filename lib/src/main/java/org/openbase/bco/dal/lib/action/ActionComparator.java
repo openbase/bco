@@ -74,9 +74,24 @@ public class ActionComparator implements Comparator<Action> {
     @Override
     public int compare(final Action action1, final Action action2) {
         try {
+            // make sure that finished actions always end up at the end of the list
+            // this is required because actions are not immediately removed when they are done
+            // they stay for a while to make sure their finishing state is synced to all remotes
+            if (action1.isDone()) {
+                if (action2.isDone()) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            } else {
+                if (action2.isDone()) {
+                    return -1;
+                }
+            }
+
             // resolve original initiators of actions
-            final InitiatorType initiatorType1 = action1.getActionDescription().getActionChainList().isEmpty() ? action1.getActionDescription().getActionInitiator().getInitiatorType() : action1.getActionDescription().getActionChain(0).getActionInitiator().getInitiatorType();
-            final InitiatorType initiatorType2 = action2.getActionDescription().getActionChainList().isEmpty() ? action2.getActionDescription().getActionInitiator().getInitiatorType() : action2.getActionDescription().getActionChain(0).getActionInitiator().getInitiatorType();
+            final InitiatorType initiatorType1 = ActionDescriptionProcessor.getInitialInitiator(action1.getActionDescription()).getInitiatorType();
+            final InitiatorType initiatorType2 = ActionDescriptionProcessor.getInitialInitiator(action2.getActionDescription()).getInitiatorType();
 
             // compute ranking via priority
             // the priority of this action by subtracting the priority of the given action. If this action is initiated by a human it gets an extra half-point.

@@ -7,8 +7,8 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.action.ActionInitiatorType.ActionInitiator;
 import rst.domotic.action.ActionParameterType.ActionParameter;
@@ -142,6 +142,23 @@ public class ActionDescriptionProcessor {
     }
 
     /**
+     * Return the initial initiator of an action. According to {@link #updateActionChain(Builder, ActionDescriptionOrBuilder)}
+     * the immediate parent of an action is the first element in its chain. Thus, the last element of the chain contains
+     * the original initiator. If the action chain is empty, the initiator of the action is returned.
+     *
+     * @param actionDescription the action description from which the original initiator is resolved.
+     *
+     * @return the initial initiator of an action as described above.
+     */
+    public static ActionInitiator getInitialInitiator(final ActionDescriptionOrBuilder actionDescription) {
+        if (actionDescription.getActionChainList().isEmpty()) {
+            return actionDescription.getActionInitiator();
+        } else {
+            return actionDescription.getActionChain(actionDescription.getActionChainCount() - 1).getActionInitiator();
+        }
+    }
+
+    /**
      * Method generates a description for the given action chain.
      *
      * @param actionDescriptionCollection a collection of depending action descriptions.
@@ -180,6 +197,7 @@ public class ActionDescriptionProcessor {
 //        return updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
 //    }
 //
+
     /**
      * Generates an action description according to the configuration of this unit remote.
      * The action description is generated using the ActionDescriptionProcessor.
@@ -224,6 +242,7 @@ public class ActionDescriptionProcessor {
 //        return actionDescriptionBuilder;
 //    }
 //
+
     /**
      * Generates an action description according to the given attributes.
      * The action description is generated using the ActionDescriptionProcessor.
@@ -263,6 +282,7 @@ public class ActionDescriptionProcessor {
 //        return updateActionDescription(generateActionDescriptionBuilder(serviceAttribute, serviceType, authorized), serviceAttribute, serviceType, unit);
 //    }
 //
+
     /**
      * Generates an action description according to the configuration of the given unit.
      * The action description is generated using the ActionDescriptionProcessor.

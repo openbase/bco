@@ -25,8 +25,24 @@ package org.openbase.bco.dal.lib.action;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Initializable;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.state.ActionStateType.ActionState.State;
+
+import java.util.concurrent.Future;
 
 public interface SchedulableAction extends Action, Executable<ActionDescription>, Initializable<ActionDescription> {
     void schedule();
+
+    void reject();
+
+    void finish();
+
+    Future<ActionDescription> abort();
+
+    @Override
+    ActionDescription getActionDescription();
+
+    @Override
+    default State getActionState() {
+        return getActionDescription().getActionState().getValue();
+    }
 }
