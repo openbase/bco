@@ -27,13 +27,17 @@ import javafx.scene.layout.BorderPane;
 import org.openbase.jul.visual.javafx.fxml.FXMLProcessor;
 import org.openbase.jul.visual.javafx.launch.AbstractFXMLApplication;
 
-public class BCOActions extends AbstractFXMLApplication {
+public class BCOActionInspector extends AbstractFXMLApplication {
 
-    public BCOActions() {
+    public BCOActionInspector() {
         super(UnitAllocationPane.class);
     }
 
     @Override
     protected void registerProperties() {
+    }
+
+    public static void main(String[] args) {
+        BCOActionInspector.launch(args);
     }
 }

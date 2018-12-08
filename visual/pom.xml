@@ -55,7 +55,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.dal.visual.action.BCOActions</mainClass>
+                            <mainClass>org.openbase.bco.dal.visual.action.BCOActionInspectorLauncher</mainClass>
                             <id>bco-action-inspector</id>
                             <platforms>
                                 <platform>unix</platform>
