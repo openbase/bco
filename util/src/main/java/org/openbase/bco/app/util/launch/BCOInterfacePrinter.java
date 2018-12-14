@@ -21,7 +21,7 @@ package org.openbase.bco.app.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,11 +113,11 @@ public class BCOInterfacePrinter {
      * @return the unit data class.
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class name could not be detected.
      */
-    public static Class<? extends GeneratedMessage> getRegistryDataClass(final String registryDataClassSimpleName) throws NotAvailableException {
+    public static Class<? extends Message> getRegistryDataClass(final String registryDataClassSimpleName) throws NotAvailableException {
         final String registryDataClassName = UnitRegistryData.class.getPackage().getName() + "." + registryDataClassSimpleName + "DataType$" + registryDataClassSimpleName + "Data";
 
         try {
-            return (Class<? extends GeneratedMessage>) Class.forName(registryDataClassName);
+            return (Class<? extends Message>) Class.forName(registryDataClassName);
         } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
             throw new NotAvailableException("RegistryDataClass", registryDataClassName, new CouldNotPerformException("Could not detect class!", ex));
         }

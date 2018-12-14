@@ -22,7 +22,7 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateObserver;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
@@ -107,7 +107,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private final Object AGENT_LOCK = new SyncObject("PowerStateLock");
     private PowerState.State latestPowerStateSource = PowerState.State.UNKNOWN;
     private PowerState.State latestPowerStateTarget = PowerState.State.UNKNOWN;
-    private final Observer<ServiceStateProvider<GeneratedMessage>, GeneratedMessage> sourceObserver, sourceRequestObserver, targetObserver, targetRequestObserver;
+    private final Observer<ServiceStateProvider<Message>, Message> sourceObserver, sourceRequestObserver, targetObserver, targetRequestObserver;
     private final List<UnitRemote> targetRemotes = new ArrayList<>();
     private UnitRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
@@ -117,28 +117,28 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         super(PowerStateSynchroniserAgent.class);
 
         // initialize observer
-        sourceObserver = (final ServiceStateProvider<GeneratedMessage> source, GeneratedMessage data) -> {
+        sourceObserver = (final ServiceStateProvider<Message> source, Message data) -> {
             try {
                 handleSourcePowerStateUpdate(((PowerState) data).getValue());
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         };
-        sourceRequestObserver = (final ServiceStateProvider<GeneratedMessage> source, GeneratedMessage data) -> {
+        sourceRequestObserver = (final ServiceStateProvider<Message> source, Message data) -> {
             try {
                 handleSourcePowerStateRequest(((PowerState) data).getValue());
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         };
-        targetObserver = (final ServiceStateProvider<GeneratedMessage> source, GeneratedMessage data) -> {
+        targetObserver = (final ServiceStateProvider<Message> source, Message data) -> {
             try {
                 handleTargetPowerStateUpdate(((PowerState) data).getValue());
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         };
-        targetRequestObserver = (final ServiceStateProvider<GeneratedMessage> source, GeneratedMessage data) -> {
+        targetRequestObserver = (final ServiceStateProvider<Message> source, Message data) -> {
             try {
                 handleTargetPowerStateRequest(((PowerState) data).getValue());
             } catch (Exception ex) {
