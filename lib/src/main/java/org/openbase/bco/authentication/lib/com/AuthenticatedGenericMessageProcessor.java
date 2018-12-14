@@ -22,20 +22,20 @@ package org.openbase.bco.authentication.lib.com;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
-public class AuthenticatedGenericMessageProcessor<M extends GeneratedMessage> extends GenericMessageProcessor<M> {
+public class AuthenticatedGenericMessageProcessor<M extends Message> extends GenericMessageProcessor<M> {
 
     public AuthenticatedGenericMessageProcessor(Class<M> dataClass) throws InitializationException {
         super(dataClass);
     }
 
     @Override
-    public M process(GeneratedMessage input) throws CouldNotPerformException, InterruptedException {
+    public M process(Message input) throws CouldNotPerformException, InterruptedException {
         if (input instanceof AuthenticatedValue) {
             AuthenticatedValue authenticatedValue = (AuthenticatedValue) input;
             return super.process(AuthenticatedMessageProcessor.getDataFromAuthenticatedValue(authenticatedValue, getDataClass()));

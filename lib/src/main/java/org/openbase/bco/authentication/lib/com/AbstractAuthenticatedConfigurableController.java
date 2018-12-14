@@ -22,7 +22,8 @@ package org.openbase.bco.authentication.lib.com;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -43,7 +44,9 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-public abstract class AbstractAuthenticatedConfigurableController<M extends GeneratedMessage, MB extends M.Builder<MB>, CONFIG extends GeneratedMessage> extends AbstractConfigurableController<M, MB, CONFIG> implements AuthenticatedRequestable {
+import java.io.Serializable;
+
+public abstract class AbstractAuthenticatedConfigurableController<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>, CONFIG extends Message> extends AbstractConfigurableController<M, MB, CONFIG> implements AuthenticatedRequestable {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));

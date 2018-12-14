@@ -23,7 +23,7 @@ package org.openbase.bco.authentication.lib.future;
  */
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -78,7 +78,7 @@ public class AuthenticatedValueFuture<RETURN> extends AbstractAuthenticationFutu
                 return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), getSessionManager().getSessionKey(), getReturnClass());
             } else {
                 try {
-                    if (!GeneratedMessage.class.isAssignableFrom(getReturnClass())) {
+                    if (!Message.class.isAssignableFrom(getReturnClass())) {
                         throw new CouldNotPerformException("AuthenticatedValue has a value but the client method did not expect one");
                     }
 
