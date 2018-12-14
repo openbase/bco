@@ -22,7 +22,7 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedCommunicationService;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -46,6 +46,7 @@ import org.openbase.jul.storage.registry.RegistryController;
 import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -59,7 +60,7 @@ import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONV
  * @param <MB>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractAuthenticatedCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
+public abstract class AbstractRegistryController<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>> extends AbstractAuthenticatedCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
 
     public static final boolean SPARSELY_REGISTRY_DATA_FILTERED = true;
     public static final boolean SPARSELY_REGISTRY_DATA_NOTIFIED = false;

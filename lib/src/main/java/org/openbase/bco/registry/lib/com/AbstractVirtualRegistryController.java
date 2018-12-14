@@ -21,7 +21,10 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Message;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -43,7 +46,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
  * @param <RM> The message type of the real registry which is mirrored by this virtual registry.
  */
 @Deprecated
-public abstract class AbstractVirtualRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>, RM> extends AbstractRegistryController<M, MB> {
+public abstract class AbstractVirtualRegistryController<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>, RM> extends AbstractRegistryController<M, MB> {
     
 //    private final VirtualRegistrySynchronizer virtualRegistrySynchronizer;
 //

@@ -22,7 +22,7 @@ package org.openbase.bco.registry.lib.generator;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
@@ -37,7 +37,7 @@ import static org.openbase.jul.iface.provider.LabelProvider.TYPE_FIELD_LABEL;
  * @param <M>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UUIDGenerator<M extends GeneratedMessage> implements IdGenerator<String, M> {
+public class UUIDGenerator<M extends Message> implements IdGenerator<String, M> {
 
     @Override
     public String generateId(final M message) {

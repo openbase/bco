@@ -22,8 +22,9 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -45,11 +46,11 @@ import java.util.Map;
  * @param <M>
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> extends AbstractRegistryRemote<M> {
+public abstract class AbstractVirtualRegistryRemote<M extends Message> extends AbstractRegistryRemote<M> {
 
     private final Map<SynchronizedRemoteRegistry, Descriptors.FieldDescriptor> remoteRegistryFieldDescriptorMap;
-    private final Map<SynchronizedRemoteRegistry, RegistryRemote<? extends GeneratedMessage>> remoteRegistrySyncMap;
-    private final List<RegistryRemote<? extends GeneratedMessage>> registryRemotes;
+    private final Map<SynchronizedRemoteRegistry, RegistryRemote<? extends Message>> remoteRegistrySyncMap;
+    private final List<RegistryRemote<? extends Message>> registryRemotes;
 
     private final SyncObject virtualRegistrySyncLock = new SyncObject("RegistryRemoteVirtualSyncLock");
     private final Observer synchronisationObserver;
@@ -96,13 +97,13 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         super.deactivate();
     }
 
-    protected void registerRegistryRemote(RegistryRemote<? extends GeneratedMessage> registryRemote) {
+    protected void registerRegistryRemote(RegistryRemote<? extends Message> registryRemote) {
         this.registryRemotes.add(registryRemote);
     }
 
     protected abstract void registerRegistryRemotes() throws InitializationException, InterruptedException;
 
-    protected void bindRegistryRemoteToRemoteRegistry(SynchronizedRemoteRegistry remoteRegistry, RegistryRemote<? extends GeneratedMessage> registryRemote, Integer fieldNumber) throws CouldNotPerformException {
+    protected void bindRegistryRemoteToRemoteRegistry(SynchronizedRemoteRegistry remoteRegistry, RegistryRemote<? extends Message> registryRemote, Integer fieldNumber) throws CouldNotPerformException {
         try {
             Descriptors.FieldDescriptor fieldDescriptor = null;
             try {
@@ -182,7 +183,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                             logger.info(this + " has a been filtered for Field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + registryRemoteFilteredMessageCount);
                             for (final Object message : registryRemoteMessageList) {
                                 if (!registryRemoteFilteredMessageList.contains(message)) {
-                                    logger.info("Filtered Message[" + new IdentifiableMessage((GeneratedMessage) message).generateMessageDescription() + "] because permission was denied.");
+                                    logger.info("Filtered Message[" + new IdentifiableMessage((AbstractMessage) message).generateMessageDescription() + "] because permission was denied.");
                                 }
                             }
                         }
@@ -195,12 +196,12 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                             logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected " + registryRemoteFilteredMessageCount + " but is " + remoteRegistryMessageCount);
                             for (Object message : registryRemoteFilteredMessageList) {
                                 if (!remoteRegistry.getMessages().contains(message)) {
-                                    logger.info("Message[" + new IdentifiableMessage((GeneratedMessage) message).generateMessageDescription() + "] was not synchronized from the registry remote into the internal remote registry!");
+                                    logger.info("Message[" + new IdentifiableMessage((AbstractMessage) message).generateMessageDescription() + "] was not synchronized from the registry remote into the internal remote registry!");
                                 }
                             }
                             for (Object message : remoteRegistry.getMessages()) {
                                 if (!registryRemoteFilteredMessageList.contains(message)) {
-                                    logger.info("Message[" + new IdentifiableMessage((GeneratedMessage) message).generateMessageDescription() + "] was not removed form the internal remote registry!");
+                                    logger.info("Message[" + new IdentifiableMessage((AbstractMessage) message).generateMessageDescription() + "] was not removed form the internal remote registry!");
                                 }
                             }
                         }

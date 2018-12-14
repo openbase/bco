@@ -22,8 +22,9 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -42,7 +43,7 @@ import java.util.List;
  * @param <M>
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class RemoteRegistrySynchronizer<M extends GeneratedMessage> implements Observer<DataProvider<M>, M> {
+public class RemoteRegistrySynchronizer<M extends AbstractMessage> implements Observer<DataProvider<M>, M> {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RemoteRegistrySynchronizer.class);
 
