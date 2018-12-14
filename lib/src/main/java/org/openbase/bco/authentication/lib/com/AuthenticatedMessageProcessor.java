@@ -23,7 +23,7 @@ package org.openbase.bco.authentication.lib.com;
  */
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -33,14 +33,14 @@ import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends SimpleMessageProcessor<M> {
+public class AuthenticatedMessageProcessor<M extends Message> extends SimpleMessageProcessor<M> {
 
     public AuthenticatedMessageProcessor(Class<M> dataClass) {
         super(dataClass);
     }
 
     @Override
-    public M process(GeneratedMessage input) throws CouldNotPerformException, InterruptedException {
+    public M process(Message input) throws CouldNotPerformException, InterruptedException {
         if (input instanceof AuthenticatedValue) {
             AuthenticatedValue authenticatedValue = (AuthenticatedValue) input;
             return super.process(getDataFromAuthenticatedValue(authenticatedValue, getDataClass()));
@@ -49,11 +49,11 @@ public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends S
         }
     }
 
-    public static <M extends GeneratedMessage> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final Class<M> dataClass) throws CouldNotPerformException {
+    public static <M extends Message> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final Class<M> dataClass) throws CouldNotPerformException {
         return getDataFromAuthenticatedValue(authenticatedValue, SessionManager.getInstance(), dataClass);
     }
 
-    public static <M extends GeneratedMessage> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final SessionManager sessionManager, final Class<M> dataClass) throws CouldNotPerformException {
+    public static <M extends Message> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final SessionManager sessionManager, final Class<M> dataClass) throws CouldNotPerformException {
         if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
             final byte[] sessionKey = sessionManager.getSessionKey();
             if (sessionKey == null) {

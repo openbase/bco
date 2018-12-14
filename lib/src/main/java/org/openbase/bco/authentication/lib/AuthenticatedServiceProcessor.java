@@ -23,7 +23,7 @@ package org.openbase.bco.authentication.lib;
  */
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
@@ -117,7 +117,7 @@ public class AuthenticatedServiceProcessor {
                     RECEIVE message = null;
 
                     if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
-                        if (!GeneratedMessage.class.isAssignableFrom(internalClass)) {
+                        if (!Message.class.isAssignableFrom(internalClass)) {
                             throw new CouldNotPerformException("Authenticated value has a value but the method implemented by the server did not expect one!");
                         }
                         // when not logged in the received value is not encrypted but just send as a byte string
@@ -129,12 +129,12 @@ public class AuthenticatedServiceProcessor {
                     // execute the action of the server
                     RETURN result = executable.process(message, null);
                     if (result != null) {
-                        if (!(result instanceof GeneratedMessage)) {
+                        if (!(result instanceof Message)) {
                             throw new CouldNotPerformException("Result[" + result + "] of authenticated action is not a message or not null and therefore not supported!");
                         }
 
                         // add result as a byte string to the response
-                        response.setValue(((GeneratedMessage) result).toByteString());
+                        response.setValue(((Message) result).toByteString());
                     }
                 } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     throw new CouldNotPerformException("Could not invoke parseFrom method on [" + internalClass.getSimpleName() + "]", ex);
@@ -188,11 +188,11 @@ public class AuthenticatedServiceProcessor {
             // no one is logged in so do not encrypt but convert message to a byte string, only if there is a parameter
             AuthenticatedValue.Builder authenticateValue = AuthenticatedValue.newBuilder();
             if (message != null) {
-                if (!(message instanceof GeneratedMessage)) {
+                if (!(message instanceof Message)) {
                     throw new CouldNotPerformException("Could not convert [" + message + "] to byte string");
                 }
 
-                authenticateValue.setValue(((GeneratedMessage) message).toByteString());
+                authenticateValue.setValue(((Message) message).toByteString());
             }
             // perform the internal request
             Future<AuthenticatedValue> future = internalRequestable.request(authenticateValue.build());

@@ -22,7 +22,7 @@ package org.openbase.bco.authentication.lib.com;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
@@ -39,7 +39,7 @@ import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthentic
 
 import java.util.concurrent.*;
 
-public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMessage> extends RSBRemoteService<M> {
+public abstract class AbstractAuthenticatedRemoteService<M extends Message> extends RSBRemoteService<M> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
