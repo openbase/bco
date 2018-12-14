@@ -28,6 +28,7 @@ import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ContactStateType.ContactState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.dal.ReedContactDataType.ReedContactData;
 
 /**

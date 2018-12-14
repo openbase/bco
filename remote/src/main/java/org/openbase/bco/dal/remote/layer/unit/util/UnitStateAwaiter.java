@@ -21,7 +21,7 @@ package org.openbase.bco.dal.remote.layer.unit.util;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TimeoutException;
@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @param <D>
  * @param <UR>
  */
-public class UnitStateAwaiter<D extends GeneratedMessage, UR extends UnitRemote<D>> {
+public class UnitStateAwaiter<D extends Message, UR extends UnitRemote<D>> {
 
     protected final Logger logger = LoggerFactory.getLogger(UnitStateAwaiter.class);
 

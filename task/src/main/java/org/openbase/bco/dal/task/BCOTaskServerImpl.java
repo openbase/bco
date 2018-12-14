@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.Informer;
 import rsb.RSBException;
-import rst.communicationpatterns.TaskStateType.TaskState;
+//import rst.communicationpatterns.TaskStateType.TaskState;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 
 /**
@@ -53,16 +53,17 @@ public class BCOTaskServerImpl implements BCOTaskServer {
     public static final String TASK_HANDLER_SCOPE = "/bco/task";
 
     private final BCOTaskFactory taskFactory;
-    private final TaskServer taskServer;
+//    private final TaskServer taskServer;
     private Future listenerTask;
 
     public BCOTaskServerImpl() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
+        // todo release: reenable after rta-lib depends on rst 0.18 which is using protobuf 3.
+//        try {
             this.taskFactory = new BCOTaskFactory();
-            this.taskServer = new TaskServer(TASK_HANDLER_SCOPE, new BCOTaskHandler());
-        } catch (RSBException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(this, new RSBResolvedException(ex));
-        }
+//            this.taskServer = new TaskServer(TASK_HANDLER_SCOPE, new BCOTaskHandler());
+//        } catch (RSBException ex) {
+//            throw new org.openbase.jul.exception.InstantiationException(this, new RSBResolvedException(ex));
+//        }
     }
 
     @Override
@@ -76,18 +77,18 @@ public class BCOTaskServerImpl implements BCOTaskServer {
 
     @Override
     public synchronized void activate() throws CouldNotPerformException, InterruptedException {
-        try {
-            taskServer.activate();
-            listenerTask = GlobalCachedExecutorService.submit(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    taskServer.listen();
-                    return null;
-                }
-            });
-        } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not activate " + this, new RSBResolvedException(ex));
-        }
+//        try {
+//            taskServer.activate();
+//            listenerTask = GlobalCachedExecutorService.submit(new Callable<Void>() {
+//                @Override
+//                public Void call() throws Exception {
+//                    taskServer.listen();
+//                    return null;
+//                }
+//            });
+//        } catch (RSBException ex) {
+//            throw new CouldNotPerformException("Could not activate " + this, new RSBResolvedException(ex));
+//        }
     }
 
     @Override
@@ -97,17 +98,17 @@ public class BCOTaskServerImpl implements BCOTaskServer {
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        try {
-            if (isActive()) {
-                listenerTask.cancel(true);
-                listenerTask = null;
-                taskServer.deactivate();
-            }
-        } catch (NullPointerException ex) {
-            throw new CouldNotPerformException("Could not deactivate " + this, ex);
-        } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not deactivate " + this, new RSBResolvedException(ex));
-        }
+//        try {
+//            if (isActive()) {
+//                listenerTask.cancel(true);
+//                listenerTask = null;
+//                taskServer.deactivate();
+//            }
+//        } catch (NullPointerException ex) {
+//            throw new CouldNotPerformException("Could not deactivate " + this, ex);
+//        } catch (RSBException ex) {
+//            throw new CouldNotPerformException("Could not deactivate " + this, new RSBResolvedException(ex));
+//        }
     }
 
     @Override
@@ -126,19 +127,19 @@ public class BCOTaskServerImpl implements BCOTaskServer {
         return BCOTaskServer.class.getSimpleName() + "[" + TASK_HANDLER_SCOPE + "]";
     }
 
-    public class BCOTaskHandler implements TaskHandler {
-
-        @Override
-        public void handle(final TaskState taskState, final Event event, final Informer informer) throws Exception {
-            if (!isActive()) {
-                throw new InvalidStateException(BCOTaskServerImpl.this + " is not active!");
-            }
-
-            TaskProxy proxy = new TaskProxy(taskState, event, informer);
-            TaskExecutionMonitor monitor = new TaskExecutionMonitor(proxy, taskFactory);
-            GlobalCachedExecutorService.submit(monitor);
-        }
-    }
+//    public class BCOTaskHandler implements TaskHandler {
+//
+//        @Override
+//        public void handle(final TaskState taskState, final Event event, final Informer informer) throws Exception {
+//            if (!isActive()) {
+//                throw new InvalidStateException(BCOTaskServerImpl.this + " is not active!");
+//            }
+//
+//            TaskProxy proxy = new TaskProxy(taskState, event, informer);
+//            TaskExecutionMonitor monitor = new TaskExecutionMonitor(proxy, taskFactory);
+//            GlobalCachedExecutorService.submit(monitor);
+//        }
+//    }
 
     public class BCOTaskFactory implements LocalTaskFactory {
 

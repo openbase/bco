@@ -22,7 +22,7 @@ package org.openbase.bco.dal.remote.trigger;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -48,7 +48,7 @@ import java.lang.reflect.Method;
  * @param <STE> StateTypeEnum
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends GeneratedMessage, STE extends Enum<STE>> extends AbstractTrigger {
+public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Message, STE extends Enum<STE>> extends AbstractTrigger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
 

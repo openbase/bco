@@ -22,7 +22,7 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -80,7 +80,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
+public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
 
     public static final String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
 

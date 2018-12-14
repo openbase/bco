@@ -21,7 +21,7 @@ package org.openbase.bco.dal.remote.layer.service.consumer;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -52,7 +52,7 @@ public class Consumer implements Manageable<ServiceConfig> {
         this.active = false;
         this.serviceStateObserver = (source, data) -> {
             try {
-                ActionDescription responsibleAction = Services.getResponsibleAction(((GeneratedMessage) data));
+                ActionDescription responsibleAction = Services.getResponsibleAction(((Message) data));
                 
                 // build consumer action out of responsible action
                 ActionDescription.Builder consumerActionBuilder = responsibleAction.toBuilder();

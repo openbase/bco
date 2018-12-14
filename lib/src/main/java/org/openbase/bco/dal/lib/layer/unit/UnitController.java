@@ -22,7 +22,8 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -38,7 +39,7 @@ import java.util.concurrent.Future;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends Unit<D>, MessageController<D, DB> {
+public interface UnitController<D extends AbstractMessage, DB extends D.Builder<DB>> extends Unit<D>, MessageController<D, DB> {
 
     /**
      * Method initialize this controller with the given unit configuration.

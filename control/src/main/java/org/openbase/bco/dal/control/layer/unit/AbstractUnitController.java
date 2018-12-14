@@ -22,10 +22,11 @@ package org.openbase.bco.dal.control.layer.unit;
  * #L%
  */
 
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
@@ -101,6 +102,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 import rst.timing.TimestampType.Timestamp;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -118,7 +120,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
+public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
 
     private static final SessionManager MOCKUP_SESSION_MANAGER = new SessionManager();
     /**
@@ -957,7 +959,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
             // Update timestamps
             try {
-                GeneratedMessage.Builder serviceStateBuilder = (GeneratedMessage.Builder) internalBuilder.getClass().getMethod("get" + Services.getServiceStateName(serviceType) + "Builder").invoke(internalBuilder);
+                Message.Builder serviceStateBuilder = (Message.Builder) internalBuilder.getClass().getMethod("get" + Services.getServiceStateName(serviceType) + "Builder").invoke(internalBuilder);
 
                 //Set timestamp if missing
                 if (!serviceStateBuilder.hasField(serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp"))) {

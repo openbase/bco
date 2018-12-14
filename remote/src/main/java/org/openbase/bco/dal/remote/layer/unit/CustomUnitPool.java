@@ -22,7 +22,7 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -63,7 +63,7 @@ public class CustomUnitPool implements DefaultInitializable {
     private final ReentrantReadWriteLock UNIT_REMOTE_REGISTRY_LOCK = new ReentrantReadWriteLock();
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryDataObserver;
     private final Observer unitDataObserver;
-    private final RemoteControllerRegistry<String, UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
+    private final RemoteControllerRegistry<String, UnitRemote<? extends Message>> unitRemoteRegistry;
     private final ProtobufListDiff<String, UnitConfig, Builder> unitConfigDiff;
     private final Set<Filter<UnitConfig>> filterSet;
     private final ObservableImpl<ServiceStateProvider<Message>, Message> unitDataObservable;

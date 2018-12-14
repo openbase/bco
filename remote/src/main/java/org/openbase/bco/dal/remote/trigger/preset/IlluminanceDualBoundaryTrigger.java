@@ -21,7 +21,7 @@ package org.openbase.bco.dal.remote.trigger.preset;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.remote.trigger.GenericValueDualBoundaryBCOTrigger;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.InstantiationException;
@@ -33,7 +33,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
  * @param <UR> UnitRemote
  * @param <DT> DataType
  */
-public class IlluminanceDualBoundaryTrigger<UR extends AbstractUnitRemote<DT>, DT extends GeneratedMessage> extends GenericValueDualBoundaryBCOTrigger<UR, DT> {
+public class IlluminanceDualBoundaryTrigger<UR extends AbstractUnitRemote<DT>, DT extends Message> extends GenericValueDualBoundaryBCOTrigger<UR, DT> {
 
     public IlluminanceDualBoundaryTrigger(UR unitRemote, double upperBoundary, double lowerIllumination, TriggerOperation triggerOperation) throws InstantiationException {
         super(unitRemote, upperBoundary, lowerIllumination, triggerOperation, ServiceType.ILLUMINANCE_STATE_SERVICE, "getIlluminance");

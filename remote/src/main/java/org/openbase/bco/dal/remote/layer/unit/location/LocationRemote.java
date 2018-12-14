@@ -1,6 +1,6 @@
 package org.openbase.bco.dal.remote.layer.unit.location;
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -278,7 +278,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
             for (final String unitId : getConfig().getLocationConfig().getUnitIdList()) {
                 try {
-                    UnitRemote<? extends GeneratedMessage> unitRemote = Units.getUnit(unitId, false);
+                    UnitRemote<? extends Message> unitRemote = Units.getUnit(unitId, false);
 
                     // filter recursive units if needed.
                     if (!recursive && !unitRemote.getConfig().getPlacementConfig().getLocationId().equals(getId())) {

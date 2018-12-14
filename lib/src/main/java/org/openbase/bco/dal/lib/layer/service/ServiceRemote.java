@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -53,7 +53,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> extends Manageable<UnitConfigType.UnitConfig>, Service, Remote<ST>, ServiceProvider<ST> {
+public interface ServiceRemote<S extends Service, ST extends Message> extends Manageable<UnitConfigType.UnitConfig>, Service, Remote<ST>, ServiceProvider<ST> {
 
     /**
      * Add an observer to get notifications when the service state changes.

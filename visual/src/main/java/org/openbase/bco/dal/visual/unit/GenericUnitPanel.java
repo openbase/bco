@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.visual.service.AbstractServicePanel;
@@ -310,7 +310,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
     }
 
     @Override
-    protected void updateDynamicComponents(GeneratedMessage data) {
+    protected void updateDynamicComponents(Message data) {
 
 //               remoteView.setEnabled(false);
 //        remoteView.setUnitConfig(unitConfig);

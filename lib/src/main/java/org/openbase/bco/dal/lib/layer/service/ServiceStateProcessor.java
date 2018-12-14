@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.service;
 
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
@@ -138,7 +138,7 @@ public class ServiceStateProcessor {
 
         try {
             final Class mapFieldEntryClass = Class.forName(serviceState.getClass().getDeclaringClass().getName() + INTERNAL_MAP_CLASS_NAME);
-            final GeneratedMessage.Builder entryMessageBuilder = (GeneratedMessage.Builder) mapFieldEntryClass.getMethod("newBuilder").invoke(null);
+            final Message.Builder entryMessageBuilder = (Message.Builder) mapFieldEntryClass.getMethod("newBuilder").invoke(null);
 
             final FieldDescriptor keyDescriptor = entryMessageBuilder.build().getDescriptorForType().findFieldByName(FIELD_NAME_KEY);
             final FieldDescriptor valueDescriptor = entryMessageBuilder.build().getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);

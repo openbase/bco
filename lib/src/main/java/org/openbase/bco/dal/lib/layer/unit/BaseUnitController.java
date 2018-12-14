@@ -22,7 +22,8 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
@@ -41,7 +42,7 @@ import java.util.concurrent.Future;
  * @param <D> the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
  */
-public interface BaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends UnitController<D, DB>, BaseUnit<D> {
+public interface BaseUnitController<D extends AbstractMessage, DB extends D.Builder<DB>> extends UnitController<D, DB>, BaseUnit<D> {
 
     /**
      * {@inheritDoc}

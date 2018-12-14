@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,7 +39,7 @@ import java.util.concurrent.Future;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, ConfigurableRemote<String, M, UnitConfig> {
+public interface UnitRemote<M extends Message> extends Unit<M>, ConfigurableRemote<String, M, UnitConfig> {
 
     /**
      * Method initializes this unit remote instance via it's remote controller scope.

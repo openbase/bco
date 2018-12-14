@@ -22,8 +22,9 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -38,7 +39,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
-public interface HostUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends BaseUnitController<D, DB>, HostUnit<D>, OperationServiceFactoryProvider {
+public interface HostUnitController<D extends AbstractMessage, DB extends D.Builder<DB>> extends BaseUnitController<D, DB>, HostUnit<D>, OperationServiceFactoryProvider {
 
     UnitController<?, ?> getHostedUnitController(String id) throws NotAvailableException;
 

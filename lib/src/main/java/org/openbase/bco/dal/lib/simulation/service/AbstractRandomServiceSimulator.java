@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.simulation.service;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -35,7 +35,7 @@ import java.util.List;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AbstractRandomServiceSimulator<SERVICE_STATE extends GeneratedMessage> extends AbstractScheduledServiceSimulator<SERVICE_STATE> {
+public class AbstractRandomServiceSimulator<SERVICE_STATE extends Message> extends AbstractScheduledServiceSimulator<SERVICE_STATE> {
 
     private final List<SERVICE_STATE> stateList;
 

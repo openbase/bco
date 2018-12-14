@@ -21,7 +21,7 @@ package org.openbase.bco.dal.remote.trigger;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
@@ -45,7 +45,7 @@ import org.slf4j.Logger;
  * @param <UR> UnitRemote
  * @param <DT> DataType
  */
-public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends GeneratedMessage> extends AbstractTrigger {
+public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Message> extends AbstractTrigger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
 

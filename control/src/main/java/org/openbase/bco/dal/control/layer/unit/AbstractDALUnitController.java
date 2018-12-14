@@ -22,7 +22,8 @@ package org.openbase.bco.dal.control.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import org.openbase.bco.dal.lib.layer.unit.HostUnit;
@@ -36,6 +37,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,7 +46,7 @@ import java.util.Set;
  * @param <MB> Message related builder.
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitController<M, MB> implements OperationServiceFactoryProvider {
+public abstract class AbstractDALUnitController<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>> extends AbstractUnitController<M, MB> implements OperationServiceFactoryProvider {
 
 
 

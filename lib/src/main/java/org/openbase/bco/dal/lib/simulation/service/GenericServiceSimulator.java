@@ -21,7 +21,7 @@ package org.openbase.bco.dal.lib.simulation.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -37,7 +37,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
  *
  * This generic simulator detects the available service values the service provides any tries to apply those states in random order.
  */
-public class GenericServiceSimulator extends AbstractRandomServiceSimulator<GeneratedMessage> {
+public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Message> {
 
     /**
      * Creates a new service simulator to control the given unit.

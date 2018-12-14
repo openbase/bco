@@ -23,7 +23,7 @@ package org.openbase.bco.dal.visual.util;
  */
 
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -33,7 +33,7 @@ import org.openbase.jul.pattern.Observer;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M>
  */
-public abstract class RSBRemoteViewFrame<M extends GeneratedMessage> extends javax.swing.JFrame implements Observer {
+public abstract class RSBRemoteViewFrame<M extends Message> extends javax.swing.JFrame implements Observer {
 
     private final RSBRemoteService<M> remoteService;
     /**

@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.util;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,7 +42,7 @@ import rst.rsb.ScopeType.Scope;
  * @param <RS>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<DataProvider<GeneratedMessage>, GeneratedMessage>, Shutdownable {
+public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<DataProvider<Message>, Message>, Shutdownable {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -73,7 +73,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     }
 
     @Override
-    public void update(final DataProvider<GeneratedMessage> source, GeneratedMessage data) {
+    public void update(final DataProvider<Message> source, Message data) {
         try {
             updateDynamicComponents(data);
         } catch (CouldNotPerformException ex) {
@@ -121,7 +121,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
         }
     }
 
-    protected abstract void updateDynamicComponents(GeneratedMessage data) throws CouldNotPerformException;
+    protected abstract void updateDynamicComponents(Message data) throws CouldNotPerformException;
 
     /**
      * This method is called from within the constructor to initialize the form.

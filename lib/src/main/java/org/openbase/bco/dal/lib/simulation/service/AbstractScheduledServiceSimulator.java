@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.simulation.service;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jps.core.JPService;
@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends GeneratedMessage> extends AbstractServiceSimulator {
+public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Message> extends AbstractServiceSimulator {
 
     private final static long DEFAULT_STARTUP_DELAY = 15000;
     public static final long DEFAULT_CHANGE_RATE = TimeUnit.MINUTES.toMillis(3);

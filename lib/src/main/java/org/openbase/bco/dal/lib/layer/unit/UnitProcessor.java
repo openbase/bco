@@ -21,7 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -73,7 +73,7 @@ public class UnitProcessor {
      * @return the unit data class.
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class could not be detected.
      */
-    public static Class<? extends GeneratedMessage> getUnitDataClass(final Unit<?> unit) throws NotAvailableException {
+    public static Class<? extends Message> getUnitDataClass(final Unit<?> unit) throws NotAvailableException {
         return UnitConfigProcessor.getUnitDataClass(unit.getUnitType());
     }
 }

@@ -25,7 +25,7 @@ package org.openbase.bco.dal.remote.layer.service;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
@@ -78,7 +78,7 @@ import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.*;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements ServiceRemote<S, ST> {
+public abstract class AbstractServiceRemote<S extends Service, ST extends Message> implements ServiceRemote<S, ST> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 

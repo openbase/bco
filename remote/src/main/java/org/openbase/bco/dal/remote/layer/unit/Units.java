@@ -22,7 +22,7 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
@@ -191,7 +191,7 @@ public class Units {
 //    public static final Class<? extends VideoDepthSourceRemote> VIDEO_DEPTH_SOURCE = VideoDepthSourceRemote.class;
 //    public static final Class<? extends AudioSourceRemote> AUDIO_SOURCE = AudioSourceRemote.class;
     public static Units instance;
-    private static RemoteControllerRegistry<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
+    private static RemoteControllerRegistry<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<? extends Message>> unitRemoteRegistry;
     private static final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> UNIT_REGISTRY_OBSERVER = new Observer<DataProvider<UnitRegistryData>, UnitRegistryData>() {
         @Override
         public void update(DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
@@ -1488,7 +1488,7 @@ public class Units {
      * @throws CouldNotPerformException is thrown if the given remote is not
      *                                  valid. For instance if the given unit remote is not initialized.
      */
-    public static boolean contains(final UnitRemote<? extends GeneratedMessage> unitRemote) throws CouldNotPerformException {
+    public static boolean contains(final UnitRemote<? extends Message> unitRemote) throws CouldNotPerformException {
         return unitRemoteRegistry.contains(unitRemote);
     }
 

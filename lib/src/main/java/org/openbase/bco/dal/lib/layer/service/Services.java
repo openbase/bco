@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.service;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
@@ -178,7 +178,7 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
-    public static Collection<ProtocolMessageEnum> getServiceStateEnumValues(final Class<? extends GeneratedMessage> serviceStateClass) throws NotAvailableException {
+    public static Collection<ProtocolMessageEnum> getServiceStateEnumValues(final Class<? extends Message> serviceStateClass) throws NotAvailableException {
         try {
             for (Class<?> declaredClass : serviceStateClass.getDeclaredClasses()) {
                 if (declaredClass.getSimpleName().equals("State")) {
@@ -202,10 +202,10 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws CouldNotPerformException is thrown if something went wrong during the generation.
      */
-    public static GeneratedMessage.Builder generateServiceStateBuilder(final CommunicationType communicationType) throws CouldNotPerformException {
+    public static Message.Builder generateServiceStateBuilder(final CommunicationType communicationType) throws CouldNotPerformException {
         try {
             // create new service state builder
-            return (GeneratedMessage.Builder) Services.getServiceStateClass(communicationType).getMethod("newBuilder").invoke(null);
+            return (Message.Builder) Services.getServiceStateClass(communicationType).getMethod("newBuilder").invoke(null);
         } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
             throw new CouldNotPerformException("Could not generate service state builder from CommunicationType[" + communicationType + "]!", ex);
         }
@@ -218,10 +218,10 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws CouldNotPerformException is thrown if something went wrong during the generation.
      */
-    public static GeneratedMessage.Builder generateServiceStateBuilder(final ServiceType serviceType) throws CouldNotPerformException {
+    public static Message.Builder generateServiceStateBuilder(final ServiceType serviceType) throws CouldNotPerformException {
         try {
             // create new service state builder
-            return (GeneratedMessage.Builder) Services.getServiceStateClass(serviceType).getMethod("newBuilder").invoke(null);
+            return (Message.Builder) Services.getServiceStateClass(serviceType).getMethod("newBuilder").invoke(null);
         } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
             throw new CouldNotPerformException("Could not generate service state builder from ServiceType[" + serviceType + "]!", ex);
         }
@@ -239,10 +239,10 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
-    public static <SC extends GeneratedMessage.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
+    public static <SC extends Message.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
         try {
             // create new service state builder
-            GeneratedMessage.Builder serviceStateBuilder = generateServiceStateBuilder(serviceType);
+            Message.Builder serviceStateBuilder = generateServiceStateBuilder(serviceType);
 
             // set service state value
             serviceStateBuilder.getClass().getMethod("setValue", stateValue.getClass()).invoke(serviceStateBuilder, stateValue);
@@ -266,10 +266,10 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
-    public static <SC extends GeneratedMessage.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final CommunicationType communicationType, SV stateValue) throws CouldNotPerformException {
+    public static <SC extends Message.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final CommunicationType communicationType, SV stateValue) throws CouldNotPerformException {
         try {
             // create new service state builder
-            GeneratedMessage.Builder serviceStateBuilder = generateServiceStateBuilder(communicationType);
+            Message.Builder serviceStateBuilder = generateServiceStateBuilder(communicationType);
 
             // set service state value
             serviceStateBuilder.getClass().getMethod("setValue", stateValue.getClass()).invoke(serviceStateBuilder, stateValue);
@@ -294,7 +294,7 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
-    public static <SC extends GeneratedMessage, SV extends ProtocolMessageEnum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
+    public static <SC extends Message, SV extends ProtocolMessageEnum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
         try {
             // create new service state builder with new state and build.
             return (SC) generateServiceStateBuilder(serviceType, stateValue).build();
@@ -307,7 +307,7 @@ public class Services extends ServiceStateProcessor {
      * @deprecated please use {@code getServiceStateClass(final ServiceType serviceType)} instead.
      */
     @Deprecated
-    public static Class<? extends GeneratedMessage> detectServiceDataClass(final ServiceType serviceType) throws NotAvailableException {
+    public static Class<? extends Message> detectServiceDataClass(final ServiceType serviceType) throws NotAvailableException {
         return getServiceStateClass(serviceType);
     }
 
@@ -320,7 +320,7 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
-    public static Class<? extends GeneratedMessage> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
+    public static Class<? extends Message> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
         try {
             return getServiceStateClass(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType());
         } catch (CouldNotPerformException e) {
@@ -337,7 +337,7 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
-    public static Class<? extends GeneratedMessage> getServiceStateClass(final CommunicationType communicationType) throws NotAvailableException {
+    public static Class<? extends Message> getServiceStateClass(final CommunicationType communicationType) throws NotAvailableException {
         String serviceStateName;
         try {
             if (communicationType == CommunicationType.UNKNOWN) {
@@ -350,7 +350,7 @@ public class Services extends ServiceStateProcessor {
 
         final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName;
         try {
-            return (Class<? extends GeneratedMessage>) Class.forName(serviceClassName);
+            return (Class<? extends Message>) Class.forName(serviceClassName);
         } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
             throw new NotAvailableException("ServiceStateClass", serviceClassName, new CouldNotPerformException("Could not detect class!", ex));
         }
@@ -555,11 +555,11 @@ public class Services extends ServiceStateProcessor {
         return Class.forName(ProviderService.class.getPackage().getName() + "." + serviceState.getClass().getSimpleName() + ProviderService.class.getSimpleName());
     }
 
-    public static Class detectOperationServiceInterface(final GeneratedMessage serviceState) throws ClassNotFoundException {
+    public static Class detectOperationServiceInterface(final Message serviceState) throws ClassNotFoundException {
         return Class.forName(OperationService.class.getPackage().getName() + "." + serviceState.getClass().getSimpleName() + OperationService.class.getSimpleName());
     }
 
-    public static Class detectConsumerServiceInterface(final GeneratedMessage serviceState) throws ClassNotFoundException {
+    public static Class detectConsumerServiceInterface(final Message serviceState) throws ClassNotFoundException {
         return Class.forName(ConsumerService.class.getPackage().getName() + "." + serviceState.getClass().getSimpleName() + ConsumerService.class.getSimpleName());
     }
 

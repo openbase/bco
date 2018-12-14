@@ -22,8 +22,9 @@ package org.openbase.bco.dal.control.layer.unit;
  * #L%
  */
 
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -38,6 +39,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -49,7 +51,7 @@ import java.util.*;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements HostUnitController<D, DB> {
+public abstract class AbstractHostUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements HostUnitController<D, DB> {
 
     //TODO: use a unit controller synchronizer instead of the combination of a diff and unit map
     private final Map<String, UnitController<?, ?>> unitMap;
@@ -78,7 +80,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
     //TODO mpohling: implement unit factory instead!
     protected void registerUnit(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         try {
-            GeneratedMessage.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
+            Message.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
 
             Constructor<? extends UnitController> unitConstructor;
             try {
@@ -102,7 +104,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         }
     }
 
-    protected <B extends GeneratedMessage.Builder> B registerUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
+    protected <B extends Message.Builder> B registerUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, isActive())) {
             DB builder = dataBuilder.getInternalBuilder();
             Class builderClass = builder.getClass();
@@ -114,7 +116,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                 throw new CouldNotPerformException("Missing FieldDescriptor[" + repeatedUnitFieldName + "] in protobuf Type[" + builder.getClass().getName() + "]!");
             }
 
-            GeneratedMessage.Builder unitBuilder = UnitConfigProcessor.generateUnitDataBuilder(unitConfig);
+            Message.Builder unitBuilder = UnitConfigProcessor.generateUnitDataBuilder(unitConfig);
             Method addUnitMethod;
             try {
                 addUnitMethod = builderClass.getMethod("addUnit" + unitTypeName + "Data", unitBuilder.getClass());

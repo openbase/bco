@@ -21,7 +21,8 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Message;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.SynchronizableRegistry;
 
@@ -32,7 +33,7 @@ import org.openbase.jul.storage.registry.SynchronizableRegistry;
  * @param <D> the data type of the units used for the state synchronization.
  * @param <DB> the builder used to build the unit data instances.
  */
-public interface GenericUnitControllerRegistry<D extends GeneratedMessage, DB extends D.Builder<DB>> extends UnitControllerRegistry<UnitController<D, DB>> {
+public interface GenericUnitControllerRegistry<D extends AbstractMessage, DB extends D.Builder<DB>> extends UnitControllerRegistry<UnitController<D, DB>> {
 
     /**
      * Returns a unit controller instance with the given scope.

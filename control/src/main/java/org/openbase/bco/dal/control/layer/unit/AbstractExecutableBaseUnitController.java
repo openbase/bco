@@ -22,7 +22,8 @@ package org.openbase.bco.dal.control.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivationStateProviderService;
@@ -42,6 +43,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -52,7 +54,7 @@ import java.util.concurrent.Future;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements ActivationStateProviderService {
+public abstract class AbstractExecutableBaseUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements ActivationStateProviderService {
 
     public static final String FIELD_ACTIVATION_STATE = "activation_state";
     public static final String FIELD_AUTOSTART = "autostart";

@@ -23,7 +23,7 @@ package org.openbase.bco.dal.remote.layer.unit.util;
  */
 
 
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 
 
 /**
@@ -31,7 +31,7 @@ import com.google.protobuf.GeneratedMessage;
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  * @param <D>
  */
-public interface StateComparator<D extends GeneratedMessage> {
+public interface StateComparator<D extends Message> {
     
     public boolean equalState(D data);
 }
