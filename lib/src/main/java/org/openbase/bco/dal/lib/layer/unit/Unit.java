@@ -269,8 +269,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     @Override
     Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException;
 
-    @RPCMethod
-    Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
 
 
     /**

@@ -27,7 +27,9 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
@@ -54,6 +56,7 @@ import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -74,7 +77,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
 
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        if(authenticationToken == null) {
+        if (authenticationToken == null) {
             authenticationToken = requestAuthenticationToken(config);
         }
 
@@ -127,6 +130,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
     }
 
     private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
+
     protected ActionDescription.Builder generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceArgumentBuilder) throws CouldNotPerformException {
         Message serviceArgument = serviceArgumentBuilder.build();
         try {
@@ -140,7 +144,6 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
             throw new CouldNotPerformException("Could not generate action!", ex);
         }
     }
-
 
     protected ActionParameter getDefaultActionParameter() {
         return defaultActionParameter;

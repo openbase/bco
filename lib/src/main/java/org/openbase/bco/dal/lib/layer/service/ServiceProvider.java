@@ -27,13 +27,13 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.util.concurrent.Future;
@@ -56,6 +56,9 @@ public interface ServiceProvider<ST extends Message> {
      */
     @RPCMethod(legacy = true)
     Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
+
+    @RPCMethod
+    Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
     /**
      * Method applies the action on this instance.
@@ -80,7 +83,14 @@ public interface ServiceProvider<ST extends Message> {
      * @throws CouldNotPerformException is thrown if the action could not be applied.
      */
     default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
+        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build();
+        if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthenticationToken() || actionParameter.hasAuthorizationToken())) {
+            final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
+            final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
+            return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+        } else {
+            return applyAction(actionDescription);
+        }
     }
 
     /**
