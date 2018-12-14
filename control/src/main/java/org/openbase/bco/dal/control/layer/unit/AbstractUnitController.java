@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -147,6 +147,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private String classDescription = "";
     private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
+    private boolean actionNotificationSkipped = false;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
@@ -617,7 +618,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If there is no action left to schedule null is returned.
      */
     public Action reschedule(final SchedulableAction actionToSchedule) {
-        logger.warn("Reschedule actions of {}", this);
         synchronized (scheduledActionListLock) {
             // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
             actionListNotificationLock.writeLock().lock();
@@ -639,6 +639,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             actionToSchedule.reject();
                             logger.warn("New Action {} from initiator {} is older than a currently scheduled one", actionToSchedule, newInitiator.getInitiatorId());
                         } else {
+                            logger.warn("NewAction {}, oldAction {}", actionToSchedule.getCreationTime(), schedulableAction.getCreationTime());
                             logger.warn("Reject old action because of newer one from same initiator");
                             // actionToSchedule is newer, so reject old one
                             schedulableAction.reject();
@@ -662,7 +663,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         if (action.getActionState() == State.EXECUTING) {
                             action.finish();
                         } else {
-                            logger.warn("Reject action because its invalid");
                             action.reject();
                         }
                     }
@@ -714,6 +714,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     // abort the current action
+                    logger.warn("Abort current action, because new one has higher priority");
                     currentAction.abort();
                 }
 
@@ -729,7 +730,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 return nextAction;
             } finally {
-                logger.warn("Update transaction id in reschedule method");
                 try {
                     updateTransactionId();
                 } catch (CouldNotPerformException ex) {
@@ -738,7 +738,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // update action description list in unit builder
                 notifyScheduledActionListUnlocked();
                 // unlock notification lock so that notifications for action state changes are notified again
-                actionListNotificationLock.writeLock().unlock();
+//                actionListNotificationLock.writeLock().unlock();
             }
         }
     }
@@ -749,21 +749,30 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private void notifyScheduledActionListUnlocked() {
         try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
-            dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
-            for (final Action action : scheduledActionList) {
-                dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, action.getActionDescription());
+            // get actions descriptions for all actions, repeat until no more notifications where skipped
+            do {
+                actionNotificationSkipped = false;
+                dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
+                for (final Action action : scheduledActionList) {
+                    dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, action.getActionDescription());
+                }
+            } while (actionNotificationSkipped);
+            if (actionListNotificationLock.isWriteLockedByCurrentThread()) {
+                actionListNotificationLock.writeLock().unlock();
             }
-            logger.warn("Notify unit data with transaction id [" + getTransactionId() + "]");
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
         }
     }
+
 
     /**
      * Update the action list in the data builder and notify. Skip updates if the unit is currently rescheduling actions.
      */
     public void notifyScheduledActionList() {
         if (actionListNotificationLock.isWriteLocked()) {
+            // save if the notification was skipped
+            actionNotificationSkipped = true;
             return;
         }
 
@@ -776,7 +785,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             try {
                 final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
                 if (actionDescription.hasId() && !actionDescription.getId().isEmpty() && actionDescription.getCancel()) {
-                    // action should be cancelled, so verify that the authenticated user is either an admin or one of the initiators
                     try {
                         return cancelAction(actionDescription, authPair.getAuthenticatedBy()).get();
                     } catch (ExecutionException ex) {
@@ -800,6 +808,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 if (authPair.getAuthorizedBy() != null) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
                 }
+
 
                 try {
                     return applyAction(actionDescriptionBuilder.build()).get();
@@ -945,13 +954,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // copy latestValueOccurrence map from current state, only if available
             try {
                 Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
-                if (latestValueOccurrenceField != null) {
-                    Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
-                    newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
-                }
+                Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
+                newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
             } catch (NotAvailableException ex) {
-                // skip update if field is missing
-                ExceptionPrinter.printHistory("Latest value occurrence field update skipped!", ex, logger);
+                // skip update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
             }
 
             // update the current state

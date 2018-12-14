@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,7 +28,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Identifiable;
-import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
@@ -188,6 +187,28 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
             // not done if available
         }
         return false;
+    }
+
+    /**
+     * Check if the provided action state is definitely notified. ActionState updates are notified in unit data types.
+     * In order to reduce the number of updates per unit, only the most important states are definitely notified.
+     *
+     * @param actionState the state tested.
+     *
+     * @return if the action state is notified.
+     */
+    default boolean isNotifiedActionState(final ActionState.State actionState) {
+        switch (actionState) {
+            case CANCELED:
+            case REJECTED:
+            case FINISHED:
+            case SCHEDULED:
+            case EXECUTING:
+                return true;
+            default:
+                return false;
+        }
+
     }
 
     /**
