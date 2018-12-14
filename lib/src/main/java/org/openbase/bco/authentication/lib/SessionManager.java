@@ -153,6 +153,7 @@ public class SessionManager implements Shutdownable {
      * This method will also make sure to keep the current ticket if the given one is older.
      *
      * @param wrapper the new ticket authenticator wrapper
+     *
      * @throws CouldNotPerformException if one of the tickets cannot be decrypted using the current session key
      */
     public synchronized void updateTicketAuthenticatorWrapper(final TicketAuthenticatorWrapper wrapper) throws CouldNotPerformException {
@@ -187,6 +188,7 @@ public class SessionManager implements Shutdownable {
      * Initialize the current ticket for a request.
      *
      * @return the current ticket initialized for a request
+     *
      * @throws RejectedException if the ticket could not be initialized
      */
     public TicketAuthenticatorWrapper initializeServiceServerRequest() throws RejectedException {
@@ -217,6 +219,7 @@ public class SessionManager implements Shutdownable {
      *
      * @param userId   identifier of the user
      * @param password password of the user
+     *
      * @throws CouldNotPerformException if the user could not be logged in using the password
      */
     public synchronized void login(final String userId, final String password) throws CouldNotPerformException {
@@ -229,6 +232,7 @@ public class SessionManager implements Shutdownable {
      * @param userId       identifier of the user
      * @param password     password of the user
      * @param stayLoggedIn flag determining if the session should automatically be renewed before it times out
+     *
      * @throws CouldNotPerformException if the user could not be logged in with the given password
      */
     public synchronized void login(final String userId, final String password, final boolean stayLoggedIn) throws CouldNotPerformException {
@@ -243,6 +247,7 @@ public class SessionManager implements Shutdownable {
      * @param stayLoggedIn     flag determining if the session should automatically be renewed before it times out
      * @param rememberPassword flag determining if the users password should be saved in the credential store. If this is
      *                         done the user can afterwards login just using his id.
+     *
      * @throws CouldNotPerformException if the user could not be logged in with the given password
      */
     public synchronized void login(final String userId, final String password, final boolean stayLoggedIn, final boolean rememberPassword) throws CouldNotPerformException {
@@ -257,6 +262,7 @@ public class SessionManager implements Shutdownable {
      * Perform a login for a given user or client by id.
      *
      * @param clientIdOrUserId identifier of the user or client
+     *
      * @throws NotAvailableException    if no entry for an according client or user could be found in the store
      * @throws CouldNotPerformException if logging in failed
      */
@@ -270,6 +276,7 @@ public class SessionManager implements Shutdownable {
      * @param clientIdOrUserId identifier of the user or client
      * @param stayLoggedIn     flag determining if the session should be automatically renewed. This is only necessary for users
      *                         because its default behaviour for clients.
+     *
      * @throws NotAvailableException    if no entry for an according client or user could be found in the store
      * @throws CouldNotPerformException if logging in failed
      */
@@ -293,7 +300,9 @@ public class SessionManager implements Shutdownable {
      *
      * @param id          Identifier of the user or client
      * @param credentials Password or private key of the user or client
+     *
      * @return Returns true if login successful
+     *
      * @throws NotAvailableException    If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
@@ -370,7 +379,7 @@ public class SessionManager implements Shutdownable {
             if (stayLoggedIn || !isUser) {
                 try {
                     final Long sessionTimeout = JPService.getProperty(JPSessionTimeout.class).getValue();
-                    final long delay = (long) ((3 * sessionTimeout) / 4.0d);
+                    final long delay = (long) ((2 * sessionTimeout) / 4.0d);
                     ticketRenewalTask = GlobalScheduledExecutorService.scheduleWithFixedDelay(() -> {
                         try {
                             renewTicket();
@@ -594,9 +603,10 @@ public class SessionManager implements Shutdownable {
     /**
      * Changes the login credentials for a given user.
      *
-     * @param userId       ID of the user / client whose credentials should be changed.
+     * @param userId         ID of the user / client whose credentials should be changed.
      * @param oldCredentials Old credentials, needed for verification.
      * @param newCredentials New credentials to be set.
+     *
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public synchronized void changeCredentials(String userId, String oldCredentials, String newCredentials) throws CouldNotPerformException {
@@ -655,6 +665,7 @@ public class SessionManager implements Shutdownable {
      * Registers a client.
      *
      * @param clientId the id of the client
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException if the client could not registered
      */
     public synchronized void registerClient(String clientId) throws CouldNotPerformException {
@@ -673,6 +684,7 @@ public class SessionManager implements Shutdownable {
      * @param userId   the id of the user
      * @param password the password of the user
      * @param isAdmin  flag if user should be an administrator
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException if the user could not be registered
      */
     public synchronized void registerUser(final String userId, final String password, final boolean isAdmin) throws CouldNotPerformException {
@@ -689,6 +701,7 @@ public class SessionManager implements Shutdownable {
      * @param id      the id of the user
      * @param key     the password of the user
      * @param isAdmin flag if user should be an administrator
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     private void internalRegister(String id, byte[] key, boolean isAdmin) throws CouldNotPerformException {

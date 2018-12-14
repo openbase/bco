@@ -25,21 +25,30 @@ package org.openbase.bco.authentication.lib.future;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.schedule.GlobalScheduledExecutorService;
+import org.openbase.jul.schedule.SyncObject;
+import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * Abstract future that automatically verifies the response from a server.
  *
  * @param <RETURN>   The type of value this future returns.
  * @param <INTERNAL> The type of value the internal future returns.
+ *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements Future<RETURN> {
+
+    private static final List<AbstractAuthenticationFuture> authenticatedFutureList = new ArrayList<>();
+    private static final SyncObject listSync = new SyncObject("AuthenticatedFutureListSync");
+    private static ScheduledFuture responseVerificationFuture = null;
 
     private final Future<INTERNAL> internalFuture;
     private final SessionManager sessionManager;
@@ -70,6 +79,37 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
         this.returnClass = returnClass;
         this.sessionManager = sessionManager;
         this.wrapper = wrapper;
+
+        synchronized (listSync) {
+            if (responseVerificationFuture == null) {
+                // create a task which makes sure that get is called on all of these futures so that tickets are renewed
+                try {
+                    responseVerificationFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
+                        synchronized (listSync) {
+                            for (final AbstractAuthenticationFuture future : new ArrayList<>(authenticatedFutureList)) {
+                                if (future.isCancelled()) {
+                                    authenticatedFutureList.remove(future);
+                                }
+
+                                if (future.isDone()) {
+                                    try {
+                                        future.get();
+                                    } catch (InterruptedException ex) {
+                                        Thread.currentThread().interrupt();
+                                    } catch (ExecutionException ex) {
+                                        authenticatedFutureList.remove(future);
+                                    }
+                                }
+                            }
+                        }
+                    }, 1, 5, TimeUnit.SECONDS);
+                    Shutdownable.registerShutdownHook(() -> responseVerificationFuture.cancel(true));
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not initialize task which makes sure that authenticated response are verified", ex, LoggerFactory.getLogger(AbstractAuthenticationFuture.class));
+                }
+            }
+            authenticatedFutureList.add(this);
+        }
     }
 
     /**
@@ -77,6 +117,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * {@inheritDoc}
      *
      * @param mayInterruptIfRunning {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -111,6 +152,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * the internal future to REPONSE.
      *
      * @return RESPONSE converted from the result of the internal future.
+     *
      * @throws InterruptedException If interrupted inside of get of the internal future.
      * @throws ExecutionException   If the execution of the internal future failed, the response could not be verified or the conversion to the return type failed.
      */
@@ -130,6 +172,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * the internal future to REPONSE.
      *
      * @return RESPONSE converted from the result of the internal future.
+     *
      * @throws InterruptedException If interrupted inside of get of the internal future.
      * @throws ExecutionException   If the execution of the internal future failed, the response could not be verified or the conversion to the return type failed.
      * @throws TimeoutException     If get on the internal future times out.
@@ -149,6 +192,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * If the a user is logged in with the given SessionManager verify the response.
      *
      * @param ticketAuthenticatorWrapper The ticket coming with the response from the server.
+     *
      * @throws CouldNotPerformException If the verification cannot be performed.
      */
     private void verifyResponse(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
@@ -164,6 +208,10 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
                     ticketAuthenticatorWrapper));
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not verify ServiceServer Response", ex);
+        } finally {
+            synchronized (listSync) {
+                authenticatedFutureList.remove(this);
+            }
         }
     }
 
@@ -189,6 +237,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * Method defining how to get the ticket from the result of the internal future.
      *
      * @param internalType The result from the internal future.
+     *
      * @return Ticket extracted from the internal type.
      */
     protected abstract TicketAuthenticatorWrapper getTicketFromInternal(INTERNAL internalType);
@@ -197,7 +246,9 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * Method defining how to get the return value from the result of the internal future.
      *
      * @param internalType The result from the internal future.
+     *
      * @return Return value converted from the internal type.
+     *
      * @throws CouldNotPerformException If the conversion from the internal type fails.
      */
     protected abstract RETURN convertFromInternal(INTERNAL internalType) throws CouldNotPerformException;

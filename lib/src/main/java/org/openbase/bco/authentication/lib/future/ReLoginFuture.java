@@ -23,6 +23,7 @@ package org.openbase.bco.authentication.lib.future;
  */
 
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.schedule.FutureWrapper;
@@ -113,8 +114,9 @@ public class ReLoginFuture<T> implements Future<T>, FutureWrapper<T> {
 
     private ExecutionException handleLoginError(ExecutionException ex) {
         try {
-            if (ExceptionProcessor.getInitialCause(ex) instanceof BadPaddingException) {
-                // authenticator could not decrypt ticket so re-login or logout
+            final Throwable initialCause = ExceptionProcessor.getInitialCause(ex);
+            if (initialCause instanceof BadPaddingException || initialCause instanceof SessionExpiredException) {
+                // authenticator could not decrypt ticket (likely the server restarted) or session ran out so re-login or logout
                 sessionManager.reLogin();
             }
         } catch (CouldNotPerformException exx) {

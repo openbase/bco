@@ -26,16 +26,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Test the staying logged in functionality of the session manager.
@@ -88,8 +89,7 @@ public class StayLoggedInTest extends AuthenticationTest {
             CachedAuthenticationRemote.getRemote().validateClientServerTicket(wrapper).get();
             fail("No exception thrown even though the session should have timed out");
         } catch (ExecutionException ex) {
-            // this should be thrown because of a session timeout
-            // TODO: validate that it is a session timeout
+            assertTrue("Task did not fail because of session expired exception", ExceptionProcessor.getInitialCause(ex) instanceof SessionExpiredException);
         } finally {
             ExceptionPrinter.setBeQuit(false);
         }

@@ -25,12 +25,19 @@ package org.openbase.bco.authentication.lib.exception;
 import org.openbase.jul.exception.RejectedException;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class SessionExpiredException extends RejectedException {
-    
+
     public SessionExpiredException() {
         super("Your session has expired!");
+    }
+
+    public SessionExpiredException(final String msg) {
+        super(msg);
+    }
+
+    public SessionExpiredException(final String msg, final Throwable throwable) {
+        super(msg, throwable);
     }
 }
