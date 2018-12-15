@@ -70,18 +70,20 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
             Registries.waitForData();
             final AgentClass agentClass = Registries.getClassRegistry().getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
 
+            final String agentLabel = StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel()));
+
             try {
                 // try to load preset agent
                 String className = PRESET_AGENT_PACKAGE_PREFIX
                         + ".agent"
-                        + "." + LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel()) + "Agent";
+                        + "." + agentLabel + "Agent";
                 agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
-            } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+            } catch (ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
                 // try to load custom agent
                 String className = CUSTOM_AGENT_PACKAGE_PREFIX
-                        + "." + StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel())).toLowerCase()
+                        + "." + StringProcessor.removeWhiteSpaces(agentLabel).toLowerCase()
                         + ".agent"
-                        + "." + StringProcessor.transformToCamelCase(StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel()))) + "Agent";
+                        + "." + StringProcessor.transformToCamelCase(StringProcessor.removeWhiteSpaces(agentLabel)) + "Agent";
                 agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
             }
             logger.debug("Creating agent of type [" + LabelProcessor.getBestMatch(agentClass.getLabel()) + "]");
