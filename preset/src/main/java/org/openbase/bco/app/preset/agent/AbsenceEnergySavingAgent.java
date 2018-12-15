@@ -77,42 +77,4 @@ public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
                 break;
         }
     }
-
-    private void switchlightsOff() {
-
-    }
-
-//    private void switchMultimediaOff() {
-//        try {
-//            locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(PowerState.State.OFF))).get();
-//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-//            logger.error("Could not switch off Lights.", ex);
-//        }
-//
-//        try {
-//            List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
-//            if (!unitsByLabel.isEmpty()) {
-//                UnitGroupRemote multimediaGroup = unitsByLabel.get(0);
-//                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
-//                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
-//                        1000 * 30,
-//                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-//                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
-//                        multimediaGroup,
-//                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
-//                        UnitType.UNKNOWN,
-//                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-//                        MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-//                actionRescheduleHelper.addRescheduleAction(multimediaGroup.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-//            }
-//        } catch (NotAvailableException ex) {
-//            logger.info("MultimediaGroup not available.");
-//        } catch (InterruptedException ex) {
-//            logger.error("Could not get MultimediaGroup!");
-//        } catch (CouldNotPerformException ex) {
-//            logger.error("Could not set Powerstate of MultimediaGroup.");
-//        } catch (ExecutionException ex) {
-//            logger.error("Could not set Powerstate of MultimediaGroup!");
-//        }
-//    }
 }

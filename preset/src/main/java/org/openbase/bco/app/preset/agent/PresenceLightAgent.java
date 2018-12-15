@@ -80,23 +80,4 @@ public class PresenceLightAgent extends AbstractTriggerableAgent {
                 break;
         }
     }
-
-//    @Override
-//    void trigger(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-////        try {
-////            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
-////                    ResourceAllocation.Initiator.SYSTEM,
-////                    1000 * 30,
-////                    ResourceAllocation.Policy.FIRST,
-////                    ResourceAllocation.Priority.NORMAL,
-////                    locationRemote,
-////                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
-////                    UnitType.LIGHT,
-////                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-////                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-////            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-////        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-////            logger.error("Could not switch on Lights.", ex);
-////        }
-//    }
 }
