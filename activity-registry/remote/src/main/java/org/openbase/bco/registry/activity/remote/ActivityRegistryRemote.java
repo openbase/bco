@@ -43,6 +43,7 @@ import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
 import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -184,6 +185,12 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
     public List<ActivityConfig> getActivityConfigs() throws CouldNotPerformException {
         validateData();
         return activityConfigRemoteRegistry.getMessages();
+    }
+
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        CachedTemplateRegistryRemote.getRegistry().waitForData();
+        super.waitForData();
     }
 
     /**

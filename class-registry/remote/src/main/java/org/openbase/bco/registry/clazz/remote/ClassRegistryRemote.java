@@ -27,6 +27,7 @@ import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.RegistryVerifiedCommunicationHelper;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
@@ -575,5 +576,11 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
     public Boolean isAppClassRegistryConsistent() throws CouldNotPerformException {
         validateData();
         return getData().getAppClassRegistryConsistent();
+    }
+
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        CachedTemplateRegistryRemote.getRegistry().waitForData();
+        super.waitForData();
     }
 }

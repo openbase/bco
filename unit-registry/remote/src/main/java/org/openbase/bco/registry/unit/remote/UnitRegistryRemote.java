@@ -24,9 +24,12 @@ package org.openbase.bco.registry.unit.remote;
 
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.registry.activity.remote.CachedActivityRegistryRemote;
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -152,6 +155,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
+        CachedActivityRegistryRemote.getRegistry().waitForData();
+        CachedClassRegistryRemote.getRegistry().waitForData();
         super.waitForData();
         // TODO: test and fix this issue
         while (getUnitConfigs(UnitType.USER).size() == 0) {
