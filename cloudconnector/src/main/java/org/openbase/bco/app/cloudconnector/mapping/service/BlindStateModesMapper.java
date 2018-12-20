@@ -26,9 +26,9 @@ import org.openbase.bco.app.cloudconnector.mapping.lib.Mode;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Setting;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BlindStateType.BlindState;
-import rst.domotic.state.BlindStateType.BlindState.State;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.state.BlindStateType.BlindState.State;
 
 import java.util.Arrays;
 

@@ -26,8 +26,8 @@ import com.google.gson.JsonObject;
 import com.google.protobuf.Message;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Toggle;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

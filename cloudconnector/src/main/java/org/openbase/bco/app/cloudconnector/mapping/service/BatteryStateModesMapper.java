@@ -24,8 +24,8 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
 
 import org.openbase.bco.app.cloudconnector.mapping.lib.Mode;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Setting;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BatteryStateType.BatteryState;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
 
 import java.util.Arrays;
 import java.util.Collections;

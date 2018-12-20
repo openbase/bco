@@ -31,11 +31,11 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.PresenceStateType;
-import rst.domotic.state.StandbyStateType.StandbyState.State;
-import rst.domotic.unit.location.LocationDataType;
-import rst.domotic.unit.location.LocationDataType.LocationData;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.PresenceStateType;
+import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
+import org.openbase.type.domotic.unit.location.LocationDataType;
+import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

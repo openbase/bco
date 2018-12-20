@@ -25,8 +25,8 @@ package org.openbase.bco.app.cloudconnector.mapping.unit;
 import org.openbase.bco.app.cloudconnector.mapping.lib.DeviceType;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Trait;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.HashMap;
 import java.util.Map;

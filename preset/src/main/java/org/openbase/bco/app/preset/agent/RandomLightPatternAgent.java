@@ -27,9 +27,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.unit.UnitConfigType;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.unit.UnitConfigType;
 
 import java.util.concurrent.ExecutionException;
 

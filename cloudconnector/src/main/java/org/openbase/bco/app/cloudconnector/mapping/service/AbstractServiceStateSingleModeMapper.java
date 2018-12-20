@@ -25,7 +25,7 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
 import com.google.protobuf.Message;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Mode;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.util.Collections;
 import java.util.HashMap;
