@@ -25,8 +25,8 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

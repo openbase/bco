@@ -25,7 +25,7 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.AudioSource;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.dal.AudioSourceDataType.AudioSourceData;
+import org.openbase.type.domotic.unit.dal.AudioSourceDataType.AudioSourceData;
 
 /**
  *

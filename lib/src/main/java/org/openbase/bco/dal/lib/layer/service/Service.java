@@ -22,8 +22,8 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
-import rst.domotic.mode.OperationModeType;
-import rst.domotic.state.ContactStateType;
+import org.openbase.type.domotic.mode.OperationModeType;
+import org.openbase.type.domotic.state.ContactStateType;
 
 /**
  *

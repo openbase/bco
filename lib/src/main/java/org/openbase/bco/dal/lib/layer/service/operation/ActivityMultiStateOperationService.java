@@ -26,10 +26,10 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivityMultiStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionParameterType.ActionParameter;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActivityMultiStateType.ActivityMultiState;
 
 import java.util.ArrayList;
 import java.util.concurrent.Future;

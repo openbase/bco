@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.ContactStateType.ContactState;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE;
 

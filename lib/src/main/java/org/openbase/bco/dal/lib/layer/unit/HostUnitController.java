@@ -33,7 +33,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.lang.reflect.Method;
 import java.util.Collection;

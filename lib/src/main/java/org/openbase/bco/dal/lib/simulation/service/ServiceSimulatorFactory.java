@@ -30,7 +30,7 @@ import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Pair;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.lang.reflect.InvocationTargetException;
 

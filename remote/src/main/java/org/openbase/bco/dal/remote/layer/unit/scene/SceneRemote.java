@@ -26,9 +26,9 @@ import org.openbase.bco.dal.lib.layer.unit.scene.Scene;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.scene.SceneDataType.SceneData;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

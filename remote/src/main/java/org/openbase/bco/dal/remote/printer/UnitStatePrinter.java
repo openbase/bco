@@ -43,11 +43,11 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.consumer.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.PrintStream;
 import java.util.List;

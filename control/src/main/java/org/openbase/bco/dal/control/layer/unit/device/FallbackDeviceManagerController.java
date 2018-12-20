@@ -32,8 +32,8 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 
 /**
  *

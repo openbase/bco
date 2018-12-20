@@ -27,7 +27,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.dal.VideoRgbSourceDataType.VideoRgbSourceData;
+import org.openbase.type.domotic.unit.dal.VideoRgbSourceDataType.VideoRgbSourceData;
 
 /**
  *

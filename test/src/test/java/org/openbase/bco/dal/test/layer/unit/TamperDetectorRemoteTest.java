@@ -31,10 +31,10 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Stopwatch;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.TamperStateType.TamperState;
-import rst.domotic.state.TamperStateType.TamperState.State;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.TamperStateType.TamperState;
+import org.openbase.type.domotic.state.TamperStateType.TamperState.State;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import static org.junit.Assert.*;
 

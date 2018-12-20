@@ -31,8 +31,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.app.AppClassType.AppClass;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 
 import java.util.Locale;

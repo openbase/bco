@@ -50,19 +50,19 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.authentication.AuthenticatorType.Authenticator;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.EnablingStateType.EnablingState.State;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.timing.TimestampType.Timestamp;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -638,7 +638,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            final List<Future> ActionDescriptionList = new ArrayList<>();
+            final List<Future> actionDescriptionList = new ArrayList<>();
 
 
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
@@ -650,9 +650,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
 
                 // apply action on remote
-                ActionDescriptionList.add(unitRemote.applyAction(builder.build()));
+                actionDescriptionList.add(unitRemote.applyAction(builder.build()));
             }
-            return GlobalCachedExecutorService.allOf(ActionDescription.getDefaultInstance(), ActionDescriptionList);
+            return GlobalCachedExecutorService.allOf(ActionDescription.getDefaultInstance(), actionDescriptionList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

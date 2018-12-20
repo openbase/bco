@@ -40,10 +40,10 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.PresenceStateType.PresenceState.State;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
 
 /**
  *

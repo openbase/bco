@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.AlarmStateType.AlarmState;
+import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
 
 /**
  *

@@ -24,8 +24,8 @@ package org.openbase.bco.dal.lib.layer.service.collection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.state.ContactStateType.ContactState;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

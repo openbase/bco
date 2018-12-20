@@ -28,7 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.TargetTemperatureStatePro
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
  *

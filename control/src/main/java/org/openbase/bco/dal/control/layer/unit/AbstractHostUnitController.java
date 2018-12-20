@@ -37,7 +37,7 @@ import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.SyncObject;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;

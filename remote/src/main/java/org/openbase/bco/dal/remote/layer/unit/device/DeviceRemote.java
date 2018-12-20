@@ -25,8 +25,8 @@ import org.openbase.bco.dal.lib.layer.unit.device.Device;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.device.DeviceDataType.DeviceData;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
  *

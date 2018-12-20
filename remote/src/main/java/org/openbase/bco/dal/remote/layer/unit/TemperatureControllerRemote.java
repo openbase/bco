@@ -25,8 +25,8 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
-import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

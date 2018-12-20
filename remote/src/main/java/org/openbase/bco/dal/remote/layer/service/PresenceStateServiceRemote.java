@@ -27,10 +27,10 @@ import org.openbase.bco.dal.lib.layer.service.collection.PresenceStateProviderSe
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.PresenceStateType.PresenceState.State;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

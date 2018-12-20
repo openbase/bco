@@ -34,8 +34,8 @@ import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit.connection;
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
-import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *

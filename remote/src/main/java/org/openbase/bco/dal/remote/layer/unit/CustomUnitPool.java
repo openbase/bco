@@ -44,10 +44,10 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RemoteControllerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 import java.util.Arrays;
 import java.util.Collection;

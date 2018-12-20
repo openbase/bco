@@ -35,7 +35,7 @@ import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.util.ArrayList;
 import java.util.Collection;

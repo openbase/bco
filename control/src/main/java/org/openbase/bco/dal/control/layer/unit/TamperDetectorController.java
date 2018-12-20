@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.TamperStateType.TamperState;
-import rst.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
+import org.openbase.type.domotic.state.TamperStateType.TamperState;
+import org.openbase.type.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

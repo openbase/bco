@@ -24,8 +24,8 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.Battery;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.BatteryStateType.BatteryState;
-import rst.domotic.unit.dal.BatteryDataType.BatteryData;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
+import org.openbase.type.domotic.unit.dal.BatteryDataType.BatteryData;
 
 /**
  *

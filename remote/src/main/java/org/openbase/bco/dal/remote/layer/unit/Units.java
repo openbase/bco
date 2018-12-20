@@ -55,12 +55,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rsb.Scope;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.unit.UnitConfigType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.rsb.ScopeType;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
+import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.com.ScopeType;
 
 import java.util.ArrayList;
 import java.util.List;

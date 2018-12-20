@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.simulation.service;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  * Custom service simulator.

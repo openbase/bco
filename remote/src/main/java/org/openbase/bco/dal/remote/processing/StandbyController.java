@@ -32,11 +32,11 @@ import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.state.PowerStateType;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.state.PowerStateType;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.ArrayList;
 import java.util.List;

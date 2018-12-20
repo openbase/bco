@@ -27,9 +27,9 @@ import org.openbase.bco.dal.lib.layer.unit.SmokeDetector;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.AlarmStateType.AlarmState;
-import rst.domotic.state.SmokeStateType.SmokeState;
-import rst.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorData;
+import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
+import org.openbase.type.domotic.state.SmokeStateType.SmokeState;
+import org.openbase.type.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorData;
 
 /**
  *

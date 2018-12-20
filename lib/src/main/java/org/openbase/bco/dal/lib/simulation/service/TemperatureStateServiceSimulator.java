@@ -23,8 +23,8 @@ package org.openbase.bco.dal.lib.simulation.service;
  */
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

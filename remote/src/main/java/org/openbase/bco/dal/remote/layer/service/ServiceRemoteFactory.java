@@ -24,8 +24,8 @@ package org.openbase.bco.dal.remote.layer.service;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Factory;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.Collection;
 

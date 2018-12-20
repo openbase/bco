@@ -41,8 +41,8 @@ import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.Informer;
 import rsb.RSBException;
-//import rst.communicationpatterns.TaskStateType.TaskState;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
+//import org.openbase.type.communicationpatterns.TaskStateType.TaskState;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

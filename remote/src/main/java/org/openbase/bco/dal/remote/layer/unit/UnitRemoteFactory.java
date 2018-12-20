@@ -28,10 +28,10 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.openbase.jul.pattern.Factory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.rsb.ScopeType;
-import rst.rsb.ScopeType.Scope;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.com.ScopeType;
+import org.openbase.type.com.ScopeType.Scope;
 
 import java.util.concurrent.TimeUnit;
 

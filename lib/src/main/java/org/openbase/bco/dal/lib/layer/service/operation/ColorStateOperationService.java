@@ -28,14 +28,14 @@ import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionParameterType.ActionParameter;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ColorStateType.ColorState;
-import rst.vision.ColorType.Color;
-import rst.vision.ColorType.Color.Type;
-import rst.vision.HSBColorType.HSBColor;
-import rst.vision.RGBColorType.RGBColor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.vision.ColorType.Color;
+import org.openbase.type.vision.ColorType.Color.Type;
+import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.openbase.type.vision.RGBColorType.RGBColor;
 
 /**
  *

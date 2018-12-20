@@ -28,9 +28,9 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.rsb.ScopeType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.com.ScopeType;
 
 import java.util.concurrent.Future;
 

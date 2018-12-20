@@ -27,10 +27,10 @@ import org.openbase.bco.dal.lib.layer.service.collection.MotionStateProviderServ
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.MotionStateType.MotionState;
-import rst.domotic.state.MotionStateType.MotionState.State;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.MotionStateType.MotionState;
+import org.openbase.type.domotic.state.MotionStateType.MotionState.State;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

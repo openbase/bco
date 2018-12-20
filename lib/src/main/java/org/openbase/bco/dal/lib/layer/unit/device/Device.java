@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.device;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.HostUnit;
-import rst.domotic.unit.device.DeviceDataType.DeviceData;
+import org.openbase.type.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
  *

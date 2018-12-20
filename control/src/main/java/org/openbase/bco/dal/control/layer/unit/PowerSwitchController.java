@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
 
 /**
  *

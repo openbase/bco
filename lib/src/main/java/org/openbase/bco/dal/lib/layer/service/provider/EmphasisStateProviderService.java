@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE;
 

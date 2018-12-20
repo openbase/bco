@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit.agent;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import rst.domotic.unit.agent.AgentDataType.AgentData;
+import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData;
 
 /**
  *

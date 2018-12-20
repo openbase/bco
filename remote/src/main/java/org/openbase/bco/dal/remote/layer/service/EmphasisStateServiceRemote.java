@@ -29,10 +29,10 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.action.ActionDescriptionType;
+import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
 import java.util.concurrent.Future;

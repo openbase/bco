@@ -45,10 +45,10 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.visual.swing.layout.LayoutGenerator;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;

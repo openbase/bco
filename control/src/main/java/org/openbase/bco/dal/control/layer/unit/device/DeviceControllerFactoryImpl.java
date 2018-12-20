@@ -25,7 +25,7 @@ package org.openbase.bco.dal.control.layer.unit.device;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
 import org.openbase.jul.exception.InstantiationException;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

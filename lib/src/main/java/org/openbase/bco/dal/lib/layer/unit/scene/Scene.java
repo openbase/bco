@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit.scene;
  */
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import rst.domotic.unit.scene.SceneDataType.SceneData;
+import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  *

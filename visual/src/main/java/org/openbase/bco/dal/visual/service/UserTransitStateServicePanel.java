@@ -30,7 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.state.UserTransitStateType.UserTransitState;
+import org.openbase.type.domotic.state.UserTransitStateType.UserTransitState;
 
 /**
  *

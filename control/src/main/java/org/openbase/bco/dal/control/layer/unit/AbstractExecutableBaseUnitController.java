@@ -38,10 +38,10 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;

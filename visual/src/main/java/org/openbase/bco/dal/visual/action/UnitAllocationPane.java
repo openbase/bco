@@ -47,9 +47,9 @@ import org.openbase.jul.visual.javafx.control.AbstractFXController;
 import org.openbase.jul.visual.javafx.fxml.FXMLProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator;
-import rst.domotic.state.ActionStateType.ActionState.State;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 
 public class UnitAllocationPane extends AbstractFXController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitAllocationPane.class);

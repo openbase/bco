@@ -53,14 +53,14 @@ import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ContactStateType.ContactState;
-import rst.domotic.state.DoorStateType.DoorState;
-import rst.domotic.state.PassageStateType.PassageState;
-import rst.domotic.state.WindowStateType.WindowState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
-import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
+import org.openbase.type.domotic.state.DoorStateType.DoorState;
+import org.openbase.type.domotic.state.PassageStateType.PassageState;
+import org.openbase.type.domotic.state.WindowStateType.WindowState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
+import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *

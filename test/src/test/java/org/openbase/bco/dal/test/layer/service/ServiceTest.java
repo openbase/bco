@@ -42,12 +42,12 @@ import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BatteryStateType;
-import rst.domotic.state.ColorStateType;
-import rst.domotic.state.MotionStateType;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.SmokeStateType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BatteryStateType;
+import org.openbase.type.domotic.state.ColorStateType;
+import org.openbase.type.domotic.state.MotionStateType;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.state.SmokeStateType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

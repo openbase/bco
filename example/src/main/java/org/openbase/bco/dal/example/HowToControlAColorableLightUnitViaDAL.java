@@ -29,8 +29,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.vision.HSBColorType.HSBColor;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.vision.HSBColorType.HSBColor;
 
 /**
  *

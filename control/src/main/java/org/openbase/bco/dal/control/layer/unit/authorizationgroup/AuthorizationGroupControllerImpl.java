@@ -28,9 +28,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 
 import java.util.concurrent.Future;
 

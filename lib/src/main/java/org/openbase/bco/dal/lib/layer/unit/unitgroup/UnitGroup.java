@@ -26,10 +26,10 @@ import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
 import org.openbase.bco.dal.lib.layer.unit.ServiceAggregator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -24,8 +24,8 @@ package org.openbase.bco.dal.lib.layer.unit.user;
 
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
-import rst.domotic.unit.UnitConfigType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

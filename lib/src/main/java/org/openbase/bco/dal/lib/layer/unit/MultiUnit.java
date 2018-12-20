@@ -24,9 +24,9 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 
 /**
  * Interface describes a unit which internally holds further units and aggregates its states.

@@ -7,17 +7,17 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator;
-import rst.domotic.action.ActionParameterType.ActionParameter;
-import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
-import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
-import rst.domotic.action.ActionReferenceType.ActionReference;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
 

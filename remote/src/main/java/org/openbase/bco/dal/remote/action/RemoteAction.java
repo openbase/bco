@@ -41,10 +41,10 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionParameterType.ActionParameter;
-import rst.domotic.state.ActionStateType.ActionState;
-import rst.domotic.state.ActionStateType.ActionState.State;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.state.ActionStateType.ActionState;
+import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 
 import java.util.Collection;
 import java.util.concurrent.*;

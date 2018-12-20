@@ -27,9 +27,9 @@ import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationServi
 import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

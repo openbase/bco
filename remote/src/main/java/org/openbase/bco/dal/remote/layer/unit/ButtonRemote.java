@@ -25,8 +25,8 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.Button;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ButtonStateType.ButtonState;
-import rst.domotic.unit.dal.ButtonDataType.ButtonData;
+import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
+import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
 
 /**
  *

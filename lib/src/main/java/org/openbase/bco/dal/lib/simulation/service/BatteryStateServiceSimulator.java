@@ -24,8 +24,8 @@ package org.openbase.bco.dal.lib.simulation.service;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import static org.openbase.bco.dal.lib.simulation.service.AbstractScheduledServiceSimulator.RANDOM;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BatteryStateType.BatteryState;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

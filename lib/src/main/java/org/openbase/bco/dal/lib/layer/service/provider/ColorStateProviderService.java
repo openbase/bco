@@ -28,11 +28,11 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
-import rst.vision.ColorType.Color;
-import rst.vision.ColorType.Color.Type;
-import rst.vision.HSBColorType.HSBColor;
-import rst.vision.RGBColorType.RGBColor;
-import rst.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.vision.ColorType.Color;
+import org.openbase.type.vision.ColorType.Color.Type;
+import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.openbase.type.vision.RGBColorType.RGBColor;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
 

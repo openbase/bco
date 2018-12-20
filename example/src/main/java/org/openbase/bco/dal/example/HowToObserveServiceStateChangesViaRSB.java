@@ -38,11 +38,11 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.RemoteServer;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 
 /**
  *

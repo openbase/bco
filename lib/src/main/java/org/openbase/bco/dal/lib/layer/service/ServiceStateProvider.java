@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.service;
 
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 public class ServiceStateProvider<ST extends Message> {
 

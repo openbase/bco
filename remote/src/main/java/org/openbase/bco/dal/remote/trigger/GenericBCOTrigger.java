@@ -36,8 +36,8 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

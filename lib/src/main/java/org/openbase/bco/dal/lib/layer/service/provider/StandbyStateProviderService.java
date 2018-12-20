@@ -25,7 +25,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.StandbyStateType.StandbyState;
+import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE;
 

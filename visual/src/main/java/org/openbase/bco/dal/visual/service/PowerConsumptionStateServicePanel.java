@@ -29,7 +29,7 @@ import java.text.DecimalFormat;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer;
-import rst.vision.HSBColorType.HSBColor;
+import org.openbase.type.vision.HSBColorType.HSBColor;
 
 /**
  *

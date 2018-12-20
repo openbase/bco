@@ -43,14 +43,14 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-import rst.domotic.state.ColorStateType.ColorState;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.PowerStateType.PowerState.State;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
-import rst.vision.HSBColorType.HSBColor;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+import org.openbase.type.vision.HSBColorType.HSBColor;
 
 import static org.junit.Assert.assertEquals;
 

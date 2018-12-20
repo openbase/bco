@@ -25,7 +25,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.DoorStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.PassageStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.WindowStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *

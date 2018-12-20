@@ -25,8 +25,8 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.ReedContact;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ContactStateType.ContactState;
-import rst.domotic.unit.dal.ReedContactDataType.ReedContactData;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
+import org.openbase.type.domotic.unit.dal.ReedContactDataType.ReedContactData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

@@ -25,7 +25,7 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.VideoDepthSource;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.dal.VideoDepthSourceDataType.VideoDepthSourceData;
+import org.openbase.type.domotic.unit.dal.VideoDepthSourceDataType.VideoDepthSourceData;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>

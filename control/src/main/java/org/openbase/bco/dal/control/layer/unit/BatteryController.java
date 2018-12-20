@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.BatteryStateType.BatteryState;
-import rst.domotic.unit.dal.BatteryDataType.BatteryData;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
+import org.openbase.type.domotic.unit.dal.BatteryDataType.BatteryData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

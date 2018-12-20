@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit.authorizationgroup;
 
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
+import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 
 public interface AuthorizationGroupController extends AuthorizationGroup, BaseUnitController<AuthorizationGroupData, AuthorizationGroupData.Builder> {
 

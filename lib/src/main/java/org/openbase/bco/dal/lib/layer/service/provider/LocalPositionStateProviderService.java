@@ -27,11 +27,11 @@ import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.LocalPositionStateType.LocalPositionState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.geometry.TranslationType.Translation;
-import rst.math.Vec3DDoubleType.Vec3DDouble;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.LocalPositionStateType.LocalPositionState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.geometry.TranslationType.Translation;
+import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
 
 import java.util.List;
 
