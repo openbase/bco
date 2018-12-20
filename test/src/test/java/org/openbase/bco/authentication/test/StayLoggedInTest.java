@@ -32,7 +32,7 @@ import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 import java.util.concurrent.ExecutionException;
 

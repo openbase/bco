@@ -30,7 +30,7 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 import java.util.ArrayList;
 import java.util.List;

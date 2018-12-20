@@ -24,8 +24,8 @@ package org.openbase.bco.authentication.lib;
 
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFileProcessor;
-import rst.domotic.authentication.LoginCredentialsCollectionType.LoginCredentialsCollection;
-import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
+import org.openbase.type.domotic.authentication.LoginCredentialsCollectionType.LoginCredentialsCollection;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 import java.util.Base64;
 import java.util.Map;

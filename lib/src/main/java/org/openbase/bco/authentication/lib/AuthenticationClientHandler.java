@@ -25,10 +25,10 @@ package org.openbase.bco.authentication.lib;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import rst.domotic.authentication.AuthenticatorType.Authenticator;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
-import rst.timing.TimestampType.Timestamp;
+import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.timing.TimestampType.Timestamp;
 
 import java.util.ArrayList;
 import java.util.List;

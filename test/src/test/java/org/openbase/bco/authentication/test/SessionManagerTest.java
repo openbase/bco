@@ -39,8 +39,8 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
-import rst.domotic.authentication.TicketType.Ticket;
+import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.TicketType.Ticket;
 
 import java.util.concurrent.ExecutionException;
 

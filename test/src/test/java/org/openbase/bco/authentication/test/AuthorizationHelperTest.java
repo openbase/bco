@@ -35,13 +35,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
-import rst.domotic.authentication.PermissionType.Permission;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
-import rst.spatial.PlacementConfigType.PlacementConfig;
+import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
+import org.openbase.type.domotic.authentication.PermissionType.Permission;
+import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig;
+import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *

@@ -29,12 +29,12 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import rst.domotic.authentication.AuthenticatorType.Authenticator;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
-import rst.domotic.authentication.TicketType.Ticket;
-import rst.timing.IntervalType.Interval;
-import rst.timing.TimestampType.Timestamp;
+import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.domotic.authentication.TicketType.Ticket;
+import org.openbase.type.timing.IntervalType.Interval;
+import org.openbase.type.timing.TimestampType.Timestamp;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

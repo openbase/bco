@@ -28,7 +28,7 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.processing.SimpleMessageProcessor;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

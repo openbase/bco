@@ -38,10 +38,10 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
 /**
  *
