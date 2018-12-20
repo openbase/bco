@@ -71,20 +71,19 @@
         <module name="jul.audio" />
         <module name="jul.exception" />
         <module name="jul.extension.protobuf" />
-        <module name="jul.extension.rct" />
         <module name="jul.extension.rsb.com" />
         <module name="jul.extension.rsb.container" />
         <module name="jul.extension.rsb.interface" />
         <module name="jul.extension.rsb.processing" />
         <module name="jul.extension.rsb.scope" />
         <module name="jul.extension.rsb.util" />
-        <module name="jul.extension.rst.container" />
-        <module name="jul.extension.rst.interface" />
-        <module name="jul.extension.rst.processing" />
-        <module name="jul.extension.rst.storage" />
-        <module name="jul.extension.rst.transform" />
         <module name="jul.extension.rst.util" />
         <module name="jul.extension.tcp" />
+        <module name="jul.extension.type.interface" />
+        <module name="jul.extension.type.processing" />
+        <module name="jul.extension.type.storage" />
+        <module name="jul.extension.type.transform" />
+        <module name="jul.extension.type.util" />
         <module name="jul.extension.xml" />
         <module name="jul.interface" />
         <module name="jul.pattern" />
@@ -312,6 +311,11 @@
       <module name="jul.extension.rst.transform" target="1.8" />
       <module name="jul.extension.rst.util" target="1.8" />
       <module name="jul.extension.tcp" target="1.8" />
+      <module name="jul.extension.type.interface" target="1.8" />
+      <module name="jul.extension.type.processing" target="1.8" />
+      <module name="jul.extension.type.storage" target="1.8" />
+      <module name="jul.extension.type.transform" target="1.8" />
+      <module name="jul.extension.type.util" target="1.8" />
       <module name="jul.extension.xml" target="1.8" />
       <module name="jul.interface" target="1.8" />
       <module name="jul.pattern" target="1.8" />

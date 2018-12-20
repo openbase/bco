@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding">
+  <component name="Encoding" addBOMForNewFiles="with NO BOM">
     <file url="file://$PROJECT_DIR$/../bco.dal" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../bco.dal/control" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../bco.dal/example" charset="UTF-8" />
@@ -85,14 +85,14 @@
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/processing" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/scope" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/util" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/rst" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/rst/container" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/rst/interface" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/rst/processing" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/rst/storage" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/rst/transform" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/rst/util" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/tcp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/extension/type" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/extension/type/container" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/extension/type/interface" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/extension/type/processing" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/extension/type/storage" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/extension/type/transform" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/extension/type/util" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/xml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/interface" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/pattern" charset="UTF-8" />
