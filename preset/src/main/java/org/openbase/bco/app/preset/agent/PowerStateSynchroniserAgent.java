@@ -23,7 +23,6 @@ package org.openbase.bco.app.preset.agent;
  */
 
 import com.google.protobuf.Message;
-import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateObserver;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -37,10 +36,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
