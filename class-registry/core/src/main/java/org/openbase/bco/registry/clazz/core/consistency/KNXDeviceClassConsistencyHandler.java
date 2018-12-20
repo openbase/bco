@@ -26,18 +26,18 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.configuration.EntryType.Entry;
-import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass.Builder;
-import rst.domotic.unit.device.DeviceClassType.DeviceClassOrBuilder;
+import org.openbase.type.configuration.EntryType.Entry;
+import org.openbase.type.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass.Builder;
+import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClassOrBuilder;
 
 import java.util.*;
 

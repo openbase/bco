@@ -22,25 +22,14 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.core.UnitRegistryController;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
-import rst.spatial.PlacementConfigType.PlacementConfig;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
+import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 
 import java.util.Locale;
 

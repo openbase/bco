@@ -23,7 +23,7 @@ package org.openbase.bco.registry.unit.lib.generator;
  */
 
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *

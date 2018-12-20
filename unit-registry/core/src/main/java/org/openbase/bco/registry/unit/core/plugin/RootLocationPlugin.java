@@ -25,30 +25,21 @@ package org.openbase.bco.registry.unit.core.plugin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.RejectedException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
-import rst.domotic.unit.location.TileConfigType.TileConfig;
-import rst.math.Vec3DDoubleType.Vec3DDouble;
-import rst.spatial.PlacementConfigType.PlacementConfig;
-import rst.spatial.ShapeType.Shape;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig;
+import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
+import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
+import org.openbase.type.spatial.ShapeType.Shape;
 
-import java.awt.*;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * A plugin that handles changes that have to be done before removing a location.

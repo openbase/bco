@@ -24,7 +24,7 @@ package org.openbase.bco.registry.lib.provider.clazz;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.unit.app.AppClassType.AppClass;
+import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 
 import java.util.List;
 

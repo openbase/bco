@@ -32,9 +32,9 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
-import rst.domotic.registry.UnitRegistryDataType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.device.DeviceClassType;
+import org.openbase.type.domotic.registry.UnitRegistryDataType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.device.DeviceClassType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

@@ -28,9 +28,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
-import rst.domotic.activity.ActivityConfigType.ActivityConfig;
-import rst.domotic.communication.TransactionValueType.TransactionValue;
-import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
+import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
+import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
+import org.openbase.type.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
 
 import java.util.concurrent.Future;
 

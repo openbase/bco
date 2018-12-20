@@ -30,9 +30,9 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.Builder;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.Builder;
 
 import java.util.HashMap;
 import java.util.Map;

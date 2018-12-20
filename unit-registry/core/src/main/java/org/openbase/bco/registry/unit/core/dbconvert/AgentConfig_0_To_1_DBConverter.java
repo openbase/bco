@@ -26,8 +26,8 @@ import java.io.File;
 import java.util.Map;
 import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.EnablingStateType.EnablingState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 
 /**
  *

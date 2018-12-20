@@ -24,7 +24,7 @@ package org.openbase.bco.registry.lib.provider;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 public interface RootLocationConfigProvider {
     /**

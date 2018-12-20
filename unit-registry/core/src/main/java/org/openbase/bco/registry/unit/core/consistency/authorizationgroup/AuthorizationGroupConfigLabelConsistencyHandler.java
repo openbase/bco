@@ -23,7 +23,7 @@ package org.openbase.bco.registry.unit.core.consistency.authorizationgroup;
  */
 
 import org.openbase.bco.registry.unit.core.consistency.DefaultUnitLabelConsistencyHandler;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

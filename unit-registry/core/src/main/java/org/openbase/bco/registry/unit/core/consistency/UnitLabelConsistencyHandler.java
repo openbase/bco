@@ -22,17 +22,15 @@ package org.openbase.bco.registry.unit.core.consistency;
  * #L%
  */
 
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.language.LabelType.Label;
-import rst.domotic.authentication.PermissionType.Permission;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.language.LabelType.Label;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * Consistency handler which generates other permissions for units without a placement and the root location.

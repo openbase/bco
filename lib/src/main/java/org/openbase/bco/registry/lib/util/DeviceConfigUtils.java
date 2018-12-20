@@ -27,14 +27,13 @@ import java.util.Locale;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
-import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.domotic.unit.device.DeviceClassType.DeviceClassOrBuilder;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
+import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
+import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClassOrBuilder;
 
 /**
  * A collection of utils to manipulate or analyse unit device configs.

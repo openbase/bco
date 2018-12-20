@@ -35,25 +35,23 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rct.GlobalTransformReceiver;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import rct.TransformerException;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
-import rst.geometry.PoseType.Pose;
-import rst.geometry.RotationType.Rotation;
-import rst.geometry.TranslationType.Translation;
-import rst.spatial.PlacementConfigType.PlacementConfig;
-import rst.spatial.ShapeType.Shape;
+import org.openbase.rct.GlobalTransformReceiver;
+import org.openbase.rct.TransformerException;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
+import org.openbase.type.geometry.PoseType.Pose;
+import org.openbase.type.geometry.RotationType.Rotation;
+import org.openbase.type.geometry.TranslationType.Translation;
+import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
+import org.openbase.type.spatial.ShapeType.Shape;
 
 /**
  * This consinstency handler creates a bounding box around the bounding boxes of

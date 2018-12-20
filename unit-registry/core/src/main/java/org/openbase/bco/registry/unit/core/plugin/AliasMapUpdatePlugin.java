@@ -27,8 +27,8 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 import java.util.ArrayList;
 import java.util.List;

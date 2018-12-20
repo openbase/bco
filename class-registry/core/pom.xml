@@ -97,22 +97,17 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rst.processing</artifactId>
+            <artifactId>jul.extension.type.processing</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rst.storage</artifactId>
+            <artifactId>jul.extension.type.storage</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.processing</artifactId>
-            <version>${dependency.jul.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rct</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
     </dependencies>

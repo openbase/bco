@@ -37,12 +37,12 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
 
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;

@@ -24,11 +24,11 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.communication.TransactionValueType.TransactionValue;
-import rst.domotic.registry.ClassRegistryDataType.ClassRegistryData;
-import rst.domotic.unit.agent.AgentClassType.AgentClass;
-import rst.domotic.unit.app.AppClassType.AppClass;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
+import org.openbase.type.domotic.registry.ClassRegistryDataType.ClassRegistryData;
+import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
+import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
+import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.List;
 import java.util.concurrent.Future;

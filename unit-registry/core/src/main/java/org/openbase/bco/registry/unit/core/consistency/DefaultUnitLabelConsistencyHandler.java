@@ -28,13 +28,13 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.language.LabelType.Label;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.language.LabelType.Label;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.HashMap;
 import java.util.Locale;
