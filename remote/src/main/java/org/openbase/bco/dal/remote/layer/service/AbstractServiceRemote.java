@@ -644,8 +644,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 final Builder builder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
                 builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
-                // update action chain
-                builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
+                // update action cause
+                builder.addActionCause(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
 
                 // apply action on remote
                 actionDescriptionList.add(unitRemote.applyAction(builder.build()));
@@ -660,7 +660,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         // create new builder and copy fields
         ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
         // update the action chain
-        ActionDescriptionProcessor.updateActionChain(unitActionDescription, actionDescription);
+        ActionDescriptionProcessor.updateActionCause(unitActionDescription, actionDescription);
         // update the id in the serviceStateDescription to that of the unit
         ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
         serviceStateDescription.setUnitId(unitRemote.getId());
@@ -696,8 +696,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             final Builder builder = ActionDescription.newBuilder(actionDescription);
             builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
-            // update action chain
-            builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescription));
+            // update action cause
+            builder.addActionCause(ActionDescriptionProcessor.generateActionReference(actionDescription));
 
             // encrypt action description again
             final ByteString encrypt = EncryptionHelper.encryptSymmetric(builder.build(), SessionManager.getInstance().getSessionKey());

@@ -34,7 +34,7 @@ import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType.RGBColor;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
 
 /**
  *

@@ -29,7 +29,7 @@ import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
 import org.openbase.type.domotic.state.BatteryStateType.BatteryState.Builder;
 import org.openbase.type.domotic.state.BatteryStateType.BatteryState.State;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
 
 /**
  *

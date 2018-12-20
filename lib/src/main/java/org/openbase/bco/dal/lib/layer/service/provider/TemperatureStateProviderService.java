@@ -26,7 +26,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_STATE_SERVICE;
 
 /**
  *

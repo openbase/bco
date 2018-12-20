@@ -51,7 +51,7 @@ import org.openbase.type.vision.RGBColorType.RGBColor;
 
 import java.util.concurrent.Future;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
 
 /**
  * @author Tamino Huxohl

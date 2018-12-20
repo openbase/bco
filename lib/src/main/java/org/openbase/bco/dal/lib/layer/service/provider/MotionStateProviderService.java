@@ -27,7 +27,7 @@ import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_STATE_SERVICE;
 
 /**
  *

@@ -34,7 +34,7 @@ import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataT
 
 import java.util.concurrent.Future;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE;
 
 public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController<AuthorizationGroupData, AuthorizationGroupData.Builder> implements AuthorizationGroupController {
 

@@ -400,7 +400,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 //                ActionDescription responsibleAction = Services.getResponsibleAction(serviceAttribute);
 //                Services.clearResponsibleAction(serviceAttribute);
 //
-//                ActionDescriptionProcessor.updateActionChain(actionDescription, responsibleAction);
+//                ActionDescriptionProcessor.updateActionCause(actionDescription, responsibleAction);
 //            }
 //            ActionDescriptionProcessor.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType(), unitRemote);
 

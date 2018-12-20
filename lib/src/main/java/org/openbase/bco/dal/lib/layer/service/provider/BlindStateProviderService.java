@@ -28,7 +28,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE;
 
 /**
  *

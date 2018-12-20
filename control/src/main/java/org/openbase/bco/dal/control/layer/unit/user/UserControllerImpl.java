@@ -64,7 +64,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

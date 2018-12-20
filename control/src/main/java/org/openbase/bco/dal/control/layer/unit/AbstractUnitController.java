@@ -110,8 +110,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
@@ -556,7 +556,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     if (actionToCancel.getActionDescription().getActionInitiator().getInitiatorId().equals(authenticatedId)) {
                         // authenticated user it not the direct initiator
                         boolean isAuthorized = false;
-                        for (final ActionReference actionReference : actionToCancel.getActionDescription().getActionChainList()) {
+                        for (final ActionReference actionReference : actionToCancel.getActionDescription().getActionCauseList()) {
                             if (actionReference.getActionInitiator().getInitiatorId().equals(authenticatedId)) {
                                 isAuthorized = true;
                                 break;

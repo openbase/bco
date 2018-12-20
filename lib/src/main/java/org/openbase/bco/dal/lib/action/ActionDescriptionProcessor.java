@@ -134,15 +134,15 @@ public class ActionDescriptionProcessor {
      *
      * @return the updated ActionDescription
      */
-    public static ActionDescription.Builder updateActionChain(final ActionDescription.Builder actionDescription, final ActionDescriptionOrBuilder parentAction) {
-        actionDescription.clearActionChain();
-        actionDescription.addActionChain(generateActionReference(parentAction));
-        actionDescription.addAllActionChain(parentAction.getActionChainList());
+    public static ActionDescription.Builder updateActionCause(final ActionDescription.Builder actionDescription, final ActionDescriptionOrBuilder parentAction) {
+        actionDescription.clearActionCause();
+        actionDescription.addActionCause(generateActionReference(parentAction));
+        actionDescription.addAllActionCause(parentAction.getActionCauseList());
         return actionDescription;
     }
 
     /**
-     * Return the initial initiator of an action. According to {@link #updateActionChain(Builder, ActionDescriptionOrBuilder)}
+     * Return the initial initiator of an action. According to {@link #updateActionCause(Builder, ActionDescriptionOrBuilder)}
      * the immediate parent of an action is the first element in its chain. Thus, the last element of the chain contains
      * the original initiator. If the action chain is empty, the initiator of the action is returned.
      *
@@ -151,10 +151,10 @@ public class ActionDescriptionProcessor {
      * @return the initial initiator of an action as described above.
      */
     public static ActionInitiator getInitialInitiator(final ActionDescriptionOrBuilder actionDescription) {
-        if (actionDescription.getActionChainList().isEmpty()) {
+        if (actionDescription.getActionCauseList().isEmpty()) {
             return actionDescription.getActionInitiator();
         } else {
-            return actionDescription.getActionChain(actionDescription.getActionChainCount() - 1).getActionInitiator();
+            return actionDescription.getActionCause(actionDescription.getActionCauseCount() - 1).getActionInitiator();
         }
     }
 
@@ -322,7 +322,7 @@ public class ActionDescriptionProcessor {
 
         // if an initiator action is defined in ActionParameter the actionChain is updated
         if (actionParameter.hasCause()) {
-            updateActionChain(actionDescription, actionParameter.getCause());
+            updateActionCause(actionDescription, actionParameter.getCause());
         }
 
         return actionDescription;

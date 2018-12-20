@@ -28,7 +28,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.SwitchStateType.SwitchState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SWITCH_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SWITCH_STATE_SERVICE;
 
 /**
  *

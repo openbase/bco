@@ -28,7 +28,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.type.domotic.state.ContactStateType.ContactState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
