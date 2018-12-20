@@ -26,48 +26,37 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.action.Action;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.SchedulableAction;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.ActionStateType.ActionState.State;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.language.MultiLanguageTextType.MultiLanguageText;
-import rst.language.MultiLanguageTextType.MultiLanguageText.MapFieldEntry;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.*;
 
 /**
@@ -118,34 +107,8 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilder = actionDescription.toBuilder();
 
-            TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
-
-            // update initiator type
-            if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
-                final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId());
-                if ((initiatorUnitConfig.getUnitType() == UnitType.USER && !initiatorUnitConfig.getUserConfig().getSystemUser())) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
-                } else {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
-                }
-            } else if (!actionDescriptionBuilder.getActionInitiator().hasInitiatorType()) {
-                // if no initiator is defined than use the system as initiator.
-                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
-            }
-
-            // verify
-            verifyActionDescription(actionDescriptionBuilder);
-
-            // prepare
-            actionDescriptionBuilder.setId(UUID.randomUUID().toString());
-            LabelProcessor.addLabel(actionDescriptionBuilder.getLabelBuilder(), Locale.ENGLISH, GENERIC_ACTION_LABEL);
-            serviceState = serviceJSonProcessor.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute(), actionDescriptionBuilder.getServiceStateDescription().getServiceAttributeType());
-
-            // verify service attribute
-            serviceState = Services.verifyAndRevalidateServiceState(serviceState);
-
-            // generate or update action description
-            generateDescription(actionDescriptionBuilder, serviceState);
+            // verify and prepare action description
+            serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, true);
 
             // since its an action it has to be an operation service pattern
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
@@ -154,64 +117,6 @@ public class ActionImpl implements SchedulableAction {
             updateActionState(State.INITIALIZED);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
-        }
-    }
-
-    private void generateDescription(Builder actionDescriptionBuilder, Message serviceState) {
-
-        final MultiLanguageText.Builder multiLanguageTextBuilder = MultiLanguageText.newBuilder();
-        for (Entry<String, String> languageDescriptionEntry : GENERIC_ACTION_DESCRIPTION_MAP.entrySet()) {
-            String description = languageDescriptionEntry.getValue();
-            try {
-                // setup unit label
-                description = description.replace(UNIT_LABEL_KEY, unit.getLabel());
-
-                // setup service type
-                description = description.replace(SERVICE_TYPE_KEY,
-                        StringProcessor.transformToCamelCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
-
-                // setup initiator
-                if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
-                    description = description.replace(INITIATOR_KEY, LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId()).getLabel()));
-                } else {
-                    description = description.replace(INITIATOR_KEY, "Other");
-                }
-
-                // setup service attribute
-                description = description.replace(SERVICE_ATTRIBUTE_KEY,
-                        StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
-
-                // format
-                description = StringProcessor.formatHumanReadable(description);
-
-                // generate
-                multiLanguageTextBuilder.addEntry(MapFieldEntry.newBuilder().setKey(languageDescriptionEntry.getKey()).setValue(description).build());
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not generate action description!", ex, LOGGER);
-            }
-            actionDescriptionBuilder.setDescription(multiLanguageTextBuilder);
-        }
-    }
-
-    private void verifyActionDescription(final ActionDescriptionOrBuilder actionDescription) throws VerificationFailedException {
-        try {
-            if (actionDescription == null) {
-                throw new NotAvailableException("ActionDescription");
-            }
-
-            if (!actionDescription.hasServiceStateDescription()) {
-                throw new NotAvailableException("ActionDescription.ServiceStateDescription");
-            }
-
-            if (!actionDescription.getServiceStateDescription().hasUnitId() || actionDescription.getServiceStateDescription().getUnitId().isEmpty()) {
-                throw new NotAvailableException("ActionDescription.ServiceStateDescription.UnitId");
-            }
-
-            if (!actionDescription.getServiceStateDescription().getUnitId().equals(unit.getId())) {
-                throw new InvalidStateException("Referred unit is not compatible with the registered unit controller!");
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new VerificationFailedException("Given ActionDescription[" + actionDescription + "] is invalid!", ex);
         }
     }
 
@@ -240,49 +145,49 @@ public class ActionImpl implements SchedulableAction {
 
             actionTask = GlobalCachedExecutorService.submit(() -> {
                 try {
-                    synchronized (executionSync) {
-                        // Initiate
-                        updateActionState(ActionState.State.INITIATING);
+//                    synchronized (executionSync) {
+                    // Initiate
+                    updateActionState(ActionState.State.INITIATING);
 
-                        try {
-                            while (!Thread.interrupted()) {
-                                try {
-                                    boolean hasOperationService = false;
-                                    for (ServiceDescription description : unit.getUnitTemplate().getServiceDescriptionList()) {
-                                        if (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == ServicePattern.OPERATION) {
-                                            hasOperationService = true;
-                                            break;
-                                        }
+                    try {
+                        while (!Thread.interrupted()) {
+                            try {
+                                boolean hasOperationService = false;
+                                for (ServiceDescription description : unit.getUnitTemplate().getServiceDescriptionList()) {
+                                    if (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == ServicePattern.OPERATION) {
+                                        hasOperationService = true;
+                                        break;
                                     }
-
-                                    // only update requested state if it is an operation state, else throw an exception if not in provider control mode
-                                    if (!hasOperationService) {
-                                        if (!JPService.getProperty(JPProviderControlMode.class).getValue()) {
-                                            throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
-                                        }
-                                    } else {
-                                        setRequestedState();
-                                    }
-
-                                    // Execute
-                                    updateActionState(ActionState.State.EXECUTING);
-
-                                    LOGGER.debug("Wait for execution...");
-                                    waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
-                                    LOGGER.debug("Execution finished!");
-                                    break;
-                                } catch (CouldNotPerformException | JPNotAvailableException ex) {
-                                    updateActionState(ActionState.State.EXECUTION_FAILED);
-                                    ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
-                                    Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
                                 }
+
+                                // only update requested state if it is an operation state, else throw an exception if not in provider control mode
+                                if (!hasOperationService) {
+                                    if (!JPService.getProperty(JPProviderControlMode.class).getValue()) {
+                                        throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
+                                    }
+                                } else {
+                                    setRequestedState();
+                                }
+
+                                // Execute
+                                updateActionState(ActionState.State.EXECUTING);
+
+                                LOGGER.debug("Wait for execution...");
+                                waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
+                                LOGGER.debug("Execution finished!");
+                                break;
+                            } catch (CouldNotPerformException | JPNotAvailableException ex) {
+                                updateActionState(ActionState.State.EXECUTION_FAILED);
+                                ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
+                                Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
                             }
-                            return getActionDescription();
-                        } catch (InterruptedException ex) {
-                            Thread.currentThread().interrupt();
-                            throw ex;
                         }
+                        return getActionDescription();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        throw ex;
                     }
+//                    }
                 } finally {
                     synchronized (executionSync) {
                         actionTask = null;
@@ -404,14 +309,14 @@ public class ActionImpl implements SchedulableAction {
     private void updateActionState(ActionState.State state) {
         LOGGER.info(this + " State[" + state.name() + "]");
 
-        actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
-        try {
-            ServiceStateProcessor.updateLatestValueOccurrence(state.getValueDescriptor(), TimestampProcessor.getCurrentTimestamp(), actionDescriptionBuilder.getActionStateBuilder());
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER);
-        }
-
         synchronized (executionSync) {
+            actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
+            try {
+                ServiceStateProcessor.updateLatestValueOccurrence(state.getValueDescriptor(), TimestampProcessor.getCurrentTimestamp(), actionDescriptionBuilder.getActionStateBuilder());
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER);
+            }
+
             executionSync.notifyAll();
         }
 

@@ -1,9 +1,6 @@
 package org.openbase.bco.dal.remote.layer.unit.location;
 
 import com.google.protobuf.Message;
-import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -19,13 +16,13 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.*;
@@ -366,27 +363,11 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        if (!SessionManager.getInstance().isLoggedIn()) {
-            throw new CouldNotPerformException("Could not apply authenticated action because default session manager not logged in");
-        }
-
+        //TODO: maybe skip transaction sync future? or only create for according service types?
         try {
-            final ActionDescription actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
-            for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-                if (serviceDescription.getAggregated()) {
-                    continue;
-                }
-
-                if (serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
-                    continue;
-                }
-
-                return super.applyActionAuthenticated(authenticatedValue);
-            }
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
+            throw new CouldNotPerformException("Could not apply action!", ex);
         }
-
-        return serviceRemoteManager.applyActionAuthenticated(authenticatedValue);
     }
 }

@@ -26,8 +26,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
-import com.google.protobuf.Message;
 import com.google.protobuf.ProtocolMessageEnum;
+import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -53,9 +53,6 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.authentication.AuthenticatorType.Authenticator;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -634,14 +631,20 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
         try {
+            if (actionDescriptionBuilder.getCancel()) {
+                logger.warn("Cancel action {} via service remote", actionDescriptionBuilder.getId());
+            }
+
             if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
             final List<Future> ActionDescriptionList = new ArrayList<>();
 
-
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
+                if (actionDescriptionBuilder.getCancel()) {
+                    logger.warn("Send cancel action {} to unit {}", actionDescriptionBuilder.getId(), unitRemote);
+                }
 
                 final Builder builder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
                 builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
@@ -652,7 +655,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // apply action on remote
                 ActionDescriptionList.add(unitRemote.applyAction(builder.build()));
             }
-            return GlobalCachedExecutorService.allOf(ActionDescription.getDefaultInstance(), ActionDescriptionList);
+            return GlobalCachedExecutorService.allOf(actionDescriptionBuilder.build(), ActionDescriptionList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
@@ -670,6 +673,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         return unitActionDescription.build();
     }
 
+    @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         if (!SessionManager.getInstance().isLoggedIn()) {
             throw new CouldNotPerformException("Could not apply authenticated action because default session manager not logged in");
@@ -682,56 +686,58 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
         }
 
-        return applyActionAuthenticated(authenticatedValue, actionDescription);
+        return applyActionAuthenticated(authenticatedValue, actionDescription, null);
     }
 
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription actionDescription, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
         if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
             throw new VerificationFailedException("Service type is not compatible to given action config!");
         }
 
         final List<Future<AuthenticatedValue>> ActionDescriptionList = new ArrayList<>();
 
-        logger.info("ServiceRemote apply action authenticated");
-
         for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
-            final Builder builder = ActionDescription.newBuilder(actionDescription);
-            builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
+            final Builder actionDescriptionBuilder = ActionDescription.newBuilder(actionDescription);
+            actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
             // update action chain
-            builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescription));
+            ActionDescriptionProcessor.updateActionChain(actionDescriptionBuilder, actionDescription);
 
+            final AuthenticatedValue authValue;
             // encrypt action description again
-            final ByteString encrypt = EncryptionHelper.encryptSymmetric(builder.build(), SessionManager.getInstance().getSessionKey());
-            final AuthenticatedValue authValue = authenticatedValue.toBuilder().setValue(encrypt).build();
+            if (authenticationBaseData != null) {
+                final ByteString encrypt = EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), authenticationBaseData.getSessionKey());
+                authValue = authenticatedValue.toBuilder().setValue(encrypt).build();
+            } else {
+                authValue = authenticatedValue.toBuilder().setValue(actionDescriptionBuilder.build().toByteString()).build();
+            }
+
 
             // apply action on remote
             ActionDescriptionList.add(unitRemote.applyActionAuthenticated(authValue));
         }
-
-        // Because the action is never send to the controller the authenticator will not and does not need to be updated.
-        // But in order not to override the applyAction method, which returns a future that validates the authenticator,
-        // on the location remote and unit group remote, it is faked here.
-        final Authenticator.Builder authenticator = EncryptionHelper.decryptSymmetric(authenticatedValue.getTicketAuthenticatorWrapper().getAuthenticator(), SessionManager.getInstance().getSessionKey(), Authenticator.class).toBuilder();
-        authenticator.getTimestampBuilder().setTime(authenticator.getTimestamp().getTime() + 1);
-        final ByteString encryptedAuthenticator = EncryptionHelper.encryptSymmetric(authenticator.build(), SessionManager.getInstance().getSessionKey());
-
+//
+//        // Because the action is never send to the controller the authenticator will not and does not need to be updated.
+//        // But in order not to override the applyAction method, which returns a future that validates the authenticator,
+//        // on the location remote and unit group remote, it is faked here.
+//        final Authenticator.Builder authenticator = EncryptionHelper.decryptSymmetric(authenticatedValue.getTicketAuthenticatorWrapper().getAuthenticator(), sessionKey, Authenticator.class).toBuilder();
+//        authenticator.getTimestampBuilder().setTime(authenticator.getTimestamp().getTime() + 1);
+//        final ByteString encryptedAuthenticator = EncryptionHelper.encryptSymmetric(authenticator.build(), sessionKey);
         return GlobalCachedExecutorService.allOf(input -> {
+            if (authenticationBaseData == null) {
+                return authenticatedValue;
+            }
+
             for (final Future<AuthenticatedValue> future : input) {
-                final TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
                 try {
-                    ticketAuthenticatorWrapper = AuthenticationClientHandler.
-                            handleServiceServerResponse(SessionManager.getInstance().getSessionKey(),
-                                    authenticatedValue.getTicketAuthenticatorWrapper(),
-                                    future.get().getTicketAuthenticatorWrapper());
-                    SessionManager.getInstance().updateTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+                    AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), authenticatedValue.getTicketAuthenticatorWrapper(), future.get().getTicketAuthenticatorWrapper());
                 } catch (ExecutionException ex) {
                     throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                 }
             }
-            AuthenticatedValue.Builder builder = authenticatedValue.toBuilder();
-            builder.getTicketAuthenticatorWrapperBuilder().setAuthenticator(encryptedAuthenticator);
-            return builder.build();
+//            AuthenticatedValue.Builder builder = authenticatedValue.toBuilder();
+//            builder.getTicketAuthenticatorWrapperBuilder().setAuthenticator(encryptedAuthenticator);
+            return authenticatedValue;
         }, ActionDescriptionList);
     }
 
@@ -1084,7 +1090,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     }
 
     public ServiceTemplate getServiceTemplate() throws NotAvailableException {
-        if(serviceTemplate == null) {
+        if (serviceTemplate == null) {
             // setup service template
             try {
                 serviceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(serviceType);

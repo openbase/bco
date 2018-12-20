@@ -27,7 +27,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
-import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
@@ -528,52 +527,59 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return cancelAction(actionDescription, null);
     }
 
-    private Future<ActionDescription> cancelAction(final ActionDescription actionDescription, String authenticatedId) {
+    protected Future<ActionDescription> cancelAction(final ActionDescription actionDescription, String authenticatedId) {
         //TODO validate that on other permissions the initiator id is an empty string
         if (authenticatedId == null) {
             authenticatedId = "";
         }
 
+        logger.warn("Cancel action {} on unit {}", actionDescription.getId(), this);
         try {
             Action actionToCancel = null;
             synchronized (scheduledActionListLock) {
 
                 // lookup action to cancel
                 for (Action action : scheduledActionList) {
+                    if (action.getActionDescription().getActionChainCount() == 0) {
+                        logger.warn("ActionChain of action {} is empty!", action);
+                    }
+
+                    // provided action id is a direct match
                     if (action.getId().equals(actionDescription.getId())) {
                         actionToCancel = action;
                         break;
+                    }
+
+                    // provided action id appears in the action chain of the action
+                    for (final ActionReference actionReference : action.getActionDescription().getActionChainList()) {
+                        if (actionReference.getActionId().equals(actionDescription.getId())) {
+                            logger.warn("Test action reference with id [{}]", actionReference.getActionId());
+                            actionToCancel = action;
+                            break;
+                        }
                     }
                 }
 
                 // handle if action was not found
                 if (actionToCancel == null) {
-                    logger.debug("Can not cancel an unknown action, but than its not executing anyway.");
+                    logger.warn("Cannot cancel an unknown action, but than its not executing anyway.");
                     return CompletableFuture.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.UNKNOWN).build()).build());
                 }
 
+                logger.warn("Found related action {}", actionToCancel.toString());
+
                 if (!Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(authenticatedId)) {
                     // authenticated is not an admin
-                    if (actionToCancel.getActionDescription().getActionInitiator().getInitiatorId().equals(authenticatedId)) {
-                        // authenticated user it not the direct initiator
-                        boolean isAuthorized = false;
-                        for (final ActionReference actionReference : actionToCancel.getActionDescription().getActionChainList()) {
-                            if (actionReference.getActionInitiator().getInitiatorId().equals(authenticatedId)) {
-                                isAuthorized = true;
-                                break;
-                            }
-                        }
-
-                        if (!isAuthorized) {
-                            throw new PermissionDeniedException("User [" + authenticatedId + "] is not allowed to cancel action [" + actionDescription.getId() + "]");
-                        }
+                    if (!ActionDescriptionProcessor.getInitialInitiator(actionToCancel.getActionDescription()).getInitiatorId().equals(authenticatedId)) {
+                        // authenticated user is not the direct initiator
+                        throw new PermissionDeniedException("User [" + authenticatedId + "] is not allowed to cancel action [" + actionDescription.getId() + "]");
                     }
                 }
                 // cancel the action which triggers automatically a reschedule.
                 return actionToCancel.cancel();
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex));
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex));
         }
     }
 
@@ -627,6 +633,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 try {
                     final ActionInitiator newInitiator = ActionDescriptionProcessor.getInitialInitiator(actionToSchedule.getActionDescription());
                     for (final SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
+                        if(schedulableAction.isDone()) {
+                            // skip actions which are done and remain on the stack for notification purposes
+                            continue;
+                        }
+
                         final ActionInitiator currentInitiator = ActionDescriptionProcessor.getInitialInitiator(schedulableAction.getActionDescription());
                         if (!newInitiator.getInitiatorId().equals(currentInitiator.getInitiatorId())) {
                             // actions do not have the same initiator
@@ -639,8 +650,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             actionToSchedule.reject();
                             logger.warn("New Action {} from initiator {} is older than a currently scheduled one", actionToSchedule, newInitiator.getInitiatorId());
                         } else {
-                            logger.warn("NewAction {}, oldAction {}", actionToSchedule.getCreationTime(), schedulableAction.getCreationTime());
-                            logger.warn("Reject old action because of newer one from same initiator");
                             // actionToSchedule is newer, so reject old one
                             schedulableAction.reject();
                         }
@@ -714,7 +723,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     // abort the current action
-                    logger.warn("Abort current action, because new one has higher priority");
+                    logger.warn("Abort current action {}, because new one {} has higher priority", currentAction, nextAction);
                     currentAction.abort();
                 }
 
@@ -786,9 +795,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
                 if (actionDescription.hasId() && !actionDescription.getId().isEmpty() && actionDescription.getCancel()) {
                     try {
+                        if (authenticationBaseData != null) {
+                            logger.warn("{} | {} | {} | {}", authenticationBaseData.getAuthenticationToken().getUserId(), authenticationBaseData.getUserId(), authPair.getAuthenticatedBy(), authPair.getAuthorizedBy());
+                        } else {
+                            logger.error("Unauthorized action cancellation?");
+                        }
                         return cancelAction(actionDescription, authPair.getAuthenticatedBy()).get();
                     } catch (ExecutionException ex) {
-                        throw new CouldNotPerformException("Could cancel authenticated action!", ex);
+                        throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
                     }
                 }
                 final Builder actionDescriptionBuilder = actionDescription.toBuilder();
@@ -1126,7 +1140,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }));
     }
 
-    private AuthPair verifyAccessPermission(final AuthenticationBaseData authenticationBaseData, final ServiceType serviceType) throws CouldNotPerformException {
+    protected AuthPair verifyAccessPermission(final AuthenticationBaseData authenticationBaseData, final ServiceType serviceType) throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 return AuthorizationWithTokenHelper.canDo(authenticationBaseData, getConfig(), PermissionType.ACCESS, Registries.getUnitRegistry(), getUnitType(), serviceType);

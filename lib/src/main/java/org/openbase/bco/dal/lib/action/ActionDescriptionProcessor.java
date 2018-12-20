@@ -5,21 +5,36 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.processing.StringProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.action.ActionInitiatorType.ActionInitiator;
+import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import rst.domotic.action.ActionParameterType.ActionParameter;
 import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import rst.domotic.action.ActionReferenceType.ActionReference;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.language.MultiLanguageTextType.MultiLanguageText;
+import rst.language.MultiLanguageTextType.MultiLanguageText.MapFieldEntry;
 
-import java.util.Collection;
+import java.util.*;
+import java.util.Map.Entry;
 
 /*-
  * #%L
@@ -48,6 +63,20 @@ import java.util.Collection;
  */
 public class ActionDescriptionProcessor {
 
+    public static final String INITIATOR_KEY = "$INITIATOR";
+    public static final String SERVICE_TYPE_KEY = "$SERVICE_TYPE";
+    public static final String UNIT_LABEL_KEY = "$UNIT_LABEL";
+    public static final String SERVICE_ATTRIBUTE_KEY = "SERVICE_ATTRIBUTE";
+    public static final String GENERIC_ACTION_LABEL = UNIT_LABEL_KEY + "[" + SERVICE_ATTRIBUTE_KEY + "]";
+
+    public static final Map<String, String> GENERIC_ACTION_DESCRIPTION_MAP = new HashMap<>();
+
+    static {
+        GENERIC_ACTION_DESCRIPTION_MAP.put("en", INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of " + UNIT_LABEL_KEY + " to " + SERVICE_ATTRIBUTE_KEY + ".");
+        GENERIC_ACTION_DESCRIPTION_MAP.put("de", INITIATOR_KEY + " hat " + SERVICE_TYPE_KEY + "  von " + UNIT_LABEL_KEY + " zu " + SERVICE_ATTRIBUTE_KEY + " geändert.");
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ActionDescriptionProcessor.class);
     private static final ServiceJSonProcessor JSON_PROCESSOR = new ServiceJSonProcessor();
 
     public static ActionParameter.Builder generateDefaultActionParameter(final Message serviceAttribute, final ServiceType serviceType, final UnitType unitType) throws CouldNotPerformException {
@@ -383,5 +412,162 @@ public class ActionDescriptionProcessor {
             actionInitiatorBuilder.clearInitiatorId();
         }
         return actionInitiatorBuilder.build();
+    }
+
+    /**
+     * Prepare an action description. This sets the timestamp, the action initiator type, the id, labels and descriptions.
+     *
+     * @param actionDescriptionBuilder the action description builder which is prepared.
+     * @param unit                     the unit on which the action description is applied.
+     *
+     * @throws CouldNotPerformException if preparing fails.
+     */
+    public static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final Unit unit) throws CouldNotPerformException {
+        prepare(actionDescriptionBuilder, unit, JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute(), actionDescriptionBuilder.getServiceStateDescription().getServiceAttributeType()));
+    }
+
+    /**
+     * Prepare an action description. This sets the timestamp, the action initiator type, the id, labels and descriptions.
+     *
+     * @param actionDescriptionBuilder the action description builder which is prepared.
+     * @param unit                     the unit on which the action description is applied.
+     * @param serviceState             the de-serialized service state as contained in the action description.
+     *
+     * @throws CouldNotPerformException if preparing fails.
+     */
+    private static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final Unit unit, final Message serviceState) throws CouldNotPerformException {
+        TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
+
+        // update initiator type
+        if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
+            final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId());
+            if ((initiatorUnitConfig.getUnitType() == UnitType.USER && !initiatorUnitConfig.getUserConfig().getSystemUser())) {
+                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
+            } else {
+                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
+            }
+        } else if (!actionDescriptionBuilder.getActionInitiator().hasInitiatorType()) {
+            // if no initiator is defined than use the system as initiator.
+            actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
+        }
+
+        // prepare
+        actionDescriptionBuilder.setId(UUID.randomUUID().toString());
+        LabelProcessor.addLabel(actionDescriptionBuilder.getLabelBuilder(), Locale.ENGLISH, GENERIC_ACTION_LABEL);
+
+        // generate or update action description
+        generateDescription(actionDescriptionBuilder, serviceState, unit);
+    }
+
+    /**
+     * Verify an action description. This triggers an internal call to {@link #verifyActionDescription(Builder, Unit, boolean)}
+     * with prepare set to false.
+     *
+     * @param actionDescription the action description which is verified.
+     * @param unit              the unit on which the action description is applied.
+     *
+     * @return a de-serialized and updated service state.
+     *
+     * @throws VerificationFailedException if verifying the action description failed.
+     */
+    public static Message verifyActionDescription(final ActionDescriptionOrBuilder actionDescription, final Unit unit) throws VerificationFailedException {
+        ActionDescription.Builder actionDescriptionBuilder;
+        if (actionDescription instanceof ActionDescription.Builder) {
+            actionDescriptionBuilder = (ActionDescription.Builder) actionDescription;
+        } else {
+            actionDescriptionBuilder = ((ActionDescription) actionDescription).toBuilder();
+        }
+        return verifyActionDescription(actionDescriptionBuilder, unit, false);
+    }
+
+    /**
+     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, Unit, Message)}
+     * is called to update the action description. Therefore, this method only allows to verify a builder.
+     * In addition, this method returns a de-serialized and updated service state contained in the action description.
+     * The reason for this is to minimize de-serializing operations because verifying a service state also updates it.
+     *
+     * @param actionDescriptionBuilder the action description builder which is verified and updated if prepare is set.
+     * @param unit                     the unit on which the action description is applied.
+     * @param prepare                  flag determining if the action description should be prepared.
+     *
+     * @return a de-serialized and updated service state.
+     *
+     * @throws VerificationFailedException if verifying the action description failed.
+     */
+    public static Message verifyActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final Unit unit, final boolean prepare) throws VerificationFailedException {
+        try {
+            if (actionDescriptionBuilder == null) {
+                throw new NotAvailableException("ActionDescription");
+            }
+
+            if (!actionDescriptionBuilder.hasServiceStateDescription()) {
+                throw new NotAvailableException("ActionDescription.ServiceStateDescription");
+            }
+
+            if (!actionDescriptionBuilder.getServiceStateDescription().hasUnitId() || actionDescriptionBuilder.getServiceStateDescription().getUnitId().isEmpty()) {
+                throw new NotAvailableException("ActionDescription.ServiceStateDescription.UnitId");
+            }
+
+            if (!actionDescriptionBuilder.getServiceStateDescription().getUnitId().equals(unit.getId())) {
+                throw new InvalidStateException("Referred unit is not compatible with the registered unit controller!");
+            }
+
+            for (ActionReference actionReference : actionDescriptionBuilder.getActionChainList()) {
+                if (!actionReference.hasActionId() || actionReference.getActionId().isEmpty()) {
+                    throw new InvalidStateException("Action is caused by an unidentifiable action [" + actionReference + "] (id is missing)");
+                }
+            }
+
+            Message serviceState = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute(), actionDescriptionBuilder.getServiceStateDescription().getServiceAttributeType());
+            serviceState = Services.verifyAndRevalidateServiceState(serviceState);
+            if (prepare) {
+                prepare(actionDescriptionBuilder, unit, serviceState);
+            }
+            return serviceState;
+        } catch (CouldNotPerformException ex) {
+            throw new VerificationFailedException("Given ActionDescription[" + actionDescriptionBuilder + "] is invalid!", ex);
+        }
+    }
+
+    /**
+     * Generate a description for an action description. Descriptions are generated as defined in {@link #GENERIC_ACTION_DESCRIPTION_MAP}.
+     *
+     * @param actionDescriptionBuilder the action description builder in which descriptions are generated.
+     * @param serviceState             the de-serialized service state as contained in the action description.
+     * @param unit                     the unit on which the action is applied.
+     */
+    private static void generateDescription(final ActionDescription.Builder actionDescriptionBuilder, final Message serviceState, final Unit unit) {
+        final MultiLanguageText.Builder multiLanguageTextBuilder = MultiLanguageText.newBuilder();
+        for (Entry<String, String> languageDescriptionEntry : GENERIC_ACTION_DESCRIPTION_MAP.entrySet()) {
+            String description = languageDescriptionEntry.getValue();
+            try {
+                // setup unit label
+                description = description.replace(UNIT_LABEL_KEY, unit.getLabel());
+
+                // setup service type
+                description = description.replace(SERVICE_TYPE_KEY,
+                        StringProcessor.transformToCamelCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
+
+                // setup initiator
+                if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
+                    description = description.replace(INITIATOR_KEY, LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId()).getLabel()));
+                } else {
+                    description = description.replace(INITIATOR_KEY, "Other");
+                }
+
+                // setup service attribute
+                description = description.replace(SERVICE_ATTRIBUTE_KEY,
+                        StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceState, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
+
+                // format
+                description = StringProcessor.formatHumanReadable(description);
+
+                // generate
+                multiLanguageTextBuilder.addEntry(MapFieldEntry.newBuilder().setKey(languageDescriptionEntry.getKey()).setValue(description).build());
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not generate action description!", ex, LOGGER);
+            }
+            actionDescriptionBuilder.setDescription(multiLanguageTextBuilder);
+        }
     }
 }

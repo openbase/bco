@@ -23,8 +23,11 @@ package org.openbase.bco.dal.control.layer.unit.location;
  */
 
 import com.google.protobuf.Message;
+import org.openbase.bco.authentication.lib.AuthPair;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
@@ -46,13 +49,16 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.*;
@@ -70,6 +76,7 @@ import rst.vision.RGBColorType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
@@ -246,6 +253,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+        logger.warn("Called unauthenticated apply action on location {}", this);
         for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
             if (serviceDescription.getAggregated()) {
                 continue;
@@ -258,7 +266,73 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
             return super.applyAction(actionDescription);
         }
 
-        return serviceRemoteManager.applyAction(actionDescription);
+        final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+        ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
+
+        return serviceRemoteManager.applyAction(actionDescriptionBuilder.build());
+    }
+
+    @Override
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
+            try {
+                if (actionDescription.getCancel()) {
+                    logger.warn("{} received authorized action request with auth token {}", LocationControllerImpl.this, authenticationBaseData.getAuthenticationToken());
+                }
+                final Builder actionDescriptionBuilder = actionDescription.toBuilder();
+
+                final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
+
+                // clear auth fields
+                actionDescriptionBuilder.getActionInitiatorBuilder().clearAuthenticatedBy().clearAuthorizedBy();
+
+                // if an authentication token is send replace the initiator in any case
+                if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
+                }
+
+                // setup auth fields
+                if (authPair.getAuthenticatedBy() != null) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
+                }
+                if (authPair.getAuthorizedBy() != null) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
+                }
+
+                for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                    if (serviceDescription.getAggregated()) {
+                        continue;
+                    }
+
+                    if (serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
+                        continue;
+                    }
+
+                    if (!actionDescriptionBuilder.getCancel()) {
+                        return super.applyAction(actionDescription).get();
+                    } else {
+                        return super.cancelAction(actionDescription, authPair.getAuthenticatedBy()).get();
+                    }
+                }
+
+                if (!actionDescriptionBuilder.getCancel()) {
+                    ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
+                } else {
+                    logger.warn("Cancel actions for user: {} | {} | {}", authenticationBaseData.getUserId(), authPair.getAuthenticatedBy(), authPair.getAuthorizedBy());
+                    logger.warn("User send token {}", authenticationBaseData.getAuthenticationToken());
+                }
+//                logger.warn("Verified and prepared action {} in location {}", actionDescriptionBuilder.getId(), this);
+
+                // TODO: resulting actions have to be added somehow as impacts
+                serviceRemoteManager.applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder.build(), authenticationBaseData).get();
+                return actionDescriptionBuilder.build();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not apply authenticated action!", ex);
+            }
+        }));
     }
 
     @Override
