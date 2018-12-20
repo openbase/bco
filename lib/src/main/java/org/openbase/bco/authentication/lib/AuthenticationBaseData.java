@@ -22,9 +22,9 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
-import rst.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
-import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
+import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 /**
  * Class containing information an authenticated server may need to perform an authenticated request.

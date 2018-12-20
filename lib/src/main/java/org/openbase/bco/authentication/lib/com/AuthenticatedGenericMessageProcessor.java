@@ -26,7 +26,7 @@ import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
 public class AuthenticatedGenericMessageProcessor<M extends Message> extends GenericMessageProcessor<M> {
 

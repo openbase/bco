@@ -25,8 +25,8 @@ package org.openbase.bco.authentication.lib.iface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Requestable;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 public interface AuthenticatedRequestable {
 

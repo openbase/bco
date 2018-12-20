@@ -25,8 +25,8 @@ package org.openbase.bco.authentication.lib.iface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.action.SnapshotType;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.action.SnapshotType;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
 import java.util.concurrent.Future;
 
