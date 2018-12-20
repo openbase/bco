@@ -30,9 +30,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotInitializedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -40,12 +39,12 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.MotionStateType.MotionState;
-import rst.domotic.state.MotionStateType.MotionStateOrBuilder;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.PresenceStateType.PresenceState.State;
-import rst.domotic.state.PresenceStateType.PresenceStateOrBuilder;
-import rst.domotic.unit.location.LocationDataType.LocationData;
+import org.openbase.type.domotic.state.MotionStateType.MotionState;
+import org.openbase.type.domotic.state.MotionStateType.MotionStateOrBuilder;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceStateOrBuilder;
+import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
 /**
  *

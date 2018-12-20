@@ -25,9 +25,9 @@ import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ContactStateType.ContactState;
-import rst.domotic.state.HandleStateType.HandleState;
-import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
+import org.openbase.type.domotic.state.HandleStateType.HandleState;
+import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *

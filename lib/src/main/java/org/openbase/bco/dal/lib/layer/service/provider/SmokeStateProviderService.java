@@ -25,9 +25,9 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.SmokeStateType.SmokeState;
+import org.openbase.type.domotic.state.SmokeStateType.SmokeState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_STATE_SERVICE;
 
 /**
  *

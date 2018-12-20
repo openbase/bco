@@ -29,30 +29,29 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.MetaConfigPool;
-import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.type.processing.MetaConfigPool;
+import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-import rst.domotic.state.ColorStateType.ColorState;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
-import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.vision.ColorType.Color;
-import rst.vision.HSBColorType.HSBColor;
-import rst.vision.RGBColorType.RGBColor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
+import org.openbase.type.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.vision.ColorType.Color;
+import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.openbase.type.vision.RGBColorType.RGBColor;
 
 import java.util.concurrent.Future;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
 
 /**
  * @author Tamino Huxohl

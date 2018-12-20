@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit.user;
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
-import rst.domotic.unit.user.UserDataType.UserData;
+import org.openbase.type.domotic.unit.user.UserDataType.UserData;
 
 /**
  *

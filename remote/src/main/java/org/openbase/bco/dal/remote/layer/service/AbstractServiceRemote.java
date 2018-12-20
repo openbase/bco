@@ -41,25 +41,25 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.timing.TimestampType.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.EnablingStateType.EnablingState.State;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -639,7 +639,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            final List<Future> ActionDescriptionList = new ArrayList<>();
+            final List<Future> actionDescriptionList = new ArrayList<>();
 
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
                 if (actionDescriptionBuilder.getCancel()) {
@@ -649,13 +649,13 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 final Builder builder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
                 builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
-                // update action chain
-                builder.addActionChain(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
+                // update action cause
+                builder.addActionCause(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
 
                 // apply action on remote
-                ActionDescriptionList.add(unitRemote.applyAction(builder.build()));
+                actionDescriptionList.add(unitRemote.applyAction(builder.build()));
             }
-            return GlobalCachedExecutorService.allOf(actionDescriptionBuilder.build(), ActionDescriptionList);
+            return GlobalCachedExecutorService.allOf(actionDescriptionBuilder.build(), actionDescriptionList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
@@ -665,7 +665,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         // create new builder and copy fields
         ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
         // update the action chain
-        ActionDescriptionProcessor.updateActionChain(unitActionDescription, actionDescription);
+        ActionDescriptionProcessor.updateActionCause(unitActionDescription, actionDescription);
         // update the id in the serviceStateDescription to that of the unit
         ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
         serviceStateDescription.setUnitId(unitRemote.getId());
@@ -700,8 +700,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             final Builder actionDescriptionBuilder = ActionDescription.newBuilder(actionDescription);
             actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
-            // update action chain
-            ActionDescriptionProcessor.updateActionChain(actionDescriptionBuilder, actionDescription);
+            // update action cause
+            ActionDescriptionProcessor.updateActionCause(actionDescriptionBuilder, actionDescription);
 
             final AuthenticatedValue authValue;
             // encrypt action description again

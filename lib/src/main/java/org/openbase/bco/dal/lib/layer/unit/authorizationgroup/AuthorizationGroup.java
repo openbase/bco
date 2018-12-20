@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.PresenceStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.UserTransitStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
+import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

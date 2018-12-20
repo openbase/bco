@@ -26,8 +26,8 @@ import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.HandleStateType.HandleState;
-import rst.domotic.unit.dal.HandleDataType.HandleData;
+import org.openbase.type.domotic.state.HandleStateType.HandleState;
+import org.openbase.type.domotic.unit.dal.HandleDataType.HandleData;
 
 /**
  *

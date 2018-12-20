@@ -81,7 +81,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rst.processing</artifactId>
+            <artifactId>jul.extension.type.processing</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
@@ -99,7 +99,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rst.transform</artifactId>
+            <artifactId>jul.extension.type.transform</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>

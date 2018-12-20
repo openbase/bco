@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.BlindStateType.BlindState;
-import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
+import org.openbase.type.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
 
 /**
  *

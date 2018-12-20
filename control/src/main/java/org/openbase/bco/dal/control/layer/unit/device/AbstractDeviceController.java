@@ -34,8 +34,8 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.device.DeviceDataType.DeviceData;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

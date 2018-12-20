@@ -26,8 +26,8 @@ import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.app.AppDataType.AppData;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.unit.app.AppDataType.AppData;
 
 /**
  *

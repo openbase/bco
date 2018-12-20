@@ -12,26 +12,26 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText;
+import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText.MapFieldEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
-import rst.domotic.action.ActionParameterType.ActionParameter;
-import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
-import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
-import rst.domotic.action.ActionReferenceType.ActionReference;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.language.MultiLanguageTextType.MultiLanguageText;
-import rst.language.MultiLanguageTextType.MultiLanguageText.MapFieldEntry;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -163,15 +163,15 @@ public class ActionDescriptionProcessor {
      *
      * @return the updated ActionDescription
      */
-    public static ActionDescription.Builder updateActionChain(final ActionDescription.Builder actionDescription, final ActionDescriptionOrBuilder parentAction) {
-        actionDescription.clearActionChain();
-        actionDescription.addActionChain(generateActionReference(parentAction));
-        actionDescription.addAllActionChain(parentAction.getActionChainList());
+    public static ActionDescription.Builder updateActionCause(final ActionDescription.Builder actionDescription, final ActionDescriptionOrBuilder parentAction) {
+        actionDescription.clearActionCause();
+        actionDescription.addActionCause(generateActionReference(parentAction));
+        actionDescription.addAllActionCause(parentAction.getActionCauseList());
         return actionDescription;
     }
 
     /**
-     * Return the initial initiator of an action. According to {@link #updateActionChain(Builder, ActionDescriptionOrBuilder)}
+     * Return the initial initiator of an action. According to {@link #updateActionCause(Builder, ActionDescriptionOrBuilder)}
      * the immediate parent of an action is the first element in its chain. Thus, the last element of the chain contains
      * the original initiator. If the action chain is empty, the initiator of the action is returned.
      *
@@ -180,10 +180,10 @@ public class ActionDescriptionProcessor {
      * @return the initial initiator of an action as described above.
      */
     public static ActionInitiator getInitialInitiator(final ActionDescriptionOrBuilder actionDescription) {
-        if (actionDescription.getActionChainList().isEmpty()) {
+        if (actionDescription.getActionCauseList().isEmpty()) {
             return actionDescription.getActionInitiator();
         } else {
-            return actionDescription.getActionChain(actionDescription.getActionChainCount() - 1).getActionInitiator();
+            return actionDescription.getActionCause(actionDescription.getActionCauseCount() - 1).getActionInitiator();
         }
     }
 
@@ -351,7 +351,7 @@ public class ActionDescriptionProcessor {
 
         // if an initiator action is defined in ActionParameter the actionChain is updated
         if (actionParameter.hasCause()) {
-            updateActionChain(actionDescription, actionParameter.getCause());
+            updateActionCause(actionDescription, actionParameter.getCause());
         }
 
         return actionDescription;
@@ -512,7 +512,7 @@ public class ActionDescriptionProcessor {
                 throw new InvalidStateException("Referred unit is not compatible with the registered unit controller!");
             }
 
-            for (ActionReference actionReference : actionDescriptionBuilder.getActionChainList()) {
+            for (ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {
                 if (!actionReference.hasActionId() || actionReference.getActionId().isEmpty()) {
                     throw new InvalidStateException("Action is caused by an unidentifiable action [" + actionReference + "] (id is missing)");
                 }

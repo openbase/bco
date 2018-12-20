@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.unit.user.UserDataType.UserData;
+import org.openbase.type.domotic.unit.user.UserDataType.UserData;
 
 /**
  *

@@ -24,8 +24,8 @@ package org.openbase.bco.dal.lib.layer.service.collection;
 
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.state.AlarmStateType.AlarmState;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

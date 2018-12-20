@@ -26,9 +26,9 @@ import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
-import rst.domotic.unit.agent.AgentDataType.AgentData;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData;
 
 /**
  *

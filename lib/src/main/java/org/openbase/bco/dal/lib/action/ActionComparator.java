@@ -27,8 +27,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.provider.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
+import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 
 import java.util.Comparator;
 

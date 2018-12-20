@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit.app;
  */
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.app.App;
-import rst.domotic.unit.app.AppDataType.AppData;
+import org.openbase.type.domotic.unit.app.AppDataType.AppData;
 
 /**
  *

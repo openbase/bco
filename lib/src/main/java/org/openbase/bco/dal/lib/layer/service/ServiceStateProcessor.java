@@ -31,7 +31,7 @@ import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import rst.timing.TimestampType.Timestamp;
+import org.openbase.type.timing.TimestampType.Timestamp;
 
 import java.lang.reflect.InvocationTargetException;
 

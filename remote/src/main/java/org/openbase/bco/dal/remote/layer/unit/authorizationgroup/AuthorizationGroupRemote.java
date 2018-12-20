@@ -26,9 +26,9 @@ import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
+import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
 
 /**
  *

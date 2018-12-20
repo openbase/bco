@@ -24,13 +24,12 @@ package org.openbase.bco.dal.control.layer.unit;
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
-import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;

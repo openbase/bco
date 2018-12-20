@@ -26,9 +26,9 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.ButtonStateType.ButtonState;
+import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_STATE_SERVICE;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

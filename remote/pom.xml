@@ -98,12 +98,6 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rct</artifactId>
-            <version>${dependency.jul.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
             <artifactId>bco.registry.util</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>

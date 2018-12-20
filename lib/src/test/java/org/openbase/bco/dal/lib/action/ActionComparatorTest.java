@@ -23,12 +23,12 @@ package org.openbase.bco.dal.lib.action;
  */
 
 import org.junit.Test;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
-import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 
 import java.util.ArrayList;
 import java.util.List;

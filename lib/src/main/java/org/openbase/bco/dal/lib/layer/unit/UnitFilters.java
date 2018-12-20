@@ -23,8 +23,8 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.jul.pattern.Filter;
-import rst.domotic.state.EnablingStateType.EnablingState.State;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * A collection of useful unit filters.

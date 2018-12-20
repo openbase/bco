@@ -25,8 +25,8 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
-import rst.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
+import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import org.openbase.type.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

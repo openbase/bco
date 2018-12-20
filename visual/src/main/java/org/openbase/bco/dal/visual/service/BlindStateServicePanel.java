@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationServi
 import org.openbase.bco.dal.lib.layer.service.provider.BlindStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import rst.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.state.BlindStateType.BlindState;
 
 /**
  *

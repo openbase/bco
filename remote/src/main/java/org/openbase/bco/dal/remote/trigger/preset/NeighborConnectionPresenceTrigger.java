@@ -27,14 +27,14 @@ import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.DoorStateType.DoorState;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.WindowStateType.WindowState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.DoorStateType.DoorState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.state.WindowStateType.WindowState;
 
 /**
  *

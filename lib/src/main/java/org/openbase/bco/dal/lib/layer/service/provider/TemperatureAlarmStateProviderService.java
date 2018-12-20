@@ -25,9 +25,9 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.AlarmStateType.AlarmState;
+import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_SERVICE;
 
 /**
  *

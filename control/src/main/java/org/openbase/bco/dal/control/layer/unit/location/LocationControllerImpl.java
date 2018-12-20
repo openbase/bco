@@ -46,32 +46,31 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
+import org.openbase.type.domotic.action.ActionDescriptionType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.*;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
+import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.location.LocationDataType;
+import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
+import org.openbase.type.vision.ColorType;
+import org.openbase.type.vision.HSBColorType;
+import org.openbase.type.vision.RGBColorType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.*;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.StandbyStateType.StandbyState;
-import rst.domotic.state.StandbyStateType.StandbyState.State;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.location.LocationDataType;
-import rst.domotic.unit.location.LocationDataType.LocationData;
-import rst.vision.ColorType;
-import rst.vision.HSBColorType;
-import rst.vision.RGBColorType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -279,7 +278,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                 if (actionDescription.getCancel()) {
                     logger.warn("{} received authorized action request with auth token {}", LocationControllerImpl.this, authenticationBaseData.getAuthenticationToken());
                 }
-                final Builder actionDescriptionBuilder = actionDescription.toBuilder();
+                final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
 
                 final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
 

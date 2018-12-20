@@ -32,10 +32,10 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.schedule.Timeout;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ButtonStateType.ButtonState;
-import rst.domotic.state.ButtonStateType.ButtonState.State;
-import rst.domotic.unit.dal.ButtonDataType.ButtonData;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
+import org.openbase.type.domotic.state.ButtonStateType.ButtonState.State;
+import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

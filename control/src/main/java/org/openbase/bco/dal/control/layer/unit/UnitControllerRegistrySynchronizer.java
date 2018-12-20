@@ -30,8 +30,8 @@ import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import org.openbase.jul.storage.registry.SynchronizableRegistry;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 public class UnitControllerRegistrySynchronizer<CONTROLLER extends UnitController<?,?>> extends ActivatableEntryRegistrySynchronizer<String, CONTROLLER, UnitConfig, Builder> {
 

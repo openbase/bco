@@ -28,14 +28,14 @@ import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
-import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
-import rst.domotic.state.LocalPositionStateType.LocalPositionState;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.UserTransitStateType.UserTransitState;
-import rst.domotic.unit.user.UserDataType.UserData;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActivityMultiStateType.ActivityMultiState;
+import org.openbase.type.domotic.state.GlobalPositionStateType.GlobalPositionState;
+import org.openbase.type.domotic.state.LocalPositionStateType.LocalPositionState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.state.UserTransitStateType.UserTransitState;
+import org.openbase.type.domotic.unit.user.UserDataType.UserData;
 
 import java.util.concurrent.Future;
 

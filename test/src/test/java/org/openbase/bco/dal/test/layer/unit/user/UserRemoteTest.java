@@ -31,11 +31,11 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
-import rst.domotic.state.LocalPositionStateType.LocalPositionState;
-import rst.domotic.state.PresenceStateType.PresenceState.State;
-import rst.domotic.state.UserTransitStateType.UserTransitState;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.state.ActivityMultiStateType.ActivityMultiState;
+import org.openbase.type.domotic.state.LocalPositionStateType.LocalPositionState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
+import org.openbase.type.domotic.state.UserTransitStateType.UserTransitState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import static org.junit.Assert.*;
 

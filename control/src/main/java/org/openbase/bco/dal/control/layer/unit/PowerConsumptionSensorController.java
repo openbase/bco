@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensor;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
-import rst.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
+import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import org.openbase.type.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
 
 /**
  *

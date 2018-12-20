@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.Service;
-import rst.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.service.ServiceTemplateType;
 
 /**
  *

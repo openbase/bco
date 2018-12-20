@@ -25,10 +25,10 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.pattern.Observer;
 import rsb.Handler;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.dal.ObjectDataType.ObjectData;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.dal.ObjectDataType.ObjectData;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;

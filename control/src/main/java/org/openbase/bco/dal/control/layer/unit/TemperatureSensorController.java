@@ -27,9 +27,9 @@ import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.AlarmStateType.AlarmState;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
-import rst.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
+import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
 
 /**
  *

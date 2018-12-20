@@ -27,11 +27,11 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import rst.domotic.action.ActionParameterType.ActionParameter;
-import rst.domotic.action.ActionPriorityType.ActionPriority.Priority;
-import rst.domotic.unit.agent.AgentDataType.AgentData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.agent.AgentDataType.AgentData.Builder;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData.Builder;
 
 /**
  *

@@ -24,9 +24,9 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.domotic.state.PassageStateType.PassageState;
+import org.openbase.type.domotic.state.PassageStateType.PassageState;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PASSAGE_STATE_SERVICE;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PASSAGE_STATE_SERVICE;
 
 /**
  *

@@ -27,9 +27,9 @@ import org.openbase.bco.dal.lib.layer.unit.ReedContact;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ContactStateType.ContactState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.dal.ReedContactDataType.ReedContactData;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.dal.ReedContactDataType.ReedContactData;
 
 /**
  *

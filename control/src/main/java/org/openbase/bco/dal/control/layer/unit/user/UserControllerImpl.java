@@ -34,9 +34,9 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.schedule.FutureProcessor;
@@ -45,17 +45,15 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.activity.ActivityConfigType.ActivityConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivityMultiStateType.ActivityMultiState;
-import rst.domotic.state.GlobalPositionStateType.GlobalPositionState;
-import rst.domotic.state.LocalPositionStateType.LocalPositionState;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.PresenceStateType.PresenceState.State;
-import rst.domotic.state.UserTransitStateType.UserTransitState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.user.UserDataType.UserData;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActivityMultiStateType.ActivityMultiState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
+import org.openbase.type.domotic.state.UserTransitStateType.UserTransitState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.user.UserDataType.UserData;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -66,7 +64,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit.unitgroup;
 
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroup;
-import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
+import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 
 /**
  *

@@ -65,10 +65,10 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
-import org.openbase.jul.extension.rst.iface.ScopeProvider;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.iface.ScopeProvider;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
@@ -76,30 +76,30 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
+import org.openbase.type.com.ScopeType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
+import org.openbase.type.domotic.action.SnapshotType;
+import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.ActionStateType.ActionState;
+import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
+import org.openbase.type.timing.TimestampType.Timestamp;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import rst.domotic.action.ActionInitiatorType.ActionInitiator;
-import rst.domotic.action.ActionParameterType.ActionParameter;
-import rst.domotic.action.ActionParameterType.ActionParameterOrBuilder;
-import rst.domotic.action.ActionReferenceType.ActionReference;
-import rst.domotic.action.SnapshotType;
-import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import rst.domotic.state.ActionStateType.ActionState;
-import rst.domotic.state.ActionStateType.ActionState.State;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.rsb.ScopeType;
-import rst.timing.TimestampType.Timestamp;
 
 import java.io.Serializable;
 import java.util.*;
@@ -110,8 +110,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
@@ -540,10 +540,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // lookup action to cancel
                 for (Action action : scheduledActionList) {
-                    if (action.getActionDescription().getActionChainCount() == 0) {
-                        logger.warn("ActionChain of action {} is empty!", action);
-                    }
-
                     // provided action id is a direct match
                     if (action.getId().equals(actionDescription.getId())) {
                         actionToCancel = action;
@@ -551,9 +547,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     // provided action id appears in the action chain of the action
-                    for (final ActionReference actionReference : action.getActionDescription().getActionChainList()) {
+                    for (final ActionReference actionReference : action.getActionDescription().getActionCauseList()) {
                         if (actionReference.getActionId().equals(actionDescription.getId())) {
-                            logger.warn("Test action reference with id [{}]", actionReference.getActionId());
                             actionToCancel = action;
                             break;
                         }
@@ -562,11 +557,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // handle if action was not found
                 if (actionToCancel == null) {
-                    logger.warn("Cannot cancel an unknown action, but than its not executing anyway.");
+                    logger.debug("Cannot cancel an unknown action, but than its not executing anyway.");
                     return CompletableFuture.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.UNKNOWN).build()).build());
                 }
-
-                logger.warn("Found related action {}", actionToCancel.toString());
 
                 if (!Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(authenticatedId)) {
                     // authenticated is not an admin
@@ -633,7 +626,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 try {
                     final ActionInitiator newInitiator = ActionDescriptionProcessor.getInitialInitiator(actionToSchedule.getActionDescription());
                     for (final SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
-                        if(schedulableAction.isDone()) {
+                        if (schedulableAction.isDone()) {
                             // skip actions which are done and remain on the stack for notification purposes
                             continue;
                         }

@@ -27,9 +27,9 @@ import org.openbase.bco.dal.lib.layer.unit.Monitor;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.StandbyStateType.StandbyState;
-import rst.domotic.unit.dal.MonitorDataType.MonitorData;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
+import org.openbase.type.domotic.unit.dal.MonitorDataType.MonitorData;
 
 /**
  *

@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.unit.Light;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.dal.LightDataType.LightData;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.unit.dal.LightDataType.LightData;
 
 /**
  *

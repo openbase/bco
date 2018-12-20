@@ -3,7 +3,7 @@ package org.openbase.bco.dal.lib.layer.unit.app;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnit;
-import rst.domotic.unit.app.AppDataType.AppData;
+import org.openbase.type.domotic.unit.app.AppDataType.AppData;
 
 /*
  * #%L

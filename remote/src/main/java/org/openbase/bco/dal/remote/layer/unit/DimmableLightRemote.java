@@ -25,9 +25,9 @@ package org.openbase.bco.dal.remote.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.DimmableLight;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.dal.DimmableLightDataType.DimmableLightData;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.unit.dal.DimmableLightDataType.DimmableLightData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
