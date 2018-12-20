@@ -49,19 +49,20 @@ public class AuthPair {
 
     /**
      * Creates a new auth user pair.
-     * @param authUser the id of the user who both authenticate and authorize an action.
+     *
+     * @param authenticatedUser the id of the user@client who is authenticated
      */
-    public AuthPair(String authUser) {
-
-        final Pair<String, String> userIdPair = resolveUserIdPair(authUser);
-        this.authenticatedBy = userIdPair.getKey();
-        this.authorizedBy = userIdPair.getValue();
+    public AuthPair(final String authenticatedUser) {
+        final Pair<String, String> userIdPair = resolveUserIdPair(authenticatedUser);
+        this.authenticatedBy = (userIdPair.getKey() != null) ? userIdPair.getKey() : userIdPair.getValue();
+        this.authorizedBy = null;
     }
 
     /**
      * Creates a new auth user pair.
+     *
      * @param authenticatedBy the id of the user who authenticate an action.
-     * @param authorizedBy the id of the user who authorize an action.
+     * @param authorizedBy    the id of the user who authorize an action.
      */
     public AuthPair(String authenticatedBy, String authorizedBy) {
         this.authenticatedBy = resolveAuthUser(resolveUserIdPair(authenticatedBy));
@@ -70,6 +71,7 @@ public class AuthPair {
 
     /**
      * The id of the user who authenticate an action.
+     *
      * @return the user unit id as string.
      */
     public String getAuthenticatedBy() {
@@ -78,6 +80,7 @@ public class AuthPair {
 
     /**
      * The id of the user who authorize an action.
+     *
      * @return the user unit id as string.
      */
     public String getAuthorizedBy() {
@@ -86,12 +89,13 @@ public class AuthPair {
 
     /**
      * Resolves the auth by user id.
+     *
      * @param pair the user - client string.
+     *
      * @return returns the user if available, otherwise the client id.
      */
     private static String resolveAuthUser(Pair<String, String> pair) {
-
-        if(pair.getKey() != null) {
+        if (pair.getKey() != null) {
             return pair.getKey();
         }
         return pair.getValue();
@@ -99,7 +103,9 @@ public class AuthPair {
 
     /**
      * Method resolves a user string.
+     *
      * @param userClientString the user - client string e.g. user@client
+     *
      * @return a pair where the key is the user and the value the client entry.
      */
     private static Pair<String, String> resolveUserIdPair(final String userClientString) {
