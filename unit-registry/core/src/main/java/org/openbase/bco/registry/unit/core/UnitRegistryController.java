@@ -66,7 +66,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.extension.rst.storage.registry.consistency.TransformationFrameConsistencyHandler;
+import org.openbase.jul.extension.type.storage.registry.consistency.TransformationFrameConsistencyHandler;
 import org.openbase.jul.pattern.ListFilter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;

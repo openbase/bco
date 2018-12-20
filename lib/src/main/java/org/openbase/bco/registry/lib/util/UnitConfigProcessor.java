@@ -31,7 +31,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.EnablingStateType;
@@ -230,7 +230,7 @@ public class UnitConfigProcessor {
         Message.Builder builder;
         try {
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
-            String unitMessageClassName = "rst.domotic.unit.dal." + unitTypeName + "DataType$" + unitTypeName + "Data";
+            String unitMessageClassName = "org.openbase.type.domotic.unit.dal." + unitTypeName + "DataType$" + unitTypeName + "Data";
             Class messageClass;
             try {
                 messageClass = Class.forName(unitMessageClassName);
