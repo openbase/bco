@@ -24,7 +24,7 @@ package org.openbase.bco.authentication.lib;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
