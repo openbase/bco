@@ -24,9 +24,9 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
 
 import com.google.gson.JsonObject;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-import rst.domotic.state.BrightnessStateType.BrightnessState.DataUnit;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState.DataUnit;
 
 public class BrightnessStateBrightnessMapper extends AbstractServiceStateTraitMapper<BrightnessState> {
 

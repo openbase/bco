@@ -30,14 +30,14 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
-import rst.domotic.state.WindowStateType.WindowState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.state.WindowStateType.WindowState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 
 import java.util.concurrent.ExecutionException;
 

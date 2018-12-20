@@ -26,10 +26,10 @@ import com.google.gson.JsonObject;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Command;
 import org.openbase.bco.app.cloudconnector.mapping.unit.TemperatureControllerDataMapper;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
-import rst.domotic.state.TemperatureStateType.TemperatureState.DataUnit;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState.DataUnit;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

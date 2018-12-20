@@ -24,9 +24,9 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
 
 import org.openbase.bco.app.cloudconnector.mapping.lib.Named;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Toggle;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.MotionStateType.MotionState;
-import rst.domotic.state.MotionStateType.MotionState.State;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.MotionStateType.MotionState;
+import org.openbase.type.domotic.state.MotionStateType.MotionState.State;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

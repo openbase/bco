@@ -25,8 +25,8 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Mode;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Setting;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 
 import java.util.*;
 

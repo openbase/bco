@@ -25,12 +25,12 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
 import com.google.gson.JsonObject;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ColorStateType.ColorState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.vision.ColorType.Color;
-import rst.vision.ColorType.Color.Type;
-import rst.vision.HSBColorType.HSBColor;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.vision.ColorType.Color;
+import org.openbase.type.vision.ColorType.Color.Type;
+import org.openbase.type.vision.HSBColorType.HSBColor;
 
 public class ColorStateColorSpectrumMapper extends AbstractServiceStateTraitMapper<ColorState> {
 

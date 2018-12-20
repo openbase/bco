@@ -30,7 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

@@ -33,8 +33,8 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.WatchDog;
 import rsb.Event;
 import rsb.Scope;
-import rst.domotic.state.ActivationStateType;
-import rst.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 
 /**
  *

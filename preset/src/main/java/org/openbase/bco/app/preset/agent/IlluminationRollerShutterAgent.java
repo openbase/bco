@@ -30,8 +30,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.unit.UnitConfigType;
 
 import java.util.concurrent.ExecutionException;
 

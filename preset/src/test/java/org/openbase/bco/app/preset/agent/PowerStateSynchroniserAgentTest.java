@@ -34,16 +34,16 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.slf4j.LoggerFactory;
-import rst.configuration.EntryType.Entry;
-import rst.configuration.MetaConfigType.MetaConfig;
-import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
-import rst.domotic.unit.dal.DimmerDataType.DimmerData;
-import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
-import rst.vision.HSBColorType.HSBColor;
+import org.openbase.type.configuration.EntryType.Entry;
+import org.openbase.type.configuration.MetaConfigType.MetaConfig;
+import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+import org.openbase.type.domotic.unit.dal.DimmerDataType.DimmerData;
+import org.openbase.type.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
+import org.openbase.type.vision.HSBColorType.HSBColor;
 
 import static org.junit.Assert.assertEquals;
 

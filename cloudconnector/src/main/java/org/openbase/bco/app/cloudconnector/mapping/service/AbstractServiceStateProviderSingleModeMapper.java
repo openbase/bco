@@ -25,7 +25,7 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
 import com.google.gson.JsonObject;
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

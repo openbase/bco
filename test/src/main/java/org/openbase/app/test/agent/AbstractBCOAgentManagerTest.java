@@ -36,8 +36,8 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.concurrent.TimeUnit;
 
