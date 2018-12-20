@@ -69,10 +69,12 @@ public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
         switch (activationState.getValue()) {
             case ACTIVE:
                 taskActionDescription = locationRemote.applyAction(generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF)).setExecutionTimePeriod(Long.MAX_VALUE)).get();
+                logger.warn("AbsenceEnergySavingAgent created action with id {}", taskActionDescription.getId());
                 break;
             case DEACTIVE:
                 if (taskActionDescription != null) {
-                    taskActionDescription = locationRemote.cancelAction(taskActionDescription).get();
+                    taskActionDescription = locationRemote.cancelAction(taskActionDescription, getDefaultActionParameter().getAuthenticationToken(), null).get();
+                    logger.warn("AbsenceEnergySavingAgent cancel action {}", taskActionDescription.getId());
                 }
                 break;
         }

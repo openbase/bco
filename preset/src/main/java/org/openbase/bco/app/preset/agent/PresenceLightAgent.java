@@ -21,14 +21,14 @@ package org.openbase.bco.app.preset.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
+
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
-
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -42,7 +42,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import java.util.concurrent.ExecutionException;
 
 /**
- *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public class PresenceLightAgent extends AbstractTriggerableAgent {
@@ -72,10 +71,12 @@ public class PresenceLightAgent extends AbstractTriggerableAgent {
         switch (activationState.getValue()) {
             case ACTIVE:
                 taskActionDescription = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.ON)).setExecutionTimePeriod(Long.MAX_VALUE)).get();
+                logger.warn("PresenceLightAgent created action with id {}", taskActionDescription.getId());
                 break;
             case DEACTIVE:
-                if(taskActionDescription != null) {
-                    taskActionDescription = locationRemote.cancelAction(taskActionDescription).get();
+                if (taskActionDescription != null) {
+                    logger.warn("PresenceLightAgent cancel action {}", taskActionDescription.getId());
+                    taskActionDescription = locationRemote.cancelAction(taskActionDescription, getDefaultActionParameter().getAuthenticationToken(), null).get();
                 }
                 break;
         }
