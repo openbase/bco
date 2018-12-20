@@ -26,7 +26,7 @@ import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.HSBType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
+import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.HSBColorType.HSBColor;
