@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.action;
  */
 
 import org.junit.Test;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;

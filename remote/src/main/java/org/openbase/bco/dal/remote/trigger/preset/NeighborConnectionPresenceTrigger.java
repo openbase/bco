@@ -27,7 +27,7 @@ import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
