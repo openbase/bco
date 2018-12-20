@@ -160,7 +160,7 @@ public class AuthorizationWithTokenHelper {
             } else {
                 if (authenticationBaseData.getAuthenticationToken() != null) {
                     // authentication token is set so use it as the responsible user
-                    userId = authenticationBaseData.getAuthenticationToken().getUserId();
+                    userId = authenticationBaseData.getAuthenticationToken().getUserId() + "@";
                 } else {
                     // use the user that is authenticated for the request
                     userId = authenticationBaseData.getUserId();
@@ -169,6 +169,8 @@ public class AuthorizationWithTokenHelper {
 
             // check if authenticated user has needed permissions
             if (AuthorizationHelper.canDo(unitConfig, userId, unitRegistry.getAuthorizationGroupMap(), unitRegistry.getLocationMap(), permissionType)) {
+                // TODO: resolve correctly if the client is the one providing permissions and set as authorized by
+                // TODO: remove structure of userId@clientId and replace with two different strings
                 return new AuthPair(userId);
             }
 
