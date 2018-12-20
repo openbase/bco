@@ -23,7 +23,7 @@ package org.openbase.bco.device.openhab.manager.transform;
  */
 
 import org.eclipse.smarthome.core.library.types.PercentType;
-import rst.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.state.BlindStateType.BlindState;
 
 public class BlindStatePercentTypeTransformer implements ServiceStateCommandTransformer<BlindState, PercentType> {
 

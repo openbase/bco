@@ -27,9 +27,9 @@ import org.eclipse.smarthome.core.library.types.HSBType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
-import rst.domotic.state.ColorStateType.ColorState;
-import rst.vision.ColorType.Color.Type;
-import rst.vision.HSBColorType.HSBColor;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.vision.ColorType.Color.Type;
+import org.openbase.type.vision.HSBColorType.HSBColor;
 
 public class ColorStateHSBTypeTransformer implements ServiceStateCommandTransformer<ColorState, HSBType> {
 

@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 
 import java.util.concurrent.Future;
 

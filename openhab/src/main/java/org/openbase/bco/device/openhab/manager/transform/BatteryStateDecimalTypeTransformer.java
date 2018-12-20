@@ -23,8 +23,8 @@ package org.openbase.bco.device.openhab.manager.transform;
  */
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
-import rst.domotic.state.BatteryStateType.BatteryState;
-import rst.domotic.state.BatteryStateType.BatteryState.State;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryState.State;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

@@ -25,7 +25,7 @@ package org.openbase.bco.device.openhab.manager.transform;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.state.HandleStateType.HandleState;
+import org.openbase.type.domotic.state.HandleStateType.HandleState;
 
 /**
  * TODO: rethink handle state: if position makes sense

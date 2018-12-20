@@ -23,7 +23,7 @@ package org.openbase.bco.device.openhab.manager.transform;
  */
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
-import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

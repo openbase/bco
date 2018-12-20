@@ -16,7 +16,7 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 import java.io.File;
 /*

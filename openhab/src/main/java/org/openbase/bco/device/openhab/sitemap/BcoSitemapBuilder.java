@@ -25,7 +25,7 @@ package org.openbase.bco.device.openhab.sitemap;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import rst.language.LabelType.Label;
+import org.openbase.type.language.LabelType.Label;
 
 public class BcoSitemapBuilder extends AbstractSitemapBuilder {
 

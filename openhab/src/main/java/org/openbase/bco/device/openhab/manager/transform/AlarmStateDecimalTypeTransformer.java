@@ -25,8 +25,8 @@ package org.openbase.bco.device.openhab.manager.transform;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.TypeNotSupportedException;
-import rst.domotic.state.AlarmStateType.AlarmState;
-import rst.domotic.state.AlarmStateType.AlarmState.State;
+import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
+import org.openbase.type.domotic.state.AlarmStateType.AlarmState.State;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

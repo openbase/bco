@@ -24,8 +24,8 @@ package org.openbase.bco.device.openhab.manager.transform;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.openbase.jul.exception.CouldNotTransformException;
-import rst.domotic.state.SmokeStateType.SmokeState;
-import rst.domotic.state.SmokeStateType.SmokeState.State;
+import org.openbase.type.domotic.state.SmokeStateType.SmokeState;
+import org.openbase.type.domotic.state.SmokeStateType.SmokeState.State;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

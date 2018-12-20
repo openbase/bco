@@ -25,9 +25,9 @@ package org.openbase.bco.device.openhab.manager.transform;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.TypeNotSupportedException;
-import rst.domotic.binding.openhab.OnOffHolderType;
-import rst.domotic.state.StandbyStateType.StandbyState;
-import rst.domotic.state.StandbyStateType.StandbyState.State;
+import org.openbase.type.domotic.binding.openhab.OnOffHolderType;
+import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
+import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
 
 public class StandbyStateOnOffTypeTransformer implements ServiceStateCommandTransformer<StandbyState, OnOffType> {
 

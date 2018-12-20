@@ -1,7 +1,7 @@
 package org.openbase.bco.device.openhab.manager.transform;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
-import rst.domotic.state.IlluminanceStateType.IlluminanceState;
+import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 
 /*-
  * #%L

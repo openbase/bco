@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.state.StandbyStateType.StandbyState;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 
 import java.util.concurrent.Future;
 

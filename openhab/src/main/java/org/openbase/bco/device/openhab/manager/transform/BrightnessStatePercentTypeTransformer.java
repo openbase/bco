@@ -23,8 +23,8 @@ package org.openbase.bco.device.openhab.manager.transform;
  */
 
 import org.eclipse.smarthome.core.library.types.PercentType;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-import rst.domotic.state.BrightnessStateType.BrightnessState.Builder;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState.Builder;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

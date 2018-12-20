@@ -26,8 +26,8 @@ import org.openbase.bco.device.openhab.sitemap.SitemapBuilder;
 import org.openbase.bco.device.openhab.sitemap.SitemapBuilder.SitemapIconType;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
 
