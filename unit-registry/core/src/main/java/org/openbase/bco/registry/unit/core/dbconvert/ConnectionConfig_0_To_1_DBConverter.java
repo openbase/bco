@@ -26,7 +26,7 @@ import java.io.File;
 import java.util.Map;
 import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

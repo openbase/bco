@@ -28,7 +28,7 @@ import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

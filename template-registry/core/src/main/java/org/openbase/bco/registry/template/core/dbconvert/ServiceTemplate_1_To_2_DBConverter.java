@@ -27,7 +27,7 @@ import org.openbase.bco.registry.lib.dbconvert.LabelDBConverter;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.io.File;
 import java.util.Map;

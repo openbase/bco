@@ -36,11 +36,11 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
-import rst.spatial.PlacementConfigType.PlacementConfig;
+import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
+import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 
 import java.util.Locale;
 

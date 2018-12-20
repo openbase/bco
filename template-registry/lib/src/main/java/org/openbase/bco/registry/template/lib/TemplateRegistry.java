@@ -31,13 +31,13 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.RegistryService;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
-import rst.domotic.communication.TransactionValueType.TransactionValue;
-import rst.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
+import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
+import org.openbase.type.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 
 import java.util.concurrent.Future;
 

@@ -38,7 +38,7 @@ import org.openbase.jul.storage.file.filter.JSonFileFilter;
 import org.openbase.jul.storage.registry.version.AbstractGlobalDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
 import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * DBConverter that converts deviceConfigs to the everything is a unit update, replaces the deviceClass IDs

@@ -32,12 +32,12 @@ import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
-import rst.domotic.unit.location.TileConfigType.TileConfig;
-import rst.spatial.PlacementConfigType.PlacementConfig;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig;
+import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  * A plugin that handles changes that have to be done before removing a location.

@@ -33,9 +33,9 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.spatial.PlacementConfigType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.spatial.PlacementConfigType;
 
 /**
  *

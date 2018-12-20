@@ -31,7 +31,7 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.activity.ActivityConfigType.ActivityConfig;
+import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 
 /**
  * Consistency handler validating that a ActivityCOnfig has a class id

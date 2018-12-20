@@ -41,11 +41,11 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.activity.ActivityConfigType.ActivityConfig;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
-import rst.domotic.communication.TransactionValueType.TransactionValue;
-import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
-import rst.rsb.ScopeType;
+import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
+import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
+import org.openbase.type.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
+import org.openbase.type.com.ScopeType;
 
 import java.util.ArrayList;
 import java.util.List;

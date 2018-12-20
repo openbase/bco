@@ -62,6 +62,12 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
+            <artifactId>rct</artifactId>
+            <version>${dependency.rct.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
             <artifactId>bco.registry.lib</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

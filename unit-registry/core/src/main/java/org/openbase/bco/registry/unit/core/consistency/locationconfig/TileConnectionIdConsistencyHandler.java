@@ -31,11 +31,11 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
-import rst.domotic.unit.location.TileConfigType.TileConfig;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig;
+import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig;
 
 /**
  * ConsistencyHandler that synchronized connection id's into tile configurations.

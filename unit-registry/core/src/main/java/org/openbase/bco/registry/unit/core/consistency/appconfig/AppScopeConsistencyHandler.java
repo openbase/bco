@@ -37,10 +37,10 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.app.AppClassType.AppClass;
-import rst.rsb.ScopeType.Scope;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
+import org.openbase.type.com.ScopeType.Scope;
 
 /**
  *

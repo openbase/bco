@@ -25,8 +25,8 @@ package org.openbase.bco.registry.unit.core.consistency.userconfig;
 import org.openbase.bco.registry.unit.core.consistency.DefaultUnitLabelConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

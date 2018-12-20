@@ -33,8 +33,8 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.language.LabelType.Label;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.language.LabelType.Label;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.HashMap;
 import java.util.Locale;

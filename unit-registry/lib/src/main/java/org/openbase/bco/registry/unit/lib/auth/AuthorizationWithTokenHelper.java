@@ -37,12 +37,12 @@ import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
-import rst.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
-import rst.domotic.authentication.PermissionType.Permission;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
+import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
+import org.openbase.type.domotic.authentication.PermissionType.Permission;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -27,7 +27,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import rst.language.LabelType;
+import org.openbase.type.language.LabelType;
 
 import java.util.UUID;
 

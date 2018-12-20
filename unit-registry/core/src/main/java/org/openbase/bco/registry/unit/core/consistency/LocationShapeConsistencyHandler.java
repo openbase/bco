@@ -35,10 +35,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rct.TransformerException;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.math.Vec3DDoubleType.Vec3DDouble;
-import rst.spatial.FloorCeilingEdgeIndicesType.FloorCeilingEdgeIndices;
-import rst.spatial.ShapeType.Shape;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
+import org.openbase.type.spatial.FloorCeilingEdgeIndicesType.FloorCeilingEdgeIndices;
+import org.openbase.type.spatial.ShapeType.Shape;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Vector3d;

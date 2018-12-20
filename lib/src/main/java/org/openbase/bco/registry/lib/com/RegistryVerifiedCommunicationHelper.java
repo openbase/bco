@@ -27,7 +27,7 @@ import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.iface.TransactionIdProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rst.domotic.communication.TransactionValueType.TransactionValue;
+import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

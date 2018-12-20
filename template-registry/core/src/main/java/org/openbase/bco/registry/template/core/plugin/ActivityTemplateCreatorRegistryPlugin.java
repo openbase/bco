@@ -27,10 +27,10 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.Builder;
-import rst.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.Builder;
+import org.openbase.type.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
 
 public class ActivityTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAdapter<String, ActivityTemplate, Builder> {
 

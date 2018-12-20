@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rct.TransformPublisher;
 import rct.TransformerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;

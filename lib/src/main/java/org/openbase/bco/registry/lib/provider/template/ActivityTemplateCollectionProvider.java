@@ -24,8 +24,8 @@ package org.openbase.bco.registry.lib.provider.template;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
-import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
+import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
 
 import java.util.List;
 

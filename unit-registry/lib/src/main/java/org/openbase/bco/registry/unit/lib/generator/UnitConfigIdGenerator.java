@@ -25,7 +25,7 @@ package org.openbase.bco.registry.unit.lib.generator;
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

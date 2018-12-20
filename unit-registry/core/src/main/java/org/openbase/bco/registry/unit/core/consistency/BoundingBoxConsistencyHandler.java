@@ -32,12 +32,12 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
-import rst.geometry.TranslationType.Translation;
-import rst.math.Vec3DDoubleType.Vec3DDouble;
-import rst.spatial.ShapeType.Shape;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
+import org.openbase.type.geometry.TranslationType.Translation;
+import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
+import org.openbase.type.spatial.ShapeType.Shape;
 
 
 public class BoundingBoxConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
