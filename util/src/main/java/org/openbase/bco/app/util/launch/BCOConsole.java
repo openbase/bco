@@ -82,7 +82,8 @@ public class BCOConsole {
         while (!Thread.interrupted()) {
             System.out.println("please type a command and press enter...");
             try {
-                switch (console.readLine()) {
+                final String command = console.readLine();
+                switch (command) {
                     case "logout":
                     case "quit":
                     case "exit":
@@ -129,6 +130,13 @@ public class BCOConsole {
                     case "cloud disconnect":
                         cloudDisconnect(console);
                         break;
+                    case "cloud update token":
+                        cloudUpdateToken(console);
+                        break;
+                    default:
+                        System.err.println("unknown command: "+ command);
+                        System.out.println();
+                        continue;
                 }
                 System.out.println("successful");
             } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
@@ -141,6 +149,11 @@ public class BCOConsole {
     private void cloudDisconnect(Console console) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         final CloudConnectorRemote cloudConnectorRemote = new CloudConnectorRemote();
         cloudConnectorRemote.remove();
+    }
+
+    private void cloudUpdateToken(Console console) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final CloudConnectorRemote cloudConnectorRemote = new CloudConnectorRemote();
+        cloudConnectorRemote.setAuthorizationToken(cloudConnectorRemote.generateDefaultAuthorizationToken());
     }
 
 
