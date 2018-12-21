@@ -1,7 +1,7 @@
 package org.openbase.bco.dal.control.layer.unit.app;
 
 import org.openbase.bco.dal.lib.layer.unit.app.AppManager;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 /*

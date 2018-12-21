@@ -22,7 +22,7 @@ package org.openbase.bco.dal.control.layer.unit.scene;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.scene.SceneManager;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 /**
