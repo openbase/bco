@@ -112,14 +112,14 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
                     unitConfig.getPlacementConfig().getTransformationFrameId(),
                     rootUnitConfig.getPlacementConfig().getTransformationFrameId(),
                     System.currentTimeMillis()).getTransform();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("could not get root config", ex), logger);
-            return;
         } catch (TransformerException ex) {
             // TODO: does this need to be fixed in test mode, because it currently leads to a lot if warning printed in tests
             if (!JPService.testMode()) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
             }
+            return;
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("could not get root config", ex), logger);
             return;
         }
 

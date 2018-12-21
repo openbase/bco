@@ -116,7 +116,7 @@ public class PublishConnectionTransformationRegistryPlugin extends ProtobufRegis
             }
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
-        } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {
+        } catch (CouldNotPerformException | ConcurrentModificationException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
     }
