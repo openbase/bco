@@ -24,9 +24,8 @@ package org.openbase.bco.device.openhab.manager;
 
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
-import org.openbase.bco.dal.remote.printer.jp.JPOutputDirectory;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;

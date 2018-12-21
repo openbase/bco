@@ -26,7 +26,7 @@ package org.openbase.bco.device.openhab.sitemap;
 import org.openbase.bco.device.openhab.jp.JPOpenHABConfiguration;
 import org.openbase.bco.device.openhab.jp.JPOpenHABDistribution;
 import org.openbase.bco.device.openhab.jp.JPOpenHABSitemap;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jul.exception.CouldNotPerformException;

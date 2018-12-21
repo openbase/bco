@@ -25,7 +25,7 @@ package org.openbase.bco.device.openhab;
 import org.openbase.bco.device.openhab.manager.OpenHABDeviceManagerLauncher;
 import org.openbase.bco.device.openhab.registry.OpenHABConfigSynchronizerLauncher;
 import org.openbase.bco.device.openhab.sitemap.OpenHABSitemapSynchronizerLauncher;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
