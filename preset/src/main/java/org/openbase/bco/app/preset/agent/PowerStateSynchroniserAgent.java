@@ -41,6 +41,7 @@ import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -410,7 +411,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Executing PowerStateSynchroniser agent");
 
         String targetIds = "";
@@ -457,6 +458,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
         logger.debug("Source [" + sourceRemote.getLabel() + "] behaviour [" + sourceBehaviour + "]");
         logger.debug("Targets [" + targetIds + "] behaviour [" + targetBehaviour + "]");
+        return activationState.getResponsibleAction();
     }
 
     @Override

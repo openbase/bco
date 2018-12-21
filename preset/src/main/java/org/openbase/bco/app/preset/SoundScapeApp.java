@@ -31,6 +31,8 @@ import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.WatchDog;
+import org.openbase.type.domotic.action.ActionDescriptionType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import rsb.Event;
 import rsb.Scope;
 import org.openbase.type.domotic.state.ActivationStateType;
@@ -82,7 +84,7 @@ public class SoundScapeApp extends AbstractAppController {
     }
 
     @Override
-    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         try {
             agentBathAmbientColorBeachCeiling = Units.getUnit("BathAmbientColorBeachCeiling", false, Units.UNIT_BASE_AGENT);
             agentBathAmbientColorForest = Units.getUnit("BathAmbientColorForest", false, Units.UNIT_BASE_AGENT);
@@ -92,6 +94,7 @@ public class SoundScapeApp extends AbstractAppController {
         } catch (InterruptedException | CouldNotPerformException ex) {
             logger.error("Could not activate SoundScopeAgent");
         }
+        return activationState.getResponsibleAction();
     }
 
     @Override

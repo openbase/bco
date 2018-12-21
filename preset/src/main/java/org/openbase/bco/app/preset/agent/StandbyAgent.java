@@ -31,6 +31,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.PresenceStateType;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
@@ -71,13 +72,13 @@ public class StandbyAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
         locationRemote.addDataObserver(locationDataObserver);
-//        locationRemote.waitForData();
         if(locationRemote.isDataAvailable()) {
             triggerPresenceChange(locationRemote.getData());
         }
+        return activationState.getResponsibleAction();
     }
 
     @Override

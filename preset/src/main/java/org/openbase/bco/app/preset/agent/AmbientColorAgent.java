@@ -36,6 +36,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.vision.HSBColorType.HSBColor;
@@ -193,13 +194,14 @@ public class AmbientColorAgent extends AbstractAgentController {
     }
 
     @Override
-    public void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    public ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         for (ColorStateServiceRemote colorRemote : colorRemotes) {
             colorRemote.activate();
         }
         initColorStates();
         setExecutionThread();
         thread.start();
+        return activationState.getResponsibleAction();
     }
 
     @Override

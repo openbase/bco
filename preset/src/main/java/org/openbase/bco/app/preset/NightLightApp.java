@@ -22,6 +22,7 @@ package org.openbase.bco.app.preset;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
@@ -35,6 +36,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -51,7 +53,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * UnitConfig
@@ -64,14 +69,16 @@ public class NightLightApp extends AbstractAppController {
 
     private SyncObject locationMapLock = new SyncObject("LocationMapLock");
 
+    private Map<Unit, ActionDescription> actionLocationMap;
     private Map<LocationRemote, Observer> locationMap;
 
     public NightLightApp() throws InstantiationException, InterruptedException {
         super(NightLightApp.class);
         this.locationMap = new HashMap<>();
+        this.actionLocationMap = new HashMap<>();
     }
 
-    public static void update(final LocationRemote location, final Timeout timeout) {
+    public void update(final LocationRemote location, final Timeout timeout) {
         try {
 
             // init present state with main location.
@@ -96,18 +103,20 @@ public class NightLightApp extends AbstractAppController {
                     }
                     if (location.getPowerState(UnitType.COLORABLE_LIGHT).getValue() != State.ON || !isColorReached(location.getColor().getHsbColor(), COLOR_ORANGE)) {
                     // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
-                        location.setColor(COLOR_ORANGE);
+                        actionLocationMap.put(location, location.setColor(COLOR_ORANGE, getDefaultActionParameter()).get(1, TimeUnit.SECONDS));
                     }
                     break;
                 case ABSENT:
                     if (location.getPowerState(UnitType.LIGHT).getValue() == State.ON && (timeout == null || timeout.isExpired() || !timeout.isActive())) {
                         // System.out.println("Location power State[" + location.getPowerState().getValue() + ". " + location.getPowerState(UnitType.LIGHT).getValue() + "]");
                         // System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
-                        location.setPowerState(State.OFF, UnitType.LIGHT);
+                        actionLocationMap.put(location, location.setPowerState(State.OFF, UnitType.LIGHT, getDefaultActionParameter()).get(1, TimeUnit.SECONDS));
                     }
                     break;
             }
-        } catch (CouldNotPerformException ex) {
+        } catch (InterruptedException ex) {
+            // skip
+        } catch (CouldNotPerformException | TimeoutException | ExecutionException ex) {
             ExceptionPrinter.printHistory("Could not switch light in night mode!", ex, LOGGER);
         }
     }
@@ -210,7 +219,7 @@ public class NightLightApp extends AbstractAppController {
     }
 
     @Override
-    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         synchronized (locationMapLock) {
             locationMap.forEach((remote, observer) -> {
                 remote.addDataObserver(observer);
@@ -224,6 +233,7 @@ public class NightLightApp extends AbstractAppController {
                 update(remote, null);
             });
         }
+        return activationState.getResponsibleAction();
     }
 
     @Override
@@ -239,6 +249,9 @@ public class NightLightApp extends AbstractAppController {
                     ExceptionPrinter.printHistory("Could not remove observer from neighbor locations.", ex, LOGGER);
                 }
             });
+            for (Entry<Unit, ActionDescription> unitActionEntry : actionLocationMap.entrySet()) {
+                unitActionEntry.getKey().cancelAction(unitActionEntry.getValue());
+            }
         }
     }
 }

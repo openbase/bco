@@ -22,6 +22,7 @@ package org.openbase.bco.app.preset;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
@@ -31,6 +32,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType;
@@ -42,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -52,13 +55,16 @@ import java.util.concurrent.TimeoutException;
  */
 public class PartyLightTileFollowerApp extends AbstractAppController {
 
+    private Map<Unit, ActionDescription> actionLocationMap;
     private Map<String, LocationRemote> locationRemoteMap;
+
     private SyncObject taskLock = new SyncObject("TaskLock");
 
     public PartyLightTileFollowerApp() throws InstantiationException, InterruptedException {
         super(PartyLightTileFollowerApp.class);
         try {
             Registries.waitForData();
+            this.actionLocationMap = new HashMap<>();
             this.locationRemoteMap = new HashMap<>();
 
             // init tile remotes
@@ -86,7 +92,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
             HSBColor.newBuilder().setHue(30).setSaturation(100).setBrightness(brightness).build(),};
 
     @Override
-    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Execute PartyLightTileFollowerApp[" + getLabel() + "]");
         // verify
         if (!Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
@@ -94,10 +100,14 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
         }
 
         new TileFollower().call();
+        return activationState.getResponsibleAction();
     }
 
     @Override
     protected void stop(final ActivationState activationState) {
+        for (Entry<Unit, ActionDescription> unitActionEntry : actionLocationMap.entrySet()) {
+            unitActionEntry.getKey().cancelAction(unitActionEntry.getValue());
+        }
     }
 
     public class TileFollower implements Callable<Void> {
@@ -128,7 +138,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Skip animation run!", ex), logger);
                 }
             }
-
             return null;
         }
 
@@ -140,7 +149,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                 if (!Registries.getUnitRegistry().getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT, locationRemote.getId()).isEmpty()) {
                     try {
                         if (locationRemote.isConnected() && locationRemote.isDataAvailable()) {
-                            locationRemote.setColor(color).get(5, TimeUnit.SECONDS);
+                            actionLocationMap.put(locationRemote, locationRemote.setColor(color, getDefaultActionParameter()).get(5, TimeUnit.SECONDS));
                         }
                     } catch (TimeoutException ex) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color!", ex), logger);

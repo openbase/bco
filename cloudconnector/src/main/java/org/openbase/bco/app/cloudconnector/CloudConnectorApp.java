@@ -40,6 +40,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -140,7 +141,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * @throws InterruptedException     if the activation is interrupted
      */
     @Override
-    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Execute Cloud Connector");
         //TODO activate check again if service server key is static
 //        if (!tokenStore.hasCloudConnectorToken()) {
@@ -155,6 +156,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
             socketWrapper.activate();
             userIdSocketMap.put(userId, socketWrapper);
         }
+        return activationState.getResponsibleAction();
     }
 
     /**

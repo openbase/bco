@@ -36,10 +36,12 @@ import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -80,19 +82,21 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
         
         // do not activate agents that need the resource allocation to work properly if the resource allocation is turned off
         try {
             if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
                 logger.info("Skip activation of agent [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "] because unit allocation is disabled.");
-                return;
+                return activationState.getResponsibleAction();
             }
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
         }
         triggerPool.activate();
+
+        return activationState.getResponsibleAction();
     }
 
     @Override
