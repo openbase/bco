@@ -37,9 +37,11 @@ public interface MultiUnit<DATA extends Message> extends Unit<DATA>, ServiceAggr
 
     /**
      * {@inheritDoc}
+     *
      * @param onlyAvailableServices {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -67,4 +69,22 @@ public interface MultiUnit<DATA extends Message> extends Unit<DATA>, ServiceAggr
      * @return true if available and otherwise false.
      */
     boolean isServiceAvailable(final ServiceType serviceType);
+
+    /**
+     * Method returns if the provided service type is aggregated by this unit.
+     *
+     * @param serviceType the type checked.
+     *
+     * @return true if the service type is aggregated and else false.
+     *
+     * @throws NotAvailableException if the unit template cannot be accessed.
+     */
+    default boolean isServiceAggregated(final ServiceType serviceType) throws NotAvailableException {
+        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+            if (serviceDescription.getAggregated()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -2,12 +2,9 @@ package org.openbase.bco.dal.remote.layer.unit.location;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
-import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
-import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
+import org.openbase.bco.dal.remote.layer.unit.AbstractAggregatedBaseUnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -16,12 +13,8 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
-import org.openbase.type.domotic.action.SnapshotType.Snapshot;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
@@ -37,7 +30,10 @@ import org.openbase.type.vision.RGBColorType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Future;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.CONNECTION;
@@ -68,7 +64,7 @@ import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class LocationRemote extends AbstractUnitRemote<LocationData> implements Location {
+public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationData> implements Location {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationDataType.LocationData.getDefaultInstance()));
@@ -89,67 +85,8 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceStateType.PresenceState.getDefaultInstance()));
     }
 
-    private final ServiceRemoteManager<LocationData> serviceRemoteManager;
-
     public LocationRemote() {
         super(LocationData.class);
-        this.serviceRemoteManager = new ServiceRemoteManager<LocationData>(this) {
-            @Override
-            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException {
-                return getSupportedServiceTypes();
-            }
-
-            @Override
-            protected void notifyServiceUpdate(Unit source, Message data) {
-                // anything needed here?
-            }
-        };
-    }
-
-    @Override
-    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
-        return unitConfig;
-    }
-
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        serviceRemoteManager.activate();
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        serviceRemoteManager.deactivate();
-        super.deactivate();
-    }
-
-    @Override
-    public boolean isServiceAvailable(ServiceType serviceType) {
-        switch (serviceType) {
-            //todo: introduce inherited service flag in unit template to define which services are provided by the serviceRemoteManager and which are always available.
-            case PRESENCE_STATE_SERVICE:
-            case STANDBY_STATE_SERVICE:
-                return true;
-            default:
-                return serviceRemoteManager.isServiceAvailable(serviceType);
-        }
-    }
-
-    @Override
-    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.recordSnapshot();
-    }
-
-    @Override
-    public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.recordSnapshot(unitType);
-    }
-
-    @Override
-    public ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
-        return serviceRemoteManager.getServiceRemote(serviceType);
     }
 
     public List<LocationRemote> getNeighborLocationList(final boolean waitForData) throws CouldNotPerformException {
@@ -359,15 +296,5 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
                 .addCategory(Category.ECONOMY));
-    }
-
-    @Override
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        //TODO: maybe skip transaction sync future? or only create for according service types?
-        try {
-            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply action!", ex);
-        }
     }
 }

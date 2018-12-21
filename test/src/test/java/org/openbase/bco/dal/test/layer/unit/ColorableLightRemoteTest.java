@@ -123,12 +123,12 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             // test controlling vid light remote
             lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
             colorableLightRemote.requestData().get();
-            assertEquals(lightRemote.getPowerState(), colorableLightRemote.getPowerState());
+            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
 
             // test controlling via colorable light remote
             colorableLightRemote.setPowerState(State.OFF).get();
             lightRemote.requestData().get();
-            assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
+            assertEquals(colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         } finally {

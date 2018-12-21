@@ -22,19 +22,11 @@ package org.openbase.bco.dal.control.layer.unit.location;
  * #L%
  */
 
-import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.AuthPair;
-import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthenticationBaseData;
-import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
-import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.location.LocationController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
-import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.processing.StandbyController;
@@ -42,30 +34,25 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
-import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationDataType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
+import org.openbase.type.domotic.unit.location.LocationDataType.LocationData.Builder;
 import org.openbase.type.vision.ColorType;
 import org.openbase.type.vision.HSBColorType;
 import org.openbase.type.vision.RGBColorType;
@@ -74,8 +61,6 @@ import rsb.converter.ProtocolBufferConverter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
@@ -83,7 +68,7 @@ import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
 /**
  * UnitConfig
  */
-public class LocationControllerImpl extends AbstractBaseUnitController<LocationData, LocationData.Builder> implements LocationController {
+public class LocationControllerImpl extends AbstractAggregatedBaseUnitController<LocationData, Builder> implements LocationController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationDataType.LocationData.getDefaultInstance()));
@@ -107,37 +92,12 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     private final PresenceDetector presenceDetector;
-    private final ServiceRemoteManager serviceRemoteManager;
-    private final RecurrenceEventFilter unitEventFilter;
 
     public LocationControllerImpl() throws InstantiationException {
         super(LocationControllerImpl.class, LocationData.newBuilder());
 
         try {
-            // update location data on updates from internal units at most every 100ms
-            unitEventFilter = new RecurrenceEventFilter(10) {
-                @Override
-                public void relay() throws Exception {
-                    updateUnitData();
-                }
-            };
-            this.serviceRemoteManager = new ServiceRemoteManager(this) {
-                @Override
-                protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
-                    return LocationControllerImpl.this.getSupportedServiceTypes();
-                }
-
-                @Override
-                protected void notifyServiceUpdate(Unit source, Message data) throws NotAvailableException {
-                    try {
-                        unitEventFilter.trigger();
-                    } catch (final CouldNotPerformException ex) {
-                        logger.error("Could not trigger recurrence event filter for location[" + getLabel() + "]");
-                    }
-                }
-            };
-
-            registerOperationService(ServiceType.STANDBY_STATE_SERVICE, new StandbyStateOperationServiceImpl(this));
+            registerOperationService(ServiceType.STANDBY_STATE_SERVICE, new StandbyStateOperationServiceImpl());
 
             this.presenceDetector = new PresenceDetector();
             this.presenceDetector.addDataObserver(new Observer<DataProvider<PresenceState>, PresenceState>() {
@@ -147,12 +107,10 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                         LocationManagerImpl.LOGGER.debug("Set " + this + " presence to [" + data.getValue() + "]");
                         dataBuilder.getInternalBuilder().setPresenceState(data);
                     } catch (CouldNotPerformException ex) {
-                        throw new CouldNotPerformException("Could not apply presense state change!", ex);
+                        throw new CouldNotPerformException("Could not apply presence state change!", ex);
                     }
                 }
             });
-
-
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -175,168 +133,21 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         }
 
         presenceDetector.init(this);
-
-    }
-
-    @Override
-    public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
-        // if already active than update the current location state.
-        if (isActive()) {
-            updateUnitData();
-        }
-        return unitConfig;
     }
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         if (isActive()) {
-            LocationManagerImpl.LOGGER.debug("Skipp location controller activations because is already active...");
             return;
         }
-        LocationManagerImpl.LOGGER.debug("Activate location [" + getLabel() + "]!");
-        super.activate();
-        serviceRemoteManager.activate();
         presenceDetector.activate();
-        updateUnitData();
+        super.activate();
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        LocationManagerImpl.LOGGER.debug("Deactivate location [" + getLabel() + "]!");
         super.deactivate();
-        serviceRemoteManager.deactivate();
         presenceDetector.deactivate();
-    }
-
-    private void updateUnitData() throws InterruptedException {
-        try (ClosableDataBuilder<LocationDataType.LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-            serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder.getInternalBuilder(), getDataClass(), getSupportedServiceTypes());
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LocationManagerImpl.LOGGER, LogLevel.WARN);
-        }
-    }
-
-    @Override
-    public boolean isServiceAvailable(ServiceType serviceType) {
-        switch (serviceType) {
-            //todo: introduce inherited service flag in unit template to define which services are provided by the serviceRemoteManager and which are always available.
-            case PRESENCE_STATE_SERVICE:
-            case STANDBY_STATE_SERVICE:
-                return true;
-            default:
-                return serviceRemoteManager.isServiceAvailable(serviceType);
-        }
-    }
-
-    @Override
-    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.recordSnapshot();
-    }
-
-    @Override
-    public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.recordSnapshot(unitType);
-    }
-
-    @Override
-    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.restoreSnapshot(snapshot);
-    }
-
-    @Override
-    protected Future<Void> internalRestoreSnapshot(Snapshot snapshot, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.restoreSnapshotAuthenticated(snapshot, authenticationBaseData);
-    }
-
-    @Override
-    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
-        logger.warn("Called unauthenticated apply action on location {}", this);
-        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-            if (serviceDescription.getAggregated()) {
-                continue;
-            }
-
-            if (serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
-                continue;
-            }
-
-            return super.applyAction(actionDescription);
-        }
-
-        final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
-        ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
-
-        return serviceRemoteManager.applyAction(actionDescriptionBuilder.build());
-    }
-
-    @Override
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
-            try {
-                if (actionDescription.getCancel()) {
-                    logger.warn("{} received authorized action request with auth token {}", LocationControllerImpl.this, authenticationBaseData.getAuthenticationToken());
-                }
-                final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
-
-                final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
-
-                // clear auth fields
-                actionDescriptionBuilder.getActionInitiatorBuilder().clearAuthenticatedBy().clearAuthorizedBy();
-
-                // if an authentication token is send replace the initiator in any case
-                if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
-                }
-
-                // setup auth fields
-                if (authPair.getAuthenticatedBy() != null) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
-                }
-                if (authPair.getAuthorizedBy() != null) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
-                }
-
-                for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-                    if (serviceDescription.getAggregated()) {
-                        continue;
-                    }
-
-                    if (serviceDescription.getServiceType() != actionDescription.getServiceStateDescription().getServiceType()) {
-                        continue;
-                    }
-
-                    if (!actionDescriptionBuilder.getCancel()) {
-                        return super.applyAction(actionDescription).get();
-                    } else {
-                        return super.cancelAction(actionDescription, authPair.getAuthenticatedBy()).get();
-                    }
-                }
-
-                if (!actionDescriptionBuilder.getCancel()) {
-                    ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
-                } else {
-                    logger.warn("Cancel actions for user: {} | {} | {}", authenticationBaseData.getUserId(), authPair.getAuthenticatedBy(), authPair.getAuthorizedBy());
-                    logger.warn("User send token {}", authenticationBaseData.getAuthenticationToken());
-                }
-//                logger.warn("Verified and prepared action {} in location {}", actionDescriptionBuilder.getId(), this);
-
-                // TODO: resulting actions have to be added somehow as impacts
-                serviceRemoteManager.applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder.build(), authenticationBaseData).get();
-                return actionDescriptionBuilder.build();
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
-            } catch (ExecutionException ex) {
-                throw new CouldNotPerformException("Could not apply authenticated action!", ex);
-            }
-        }));
-    }
-
-    @Override
-    public ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
-        return serviceRemoteManager.getServiceRemote(serviceType);
     }
 
     public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
@@ -353,19 +164,16 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     public class StandbyStateOperationServiceImpl implements StandbyStateOperationService {
 
-        private LocationController locationController;
         private StandbyController<LocationController> standbyController;
 
-        public StandbyStateOperationServiceImpl(final LocationController locationController) {
-            this.locationController = locationController;
+        public StandbyStateOperationServiceImpl() {
             this.standbyController = new StandbyController();
-            standbyController.init(locationController);
+            standbyController.init(LocationControllerImpl.this);
         }
 
         @Override
         public Future<ActionDescription> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
-            LocationManagerImpl.LOGGER.info("Standby[" + standbyState + "]" + this);
-//            LOGGER.info("Standby[" + standbyState.getValue() + "]" + this);
+            logger.info("Standby[" + standbyState + "]" + this);
             return GlobalScheduledExecutorService.submit(() -> {
                 switch (getStandbyState().getValue()) {
                     case UNKNOWN:

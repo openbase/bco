@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.action;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -30,11 +30,9 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.SchedulableAction;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -55,37 +53,24 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public class ActionImpl implements SchedulableAction {
 
-    public static final String INITIATOR_KEY = "$INITIATOR";
-    public static final String SERVICE_TYPE_KEY = "$SERVICE_TYPE";
-    public static final String UNIT_LABEL_KEY = "$UNIT_LABEL";
-    public static final String SERVICE_ATTRIBUTE_KEY = "SERVICE_ATTRIBUTE";
-    public static final String GENERIC_ACTION_LABEL = UNIT_LABEL_KEY + "[" + SERVICE_ATTRIBUTE_KEY + "]";
-
     /**
      * Timeout how long it is waited on execution failure until a rescheduling process is triggered.
      */
     private static final long EXECUTION_FAILURE_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
-
-    public static final Map<String, String> GENERIC_ACTION_DESCRIPTION_MAP = new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
-
-    static {
-        GENERIC_ACTION_DESCRIPTION_MAP.put("en", INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of " + UNIT_LABEL_KEY + " to " + SERVICE_ATTRIBUTE_KEY + ".");
-        GENERIC_ACTION_DESCRIPTION_MAP.put("de", INITIATOR_KEY + " hat " + SERVICE_TYPE_KEY + "  von " + UNIT_LABEL_KEY + " zu " + SERVICE_ATTRIBUTE_KEY + " geändert.");
-    }
 
     protected final AbstractUnitController<?, ?> unit;
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
-    private final ServiceJSonProcessor serviceJSonProcessor;
     protected ActionDescription.Builder actionDescriptionBuilder;
     private Message serviceState;
     private ServiceDescription serviceDescription;
@@ -94,7 +79,6 @@ public class ActionImpl implements SchedulableAction {
     public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit) throws InstantiationException {
         try {
             this.unit = unit;
-            this.serviceJSonProcessor = new ServiceJSonProcessor();
             this.init(actionDescription);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -145,7 +129,6 @@ public class ActionImpl implements SchedulableAction {
 
             actionTask = GlobalCachedExecutorService.submit(() -> {
                 try {
-//                    synchronized (executionSync) {
                     // Initiate
                     updateActionState(ActionState.State.INITIATING);
 
@@ -162,7 +145,7 @@ public class ActionImpl implements SchedulableAction {
 
                                 // only update requested state if it is an operation state, else throw an exception if not in provider control mode
                                 if (!hasOperationService) {
-                                    if (!JPService.getProperty(JPProviderControlMode.class).getValue()) {
+                                    if (!JPService.getValue(JPProviderControlMode.class, false)) {
                                         throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
                                     }
                                 } else {
@@ -173,10 +156,10 @@ public class ActionImpl implements SchedulableAction {
                                 updateActionState(ActionState.State.EXECUTING);
 
                                 LOGGER.debug("Wait for execution...");
-                                waitForExecution(unit.performOperationService(serviceState, serviceDescription.getServiceType()));
+                                unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.SECONDS);
                                 LOGGER.debug("Execution finished!");
                                 break;
-                            } catch (CouldNotPerformException | JPNotAvailableException ex) {
+                            } catch (CouldNotPerformException | ExecutionException ex) {
                                 updateActionState(ActionState.State.EXECUTION_FAILED);
                                 ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
                                 Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
@@ -187,7 +170,6 @@ public class ActionImpl implements SchedulableAction {
                         Thread.currentThread().interrupt();
                         throw ex;
                     }
-//                    }
                 } finally {
                     synchronized (executionSync) {
                         actionTask = null;
@@ -326,24 +308,24 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
-    private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
-        //TODO this is a problem if the internal task is not returned as a completable future such as for the multi activity in users
-        if (getActionDescription().getExecutionTimePeriod() == 0) {
-            return;
-        }
-        try {
-            result.get(getExecutionTime(), TimeUnit.MILLISECONDS);
-            if (isValid()) {
-                Thread.sleep(getExecutionTime());
-            }
-        } catch (CancellationException | ExecutionException | TimeoutException ex) {
-            throw new CouldNotPerformException("Action execution aborted!", ex);
-        } finally {
-            if (!result.isDone()) {
-                result.cancel(true);
-            }
-        }
-    }
+//    private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
+//        //TODO this is a problem if the internal task is not returned as a completable future such as for the multi activity in users
+//        if (getActionDescription().getExecutionTimePeriod() == 0) {
+//            return;
+//        }
+//        try {
+//            result.get(getExecutionTime(), TimeUnit.MILLISECONDS);
+//            if (isValid()) {
+//                Thread.sleep(getExecutionTime());
+//            }
+//        } catch (CancellationException | ExecutionException | TimeoutException ex) {
+//            throw new CouldNotPerformException("Action execution aborted!", ex);
+//        } finally {
+//            if (!result.isDone()) {
+//                result.cancel(true);
+//            }
+//        }
+//    }
 
     @Override
     public String toString() {

@@ -533,7 +533,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             authenticatedId = "";
         }
 
-        logger.warn("Cancel action {} on unit {}", actionDescription.getId(), this);
         try {
             Action actionToCancel = null;
             synchronized (scheduledActionListLock) {
@@ -658,6 +657,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             try {
                 // save if there is at least one action still awaiting execution
                 boolean atLeastOneActionNoteDone = false;
+                // save if there is at least one action which is done but remains on the list
+                boolean atLeastOneDoneActionOnList = false;
 
                 // reject outdated and finish completed actions
                 for (final SchedulableAction action : scheduledActionList) {
@@ -677,6 +678,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             final Timestamp latestValueOccurrence = ServiceStateProcessor.getLatestValueOccurrence(action.getActionState().getValueDescriptor(), action.getActionDescription().getActionState());
                             if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(latestValueOccurrence)) > FINISHED_ACTION_REMOVAL_TIMEOUT) {
                                 scheduledActionList.remove(action);
+                            } else {
+                                atLeastOneDoneActionOnList = true;
                             }
                         } catch (NotAvailableException ex) {
                             // action timestamp could not be evaluated so print warning and remove action so that it does not stay on the list forever
@@ -725,7 +728,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // setup next schedule trigger
                 try {
-                    scheduleTimeout.restart(nextAction.getExecutionTime());
+                    final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : nextAction.getExecutionTime();
+                    scheduleTimeout.restart(rescheduleTimeout);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
                 }
@@ -786,18 +790,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
             try {
                 final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
-                if (actionDescription.hasId() && !actionDescription.getId().isEmpty() && actionDescription.getCancel()) {
-                    try {
-                        if (authenticationBaseData != null) {
-                            logger.warn("{} | {} | {} | {}", authenticationBaseData.getAuthenticationToken().getUserId(), authenticationBaseData.getUserId(), authPair.getAuthenticatedBy(), authPair.getAuthorizedBy());
-                        } else {
-                            logger.error("Unauthorized action cancellation?");
-                        }
-                        return cancelAction(actionDescription, authPair.getAuthenticatedBy()).get();
-                    } catch (ExecutionException ex) {
-                        throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
-                    }
-                }
                 final Builder actionDescriptionBuilder = actionDescription.toBuilder();
 
                 // clear auth fields
@@ -817,16 +809,26 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
 
 
-                try {
-                    return applyAction(actionDescriptionBuilder.build()).get();
-                } catch (ExecutionException ex) {
-                    throw new CouldNotPerformException("Could not apply authenticated action!", ex);
-                }
+                return internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not apply authenticated action!", ex);
             }
         }));
+    }
+
+    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
+        if (actionDescriptionBuilder.hasId() && !actionDescriptionBuilder.getId().isEmpty() && actionDescriptionBuilder.getCancel()) {
+            try {
+                return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy()).get();
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
+            }
+        }
+
+        return applyAction(actionDescriptionBuilder.build()).get();
     }
 
     @Override

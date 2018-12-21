@@ -22,26 +22,10 @@ package org.openbase.bco.dal.control.layer.unit.unitgroup;
  * #L%
  */
 
-import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
-import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroupController;
-import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
@@ -54,23 +38,20 @@ import org.openbase.type.domotic.state.SmokeStateType.SmokeState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
+import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData.Builder;
 import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType.RGBColor;
-
-import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGroupData, UnitGroupData.Builder> implements UnitGroupController {
+public class UnitGroupControllerImpl extends AbstractAggregatedBaseUnitController<UnitGroupData, Builder> implements UnitGroupController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupDataType.UnitGroupData.getDefaultInstance()));
@@ -94,104 +75,7 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnitGroupControllerImpl.class);
-    private final ServiceRemoteManager<UnitGroupData> serviceRemoteManager;
-
     public UnitGroupControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UnitGroupControllerImpl.class, UnitGroupData.newBuilder());
-        this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this, false) {
-            @Override
-            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException {
-                return getSupportedServiceTypes();
-            }
-
-            @Override
-            protected void notifyServiceUpdate(Unit source, Message data) throws InterruptedException {
-                updateUnitData();
-            }
-        };
-    }
-
-    @Override
-    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(unitConfig.getUnitGroupConfig().getMemberIdList());
-        return unitConfig;
-    }
-
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        logger.debug("Activate UnitGroupController[" + getConfig().getLabel() + "]");
-        super.activate();
-
-        serviceRemoteManager.activate();
-        updateUnitData();
-    }
-
-    @Override
-    public boolean isActive() {
-        return serviceRemoteManager.isActive();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.debug("Deactivate UnitGroupController[" + getConfig().getLabel() + "]");
-        serviceRemoteManager.deactivate();
-
-        super.deactivate();
-    }
-
-    @Override
-    public void waitForData(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        // super waitForData is disabled because unit remote is not a RSBRemoteService
-        // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
-        serviceRemoteManager.waitForData(timeout, timeUnit);
-        updateUnitData();
-    }
-
-    @Override
-    public void waitForData() throws CouldNotPerformException, InterruptedException {
-        // super waitForData is disabled because unit remote is not a RSBRemoteService
-        // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
-        serviceRemoteManager.waitForData();
-        updateUnitData();
-    }
-
-    private void updateUnitData() throws InterruptedException {
-        try (ClosableDataBuilder<UnitGroupData.Builder> dataBuilder = getDataBuilder(this)) {
-            serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder.getInternalBuilder(), getDataClass(), getSupportedServiceTypes());
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
-        }
-    }
-
-    @Override
-    public boolean isServiceAvailable(ServiceType serviceType) {
-        return serviceRemoteManager.isServiceAvailable(serviceType);
-    }
-
-    @Override
-    public Future<SnapshotType.Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.recordSnapshot();
-    }
-
-    @Override
-    public Future<SnapshotType.Snapshot> recordSnapshot(final UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.recordSnapshot(unitType);
-    }
-
-    @Override
-    public Future<Void> restoreSnapshot(final SnapshotType.Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.restoreSnapshot(snapshot);
-    }
-
-    @Override
-    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
-        return serviceRemoteManager.applyAction(actionDescription);
-    }
-
-    @Override
-    public ServiceRemote getServiceRemote(final ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
-        return serviceRemoteManager.getServiceRemote(serviceType);
     }
 }

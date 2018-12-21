@@ -25,9 +25,9 @@ package org.openbase.bco.dal.remote.layer.service;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.ProtocolMessageEnum;
-import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -51,7 +51,6 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
@@ -661,82 +660,107 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         }
     }
 
-    private ActionDescription updateActionDescriptionForUnit(ActionDescription actionDescription, UnitRemote<?> unitRemote) throws CouldNotPerformException {
-        // create new builder and copy fields
-        ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
-        // update the action chain
-        ActionDescriptionProcessor.updateActionCause(unitActionDescription, actionDescription);
-        // update the id in the serviceStateDescription to that of the unit
-        ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
-        serviceStateDescription.setUnitId(unitRemote.getId());
-
-        return unitActionDescription.build();
-    }
-
+    /**
+     * Apply an authenticated action with the default session manager. The authenticated value has to contain an action
+     * description encrypted with the session key from the default manager if a user is logged in. Else an action description
+     * as a byte string. This method internally calls {@link #applyActionAuthenticated(AuthenticatedValue, Builder, byte[])}.
+     *
+     * @param authenticatedValue The authenticated value containing an action description to be applied. Created with the
+     *                           default session manager.
+     *
+     * @return An authenticated value containing an updated action description in which resulting actions are added as impacts.
+     *
+     * @throws CouldNotPerformException if no action description is available or can be extracted from the authenticated value.
+     */
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        if (!SessionManager.getInstance().isLoggedIn()) {
-            throw new CouldNotPerformException("Could not apply authenticated action because default session manager not logged in");
+        if (!authenticatedValue.hasValue() || authenticatedValue.getValue().isEmpty()) {
+            throw new NotAvailableException("Value in AuthenticatedValue");
         }
 
-        ActionDescription actionDescription;
+        final ActionDescription actionDescription;
         try {
-            actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
+            if (SessionManager.getInstance().isLoggedIn()) {
+                actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
+            } else {
+                actionDescription = ActionDescription.parseFrom(authenticatedValue.getValue());
+            }
+        } catch (CouldNotPerformException | InvalidProtocolBufferException ex) {
+            throw new CouldNotPerformException("Could not extract ActionDescription from AuthenticatedValue", ex);
         }
 
-        return applyActionAuthenticated(authenticatedValue, actionDescription, null);
+        return applyActionAuthenticated(authenticatedValue, actionDescription.toBuilder(), SessionManager.getInstance().getSessionKey());
     }
 
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription actionDescription, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
-        if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
+    /**
+     * Apply an authenticated action on all units contained in this service remote.
+     *
+     * @param authenticatedValue       the authenticated value with which the action is applied on all internal units. If a session key
+     *                                 is provided it has to contain a valid and matching ticket. Optionally, it may contain tokens for the request.
+     * @param actionDescriptionBuilder the action description builder describes the action applied to each unit. For each action on an internal unit,
+     *                                 it is copied, the unit id adjusted and the action chain updated. After the result of this method is awaited,
+     *                                 its action impact list is filled with the ids of actions invoked on the internal units.
+     * @param sessionKey               the session key used to encrypt and decrypt actions descriptions. If it is provided it needs to match to the
+     *                                 authenticated value. If it is null then actions will be performed with other permissions.
+     *
+     * @return a future which returns the same authenticated value as in the request with an updated action description as its value. Calling get on this future makes sure that the
+     * action description builder is updated properly and that all internal actions finished successfully.
+     *
+     * @throws CouldNotPerformException if something fails, e.g. the service provided in the action description does not match this service remote.
+     */
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final byte[] sessionKey) throws CouldNotPerformException {
+        if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
             throw new VerificationFailedException("Service type is not compatible to given action config!");
         }
 
         final List<Future<AuthenticatedValue>> ActionDescriptionList = new ArrayList<>();
 
-        for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
-            final Builder actionDescriptionBuilder = ActionDescription.newBuilder(actionDescription);
-            actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
+        for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
+            final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
+            unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
             // update action cause
-            ActionDescriptionProcessor.updateActionCause(actionDescriptionBuilder, actionDescription);
+            ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
 
             final AuthenticatedValue authValue;
             // encrypt action description again
-            if (authenticationBaseData != null) {
-                final ByteString encrypt = EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), authenticationBaseData.getSessionKey());
+            if (sessionKey != null) {
+                final ByteString encrypt = EncryptionHelper.encryptSymmetric(unitActionDescriptionBuilder.build(), sessionKey);
                 authValue = authenticatedValue.toBuilder().setValue(encrypt).build();
             } else {
-                authValue = authenticatedValue.toBuilder().setValue(actionDescriptionBuilder.build().toByteString()).build();
+                authValue = authenticatedValue.toBuilder().setValue(unitActionDescriptionBuilder.build().toByteString()).build();
             }
-
 
             // apply action on remote
             ActionDescriptionList.add(unitRemote.applyActionAuthenticated(authValue));
         }
-//
-//        // Because the action is never send to the controller the authenticator will not and does not need to be updated.
-//        // But in order not to override the applyAction method, which returns a future that validates the authenticator,
-//        // on the location remote and unit group remote, it is faked here.
-//        final Authenticator.Builder authenticator = EncryptionHelper.decryptSymmetric(authenticatedValue.getTicketAuthenticatorWrapper().getAuthenticator(), sessionKey, Authenticator.class).toBuilder();
-//        authenticator.getTimestampBuilder().setTime(authenticator.getTimestamp().getTime() + 1);
-//        final ByteString encryptedAuthenticator = EncryptionHelper.encryptSymmetric(authenticator.build(), sessionKey);
-        return GlobalCachedExecutorService.allOf(input -> {
-            if (authenticationBaseData == null) {
-                return authenticatedValue;
-            }
 
+        return GlobalCachedExecutorService.allOf(input -> {
             for (final Future<AuthenticatedValue> future : input) {
                 try {
-                    AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), authenticatedValue.getTicketAuthenticatorWrapper(), future.get().getTicketAuthenticatorWrapper());
+                    final AuthenticatedValue unitAuthenticatedValue = future.get();
+                    final ActionDescription unitActionResponse;
+                    // validate responses and decrypt results
+                    if (sessionKey != null) {
+                        AuthenticationClientHandler.handleServiceServerResponse(sessionKey, authenticatedValue.getTicketAuthenticatorWrapper(), unitAuthenticatedValue.getTicketAuthenticatorWrapper());
+                        unitActionResponse = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), sessionKey, ActionDescription.class);
+                    } else {
+                        unitActionResponse = ActionDescription.parseFrom(unitAuthenticatedValue.getValue());
+                    }
+                    // add resulting actions as impacts
+                    actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(unitActionResponse));
                 } catch (ExecutionException ex) {
                     throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+                } catch (InvalidProtocolBufferException ex) {
+                    throw new CouldNotPerformException("Could not parse result from unauthenticated applyAction request as action description", ex);
                 }
             }
-//            AuthenticatedValue.Builder builder = authenticatedValue.toBuilder();
-//            builder.getTicketAuthenticatorWrapperBuilder().setAuthenticator(encryptedAuthenticator);
+            final AuthenticatedValue.Builder responseAuthValue = authenticatedValue.toBuilder();
+            if (sessionKey != null) {
+                responseAuthValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));
+            } else {
+                responseAuthValue.setValue(actionDescriptionBuilder.build().toByteString());
+            }
             return authenticatedValue;
         }, ActionDescriptionList);
     }

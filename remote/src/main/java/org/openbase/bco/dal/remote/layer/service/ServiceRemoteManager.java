@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.layer.service;
  * #L%
  */
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
@@ -47,8 +48,6 @@ import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter.Builder;
 import org.openbase.type.domotic.action.SnapshotType;
@@ -57,14 +56,15 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType.Authentic
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -479,23 +479,58 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
     }
 
+    /**
+     * Apply an authenticated action with the default session manager. The authenticated value has to contain an action
+     * description encrypted with the session key from the default manager if a user is logged in. Else an action description
+     * as a byte string.
+     * Select a service remote based on the service type provided in the action description and apply an authenticated action
+     * on it. For detailed information refer to {@link AbstractServiceRemote#applyActionAuthenticated(AuthenticatedValue, ActionDescription.Builder, byte[])}.
+     *
+     * @param authenticatedValue The authenticated value containing an action description to be applied. Created with the
+     *                           default session manager.
+     *
+     * @return An authenticated value containing an updated action description in which resulting actions are added as impacts.
+     *
+     * @throws CouldNotPerformException if no action description is available or can be extracted from the authenticated value.
+     */
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        if (!SessionManager.getInstance().isLoggedIn()) {
-            throw new CouldNotPerformException("Could not apply authenticated action because default session manager not logged in");
+        if (!authenticatedValue.hasValue() || authenticatedValue.getValue().isEmpty()) {
+            throw new NotAvailableException("Value in AuthenticatedValue");
         }
 
-        ActionDescription actionDescription;
+        final ActionDescription actionDescription;
         try {
-            actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply authenticated action because internal action description could not be decrypted using the default session manager", ex);
+            if (SessionManager.getInstance().isLoggedIn()) {
+                actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
+            } else {
+                actionDescription = ActionDescription.parseFrom(authenticatedValue.getValue());
+            }
+        } catch (CouldNotPerformException | InvalidProtocolBufferException ex) {
+            throw new CouldNotPerformException("Could not extract ActionDescription from AuthenticatedValue", ex);
         }
 
-        return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescription, null);
+        return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescription.toBuilder(), SessionManager.getInstance().getSessionKey());
     }
 
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription actionDescription, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
-        return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescription, authenticationBaseData);
+    /**
+     * Select a service remote based on the service type provided in the action description and apply an authenticated action
+     * on it. For detailed information refer to {@link AbstractServiceRemote#applyActionAuthenticated(AuthenticatedValue, ActionDescription.Builder, byte[])}.
+     *
+     * @param authenticatedValue       the authenticated value with which the action is applied on all internal units. If a session key
+     *                                 is provided it has to contain a valid and matching ticket. Optionally, it may contain tokens for the request.
+     * @param actionDescriptionBuilder the action description builder describes the action applied to each unit. For each action on an internal unit,
+     *                                 it is copied, the unit id adjusted and the action chain updated. After the result of this method is awaited,
+     *                                 its action impact list is filled with the ids of actions invoked on the internal units.
+     * @param sessionKey               the session key used to encrypt and decrypt actions descriptions. If it is provided it needs to match to the
+     *                                 authenticated value. If it is null then actions will be performed with other permissions.
+     *
+     * @return a future which returns the same authenticated value as in the request with an updated action description as its value. Calling get on this future makes sure that the
+     * action description builder is updated properly and that all internal actions finished successfully.
+     *
+     * @throws CouldNotPerformException if something fails
+     */
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final byte[] sessionKey) throws CouldNotPerformException {
+        return getServiceRemote(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey);
     }
 
     protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
