@@ -59,7 +59,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
         super(PartyLightTileFollowerApp.class);
         try {
             Registries.waitForData();
-            Registries.waitForData();
             this.locationRemoteMap = new HashMap<>();
 
             // init tile remotes

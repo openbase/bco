@@ -24,7 +24,7 @@ package org.openbase.bco.app.cloudconnector;
 
 import org.openbase.bco.app.cloudconnector.jp.JPCloudServerURI;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;

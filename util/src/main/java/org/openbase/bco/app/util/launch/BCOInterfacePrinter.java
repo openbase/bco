@@ -159,7 +159,7 @@ public class BCOInterfacePrinter {
 
                 // print unit data type
                 try {
-                    unitDataType = transformToRSTTypeName(getRegistryDataClass(registry.getName()).getName());
+                    unitDataType = transformToProtobufTypeName(getRegistryDataClass(registry.getName()).getName());
                 } catch (final NotAvailableException ex) {
                     ExceptionPrinter.printHistory(ex, LOGGER);
                     unitDataType = "?";
@@ -171,7 +171,7 @@ public class BCOInterfacePrinter {
                 for (final Method method : detectRPCMethods(registry)) {
                     final String params = detectParameterType(method);
                     final String returnType = detectReturnType(method);
-                    System.out.println(colorize("       " + scope.replace("/", " / ") + "ctrl / " + method.getName() + "(" + transformToRSTTypeName(params) + ")" + (returnType.isEmpty() ? "" : " : " + returnType)));
+                    System.out.println(colorize("       " + scope.replace("/", " / ") + "ctrl / " + method.getName() + "(" + transformToProtobufTypeName(params) + ")" + (returnType.isEmpty() ? "" : " : " + returnType)));
                 }
                 System.out.println();
             }
@@ -215,7 +215,7 @@ public class BCOInterfacePrinter {
 
                     // print unit data type
                     try {
-                        unitDataType = transformToRSTTypeName(UnitConfigProcessor.getUnitDataClass(unitType).getName());
+                        unitDataType = transformToProtobufTypeName(UnitConfigProcessor.getUnitDataClass(unitType).getName());
                     } catch (final NotAvailableException ex) {
                         unitDataType = "?";
                     }
@@ -233,7 +233,7 @@ public class BCOInterfacePrinter {
                     for (final Method method : detectRPCMethods(unitInstance)) {
                         final String params = detectParameterType(method);
                         final String returnType = detectReturnType(method);
-                        System.out.println(colorize("        / <LocationScope> / " + ScopeGenerator.convertIntoValidScopeComponent(unitType.name()) + " / <UnitLabel> / ctrl / " + method.getName() + "(" + transformToRSTTypeName(params) + ")" + (returnType.isEmpty() ? "" : " : " + returnType)));
+                        System.out.println(colorize("        / <LocationScope> / " + ScopeGenerator.convertIntoValidScopeComponent(unitType.name()) + " / <UnitLabel> / ctrl / " + method.getName() + "(" + transformToProtobufTypeName(params) + ")" + (returnType.isEmpty() ? "" : " : " + returnType)));
                     }
                     System.out.println();
                 } catch (Exception ex) {
@@ -298,7 +298,7 @@ public class BCOInterfacePrinter {
         // System.out.println("getAnnotatedReturnType" + method.getAnnotatedReturnType());
         // System.out.println("getReturnType" + method.getReturnType());
         // System.out.println("getGenericReturnType" + method.getGenericReturnType());
-        return transformToRSTTypeName(returnType);
+        return transformToProtobufTypeName(returnType);
     }
 
     public static List<Method> sortMethodList(final List<Method> methodList) {
@@ -306,7 +306,7 @@ public class BCOInterfacePrinter {
         return methodList;
     }
 
-    public static String transformToRSTTypeName(final String inputClassName) {
+    public static String transformToProtobufTypeName(final String inputClassName) {
 
         String className = inputClassName;
         // transfom void argument to empty arg string.

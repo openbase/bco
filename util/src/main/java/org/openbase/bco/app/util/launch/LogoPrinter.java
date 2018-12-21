@@ -1,6 +1,6 @@
 package org.openbase.bco.app.util.launch;
 
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 
 /*-
  * #%L

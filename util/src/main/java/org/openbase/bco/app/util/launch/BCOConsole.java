@@ -25,7 +25,7 @@ package org.openbase.bco.app.util.launch;
 import org.openbase.bco.app.cloudconnector.CloudConnectorRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.DALRemote;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
