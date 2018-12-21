@@ -62,7 +62,7 @@ public class AuthorizationGroupAdminAndBCOConsistencyHandler extends AbstractPro
     }
 
     private void addUserToGroupIfMissing(final String userAlias, final IdentifiableMessage<String, UnitConfig, Builder> entry) throws EntryModification, CouldNotPerformException {
-        final String userId = aliasIdMap.get(userAlias);
+        final String userId = aliasIdMap.get(userAlias.toLowerCase());
         if (userId == null) {
             // skip if the according user is not registered
             return;
