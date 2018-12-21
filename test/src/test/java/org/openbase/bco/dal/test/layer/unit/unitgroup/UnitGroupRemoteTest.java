@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit.unitgroup;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -31,6 +31,7 @@ import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest;
@@ -144,12 +145,12 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test//(timeout = 10000)
+    @Test(timeout = 10000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        unitGroupRemote.setPowerState(state).get();
+        Actions.waitForExecution(unitGroupRemote.setPowerState(state));
 
         LOGGER.warn("Config: {}", unitGroupRemote.getConfig());
 
@@ -158,7 +159,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        unitGroupRemote.setPowerState(state).get();
+        Actions.waitForExecution(unitGroupRemote.setPowerState(state));
         for (final Unit<?> unit : UNIT_LIST) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
@@ -174,7 +175,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         System.out.println("getPowerState");
         unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        unitGroupRemote.setPowerState(state).get();
+        Actions.waitForExecution(unitGroupRemote.setPowerState(state));
         assertEquals("Power state has not been set in time or the return value from the getter is different!", state.getValue(), unitGroupRemote.getPowerState().getValue());
     }
 
@@ -208,7 +209,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         // wait for data
         unitGroupRemote.waitForData();
         // init power to off
-        unitGroupRemote.setPowerState(State.OFF).get();
+        Actions.waitForExecution(unitGroupRemote.setPowerState(State.OFF));
 
         // init authenticated value
         final PowerState serviceState = PowerState.newBuilder().setValue(State.ON).build();
@@ -218,7 +219,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         // perform request
         final AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(unitGroupRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
         // wait for request
-        future.get();
+        Actions.waitForExecution(future);
 
         // test if new value has been set
         assertEquals(serviceState.getValue(), unitGroupRemote.getPowerState().getValue());

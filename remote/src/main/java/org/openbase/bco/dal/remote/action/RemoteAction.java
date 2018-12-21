@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -44,6 +44,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.Logger;
@@ -95,6 +96,12 @@ public class RemoteAction implements Action {
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+
+    public RemoteAction(final ActionReference actionReference) {
+        this.actionParameterBuilder = null;
+        this.actionDescriptionObservable = new ObservableImpl<>();
+        this.initFutureObservationTask(actionReference);
     }
 
     public Future<ActionDescription> execute(final ActionDescription causeActionDescription) {
@@ -160,6 +167,39 @@ public class RemoteAction implements Action {
                 throw new ExecutionException(ex);
             } catch (ExecutionException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable("Could not observe " + this + "!", ex, LOGGER);
+            }
+        });
+        return futureObservationTask;
+    }
+
+    private Future<ActionDescription> initFutureObservationTask(final ActionReference actionReference) {
+        futureObservationTask = GlobalCachedExecutorService.submit(() -> {
+            try {
+                synchronized (executionSync) {
+                    targetUnit = Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true);
+
+                    for (final ActionDescription actionDescription : targetUnit.getActionList()) {
+                        if (actionDescription.getId().equals(actionReference.getActionId())) {
+                            RemoteAction.this.actionDescription = actionDescription;
+                        }
+                    }
+
+                    if (RemoteAction.this.actionDescription == null) {
+                        throw new NotAvailableException("ActionDescription[" + actionReference.getActionId() + "] on unit[" + targetUnit + "]");
+                    }
+
+                    // register action update observation
+                    targetUnit.addDataObserver(unitObserver);
+
+                    executionSync.notifyAll();
+
+                    // because future can already be outdated but the update not received because
+                    // the action id was not yet available we need to trigger an manual update.
+                    updateActionDescription(targetUnit.getActionList());
+                }
+                return actionDescription;
+            } catch (InterruptedException ex) {
+                throw ex;
             }
         });
         return futureObservationTask;
@@ -302,6 +342,16 @@ public class RemoteAction implements Action {
 
     public void waitForExecution() throws CouldNotPerformException, InterruptedException {
         waitForSubmission();
+
+        if (!actionDescription.getActionImpactList().isEmpty()) {
+            // action impacted others, so wait for these
+            for (final ActionReference actionReference : actionDescription.getActionImpactList()) {
+                new RemoteAction(actionReference).waitForExecution();
+            }
+            return;
+        }
+
+        // wait on this action
         synchronized (executionSync) {
             // wait until state is reached
             while (!isStateExecuting()) {
