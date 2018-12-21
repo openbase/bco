@@ -129,7 +129,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
                     unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
                     unitConfigSource.getPlacementConfig().getTransformationFrameId(),
                     System.currentTimeMillis());
-        } catch (final CouldNotPerformException | TransformerException ex) {
+        } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitTransformation", ex);
         }
     }
