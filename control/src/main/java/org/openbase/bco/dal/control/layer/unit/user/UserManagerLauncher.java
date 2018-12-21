@@ -22,7 +22,7 @@ package org.openbase.bco.dal.control.layer.unit.user;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.user.UserManager;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
