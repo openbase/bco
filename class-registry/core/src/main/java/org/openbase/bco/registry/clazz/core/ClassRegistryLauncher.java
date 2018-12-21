@@ -27,7 +27,7 @@ import org.openbase.bco.registry.clazz.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.clazz.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.registry.clazz.lib.jp.JPDeviceClassDatabaseDirectory;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;

@@ -22,7 +22,7 @@ package org.openbase.bco.registry.activity.core;
  * #L%
  */
 
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.bco.registry.activity.lib.ActivityRegistry;
 import org.openbase.bco.registry.activity.lib.jp.JPActivityConfigDatabaseDirectory;

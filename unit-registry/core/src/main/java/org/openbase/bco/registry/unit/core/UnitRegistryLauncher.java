@@ -26,9 +26,8 @@ package org.openbase.bco.registry.unit.core;
  */
 
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
-import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
-import org.openbase.bco.registry.template.lib.jp.JPUnitTemplateDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.*;
 import org.openbase.jps.core.JPService;
