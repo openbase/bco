@@ -22,7 +22,7 @@ package org.openbase.bco.dal.control.action;
  * #L%
  */
 
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.action.Action;
@@ -93,6 +93,9 @@ public class ActionImpl implements SchedulableAction {
 
             // verify and prepare action description
             serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, true);
+            // set actions description as responsible in service state
+            final FieldDescriptor responsibleActionField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+            serviceState = serviceState.toBuilder().setField(responsibleActionField, actionDescriptionBuilder.build()).build();
 
             // since its an action it has to be an operation service pattern
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
@@ -199,14 +202,8 @@ public class ActionImpl implements SchedulableAction {
 
     private void setRequestedState() throws CouldNotPerformException {
         try (ClosableDataBuilder dataBuilder = unit.getDataBuilder(this)) {
-
-            // set the responsible action for the service attribute
-            Message.Builder serviceStateBuilder = serviceState.toBuilder();
-            Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-            serviceStateBuilder.setField(fieldDescriptor, actionDescriptionBuilder.build());
-
-            // set the updated service attribute as requested state in the unit data builder
-            Services.invokeServiceMethod(serviceDescription.getServiceType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceStateBuilder);
+            // set the new service attribute as requested state in the unit data builder
+            Services.invokeServiceMethod(serviceDescription.getServiceType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceState);
         }
     }
 

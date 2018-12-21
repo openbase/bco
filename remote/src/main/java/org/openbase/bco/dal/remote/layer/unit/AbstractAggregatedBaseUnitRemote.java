@@ -31,6 +31,7 @@ import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.service.ServiceRemoteFactoryImpl;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -176,13 +177,17 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
             final Set<UnitRemote> unitRemoteSet = new HashSet<>();
             for (final String aggregatedUnitId : getAggregatedUnitIds(getConfig())) {
                 UnitConfig aggregatedUnitConfig = Registries.getUnitRegistry().getUnitConfigById(aggregatedUnitId);
+                if (!UnitConfigProcessor.isDalUnit(aggregatedUnitConfig)) {
+                    continue;
+                }
+
                 if (unitType == UnitType.UNKNOWN || aggregatedUnitConfig.getUnitType() == unitType) {
-                    unitRemoteSet.add(Units.getUnit(aggregatedUnitId, true));
+                    unitRemoteSet.add(Units.getUnit(aggregatedUnitId, false));
                 }
             }
 
             // take the snapshot
-            final Map<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureMap = new HashMap<UnitRemote, Future<SnapshotType.Snapshot>>();
+            final Map<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureMap = new HashMap<>();
             for (final UnitRemote<?> remote : unitRemoteSet) {
                 try {
                     if (UnitProcessor.isDalUnit(remote)) {

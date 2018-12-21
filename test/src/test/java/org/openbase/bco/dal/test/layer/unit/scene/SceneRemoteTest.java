@@ -27,6 +27,7 @@ import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.layer.service.PowerStateServiceRemote;
@@ -49,11 +50,11 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
@@ -66,6 +67,7 @@ import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 import org.openbase.type.vision.ColorType;
 import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -328,7 +330,10 @@ public class SceneRemoteTest extends AbstractBCOTest {
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
-        activateScene(SCENE_TEST);
+        LOGGER.warn("Await scene execution....");
+        SceneRemote sceneRemote = Units.getUnitsByLabel(SCENE_TEST, true, Units.SCENE).get(0);
+        Actions.waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
+        LOGGER.warn("Scene executed....");
 
         powerStateServiceRemote.requestData().get();
         colorStateServiceRemote.requestData().get();
