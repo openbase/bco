@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit.unitgroup;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -33,7 +33,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
+import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,8 +42,6 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.slf4j.LoggerFactory;
-import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
@@ -56,8 +54,11 @@ import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
+import org.openbase.type.language.LabelType.Label;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -65,7 +66,7 @@ import static org.junit.Assert.fail;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
+public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UnitGroupRemoteTest.class);
 
@@ -74,7 +75,7 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+        AbstractBCOLocationManagerTest.setUpClass();
 
         try {
             UnitConfig unitGroupConfig = registerUnitGroup();
@@ -143,12 +144,14 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test//(timeout = 10000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         unitGroupRemote.setPowerState(state).get();
+
+        LOGGER.warn("Config: {}", unitGroupRemote.getConfig());
 
         for (final Unit<?> unit : UNIT_LIST) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
@@ -189,25 +192,7 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
         try {
             unitGroupRemote.setBrightnessState(brightnessState).get();
             fail("Brightness service has been used even though the group config is only defined for power service");
-        } catch (CouldNotPerformException ex) {
-        }
-    }
-
-    /**
-     * Test of setBrightness method, of class UnitGroupRemote.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test(timeout = 10000)
-    public void testGetData() throws Exception {
-        System.out.println("setBrightness");
-        unitGroupRemote.waitForData();
-        Double brightness = 30d;
-        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).build();
-        try {
-            unitGroupRemote.setBrightnessState(brightnessState).get();
-            assertEquals("BrightnessState  has not been set in time or the return value from the unit data is different!", brightness, unitGroupRemote.getData().getBrightnessState().getBrightness(), 0.1d);
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | ExecutionException ex) {
         }
     }
 

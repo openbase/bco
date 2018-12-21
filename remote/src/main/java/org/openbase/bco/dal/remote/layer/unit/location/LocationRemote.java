@@ -15,6 +15,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
+import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
@@ -49,12 +50,12 @@ import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -296,5 +297,10 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
     public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
                 .addCategory(Category.ECONOMY));
+    }
+
+    @Override
+    protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
+        return unitConfig.getLocationConfig().getUnitIdList();
     }
 }

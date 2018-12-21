@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit.unitgroup;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -38,6 +38,7 @@ import org.openbase.type.domotic.state.SmokeStateType.SmokeState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
@@ -47,6 +48,8 @@ import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType.RGBColor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
@@ -77,5 +80,10 @@ public class UnitGroupControllerImpl extends AbstractAggregatedBaseUnitControlle
 
     public UnitGroupControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UnitGroupControllerImpl.class, UnitGroupData.newBuilder());
+    }
+
+    @Override
+    protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
+        return unitConfig.getUnitGroupConfig().getMemberIdList();
     }
 }

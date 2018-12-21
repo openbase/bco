@@ -10,22 +10,24 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -36,7 +38,9 @@ import java.util.concurrent.Future;
  */
 public interface TargetTemperatureStateOperationServiceCollection extends TargetTemperatureStateOperationService {
 
-    public Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException;
+    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, unitType));
+    }
 
     /**
      * Returns the average target temperature value for a collection of target

@@ -21,15 +21,17 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.concurrent.Future;
 
 /**
  *
@@ -37,7 +39,9 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface BrightnessStateOperationServiceCollection extends BrightnessStateOperationService {
 
-    public Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException;
+    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, unitType));
+    }
 
     /**
      * Returns the average brightness value for a collection of brightnessServices.
@@ -57,5 +61,5 @@ public interface BrightnessStateOperationServiceCollection extends BrightnessSta
      * @return
      * @throws org.openbase.jul.exception.NotAvailableException
      */
-    public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException;
+    BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException;
 }

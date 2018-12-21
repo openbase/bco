@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,6 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
@@ -68,8 +69,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        powerSwitchRemote.setPowerState(state).get();
-        powerSwitchRemote.requestData().get();
+        Actions.waitForExecution(powerSwitchRemote.setPowerState(state));
         assertEquals("Power state has not been set in time!", state.getValue(), powerSwitchRemote.getData().getPowerState().getValue());
     }
 

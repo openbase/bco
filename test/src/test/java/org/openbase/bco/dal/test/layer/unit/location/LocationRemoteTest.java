@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit.location;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -38,7 +38,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -59,6 +58,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -116,12 +116,12 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
             locationRemote.setPowerState(powerOn).get();
             for (PowerStateOperationService powerStateService : powerServiceList) {
-                assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
+                assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the locationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
             }
 
             locationRemote.setPowerState(powerOff).get();
             for (PowerStateOperationService powerStateService : powerServiceList) {
-                assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
+                assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the locationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
             }
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
@@ -241,10 +241,10 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         locationRemote.restoreSnapshot(snapshot).get();
         locationRemote.requestData().get();
 
-        assertTrue("BlindState of location has not been restored through snapshot!", locationRemote.getBlindState(UnitType.UNKNOWN).getValue() == snapshotBlindState.getValue());
-        assertTrue("ColorState of location has not been restored through snapshot!", locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
-        assertTrue("PowerState of location has not been restored through snapshot!", locationRemote.getPowerState(UnitType.UNKNOWN).getValue() == snapshotPowerState.getValue());
-        assertTrue("TargetTemperatureState of location has not been restored through snapshot!", locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() == snapshotTemperatureState.getTemperature());
+        assertEquals("BlindState of location has not been restored through snapshot!", snapshotBlindState.getValue(), locationRemote.getBlindState(UnitType.UNKNOWN).getValue());
+        assertEquals("ColorState of location has not been restored through snapshot!", snapshotColorState.getColor().getHsbColor(), locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor());
+        assertEquals("PowerState of location has not been restored through snapshot!", snapshotPowerState.getValue(), locationRemote.getPowerState(UnitType.UNKNOWN).getValue());
+        assertEquals("TargetTemperatureState of location has not been restored through snapshot!", snapshotTemperatureState.getTemperature(), locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature(), 0.5);
     }
 
     @Test(timeout = 5000)

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,6 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.DimmableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
@@ -36,7 +37,6 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import static org.junit.Assert.assertEquals;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
@@ -77,8 +77,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        dimmableLightRemote.setPowerState(state).get();
-        dimmableLightRemote.requestData().get();
+        Actions.waitForExecution(dimmableLightRemote.setPowerState(state));
         assertEquals("Power has not been set in time!", state.getValue(), dimmableLightRemote.getData().getPowerState().getValue());
     }
 
@@ -106,8 +105,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("setBrightness");
         Double brightness = 66d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-        dimmableLightRemote.setBrightnessState(brightnessState).get();
-        dimmableLightRemote.requestData().get();
+        Actions.waitForExecution(dimmableLightRemote.setBrightnessState(brightnessState));
         assertEquals("Brightness has not been set in time!", brightness, dimmableLightRemote.getBrightnessState().getBrightness(), 0.1);
     }
 

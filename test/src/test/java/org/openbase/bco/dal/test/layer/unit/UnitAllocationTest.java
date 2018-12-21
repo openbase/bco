@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -27,7 +27,6 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
-import org.openbase.bco.dal.lib.layer.unit.user.UserController;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -40,11 +39,10 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
@@ -52,6 +50,10 @@ import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -86,20 +88,10 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        //TODO how to reset light
-//        colorableLightRemote.setColor(RGBColor.newBuilder().setBlue(0).setGreen(0).setRed(0).build()).get();
-//        final ActionDescription actionDescription = colorableLightRemote.setPowerState(State.OFF).get();
-//        colorableLightRemote.cancelAction(actionDescription).get();
-//
-//        assertEquals("Colorable light still contains action after reset", 0, colorableLightRemote.getData().getActionCount());
-//        assertEquals("ColorableLight is not turned off", State.OFF, colorableLightRemote.getPowerState().getValue());
-        //TODO add test
-//        assertEquals("ColorableLight color is not black", State.OFF, colorableLightRemote.getPowerState().getValue());
     }
 
     @After
     public void tearDown() throws CouldNotPerformException {
-
     }
 
     /**
@@ -126,7 +118,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         remoteAction.addActionDescriptionObserver((source, data) -> LOGGER.warn("Remote action received state {}", data.getActionState().getValue()));
 
         // wait for executing because it is likely to be initiating before
-        remoteAction.waitForActionState(ActionState.State.EXECUTING);
+        remoteAction.waitForExecution();
 
         // validate that the action is available from unit data
         assertTrue("Unit data does not contain any action descriptions", colorableLightRemote.getData().getActionCount() > 0);
@@ -198,7 +190,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         LOGGER.info("testMultiActionsBySameInitiator");
         // set the power state of the colorable light
         final RemoteAction firstAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON));
-        firstAction.waitForActionState(ActionState.State.EXECUTING);
+        firstAction.waitForExecution();
 
         assertEquals(firstAction.getId(), colorableLightRemote.getActionList().get(0).getId());
         assertEquals(ActionState.State.EXECUTING, firstAction.getActionState());
@@ -208,7 +200,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // set the color of the light
         final HSBColor hsb = HSBColor.newBuilder().setBrightness(100).setHue(12).setSaturation(100).build();
         final RemoteAction secondAction = new RemoteAction(colorableLightRemote.setColor(hsb));
-        secondAction.waitForActionState(ActionState.State.EXECUTING);
+        secondAction.waitForExecution();
 
         assertEquals(secondAction.getId(), colorableLightRemote.getActionList().get(0).getId());
         assertEquals(ActionState.State.EXECUTING, secondAction.getActionState());
@@ -234,7 +226,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // set the power state of the colorable light with the bco user
         final RemoteAction firstAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON));
-        firstAction.waitForActionState(ActionState.State.EXECUTING);
+        firstAction.waitForExecution();
 
         assertEquals(firstAction.getId(), colorableLightRemote.getActionList().get(0).getId());
         assertEquals(ActionState.State.EXECUTING, firstAction.getActionState());
@@ -247,7 +239,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(builder.build(), null, null);
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
         final RemoteAction secondAction = new RemoteAction(authenticatedValueFuture);
-        secondAction.waitForActionState(ActionState.State.EXECUTING);
+        secondAction.waitForExecution();
         firstAction.waitForActionState(ActionState.State.SCHEDULED);
 
         assertEquals(secondAction.getId(), colorableLightRemote.getActionList().get(0).getId());
@@ -258,9 +250,11 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(ActionState.State.SCHEDULED, firstAction.getActionState());
 
         // cancel running action
-        secondAction.cancel().get();
+        builder = secondAction.getActionDescription().toBuilder().setCancel(true);
+        authenticatedValue = sessionManager.initializeRequest(builder.build(), null, null);
+        new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager).get();
         // wait until old action is rescheduled to executing
-        firstAction.waitForActionState(ActionState.State.EXECUTING);
+        firstAction.waitForExecution();
 
         assertEquals(firstAction.getId(), colorableLightRemote.getActionList().get(0).getId());
         assertEquals(ActionState.State.EXECUTING, firstAction.getActionState());

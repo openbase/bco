@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,7 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
-import org.openbase.bco.dal.control.layer.unit.TemperatureControllerController;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
@@ -75,7 +75,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
         System.out.println("setTargetTemperature");
         double temperature = 42.0F;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-        temperatureControllerRemote.setTargetTemperatureState(temperatureState).get();
+        Actions.waitForExecution(temperatureControllerRemote.setTargetTemperatureState(temperatureState));
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperature, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1);
     }
@@ -105,7 +105,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
         System.out.println("getTemperature");
         double temperature = 37.0F;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-        ((TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId()).applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureControllerRemote.getTemperatureState().getTemperature(), 0.1);
     }

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.unit.unitgroup;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -27,6 +27,7 @@ import org.openbase.bco.dal.remote.layer.unit.AbstractAggregatedBaseUnitRemote;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.state.*;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.location.LocationDataType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
@@ -35,6 +36,8 @@ import org.openbase.type.vision.HSBColorType;
 import org.openbase.type.vision.RGBColorType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+
+import java.util.List;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -66,5 +69,10 @@ public class UnitGroupRemote extends AbstractAggregatedBaseUnitRemote<UnitGroupD
 
     public UnitGroupRemote() {
         super(UnitGroupData.class);
+    }
+
+    @Override
+    protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
+        return unitConfig.getUnitGroupConfig().getMemberIdList();
     }
 }

@@ -33,21 +33,20 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.state.*;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
-import org.openbase.type.domotic.state.ColorStateType.ColorState;
-import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
+import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ServiceAggregator extends BrightnessStateOperationServiceCollection,
+public interface ServiceAggregator extends
+        BrightnessStateOperationServiceCollection,
         ColorStateOperationServiceCollection,
         PowerStateOperationServiceCollection,
         BlindStateOperationServiceCollection,
@@ -68,38 +67,8 @@ public interface ServiceAggregator extends BrightnessStateOperationServiceCollec
     Future<SnapshotType.Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
 
     @Override
-    default Future<ActionDescription> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException {
-        return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState, unitType);
-    }
-
-    @Override
-    default Future<ActionDescription> setBlindState(final BlindState blindState) throws CouldNotPerformException {
-        return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState);
-    }
-
-    @Override
-    default BlindState getBlindState() throws NotAvailableException {
-        return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceType.BLIND_STATE_SERVICE)).getBlindState();
-    }
-
-    @Override
     default BlindState getBlindState(final UnitType unitType) throws NotAvailableException {
         return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceType.BLIND_STATE_SERVICE)).getBlindState(unitType);
-    }
-
-    @Override
-    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return ((BrightnessStateOperationServiceCollection) getServiceRemote(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState);
-    }
-
-    @Override
-    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
-        return ((BrightnessStateOperationServiceCollection) getServiceRemote(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState, unitType);
-    }
-
-    @Override
-    default BrightnessStateType.BrightnessState getBrightnessState() throws NotAvailableException {
-        return ((BrightnessStateOperationServiceCollection) getServiceRemote(ServiceType.BRIGHTNESS_STATE_SERVICE)).getBrightnessState();
     }
 
     @Override
@@ -108,48 +77,8 @@ public interface ServiceAggregator extends BrightnessStateOperationServiceCollec
     }
 
     @Override
-    default Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState);
-    }
-
-    @Override
-    default Future<ActionDescription> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
-        return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState, unitType);
-    }
-
-    @Override
-    default ColorStateType.ColorState getColorState() throws NotAvailableException {
-        return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).getColorState();
-    }
-
-    @Override
     default ColorStateType.ColorState getColorState(final UnitType unitType) throws NotAvailableException {
         return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).getColorState(unitType);
-    }
-
-    @Override
-    default Future<ActionDescription> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState);
-    }
-
-    @Override
-    default Future<ActionDescription> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
-        return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
-    }
-
-    @Override
-    default Future<ActionDescription> setPowerState(final PowerState.State state) throws CouldNotPerformException {
-        return setPowerState(PowerState.newBuilder().setValue(state).build());
-    }
-
-    @Override
-    default Future<ActionDescription> setPowerState(final PowerState.State state, final UnitType unitType) throws CouldNotPerformException {
-        return setPowerState(PowerState.newBuilder().setValue(state).build(), unitType);
-    }
-
-    @Override
-    default PowerState getPowerState() throws NotAvailableException {
-        return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceType.POWER_STATE_SERVICE)).getPowerState();
     }
 
     @Override
@@ -158,38 +87,8 @@ public interface ServiceAggregator extends BrightnessStateOperationServiceCollec
     }
 
     @Override
-    default Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-        return ((StandbyStateOperationServiceCollection) getServiceRemote(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(standbyState);
-    }
-
-    @Override
-    default Future<ActionDescription> setStandbyState(final StandbyState state, UnitType unitType) throws CouldNotPerformException {
-        return ((StandbyStateOperationServiceCollection) getServiceRemote(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(state, unitType);
-    }
-
-    @Override
-    default StandbyState getStandbyState() throws NotAvailableException {
-        return ((StandbyStateOperationServiceCollection) getServiceRemote(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState();
-    }
-
-    @Override
     default StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException {
         return ((StandbyStateOperationServiceCollection) getServiceRemote(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState(unitType);
-    }
-
-    @Override
-    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
-        return ((TargetTemperatureStateOperationServiceCollection) getServiceRemote(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState);
-    }
-
-    @Override
-    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
-        return ((TargetTemperatureStateOperationServiceCollection) getServiceRemote(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState, unitType);
-    }
-
-    @Override
-    default TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        return ((TargetTemperatureStateOperationServiceCollection) getServiceRemote(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).getTargetTemperatureState();
     }
 
     @Override
@@ -198,18 +97,8 @@ public interface ServiceAggregator extends BrightnessStateOperationServiceCollec
     }
 
     @Override
-    default MotionStateType.MotionState getMotionState() throws NotAvailableException {
-        return ((MotionStateProviderServiceCollection) getServiceRemote(ServiceType.MOTION_STATE_SERVICE)).getMotionState();
-    }
-
-    @Override
     default MotionStateType.MotionState getMotionState(final UnitType unitType) throws NotAvailableException {
         return ((MotionStateProviderServiceCollection) getServiceRemote(ServiceType.MOTION_STATE_SERVICE)).getMotionState(unitType);
-    }
-
-    @Override
-    default AlarmStateType.AlarmState getSmokeAlarmState() throws NotAvailableException {
-        return ((SmokeAlarmStateProviderServiceCollection) getServiceRemote(ServiceType.SMOKE_ALARM_STATE_SERVICE)).getSmokeAlarmState();
     }
 
     @Override
@@ -218,18 +107,8 @@ public interface ServiceAggregator extends BrightnessStateOperationServiceCollec
     }
 
     @Override
-    default SmokeStateType.SmokeState getSmokeState() throws NotAvailableException {
-        return ((SmokeStateProviderServiceCollection) getServiceRemote(ServiceType.SMOKE_STATE_SERVICE)).getSmokeState();
-    }
-
-    @Override
     default SmokeStateType.SmokeState getSmokeState(final UnitType unitType) throws NotAvailableException {
         return ((SmokeStateProviderServiceCollection) getServiceRemote(ServiceType.SMOKE_STATE_SERVICE)).getSmokeState(unitType);
-    }
-
-    @Override
-    default TemperatureState getTemperatureState() throws NotAvailableException {
-        return ((TemperatureStateProviderServiceCollection) getServiceRemote(ServiceType.TEMPERATURE_STATE_SERVICE)).getTemperatureState();
     }
 
     @Override
@@ -238,28 +117,13 @@ public interface ServiceAggregator extends BrightnessStateOperationServiceCollec
     }
 
     @Override
-    default PowerConsumptionStateType.PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        return ((PowerConsumptionStateProviderServiceCollection) getServiceRemote(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).getPowerConsumptionState();
-    }
-
-    @Override
-    default PowerConsumptionStateType.PowerConsumptionState getPowerConsumptionState(UnitType unitType) throws NotAvailableException {
+    default PowerConsumptionState getPowerConsumptionState(UnitType unitType) throws NotAvailableException {
         return ((PowerConsumptionStateProviderServiceCollection) getServiceRemote(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).getPowerConsumptionState(unitType);
     }
 
     @Override
-    default TamperStateType.TamperState getTamperState() throws NotAvailableException {
-        return ((TamperStateProviderServiceCollection) getServiceRemote(ServiceType.TAMPER_STATE_SERVICE)).getTamperState();
-    }
-
-    @Override
-    default TamperStateType.TamperState getTamperState(final UnitType unitType) throws NotAvailableException {
+    default TamperState getTamperState(final UnitType unitType) throws NotAvailableException {
         return ((TamperStateProviderServiceCollection) getServiceRemote(ServiceType.TAMPER_STATE_SERVICE)).getTamperState(unitType);
-    }
-
-    @Override
-    default IlluminanceStateType.IlluminanceState getIlluminanceState() throws NotAvailableException {
-        return ((IlluminanceStateProviderServiceCollection) getServiceRemote(ServiceType.ILLUMINANCE_STATE_SERVICE)).getIlluminanceState();
     }
 
     @Override
@@ -273,22 +137,7 @@ public interface ServiceAggregator extends BrightnessStateOperationServiceCollec
     }
 
     @Override
-    default EmphasisStateType.EmphasisState getEmphasisState() throws NotAvailableException {
-        return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).getEmphasisState();
-    }
-
-    @Override
     default EmphasisStateType.EmphasisState getEmphasisState(final UnitType unitType) throws NotAvailableException {
         return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).getEmphasisState(unitType);
-    }
-
-    @Override
-    default Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
-        return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).setEmphasisState(emphasisState);
-    }
-
-    @Override
-    default Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState, final UnitType unitType) throws CouldNotPerformException {
-        return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).setEmphasisState(emphasisState, unitType);
     }
 }
