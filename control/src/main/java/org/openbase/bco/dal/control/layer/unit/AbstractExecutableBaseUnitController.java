@@ -60,7 +60,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
 
     private final SyncObject activationLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
-    private Future<Void> executionFuture;
+    private Future<ActionDescription> executionFuture;
     private final ActivationStateOperationServiceImpl activationStateOperationService;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
@@ -129,7 +129,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
 
     protected abstract boolean isAutostartEnabled() throws CouldNotPerformException;
 
-    protected abstract void execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException;
+    protected abstract ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException;
 
     protected abstract void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException;
 
@@ -143,7 +143,6 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
 
         @Override
         public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-
             logger.trace("setActivationState: {}", activationState.getValue().name());
             synchronized (executionLock) {
 
@@ -170,9 +169,10 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                         return CompletableFuture.completedFuture(null);
                     }
 
+                    //TODO: making this a separate thread makes it really difficult to wait for states from scenes in unit tests
                     executionFuture = GlobalCachedExecutorService.submit(() -> {
                         try {
-                            execute(activationState);
+                            return execute(activationState);
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
 
@@ -187,9 +187,10 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                                 }
                                 applyDataUpdate(fallbackActivationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
                             }
+                            return activationState.getResponsibleAction();
                         }
-                        return null;
                     });
+                    return executionFuture;
                 } else {
                     if (isExecuting()) {
                         cancelExecution();
@@ -213,7 +214,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                     }
                 }
             }
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.completedFuture(activationState.getResponsibleAction());
         }
 
         @Override

@@ -25,23 +25,13 @@ package org.openbase.bco.dal.lib.layer.unit.location;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
-import org.openbase.bco.dal.lib.layer.unit.ServiceAggregator;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
-import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
-import org.openbase.type.domotic.service.ServiceTemplateType;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.Future;
 
 /**

@@ -27,6 +27,7 @@ import org.openbase.bco.dal.remote.layer.unit.AbstractAggregatedBaseUnitRemote;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.state.*;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.location.LocationDataType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
@@ -35,6 +36,8 @@ import org.openbase.type.vision.HSBColorType;
 import org.openbase.type.vision.RGBColorType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+
+import java.util.List;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -66,5 +69,10 @@ public class UnitGroupRemote extends AbstractAggregatedBaseUnitRemote<UnitGroupD
 
     public UnitGroupRemote() {
         super(UnitGroupData.class);
+    }
+
+    @Override
+    protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
+        return unitConfig.getUnitGroupConfig().getMemberIdList();
     }
 }

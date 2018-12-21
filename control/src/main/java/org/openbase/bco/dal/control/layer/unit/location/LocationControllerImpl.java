@@ -136,6 +136,11 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
     }
 
     @Override
+    protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
+        return unitConfig.getLocationConfig().getUnitIdList();
+    }
+
+    @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         if (isActive()) {
             return;

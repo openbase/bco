@@ -630,21 +630,16 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
         try {
-            if (actionDescriptionBuilder.getCancel()) {
-                logger.warn("Cancel action {} via service remote", actionDescriptionBuilder.getId());
-            }
-
             if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            final List<Future> actionDescriptionList = new ArrayList<>();
+            if (!actionDescriptionBuilder.getCancel()) {
+                actionDescriptionBuilder.setId(UUID.randomUUID().toString());
+            }
 
+            final List<Future<ActionDescription>> actionTaskList = new ArrayList<>();
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
-                if (actionDescriptionBuilder.getCancel()) {
-                    logger.warn("Send cancel action {} to unit {}", actionDescriptionBuilder.getId(), unitRemote);
-                }
-
                 final Builder builder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
                 builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
@@ -652,9 +647,18 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 builder.addActionCause(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
 
                 // apply action on remote
-                actionDescriptionList.add(unitRemote.applyAction(builder.build()));
+                actionTaskList.add(unitRemote.applyAction(builder.build()));
             }
-            return GlobalCachedExecutorService.allOf(actionDescriptionBuilder.build(), actionDescriptionList);
+            return GlobalCachedExecutorService.allOf(input -> {
+                for (final Future<ActionDescription> actionTask : input) {
+                    try {
+                        actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(actionTask.get()));
+                    } catch (ExecutionException ex) {
+                        throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+                    }
+                }
+                return actionDescriptionBuilder.build();
+            }, actionTaskList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
@@ -713,7 +717,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             throw new VerificationFailedException("Service type is not compatible to given action config!");
         }
 
-        final List<Future<AuthenticatedValue>> ActionDescriptionList = new ArrayList<>();
+        if (!actionDescriptionBuilder.getCancel()) {
+            actionDescriptionBuilder.setId(UUID.randomUUID().toString());
+        }
+        final List<Future<AuthenticatedValue>> actionTaskList = new ArrayList<>();
 
         for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
             final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
@@ -732,7 +739,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
 
             // apply action on remote
-            ActionDescriptionList.add(unitRemote.applyActionAuthenticated(authValue));
+            actionTaskList.add(unitRemote.applyActionAuthenticated(authValue));
         }
 
         return GlobalCachedExecutorService.allOf(input -> {
@@ -743,7 +750,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                     // validate responses and decrypt results
                     if (sessionKey != null) {
                         AuthenticationClientHandler.handleServiceServerResponse(sessionKey, authenticatedValue.getTicketAuthenticatorWrapper(), unitAuthenticatedValue.getTicketAuthenticatorWrapper());
-                        unitActionResponse = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), sessionKey, ActionDescription.class);
+                        unitActionResponse = EncryptionHelper.decryptSymmetric(unitAuthenticatedValue.getValue(), sessionKey, ActionDescription.class);
                     } else {
                         unitActionResponse = ActionDescription.parseFrom(unitAuthenticatedValue.getValue());
                     }
@@ -762,7 +769,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 responseAuthValue.setValue(actionDescriptionBuilder.build().toByteString());
             }
             return authenticatedValue;
-        }, ActionDescriptionList);
+        }, actionTaskList);
     }
 
     /**

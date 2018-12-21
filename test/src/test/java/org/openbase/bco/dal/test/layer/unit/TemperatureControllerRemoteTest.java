@@ -23,7 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
-import org.openbase.bco.dal.control.layer.unit.TemperatureControllerController;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
@@ -75,7 +75,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
         System.out.println("setTargetTemperature");
         double temperature = 42.0F;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-        temperatureControllerRemote.setTargetTemperatureState(temperatureState).get();
+        Actions.waitForExecution(temperatureControllerRemote.setTargetTemperatureState(temperatureState));
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperature, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1);
     }
@@ -105,7 +105,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
         System.out.println("getTemperature");
         double temperature = 37.0F;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-        ((TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId()).applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureControllerRemote.getTemperatureState().getTemperature(), 0.1);
     }

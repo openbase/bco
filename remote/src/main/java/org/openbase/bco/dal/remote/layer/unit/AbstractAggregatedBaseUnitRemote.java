@@ -28,80 +28,86 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
+import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.remote.layer.service.ServiceRemoteFactoryImpl;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AbstractAggregatedBaseUnitRemote<D extends Message> extends AbstractUnitRemote<D> implements MultiUnit<D> {
+public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extends AbstractUnitRemote<D> implements MultiUnit<D> {
 
-    private final ServiceRemoteManager<D> serviceRemoteManager;
+    private final Map<ServiceType, List<UnitConfig>> serviceTypeUnitMap;
 
     public AbstractAggregatedBaseUnitRemote(final Class<D> dataClass) {
         super(dataClass);
-        this.serviceRemoteManager = new ServiceRemoteManager<D>(this) {
-            @Override
-            protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException {
-                return getSupportedServiceTypes();
-            }
-
-            @Override
-            protected void notifyServiceUpdate(Unit source, Message data) {
-                // anything needed here?
-            }
-        };
+        this.serviceTypeUnitMap = new HashMap<>();
     }
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
+
+        serviceTypeUnitMap.clear();
+        for (final String aggregatedUnitId : getAggregatedUnitIds(unitConfig)) {
+            final UnitConfig aggregatedUnitConfig = Registries.getUnitRegistry().getUnitConfigById(aggregatedUnitId);
+            for (final ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(aggregatedUnitConfig.getUnitType()).getServiceDescriptionList()) {
+                if (!serviceTypeUnitMap.containsKey(serviceDescription.getServiceType())) {
+                    serviceTypeUnitMap.put(serviceDescription.getServiceType(), new ArrayList<>());
+                }
+                serviceTypeUnitMap.get(serviceDescription.getServiceType()).add(aggregatedUnitConfig);
+            }
+        }
+
         return unitConfig;
     }
 
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        serviceRemoteManager.activate();
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        serviceRemoteManager.deactivate();
-        super.deactivate();
-    }
+    protected abstract List<String> getAggregatedUnitIds(final UnitConfig unitConfig);
 
     @Override
     public boolean isServiceAvailable(ServiceType serviceType) {
-        return serviceRemoteManager.isServiceAvailable(serviceType);
-    }
-
-    @Override
-    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.recordSnapshot();
-    }
-
-    @Override
-    public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.recordSnapshot(unitType);
+        try {
+            return serviceTypeUnitMap.keySet().contains(serviceType) || !isServiceAggregated(serviceType);
+        } catch (NotAvailableException e) {
+            return false;
+        }
     }
 
     @Override
     public ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
-        return serviceRemoteManager.getServiceRemote(serviceType);
+        if (!isServiceAvailable(serviceType)) {
+            throw new NotAvailableException("ServiceRemote for serviceType[" + serviceType.name() + "]");
+        }
+        try {
+            return ServiceRemoteFactoryImpl.getInstance().newInitializedInstance(serviceType, serviceTypeUnitMap.get(serviceType), true);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ServiceRemote of serviceType[" + serviceType.name() + "]", ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new NotAvailableException("ServiceRemote of serviceType[" + serviceType.name() + "]", ex);
+        }
     }
 
     /**
@@ -148,7 +154,7 @@ public class AbstractAggregatedBaseUnitRemote<D extends Message> extends Abstrac
      * @throws CouldNotPerformException if the remote task could not be created.
      */
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ServiceType serviceType) throws CouldNotPerformException {
-        if (isServiceAggregated(serviceType)) {
+        if (!isServiceAggregated(serviceType)) {
             return super.applyActionAuthenticated(authenticatedValue);
         }
 
@@ -157,5 +163,54 @@ public class AbstractAggregatedBaseUnitRemote<D extends Message> extends Abstrac
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
+    }
+
+    @Override
+    public Future<Snapshot> recordSnapshot() {
+        return recordSnapshot(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public Future<Snapshot> recordSnapshot(final UnitType unitType) {
+        return GlobalCachedExecutorService.submit(() -> {
+            final Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
+            final Set<UnitRemote> unitRemoteSet = new HashSet<>();
+            for (final String aggregatedUnitId : getAggregatedUnitIds(getConfig())) {
+                UnitConfig aggregatedUnitConfig = Registries.getUnitRegistry().getUnitConfigById(aggregatedUnitId);
+                if (!UnitConfigProcessor.isDalUnit(aggregatedUnitConfig)) {
+                    continue;
+                }
+
+                if (unitType == UnitType.UNKNOWN || aggregatedUnitConfig.getUnitType() == unitType) {
+                    unitRemoteSet.add(Units.getUnit(aggregatedUnitId, false));
+                }
+            }
+
+            // take the snapshot
+            final Map<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureMap = new HashMap<>();
+            for (final UnitRemote<?> remote : unitRemoteSet) {
+                try {
+                    if (UnitProcessor.isDalUnit(remote)) {
+                        if (!remote.isConnected()) {
+                            throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
+                        }
+                        snapshotFutureMap.put(remote, remote.recordSnapshot());
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), logger, LogLevel.WARN);
+                }
+            }
+
+            // build snapshot
+            for (final Map.Entry<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureEntry : snapshotFutureMap.entrySet()) {
+                try {
+                    snapshotBuilder.addAllServiceStateDescription(snapshotFutureEntry.getValue().get(5, TimeUnit.SECONDS).getServiceStateDescriptionList());
+                } catch (ExecutionException | TimeoutException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + snapshotFutureEntry.getKey().getLabel(), ex), logger);
+                }
+            }
+
+            return snapshotBuilder.build();
+        });
     }
 }

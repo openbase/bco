@@ -21,28 +21,32 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.concurrent.Future;
+
 /**
- *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public interface EmphasisStateOperationServiceCollection extends EmphasisStateOperationService {
 
-    public Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState, final UnitType unitType) throws CouldNotPerformException;
+    default Future<ActionDescription> setEmphasisState(final EmphasisState emphasisState, final UnitType unitType) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, unitType));
+    }
 
     /**
      * Returns the average emphasis value for a collection of brightnessServices.
      *
      * @return
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
@@ -54,7 +58,9 @@ public interface EmphasisStateOperationServiceCollection extends EmphasisStateOp
      * Returns the average emphasis value for a collection of brightnessServices with given unitType.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     EmphasisState getEmphasisState(final UnitType unitType) throws NotAvailableException;

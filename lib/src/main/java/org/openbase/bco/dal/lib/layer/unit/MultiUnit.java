@@ -81,6 +81,10 @@ public interface MultiUnit<DATA extends Message> extends Unit<DATA>, ServiceAggr
      */
     default boolean isServiceAggregated(final ServiceType serviceType) throws NotAvailableException {
         for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+            if (serviceDescription.getServiceType() != serviceType) {
+                continue;
+            }
+
             if (serviceDescription.getAggregated()) {
                 return true;
             }

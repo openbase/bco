@@ -21,29 +21,33 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.concurrent.Future;
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.com">Marian Pohling</a>
  */
 public interface ColorStateOperationServiceCollection extends ColorStateOperationService {
 
-    public Future<ActionDescription> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException;
+    default Future<ActionDescription> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(colorState, ServiceType.COLOR_STATE_SERVICE, unitType));
+    }
 
     /**
      * Computes the average RGB color for the underlying services.
      *
      * @return
+     *
      * @throws NotAvailableException
      */
     @Override
@@ -55,8 +59,10 @@ public interface ColorStateOperationServiceCollection extends ColorStateOperatio
      * Computes the average RGB color for the underlying services with given unitType.
      *
      * @param unitType
+     *
      * @return
+     *
      * @throws NotAvailableException
      */
-    public ColorState getColorState(final UnitType unitType) throws NotAvailableException;
+    ColorState getColorState(final UnitType unitType) throws NotAvailableException;
 }

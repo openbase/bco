@@ -23,6 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.RollerShutterRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
@@ -68,8 +69,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         BlindState state = BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
-        rollerShutterRemote.setBlindState(state).get();
-        rollerShutterRemote.requestData().get();
+        Actions.waitForExecution(rollerShutterRemote.setBlindState(state));
         assertEquals("Shutter movement state has not been set in time!", state.getValue(), rollerShutterRemote.getData().getBlindState().getValue());
     }
 

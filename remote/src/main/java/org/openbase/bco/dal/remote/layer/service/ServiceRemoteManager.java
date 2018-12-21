@@ -384,6 +384,11 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
             final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
 
+            if (unitRemote == null) {
+                LOGGER.error("Could not resolve unit {} from snapshot", serviceStateDescription.getUnitId());
+                continue;
+            }
+
 
             final Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateDescription);
             final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder);

@@ -46,6 +46,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -92,10 +93,12 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         };
     }
 
+    protected abstract List<String> getAggregatedUnitIds(final UnitConfig unitConfig);
+
     @Override
     public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
+        serviceRemoteManager.applyConfigUpdate(getAggregatedUnitIds(unitConfig));
         // if already active than update the current state.
         if (isActive()) {
             updateUnitData();
@@ -167,10 +170,15 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     }
 
     protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
-        if (isServiceAggregated(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
+        if (!isServiceAvailable(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
+            throw new NotAvailableException("ServiceType[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available in unitAggregator[" + this + "]");
+        }
+
+        if (!isServiceAggregated(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
             return super.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
         }
 
+        ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
         final byte[] sessionKey = (authenticationBaseData != null) ? authenticationBaseData.getSessionKey() : null;
         serviceRemoteManager.applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey).get();
         return actionDescriptionBuilder.build();

@@ -10,19 +10,19 @@ package org.openbase.bco.dal.control.action;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.action.Action;
@@ -93,6 +93,9 @@ public class ActionImpl implements SchedulableAction {
 
             // verify and prepare action description
             serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, true);
+            // set actions description as responsible in service state
+            final FieldDescriptor responsibleActionField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+            serviceState = serviceState.toBuilder().setField(responsibleActionField, actionDescriptionBuilder.build()).build();
 
             // since its an action it has to be an operation service pattern
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
@@ -199,14 +202,8 @@ public class ActionImpl implements SchedulableAction {
 
     private void setRequestedState() throws CouldNotPerformException {
         try (ClosableDataBuilder dataBuilder = unit.getDataBuilder(this)) {
-
-            // set the responsible action for the service attribute
-            Message.Builder serviceStateBuilder = serviceState.toBuilder();
-            Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-            serviceStateBuilder.setField(fieldDescriptor, actionDescriptionBuilder.build());
-
-            // set the updated service attribute as requested state in the unit data builder
-            Services.invokeServiceMethod(serviceDescription.getServiceType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceStateBuilder);
+            // set the new service attribute as requested state in the unit data builder
+            Services.invokeServiceMethod(serviceDescription.getServiceType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceState);
         }
     }
 
