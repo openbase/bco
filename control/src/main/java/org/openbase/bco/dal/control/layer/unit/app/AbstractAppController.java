@@ -21,13 +21,19 @@ package org.openbase.bco.dal.control.layer.unit.app;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.control.layer.unit.AbstractAuthorizedBaseUnitController;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
+import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
+import org.openbase.type.domotic.unit.app.AppDataType.AppData.Builder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -41,7 +47,7 @@ import java.util.List;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractAppController extends AbstractExecutableBaseUnitController<AppData, AppData.Builder> implements AppController {
+public abstract class AbstractAppController extends AbstractAuthorizedBaseUnitController<AppData, Builder> implements AppController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
@@ -65,6 +71,14 @@ public abstract class AbstractAppController extends AbstractExecutableBaseUnitCo
             throw new NotAvailableException("ServiceFactory", new NotSupportedException("Unit hosting", this));
         }
         return operationServiceFactory;
+    }
+
+    @Override
+    protected ActionParameter.Builder getActionParameterTemplate(final UnitConfig config) throws InterruptedException, CouldNotPerformException {
+        final AppClass appClass = Registries.getClassRegistry(true).getAppClassById(config.getAppConfig().getAppClassId());
+        return ActionParameter.newBuilder()
+                .addAllCategory(appClass.getCategoryList())
+                .setPriority(appClass.getPriority());
     }
 
     @Override

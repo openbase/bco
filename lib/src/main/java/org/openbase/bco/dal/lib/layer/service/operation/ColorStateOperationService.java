@@ -56,6 +56,18 @@ public interface ColorStateOperationService extends OperationService, ColorState
         return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(colorState, ServiceType.COLOR_STATE_SERVICE)));
     }
 
+    default Future<ActionDescription> setColor(final HSBColor color, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(color).build(), actionParameter);
+    }
+
+    default Future<ActionDescription> setColor(final Color color, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return setColorState(ColorState.newBuilder().setColor(color).build(), actionParameter);
+    }
+
+    default Future<ActionDescription> setColor(final RGBColor color, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return setColor(Color.newBuilder().setType(Color.Type.RGB).setRgbColor(color).build(), actionParameter);
+    }
+
     @RPCMethod(legacy = true)
     default Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
         return setColor(DEFAULT_NEUTRAL_WHITE);
@@ -91,4 +103,5 @@ public interface ColorStateOperationService extends OperationService, ColorState
             throw new CouldNotTransformException("Could not transform " + java.awt.Color.class.getName() + " to " + HSBColor.class.getName() + "!", ex);
         }
     }
+    // todo release: remove deprecation.
 }

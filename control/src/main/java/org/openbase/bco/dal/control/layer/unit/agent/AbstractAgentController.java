@@ -25,6 +25,7 @@ package org.openbase.bco.dal.control.layer.unit.agent;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.control.layer.unit.AbstractAuthorizedBaseUnitController;
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -36,6 +37,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData.Builder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
@@ -56,92 +58,25 @@ import java.util.concurrent.ExecutionException;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractAgentController extends AbstractExecutableBaseUnitController<AgentData, AgentData.Builder> implements AgentController {
+public abstract class AbstractAgentController extends AbstractAuthorizedBaseUnitController<AgentData, Builder> implements AgentController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
-    private ActionParameter defaultActionParameter;
-    private String authenticationToken = null;
-
     public AbstractAgentController(final Class unitClass) throws InstantiationException {
         super(unitClass, AgentDataType.AgentData.newBuilder());
     }
 
     @Override
-    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        if (authenticationToken == null) {
-            authenticationToken = requestAuthenticationToken(config);
-        }
-
-        // update default action parameter
+    protected ActionParameter.Builder getActionParameterTemplate(final UnitConfig config) throws InterruptedException, CouldNotPerformException {
         final AgentClass agentClass = Registries.getClassRegistry(true).getAgentClassById(config.getAgentConfig().getAgentClassId());
-        defaultActionParameter = ActionParameter.newBuilder()
+        return ActionParameter.newBuilder()
                 .addAllCategory(agentClass.getCategoryList())
                 .setPriority(agentClass.getPriority())
                 .setSchedulable(agentClass.getSchedulable())
-                .setInterruptible(agentClass.getInterruptible())
-                .setAuthenticationToken(authenticationToken)
-                .setActionInitiator(ActionInitiator.newBuilder().setInitiatorId(config.getId()))
-                .build();
-        return super.applyConfigUpdate(config);
-    }
-
-    private String requestAuthenticationToken(final UnitConfig agentUnitConfig) throws CouldNotPerformException, InterruptedException {
-        try {
-            UnitConfig agentUser = null;
-            for (final UnitConfig userUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
-                MetaConfigPool metaConfigPool = new MetaConfigPool();
-                metaConfigPool.register(new MetaConfigVariableProvider(UnitConfigProcessor.getDefaultAlias(userUnitConfig, userUnitConfig.getId()), userUnitConfig.getMetaConfig()));
-                try {
-                    String unitId = metaConfigPool.getValue(UnitUserCreationPlugin.UNIT_ID_KEY);
-                    if (unitId.equalsIgnoreCase(agentUnitConfig.getId())) {
-                        agentUser = userUnitConfig;
-                        break;
-                    }
-                } catch (NotAvailableException ex) {
-                    // do nothing
-                }
-            }
-
-            if (agentUser == null) {
-                throw new NotAvailableException("User for agent " + UnitConfigProcessor.getDefaultAlias(agentUnitConfig, agentUnitConfig.getId()));
-            }
-
-            final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(agentUser.getId()).build();
-            final SessionManager sessionManager = new SessionManager();
-            sessionManager.login(agentUser.getId());
-            final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null, null);
-            return new AuthenticatedValueFuture<>(
-                    Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
-                    String.class,
-                    authenticatedValue.getTicketAuthenticatorWrapper(),
-                    sessionManager).get();
-        } catch (CouldNotPerformException | ExecutionException ex) {
-            throw new CouldNotPerformException("Could not create authentication token for agent " + UnitConfigProcessor.getDefaultAlias(agentUnitConfig, agentUnitConfig.getId()), ex);
-        }
-    }
-
-    private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
-
-    protected ActionParameter.Builder generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceArgumentBuilder) throws CouldNotPerformException {
-        final Message serviceArgument = serviceArgumentBuilder.build();
-        try {
-            return defaultActionParameter.toBuilder()
-                .setServiceStateDescription(ServiceStateDescription.newBuilder()
-                .setServiceType(serviceType)
-                .setUnitType(unitType)
-                .setServiceAttributeType(protoBufJSonProcessor.getServiceAttributeType(serviceArgument))
-                .setServiceAttribute(protoBufJSonProcessor.serialize(serviceArgument)));
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate action!", ex);
-        }
-    }
-
-    protected ActionParameter getDefaultActionParameter() {
-        return defaultActionParameter;
+                .setInterruptible(agentClass.getInterruptible());
     }
 
     @Override
