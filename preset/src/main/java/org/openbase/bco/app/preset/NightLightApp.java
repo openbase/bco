@@ -23,6 +23,7 @@ package org.openbase.bco.app.preset;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
@@ -69,16 +70,17 @@ public class NightLightApp extends AbstractAppController {
 
     private SyncObject locationMapLock = new SyncObject("LocationMapLock");
 
-    private Map<Unit, ActionDescription> actionLocationMap;
+    private Map<Unit, ActionDescription> presentsActionLocationMap, absenceActionLocationMap;
     private Map<LocationRemote, Observer> locationMap;
 
     public NightLightApp() throws InstantiationException, InterruptedException {
         super(NightLightApp.class);
         this.locationMap = new HashMap<>();
-        this.actionLocationMap = new HashMap<>();
+        this.presentsActionLocationMap = new HashMap<>();
+        this.absenceActionLocationMap = new HashMap<>();
     }
 
-    public void update(final LocationRemote location, final Timeout timeout) {
+    private void update(final LocationRemote location, final Timeout timeout) {
         try {
 
             // init present state with main location.
@@ -96,28 +98,55 @@ public class NightLightApp extends AbstractAppController {
                 }
             }
 
+            final ActionDescription absenceActionDescription = absenceActionLocationMap.get(location);
+            final ActionDescription presentsActionDescription = presentsActionLocationMap.get(location);
             switch (presentState) {
                 case PRESENT:
                     if (timeout != null) {
                         timeout.restart();
                     }
+
+                    // if ongoing action skip the update.
+                    if(presentsActionDescription != null) {
+                        return;
+                    }
+
+                    // cancel absence actions
+                    if(absenceActionDescription != null) {
+                        location.cancelAction(absenceActionDescription);
+                        absenceActionLocationMap.remove(absenceActionDescription);
+                    }
+
                     if (location.getPowerState(UnitType.COLORABLE_LIGHT).getValue() != State.ON || !isColorReached(location.getColor().getHsbColor(), COLOR_ORANGE)) {
                     // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
-                        actionLocationMap.put(location, location.setColor(COLOR_ORANGE, getDefaultActionParameter()).get(1, TimeUnit.SECONDS));
+                        presentsActionLocationMap.put(location, location.setColor(COLOR_ORANGE, getDefaultActionParameter()).get(1, TimeUnit.SECONDS));
                     }
                     break;
                 case ABSENT:
+
+
+                    // if ongoing action skip the update.
+                    if(absenceActionDescription != null) {
+                        return;
+                    }
+
+                    // cancel presents actions
+                    if(presentsActionDescription != null) {
+                        location.cancelAction(presentsActionDescription);
+                        presentsActionLocationMap.remove(presentsActionDescription);
+                    }
+
                     if (location.getPowerState(UnitType.LIGHT).getValue() == State.ON && (timeout == null || timeout.isExpired() || !timeout.isActive())) {
                         // System.out.println("Location power State[" + location.getPowerState().getValue() + ". " + location.getPowerState(UnitType.LIGHT).getValue() + "]");
                         // System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
-                        actionLocationMap.put(location, location.setPowerState(State.OFF, UnitType.LIGHT, getDefaultActionParameter()).get(1, TimeUnit.SECONDS));
+                        absenceActionLocationMap.put(location, location.setPowerState(State.OFF, UnitType.LIGHT, getDefaultActionParameter()).get(1, TimeUnit.SECONDS));
                     }
                     break;
             }
         } catch (InterruptedException ex) {
             // skip
         } catch (CouldNotPerformException | TimeoutException | ExecutionException ex) {
-            ExceptionPrinter.printHistory("Could not switch light in night mode!", ex, LOGGER);
+            ExceptionPrinter.printHistory("Could not control light in "+location.getLabel("?")+" by night light!", ex, LOGGER);
         }
     }
 
@@ -178,6 +207,11 @@ public class NightLightApp extends AbstractAppController {
 
                     final LocationRemote remote = Units.getUnit(locationUnitConfig, false, Units.LOCATION);
 
+                    // skip locations without power services.
+                    if(!remote.isServiceAvailable(ServiceType.POWER_STATE_SERVICE)) {
+                        continue remoteLocationLoop;
+                    }
+
                     final Timeout nightModeTimeout;
                     nightModeTimeout = new Timeout(10, TimeUnit.MINUTES) {
                         @Override
@@ -185,7 +219,6 @@ public class NightLightApp extends AbstractAppController {
                             update(remote, this);
                         }
                     };
-
 
                     final RecurrenceEventFilter<Void> eventFilter = new RecurrenceEventFilter<Void>(1000) {
                         @Override
@@ -204,7 +237,7 @@ public class NightLightApp extends AbstractAppController {
                 }
             }
         } catch (final InterruptedException ex) {
-            //todo remove me later
+            Thread.currentThread().interrupt();
         } catch (final CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update location map", ex);
         }
@@ -249,9 +282,15 @@ public class NightLightApp extends AbstractAppController {
                     ExceptionPrinter.printHistory("Could not remove observer from neighbor locations.", ex, LOGGER);
                 }
             });
-            for (Entry<Unit, ActionDescription> unitActionEntry : actionLocationMap.entrySet()) {
+            for (Entry<Unit, ActionDescription> unitActionEntry : presentsActionLocationMap.entrySet()) {
                 unitActionEntry.getKey().cancelAction(unitActionEntry.getValue());
             }
+            presentsActionLocationMap.clear();
+
+            for (Entry<Unit, ActionDescription> unitActionEntry : absenceActionLocationMap.entrySet()) {
+                unitActionEntry.getKey().cancelAction(unitActionEntry.getValue());
+            }
+            absenceActionLocationMap.clear();
         }
     }
 }
