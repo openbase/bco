@@ -328,17 +328,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(authorizationGroupUnitConfigRegistry, locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new AccessPermissionConsistencyHandler(), UnitConfig.class);
 
-        try {
-            if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupAdminAndBCOConsistencyHandler(aliasIdMap));
-                registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
-                registerConsistencyHandler(new GroupPermissionConsistencyHandler(aliasIdMap), UnitConfig.class);
-            }
-            if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
-                registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("JPProperty not available", ex);
+        if (JPService.getValue(JPAuthentication.class, true)) {
+            authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupAdminAndBCOConsistencyHandler(aliasIdMap));
+            registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
+            registerConsistencyHandler(new GroupPermissionConsistencyHandler(aliasIdMap), UnitConfig.class);
+        }
+        if (JPService.getValue(JPClearUnitPosition.class, false)) {
+            registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
         }
     }
 
