@@ -135,7 +135,11 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
 
     @Override
     public boolean isServiceAvailable(ServiceType serviceType) {
-        return serviceRemoteManager.isServiceAvailable(serviceType);
+        try {
+            return serviceRemoteManager.isServiceAvailable(serviceType) || !isServiceAggregated(serviceType);
+        } catch (NotAvailableException e) {
+            return false;
+        }
     }
 
     @Override
@@ -171,7 +175,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
 
     protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
         if (!isServiceAvailable(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
-            throw new NotAvailableException("ServiceType[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available in unitAggregator[" + this + "]");
+            throw new NotAvailableException("ServiceType[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for " + this);
         }
 
         if (!isServiceAggregated(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
