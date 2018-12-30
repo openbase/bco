@@ -509,7 +509,13 @@ public class ActionDescriptionProcessor {
             }
 
             if (!actionDescriptionBuilder.getServiceStateDescription().getUnitId().equals(unit.getId())) {
-                throw new InvalidStateException("Referred unit is not compatible with the registered unit controller!");
+                String targetUnitLabel;
+                try {
+                    targetUnitLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getServiceStateDescription().getUnitId()).getLabel());
+                } catch (CouldNotPerformException ex) {
+                    targetUnitLabel = actionDescriptionBuilder.getServiceStateDescription().getUnitId();
+                }
+                throw new InvalidStateException("Referred Unit["+targetUnitLabel+"] is not compatible with the registered UnitController["+unit.getLabel("?")+"]!");
             }
 
             for (ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {

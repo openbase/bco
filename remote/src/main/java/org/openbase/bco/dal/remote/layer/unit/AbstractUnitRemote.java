@@ -527,7 +527,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                     return LabelProcessor.getLabelByLanguage(user.getUserConfig().getLanguage(), getConfig().getLabel());
                 } catch (CouldNotPerformException ex) {
                     // as a backup use the first label as seen below
-                    //TODO: this should parse a value from the root location meta config that defines a default label
+                    //TODO: this should parse a value from the root location meta config that defines a default label lang.
                 }
             }
             return LabelProcessor.getBestMatch(getConfig().getLabel());

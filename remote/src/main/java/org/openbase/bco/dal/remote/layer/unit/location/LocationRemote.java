@@ -301,6 +301,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
 
     @Override
     protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
+        // todo: are those not to many because the included base units are not aggregated ones?
         return unitConfig.getLocationConfig().getUnitIdList();
     }
 }

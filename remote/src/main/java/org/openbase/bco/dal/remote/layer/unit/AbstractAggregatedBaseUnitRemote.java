@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
+import ch.qos.logback.classic.Logger;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -89,7 +90,7 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
     @Override
     public boolean isServiceAvailable(ServiceType serviceType) {
         try {
-            return serviceTypeUnitMap.keySet().contains(serviceType) || !isServiceAggregated(serviceType);
+            return serviceTypeUnitMap.containsKey(serviceType) || !isServiceAggregated(serviceType);
         } catch (NotAvailableException e) {
             return false;
         }
@@ -98,15 +99,15 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
     @Override
     public ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
         if (!isServiceAvailable(serviceType)) {
-            throw new NotAvailableException("ServiceRemote for serviceType[" + serviceType.name() + "]");
+            throw new NotAvailableException("ServiceRemote for serviceType[" + serviceType.name() + "] in not available for " + this);
         }
         try {
             return ServiceRemoteFactoryImpl.getInstance().newInitializedInstance(serviceType, serviceTypeUnitMap.get(serviceType), true);
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ServiceRemote of serviceType[" + serviceType.name() + "]", ex);
+            throw new NotAvailableException("ServiceRemote of serviceType[" + serviceType.name() + "] in not available for " + this, ex);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            throw new NotAvailableException("ServiceRemote of serviceType[" + serviceType.name() + "]", ex);
+            throw new NotAvailableException("ServiceRemote of serviceType[" + serviceType.name() + "] in not available for " + this, ex);
         }
     }
 
