@@ -24,8 +24,8 @@ package org.openbase.bco.registry.provider;
 
 import org.openbase.bco.registry.activity.lib.provider.ActivityRegistryProvider;
 import org.openbase.bco.registry.clazz.lib.provider.ClassRegistryProvider;
-import org.openbase.bco.registry.scene.lib.provider.UnitRegistryProvider;
 import org.openbase.bco.registry.template.lib.provider.TemplateRegistryProvider;
+import org.openbase.bco.registry.unit.lib.provider.UnitRegistryProvider;
 
 /**
  * Interface provides a collection of globally managed registry instances.
