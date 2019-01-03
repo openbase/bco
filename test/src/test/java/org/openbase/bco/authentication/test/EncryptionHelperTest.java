@@ -23,7 +23,7 @@ package org.openbase.bco.authentication.test;
  */
 import com.google.protobuf.ByteString;
 import java.security.KeyPair;
-import javax.crypto.BadPaddingException;
+
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.junit.After;
 import org.junit.AfterClass;

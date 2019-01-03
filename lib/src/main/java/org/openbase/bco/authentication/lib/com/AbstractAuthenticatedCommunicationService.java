@@ -23,8 +23,6 @@ package org.openbase.bco.authentication.lib.com;
  */
 
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
