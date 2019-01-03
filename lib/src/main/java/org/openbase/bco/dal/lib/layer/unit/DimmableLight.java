@@ -24,11 +24,22 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.dal.DimmableLightDataType.DimmableLightData;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface DimmableLight extends PowerStateOperationService, BrightnessStateOperationService {
-    
+public interface DimmableLight extends PowerStateOperationService, BrightnessStateOperationService, Unit<DimmableLightData> {
+
+    /**
+     * @return A list only containing the brightness state service type.
+     */
+    @Override
+    default List<ServiceType> getRepresentingOperationServiceTypes() {
+        return Collections.singletonList(ServiceType.BRIGHTNESS_STATE_SERVICE);
+    }
 }

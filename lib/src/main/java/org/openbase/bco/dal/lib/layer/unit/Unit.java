@@ -46,7 +46,6 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.VariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.slf4j.LoggerFactory;
 import org.openbase.rct.Transform;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
@@ -54,6 +53,7 @@ import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -66,10 +66,12 @@ import org.openbase.type.geometry.RotationType.Rotation;
 import org.openbase.type.geometry.TranslationType;
 import org.openbase.type.geometry.TranslationType.Translation;
 import org.openbase.type.spatial.ShapeType.Shape;
+import org.slf4j.LoggerFactory;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -209,17 +211,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
             try {
                 MultiException.ExceptionStack exceptionStack = null;
                 Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
-                for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                for (final ServiceType serviceType : getRepresentingOperationServiceTypes()) {
                     try {
-                        ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder().setServiceType(serviceDescription.getServiceType()).setUnitId(getId());
-
-                        // skip non operation services.
-                        if (serviceDescription.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
-                            continue;
-                        }
+                        ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder().setServiceType(serviceType).setUnitId(getId());
 
                         // load operation service attribute by related provider service
-                        Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+                        Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceType, ServiceTemplate.ServicePattern.PROVIDER, this);
 
                         // verify operation service state (e.g. ignore UNKNOWN service states)
                         try {
@@ -239,7 +236,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         }
                         serviceStateDescription.setUnitId(getId());
                         serviceStateDescription.setUnitType(getUnitTemplate().getType());
-                        serviceStateDescription.setServiceType(serviceDescription.getServiceType());
+                        serviceStateDescription.setServiceType(serviceType);
                         serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
                         // add action config
@@ -266,7 +263,32 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     @Override
     Future<Void> restoreSnapshot(final Snapshot snapshot);
 
+    /**
+     * Return a list of operation services representing this unit. The default implementation returns all available
+     * operation services and prints a warning if there are more than one. The returned services are used to record
+     * snapshots which should not contain all services because they can interact e.g. a colorable light is best
+     * represented by its color state and not by its power state. If both are returned, restoring snapshots leads
+     * to rejecting one of the actions.
+     *
+     * @return a list of operations service types best representing the unit.
+     *
+     * @throws NotAvailableException if the unit template is not available.
+     */
+    default List<ServiceType> getRepresentingOperationServiceTypes() throws NotAvailableException {
+        final List<ServiceType> serviceTypeList = new ArrayList<>();
+        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+            if (serviceDescription.getPattern() != ServicePattern.OPERATION) {
+                continue;
+            }
 
+            serviceTypeList.add(serviceDescription.getServiceType());
+        }
+
+        if (serviceTypeList.size() > 1) {
+            LoggerFactory.getLogger(Unit.class).warn("Unit {} has more than one operation service which should be handled by a specialized implementation!", this);
+        }
+        return serviceTypeList;
+    }
 
 
     /**

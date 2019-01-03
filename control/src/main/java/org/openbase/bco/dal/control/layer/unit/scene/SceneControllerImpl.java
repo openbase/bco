@@ -10,40 +10,44 @@ package org.openbase.bco.dal.control.layer.unit.scene;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.authentication.lib.AuthPair;
+import org.openbase.bco.authentication.lib.AuthenticationBaseData;
+import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
+import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
+import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.scene.SceneController;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
@@ -52,6 +56,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
 import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData;
+import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData.Builder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
@@ -60,13 +65,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * UnitConfig
  */
-public class SceneControllerImpl extends AbstractExecutableBaseUnitController<SceneData, SceneData.Builder> implements SceneController {
+public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, Builder> implements SceneController {
 
 
     public static final long ACTION_EXECUTION_TIMEOUT = 15000;
@@ -82,7 +88,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     private final Observer<DataProvider<ButtonData>, ButtonData> buttonObserver;
     private final RemoteActionPool requiredActionPool;
     private final RemoteActionPool optionalActionPool;
-
+    private final ActivationStateOperationServiceImpl activationStateOperationService;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
@@ -100,6 +106,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
             }
         };
+        this.activationStateOperationService = new ActivationStateOperationServiceImpl();
     }
 
     @Override
@@ -179,75 +186,103 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     }
 
     @Override
-    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        logger.warn("Execute scene {}", this);
-        final ActionDescription.Builder actionDescriptionBuilder = activationState.getResponsibleAction().toBuilder();
+    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
 
-        final MultiFuture<ActionDescription> requiredActionsFuture = requiredActionPool.execute(activationState.getResponsibleAction(), true);
-        final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(activationState.getResponsibleAction(), true);
-
-        // legacy handling
-        final ActivationState deactivated = ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
-        try {
-            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
-                requiredActionsFuture.get();
-                optionalActionsFuture.get();
-                stop(deactivated);
-                applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
-                return actionDescriptionBuilder.build();
-            }
-        } catch (JPNotAvailableException e) {
-            // just continue with default strategy
-        } catch (ExecutionException e) {
-            stop(deactivated);
-            applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
-            return actionDescriptionBuilder.build();
-        }
-        logger.error("perform action observation");
-
-        List<ActionDescription> actionList = new ArrayList<>();
-        try {
-            logger.warn("Call get on required");
-            actionList.addAll(requiredActionsFuture.get());
-            logger.warn("Call get on optional");
-            actionList.addAll(optionalActionsFuture.get());
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not submit all actions", ex);
-        }
-        for (ActionDescription actionDescription : actionList) {
-            if (actionDescription == null || actionDescription.getId().isEmpty()) {
-                logger.error("RemoteActionPool returned action {} without id", actionDescription);
-            }
-            actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(actionDescription));
+        // verify that the service type matches
+        if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
+            throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
         }
 
-        final Observer<RemoteAction, ActionDescription> requiredActionPoolObserver = new Observer<RemoteAction, ActionDescription>() {
-            @Override
-            public void update(RemoteAction source, ActionDescription data) throws Exception {
-                if (source.isDone() && source.isScheduled()) {
-                    requiredActionPool.removeActionDescriptionObserver(this);
-                    logger.error("deactivate scene because at least one required state can not be reached.");
-                    stop(deactivated);
-                    applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
-                }
-            }
-        };
+        // verify and prepare action description and retrieve the service state
+        final ActivationState.Builder activationState = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
+        activationState.setResponsibleAction(actionDescriptionBuilder.build());
 
-        requiredActionPool.addActionDescriptionObserver(requiredActionPoolObserver);
+        // publish new state as requested
+        try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setActivationStateRequested(activationState);
+        }
 
-        logger.error("Return action {}", actionDescriptionBuilder.build());
-        return actionDescriptionBuilder.build();
+        return activationStateOperationService.setActivationState(activationState.build()).get();
     }
 
-    @Override
-    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        logger.debug("Stop: {}", LabelProcessor.getBestMatch(getConfig().getLabel()));
+    private void stop() {
         requiredActionPool.stop();
         optionalActionPool.stop();
     }
 
-    @Override
-    protected boolean isAutostartEnabled() throws CouldNotPerformException {
-        return false;
+    private class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
+
+        @Override
+        public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+            final ActionDescription.Builder actionDescriptionBuilder = activationState.getResponsibleAction().toBuilder();
+            switch (activationState.getValue()) {
+                case DEACTIVE:
+                    stop();
+                    break;
+                case ACTIVE:
+                    final MultiFuture<ActionDescription> requiredActionsFuture = requiredActionPool.execute(activationState.getResponsibleAction(), true);
+                    final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(activationState.getResponsibleAction(), true);
+
+                    // legacy handling
+//                    final ActivationState deactivated = ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
+//                    try {
+//                        if (!JPService.getValue(JPUnitAllocation.class, true)) {
+//                            requiredActionsFuture.get();
+//                            optionalActionsFuture.get();
+//                            stop();
+//                            applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
+//                            return actionDescriptionBuilder.build();
+//                        }
+//                    } catch (ExecutionException ex) {
+//                        stop();
+//                        applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
+//                    }
+
+
+                    logger.error("perform action observation");
+
+                    List<ActionDescription> actionList = new ArrayList<>();
+                    try {
+                        actionList.addAll(requiredActionsFuture.get());
+                        actionList.addAll(optionalActionsFuture.get());
+                    } catch (ExecutionException ex) {
+                        throw new CouldNotPerformException("Could not submit all actions", ex);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
+
+                    for (final ActionDescription actionDescription : actionList) {
+                        if (actionDescription == null || actionDescription.getId().isEmpty()) {
+                            logger.error("RemoteActionPool returned action {} without id", actionDescription);
+                            continue;
+                        }
+                        actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(actionDescription));
+                    }
+
+                    final Observer<RemoteAction, ActionDescription> requiredActionPoolObserver = new Observer<RemoteAction, ActionDescription>() {
+                        @Override
+                        public void update(RemoteAction source, ActionDescription data) throws Exception {
+                            if (source.isDone() && source.isScheduled()) {
+                                requiredActionPool.removeActionDescriptionObserver(this);
+                                logger.warn("deactivate scene because at least one required state can not be reached.");
+                                stop();
+                                applyDataUpdate(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                            }
+                        }
+                    };
+                    requiredActionPool.addActionDescriptionObserver(requiredActionPoolObserver);
+
+                    logger.error("Return action {}", actionDescriptionBuilder.build());
+            }
+
+            applyDataUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE);
+            return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
+        }
+
+        @Override
+        public ServiceProvider getServiceProvider() {
+            return null;
+        }
     }
 }

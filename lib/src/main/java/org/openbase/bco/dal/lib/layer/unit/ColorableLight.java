@@ -25,11 +25,22 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ColorableLight extends ColorStateOperationService, BrightnessStateOperationService, PowerStateOperationService {
-    
+public interface ColorableLight extends ColorStateOperationService, BrightnessStateOperationService, PowerStateOperationService, Unit<ColorableLightData> {
+
+    /**
+     * @return A list only containing the color state service type.
+     */
+    @Override
+    default List<ServiceType> getRepresentingOperationServiceTypes() {
+        return Collections.singletonList(ServiceType.COLOR_STATE_SERVICE);
+    }
 }

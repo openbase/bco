@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit.scene;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -72,6 +72,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -176,23 +177,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
             ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder();
 
-            PowerState powerState = PowerState.newBuilder().setValue(POWER_ON).build();
-            serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
-            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(powerState));
-            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(powerState));
-            for (UnitConfig unitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
-                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-                    continue;
-                }
-
-                if (Registries.getTemplateRegistry().getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getUnitType()) || unitConfig.getUnitType() == UnitType.LIGHT || unitConfig.getUnitType() == UnitType.POWER_SWITCH) {
-                    serviceStateDescription.clearUnitId();
-                    serviceStateDescription.setUnitId(unitConfig.getId());
-                    serviceStateDescriptionList.add(serviceStateDescription.build());
-                    powerStateServiceRemote.init(unitConfig);
-                }
-            }
-
             ColorType.Color color = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(COLOR_VALUE).build();
             ColorState colorState = ColorState.newBuilder().setColor(color).build();
             serviceStateDescription.setServiceType(ServiceType.COLOR_STATE_SERVICE);
@@ -208,6 +192,23 @@ public class SceneRemoteTest extends AbstractBCOTest {
                     serviceStateDescription.setUnitId(unitConfig.getId());
                     serviceStateDescriptionList.add(serviceStateDescription.build());
                     colorStateServiceRemote.init(unitConfig);
+                }
+            }
+
+            PowerState powerState = PowerState.newBuilder().setValue(POWER_ON).build();
+            serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
+            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(powerState));
+            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(powerState));
+            for (UnitConfig unitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
+                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
+                }
+
+                if (Registries.getTemplateRegistry().getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getUnitType()) || unitConfig.getUnitType() == UnitType.LIGHT || unitConfig.getUnitType() == UnitType.POWER_SWITCH) {
+                    serviceStateDescription.clearUnitId();
+                    serviceStateDescription.setUnitId(unitConfig.getId());
+                    serviceStateDescriptionList.add(serviceStateDescription.build());
+                    powerStateServiceRemote.init(unitConfig);
                 }
             }
 
@@ -330,8 +331,13 @@ public class SceneRemoteTest extends AbstractBCOTest {
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
-        LOGGER.warn("Await scene execution....");
         SceneRemote sceneRemote = Units.getUnitsByLabel(SCENE_TEST, true, Units.SCENE).get(0);
+
+        //TODO scenes should only contain one action per unit because else one of the actions will always be rejected, there should be a consistency handler for this, have a look at recording snapshots in aggregated units
+        for (final ServiceStateDescription serviceStateDescription : sceneRemote.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
+            LOGGER.warn("Scene changes unit {} to state {}", serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
+        }
+        LOGGER.warn("Await scene execution....");
         Actions.waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
         LOGGER.warn("Scene executed....");
 

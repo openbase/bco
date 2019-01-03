@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -25,6 +25,7 @@ package org.openbase.bco.dal.remote.action;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -32,20 +33,23 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class RemoteActionPool {
 
@@ -104,6 +108,7 @@ public class RemoteActionPool {
 
     /**
      * Executes all previously registered actions within this pool while the given {@code causeActionDescription} is used as cause for each action.
+     *
      * @return a future object referring the submission state.
      */
     public MultiFuture<ActionDescription> execute() {
@@ -112,7 +117,9 @@ public class RemoteActionPool {
 
     /**
      * Executes all previously registered actions within this pool while the given {@code causeActionDescription} is used as cause for each action.
+     *
      * @param causeActionDescription refers the causing action of this execution.
+     *
      * @return a future object referring the submission state.
      */
     public MultiFuture<ActionDescription> execute(final ActionDescription causeActionDescription) {
@@ -121,11 +128,13 @@ public class RemoteActionPool {
 
     /**
      * Executes all previously registered actions within this pool while the given {@code causeActionDescription} is used as cause for each action.
-     * @param causeActionDescription refers the causing action of this execution.
+     *
+     * @param causeActionDescription       refers the causing action of this execution.
      * @param cancelSubmissionAfterTimeout If true, the submission of each action is verified and canceled after a timeout of {@code RemoteActionPool.ACTION_EXECUTION_TIMEOUT}.
+     *
      * @return a future object referring the submission state.
      */
-    public MultiFuture<ActionDescription> execute(final ActionDescription causeActionDescription, final boolean cancelSubmissionAfterTimeout){
+    public MultiFuture<ActionDescription> execute(final ActionDescription causeActionDescription, final boolean cancelSubmissionAfterTimeout) {
 
         final List<Future<ActionDescription>> submissionFutureList = new ArrayList<>();
 
@@ -136,6 +145,11 @@ public class RemoteActionPool {
             }
 
             for (final RemoteAction action : remoteActionList) {
+                try {
+                    LOGGER.warn("Execute action {}", action.getActionDescription().getServiceStateDescription());
+                } catch (NotAvailableException e) {
+                    //
+                }
                 submissionFutureList.add(action.execute(causeActionDescription));
             }
         }

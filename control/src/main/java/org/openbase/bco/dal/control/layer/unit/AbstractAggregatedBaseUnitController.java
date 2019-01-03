@@ -178,6 +178,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         }
     }
 
+    @Override
     protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
         if (!isServiceAvailable(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
             throw new NotAvailableException("ServiceType[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for " + this);
