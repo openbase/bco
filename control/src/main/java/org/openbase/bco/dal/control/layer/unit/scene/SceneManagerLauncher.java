@@ -40,7 +40,7 @@ public class SceneManagerLauncher extends AbstractLauncher<SceneManagerImpl> {
     public void loadProperties() {
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         main(args, SceneManager.class, SceneManagerLauncher.class);
     }

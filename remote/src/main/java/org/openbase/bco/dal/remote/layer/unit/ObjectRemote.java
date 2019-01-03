@@ -132,12 +132,12 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public <R> R callMethod(String methodName, long timeout) throws CouldNotPerformException, TimeoutException, InterruptedException {
+    public <R> R callMethod(String methodName, long timeout) throws CouldNotPerformException, InterruptedException {
         throw new NotSupportedException("callMethod[applyAction]", this);
     }
 
     @Override
-    public <R, T> R callMethod(String methodName, T argument, long timeout) throws CouldNotPerformException, TimeoutException, InterruptedException {
+    public <R, T> R callMethod(String methodName, T argument, long timeout) throws CouldNotPerformException, InterruptedException {
         throw new NotSupportedException("callMethod[applyAction]", this);
     }
 

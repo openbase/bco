@@ -53,7 +53,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @deprecated use newInitializedInstance instead!
      */
     @Deprecated
-    public AbstractIdentifiableRemote createAndInitUnitRemote(final UnitConfig config) throws CouldNotPerformException;
+    AbstractIdentifiableRemote createAndInitUnitRemote(final UnitConfig config) throws CouldNotPerformException;
 
     /**
      * Creates an unit remote out of the given unit configuration.
@@ -66,7 +66,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @deprecated use newInstance instead!
      */
     @Deprecated
-    public AbstractIdentifiableRemote createUnitRemote(final UnitConfig config) throws CouldNotPerformException;
+    AbstractIdentifiableRemote createUnitRemote(final UnitConfig config) throws CouldNotPerformException;
 
     /**
      * Creates and initializes an unit remote out of the given unit configuration.
@@ -78,7 +78,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @throws InterruptedException
      */
-    public UnitRemote newInitializedInstance(final UnitConfig config) throws CouldNotPerformException, InterruptedException;
+    UnitRemote newInitializedInstance(final UnitConfig config) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates an unit remote out of the given unit configuration.
@@ -90,7 +90,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @throws InstantiationException
      */
     @Override
-    public UnitRemote newInstance(final UnitConfig config) throws InstantiationException;
+    UnitRemote newInstance(final UnitConfig config) throws InstantiationException;
 
     /**
      * Creates an unit remote out of the given unit class.
@@ -102,7 +102,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      *
      * @throws InstantiationException
      */
-    public <R extends AbstractUnitRemote> R newInstance(final Class<R> unitRemoteClass) throws InstantiationException;
+    <R extends AbstractUnitRemote> R newInstance(final Class<R> unitRemoteClass) throws InstantiationException;
 
     /**
      * Creates an unit remote out of the given unit id.
@@ -116,7 +116,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
      * @throws InterruptedException   is thrown if the thread was externally interrupted.
      */
-    public UnitRemote newInstance(String unitId, long timeout, final TimeUnit timeUnit) throws InstantiationException, CouldNotPerformException, InterruptedException;
+    UnitRemote newInstance(String unitId, long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates an unit remote out of the given unit scope.
@@ -130,7 +130,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
      * @throws InterruptedException   is thrown if the thread was externally interrupted.
      */
-    public UnitRemote newInstance(ScopeType.Scope scope, long timeout, final TimeUnit timeUnit) throws InstantiationException, CouldNotPerformException, InterruptedException;
+    UnitRemote newInstance(ScopeType.Scope scope, long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes an unit remote out of the given unit scope and type declaration.
@@ -145,7 +145,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @throws InterruptedException     is thrown if the thread was externally interrupted.
      */
-    public UnitRemote newInitializedInstance(final Scope scope, final UnitType type) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
+    UnitRemote newInitializedInstance(final Scope scope, final UnitType type) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes an unit remote out of the given unit scope and class type.
@@ -161,7 +161,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @throws InterruptedException     is thrown if the thread was externally interrupted. is thrown if the thread was externally interrupted.
      */
-    public <R extends AbstractUnitRemote> R newInitializedInstance(final Scope scope, final Class<R> unitRemoteClass) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
+    <R extends AbstractUnitRemote> R newInitializedInstance(final Scope scope, final Class<R> unitRemoteClass) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes an unit remote out of the given unit scope.
@@ -177,7 +177,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @throws InterruptedException     is thrown if the thread was externally interrupted. is thrown if the thread was externally interrupted.
      */
-    public UnitRemote newInitializedInstance(final Scope scope, long timeout, final TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
+    UnitRemote newInitializedInstance(final Scope scope, long timeout, final TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes an unit remote out of the given unit id.
@@ -193,7 +193,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @throws InterruptedException     is thrown if the thread was externally interrupted.
      */
-    public UnitRemote newInitializedInstance(final String unitId, long timeout, final TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
+    UnitRemote newInitializedInstance(final String unitId, long timeout, final TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
 
     /**
      * Creates an unit remote out of the given unit configuration.
@@ -204,6 +204,6 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      *
      * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
      */
-    public UnitRemote newInstance(final UnitType type) throws InstantiationException;
+    UnitRemote newInstance(final UnitType type) throws InstantiationException;
 
 }

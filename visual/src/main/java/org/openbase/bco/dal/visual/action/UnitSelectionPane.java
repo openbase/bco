@@ -237,7 +237,7 @@ public class UnitSelectionPane extends AbstractFXController {
 
                 // precompute unit supported services
                 final Set<ServiceType> unitTypeSupportedServiceConfigList;
-                if (unitTemplateComboBox.getSelectionModel().getSelectedItem() != null && !((UnitTemplateHolder) unitTemplateComboBox.getSelectionModel().getSelectedItem()).isNotSpecified()) {
+                if (unitTemplateComboBox.getSelectionModel().getSelectedItem() != null && !unitTemplateComboBox.getSelectionModel().getSelectedItem().isNotSpecified()) {
                     unitTypeSupportedServiceConfigList = new TreeSet();
                     for (final ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitTemplateComboBox.getSelectionModel().getSelectedItem().getType()).getServiceDescriptionList()) {
                         unitTypeSupportedServiceConfigList.add(serviceDescription.getServiceType());

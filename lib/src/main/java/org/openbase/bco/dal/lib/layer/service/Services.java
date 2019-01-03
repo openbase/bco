@@ -366,7 +366,7 @@ public class Services extends ServiceStateProcessor {
     public static Method detectServiceMethod(final ServiceType serviceType, final String serviceMethodPrefix, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         String messageName = "?";
         try {
-            messageName = serviceMethodPrefix + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(serviceTempus.CURRENT.name(), ""));
+            messageName = serviceMethodPrefix + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(ServiceTempus.CURRENT.name(), ""));
             return instanceClass.getMethod(messageName, argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not detect service method[" + messageName + "]!", ex);
@@ -401,11 +401,11 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, servicePattern, ServiceTempus.CURRENT, instance, arguments);
     }
 
-    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Object instance, final Object... arguments) throws CouldNotPerformException, IllegalArgumentException {
         try {
             return detectServiceMethod(serviceType, servicePattern, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError | ClassCastException ex) {
@@ -421,15 +421,15 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static Message invokeProviderServiceMethod(final ServiceType serviceType, final Object instance) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Message invokeProviderServiceMethod(final ServiceType serviceType, final Object instance) throws CouldNotPerformException, IllegalArgumentException {
         return (Message) invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance);
     }
 
-    public static Message invokeProviderServiceMethod(final ServiceType serviceType, final ServiceTempus serviceTempus, final Object instance) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Message invokeProviderServiceMethod(final ServiceType serviceType, final ServiceTempus serviceTempus, final Object instance) throws CouldNotPerformException, IllegalArgumentException {
         return (Message) invokeServiceMethod(serviceType, ServicePattern.PROVIDER, serviceTempus, instance);
     }
 
-    public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, ServicePattern.OPERATION, instance, arguments);
     }
 
@@ -458,7 +458,7 @@ public class Services extends ServiceStateProcessor {
         return result;
     }
 
-    public static Boolean hasServiceState(final ServiceType serviceType, final ServiceTempus serviceTempus, final MessageOrBuilder instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+    public static Boolean hasServiceState(final ServiceType serviceType, final ServiceTempus serviceTempus, final MessageOrBuilder instance, final Object... arguments) throws CouldNotPerformException, IllegalArgumentException {
         try {
             return (Boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError ex) {
@@ -538,7 +538,7 @@ public class Services extends ServiceStateProcessor {
         return serviceState;
     }
 
-    public static Method detectServiceStateVerificationMethod(final Message serviceState) throws CouldNotPerformException, NotAvailableException {
+    public static Method detectServiceStateVerificationMethod(final Message serviceState) throws CouldNotPerformException {
         String methodName = "?";
         try {
             methodName = "verify" + serviceState.getClass().getSimpleName();

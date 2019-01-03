@@ -101,7 +101,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
 //
 //                }
 //            };
-            this.dataObserver = (Observer) (source, data) -> {
+            this.dataObserver = (source, data) -> {
                 updateDynamicComponents();
             };
             this.connectionStateObserver = (source, connectionState) -> {

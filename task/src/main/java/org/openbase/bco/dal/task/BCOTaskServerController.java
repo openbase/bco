@@ -42,7 +42,7 @@ public class BCOTaskServerController implements BCOTaskServer, Launchable<Void>,
 
     public BCOTaskServerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.instance = this;
+            instance = this;
             this.bcoTaskServer = new BCOTaskServerImpl();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

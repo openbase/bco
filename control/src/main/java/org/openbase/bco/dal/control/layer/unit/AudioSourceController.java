@@ -39,7 +39,7 @@ public class AudioSourceController extends AbstractDALUnitController<AudioSource
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AudioSourceData.getDefaultInstance()));
     }
 
-    public AudioSourceController(final HostUnitController hostUnitController, AudioSourceData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public AudioSourceController(final HostUnitController hostUnitController, AudioSourceData.Builder builder) throws CouldNotPerformException {
         super(AudioSourceController.class, hostUnitController, builder);
     }
 }

@@ -95,7 +95,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
 
         private final DoorState.State correspondingDoorState;
 
-        private ContactDoorPosition(DoorState.State correspondingDoorState) {
+        ContactDoorPosition(DoorState.State correspondingDoorState) {
             this.correspondingDoorState = correspondingDoorState;
         }
 
@@ -111,7 +111,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
 
         private final WindowState.State correspondingWindowState;
 
-        private ContactWindowPosition(WindowState.State correspondingWindowState) {
+        ContactWindowPosition(WindowState.State correspondingWindowState) {
             this.correspondingWindowState = correspondingWindowState;
         }
 
@@ -271,7 +271,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                     continue;
                 }
                 ContactState contactState = ((ContactStateProviderService) contactStateProvider).getContactState();
-                DoorState.State correspondingDoorState = contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState();
+                DoorState.State correspondingDoorState = contactDoorPositionMap.get(contactStateProvider.getId()).getCorrespondingDoorState();
                 switch (contactState.getValue()) {
                     case CLOSED:
                         if (doorState == null) {
@@ -324,7 +324,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                     continue;
                 }
                 ContactState contactState = ((ContactStateProviderService) contactStateProvider).getContactState();
-                WindowState.State correspondingWindowState = contactWindowPositionMap.get((String) contactStateProvider.getId()).getCorrespondingWindowState();
+                WindowState.State correspondingWindowState = contactWindowPositionMap.get(contactStateProvider.getId()).getCorrespondingWindowState();
                 switch (contactState.getValue()) {
                     case CLOSED:
                         if (windowState == null) {

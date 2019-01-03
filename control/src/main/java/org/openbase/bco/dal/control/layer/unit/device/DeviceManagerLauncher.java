@@ -50,7 +50,7 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerImpl> {
         JPService.registerProperty(JPProviderControlMode.class);
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         main(args, DeviceManager.class, DeviceManagerLauncher.class);
     }

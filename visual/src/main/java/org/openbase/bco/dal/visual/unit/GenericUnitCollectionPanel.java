@@ -63,9 +63,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         unitPanelMap = new HashMap<>();
         removedObserver = (source, data) -> {
             synchronized (unitPanelMapLock) {
-                if (unitPanelMap.containsKey(data)) {
-                    unitPanelMap.remove(data);
-                }
+                unitPanelMap.remove(data);
             }
             updateDynamicComponents();
         };

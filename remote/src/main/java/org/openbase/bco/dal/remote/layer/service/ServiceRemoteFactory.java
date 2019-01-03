@@ -106,7 +106,7 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
      * @throws InterruptedException     is thrown if the current thread is externally interrupted.
      */
     @Deprecated
-    public default AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+    default AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         return newInitializedInstance(serviceType, unitConfig);
     }
 
@@ -118,7 +118,7 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
      */
     @Deprecated
-    public default AbstractServiceRemote createServiceRemote(final ServiceType serviceType) throws CouldNotPerformException {
+    default AbstractServiceRemote createServiceRemote(final ServiceType serviceType) throws CouldNotPerformException {
         try {
             return newInstance(serviceType);
         } catch (InterruptedException ex) {
@@ -138,7 +138,7 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
      */
     @Deprecated
-    public default AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException {
+    default AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException {
         try {
             return newInitializedInstance(serviceType, unitConfigs);
         } catch (InterruptedException ex) {

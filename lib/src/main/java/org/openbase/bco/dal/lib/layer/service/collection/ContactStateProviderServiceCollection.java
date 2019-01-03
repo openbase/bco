@@ -53,5 +53,5 @@ public interface ContactStateProviderServiceCollection extends ContactStateProvi
      * @return
      * @throws NotAvailableException
      */
-    public ContactState getContactState(final UnitType unitType) throws NotAvailableException;
+    ContactState getContactState(final UnitType unitType) throws NotAvailableException;
 }

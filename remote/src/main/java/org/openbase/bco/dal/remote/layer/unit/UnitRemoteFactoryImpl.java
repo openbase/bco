@@ -204,7 +204,7 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * @throws InstantiationException {@inheritDoc}
      */
     @Override
-    public UnitRemote newInstance(String unitId, long timeout, TimeUnit timeUnit) throws InstantiationException, CouldNotPerformException, InterruptedException {
+    public UnitRemote newInstance(String unitId, long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         CachedUnitRegistryRemote.waitForData(timeout, timeUnit);
         return newInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
     }
@@ -219,7 +219,7 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * @throws InstantiationException {@inheritDoc}
      */
     @Override
-    public UnitRemote newInstance(ScopeType.Scope scope, long timeout, TimeUnit timeUnit) throws InstantiationException, CouldNotPerformException, InterruptedException {
+    public UnitRemote newInstance(ScopeType.Scope scope, long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         CachedUnitRegistryRemote.waitForData(timeout, timeUnit);
         return newInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigByScope(scope));
     }

@@ -34,6 +34,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 public interface UserControllerFactory extends Factory<UserController, UnitConfigType.UnitConfig> {
 
     @Override
-    public UserController newInstance(final UnitConfig config) throws InstantiationException;
+    UserController newInstance(final UnitConfig config) throws InstantiationException;
 
 }

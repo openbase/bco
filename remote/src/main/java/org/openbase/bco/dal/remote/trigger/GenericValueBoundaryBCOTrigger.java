@@ -51,7 +51,7 @@ public class GenericValueBoundaryBCOTrigger<UR extends AbstractUnitRemote, DT ex
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
 
-    public static enum TriggerOperation {
+    public enum TriggerOperation {
         HIGH_ACTIVE, LOW_ACTIVE
     }
 

@@ -52,5 +52,5 @@ public interface PresenceStateProviderServiceCollection extends PresenceStatePro
      * @return
      * @throws NotAvailableException
      */
-    public PresenceState getPresenceState(final UnitType unitType) throws NotAvailableException;
+    PresenceState getPresenceState(final UnitType unitType) throws NotAvailableException;
 }

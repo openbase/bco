@@ -39,7 +39,7 @@ public class VideoDepthSourceController extends AbstractDALUnitController<VideoD
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(VideoDepthSourceData.getDefaultInstance()));
     }
 
-    public VideoDepthSourceController(final HostUnitController hostUnitController, VideoDepthSourceData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public VideoDepthSourceController(final HostUnitController hostUnitController, VideoDepthSourceData.Builder builder) throws CouldNotPerformException {
         super(VideoDepthSourceController.class, hostUnitController, builder);
     }
 }

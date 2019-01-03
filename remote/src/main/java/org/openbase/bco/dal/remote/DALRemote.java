@@ -90,7 +90,7 @@ public class DALRemote {
         }
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
 
         /* Setup JPService */

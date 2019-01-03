@@ -70,7 +70,7 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Mes
 
         this.connectionObserver = (Remote source, ConnectionState.State data) -> {
             if (data.equals(ConnectionState.State.CONNECTED)) {
-                verifyCondition((DT) unitRemote.getData());
+                verifyCondition(unitRemote.getData());
             } else {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
             }
@@ -98,7 +98,7 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Mes
         unitRemote.addConnectionStateObserver(connectionObserver);
         active = true;
         if (unitRemote.isDataAvailable()) {
-            verifyCondition((DT) unitRemote.getData());
+            verifyCondition(unitRemote.getData());
         }
     }
 

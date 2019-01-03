@@ -102,7 +102,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         scopeApplyButton.setEnabled(value);
     }
 
-    public void init() throws InitializationException, InterruptedException, CouldNotPerformException {
+    public void init() throws InterruptedException, CouldNotPerformException {
         statusPanel = StatusPanel.getInstance();
 
         statusPanel.setStatus("Wait for unit registry...", StatusPanel.StatusType.INFO, true);

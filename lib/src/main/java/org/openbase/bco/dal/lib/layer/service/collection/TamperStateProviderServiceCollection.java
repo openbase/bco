@@ -55,5 +55,5 @@ public interface TamperStateProviderServiceCollection extends TamperStateProvide
      *
      * @throws NotAvailableException
      */
-    public TamperState getTamperState(final UnitType unitType) throws NotAvailableException;
+    TamperState getTamperState(final UnitType unitType) throws NotAvailableException;
 }

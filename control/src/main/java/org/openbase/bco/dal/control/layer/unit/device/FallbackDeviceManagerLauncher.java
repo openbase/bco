@@ -49,7 +49,7 @@ public class FallbackDeviceManagerLauncher extends AbstractLauncher<FallbackDevi
         JPService.registerProperty(JPUnitAllocation.class);
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         main(args, FallbackDeviceManagerLauncher.class, FallbackDeviceManagerLauncher.class);
     }

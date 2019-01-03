@@ -38,7 +38,7 @@ public class AppManagerLauncher extends AbstractLauncher<AppManagerImpl> {
     public void loadProperties() {
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         main(args, AppManager.class, AppManagerLauncher.class);
     }

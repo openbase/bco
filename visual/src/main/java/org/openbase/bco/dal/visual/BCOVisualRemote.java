@@ -232,7 +232,7 @@ public class BCOVisualRemote extends javax.swing.JFrame {
      * @throws java.lang.InterruptedException
      * @throws java.lang.reflect.InvocationTargetException
      */
-    public static void main(String args[]) throws InterruptedException, InvocationTargetException {
+    public static void main(String[] args) throws InterruptedException, InvocationTargetException {
         BCO.printLogo();
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">

@@ -32,5 +32,5 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 public interface SceneControllerFactory extends Factory<SceneController, UnitConfig> {
 
     @Override
-    public SceneController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException;
+    SceneController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException;
 }

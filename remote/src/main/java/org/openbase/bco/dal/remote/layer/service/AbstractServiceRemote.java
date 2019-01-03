@@ -540,9 +540,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
         } else if (disabledUnitRemoteMap.containsKey(unitConfig.getId())) {
             unitRemote = disabledUnitRemoteMap.remove(unitConfig.getId());
-            if (infrastructureUnitMap.containsKey(unitConfig.getId())) {
-                infrastructureUnitMap.remove(unitConfig.getId());
-            }
+            infrastructureUnitMap.remove(unitConfig.getId());
         } else if (infrastructureUnitMap.containsKey(unitConfig.getId())) {
             unitRemote = infrastructureUnitMap.remove(unitConfig.getId());
         } else {

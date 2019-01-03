@@ -40,7 +40,7 @@ public class LocationManagerLauncher extends AbstractLauncher<LocationManagerImp
     public void loadProperties() {
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         main(args, LocationManager.class, LocationManagerLauncher.class);
     }

@@ -114,7 +114,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
         logger.info("Setup unit remote: " + unitConfig.getId());
         try {
             RS remote = (RS) Units.getUnit(unitConfig, false);
-            setRemoteService((RS) remote);
+            setRemoteService(remote);
             return remote;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup unit remote config!", ex);

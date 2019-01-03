@@ -33,5 +33,5 @@ import com.google.protobuf.Message;
  */
 public interface StateComparator<D extends Message> {
     
-    public boolean equalState(D data);
+    boolean equalState(D data);
 }

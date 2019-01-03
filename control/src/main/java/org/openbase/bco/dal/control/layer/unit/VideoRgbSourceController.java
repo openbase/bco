@@ -39,7 +39,7 @@ public class VideoRgbSourceController extends AbstractDALUnitController<VideoRgb
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(VideoRgbSourceData.getDefaultInstance()));
     }
 
-    public VideoRgbSourceController(final HostUnitController hostUnitController, VideoRgbSourceData.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public VideoRgbSourceController(final HostUnitController hostUnitController, VideoRgbSourceData.Builder builder) throws CouldNotPerformException {
         super(VideoRgbSourceController.class, hostUnitController, builder);
     }
 }

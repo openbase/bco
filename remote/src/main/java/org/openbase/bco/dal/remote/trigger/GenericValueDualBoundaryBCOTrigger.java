@@ -50,7 +50,7 @@ public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote<DT
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
 
-    public static enum TriggerOperation {
+    public enum TriggerOperation {
         HIGH_ACTIVE, LOW_ACTIVE, INSIDE_ACTIVE, OUTSIDE_ACTIVE
     }
 
@@ -82,7 +82,7 @@ public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote<DT
 
         connectionObserver = (Remote source, ConnectionStateType.ConnectionState.State data) -> {
             if (data.equals(ConnectionStateType.ConnectionState.State.CONNECTED)) {
-                verifyCondition((DT) unitRemote.getData());
+                verifyCondition(unitRemote.getData());
             } else {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
             }
@@ -148,7 +148,7 @@ public class GenericValueDualBoundaryBCOTrigger<UR extends AbstractUnitRemote<DT
         unitRemote.addDataObserver(dataObserver);
         unitRemote.addConnectionStateObserver(connectionObserver);
         active = true;
-        verifyCondition((DT) unitRemote.getData());
+        verifyCondition(unitRemote.getData());
     }
 
     @Override

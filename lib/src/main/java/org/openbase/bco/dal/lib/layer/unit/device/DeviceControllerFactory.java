@@ -34,6 +34,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
  */
 public interface DeviceControllerFactory extends Factory<DeviceController, UnitConfig> {
 
-    public DeviceController newInstance(final UnitConfigType.UnitConfig deviceUnitConfig, final OperationServiceFactory operationServiceFactory) throws InstantiationException, InterruptedException;
+    DeviceController newInstance(final UnitConfigType.UnitConfig deviceUnitConfig, final OperationServiceFactory operationServiceFactory) throws InstantiationException, InterruptedException;
 
 }
