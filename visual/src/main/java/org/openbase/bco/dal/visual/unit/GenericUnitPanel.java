@@ -39,8 +39,8 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.controller.Remote;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -66,7 +66,7 @@ import static org.openbase.bco.dal.visual.service.AbstractServicePanel.SERVICE_P
 public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteView<RS> {
 
     private final Observer<DataProvider<UnitConfig>, UnitConfig> unitConfigObserver;
-    private final Observer<Remote, ConnectionState> connectionStateObserver;
+    private final Observer<Remote, ConnectionState.State> connectionStateObserver;
     private boolean autoRemove;
     private List<JComponent> componentList;
     private StatusPanel statusPanel;
@@ -106,7 +106,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
         return unitConfigObserver;
     }
 
-    private void updateConnectionState(final ConnectionState connectionState) {
+    private void updateConnectionState(final ConnectionState.State connectionState) {
         try {
             // build unit label
             String remoteLabel;
@@ -155,7 +155,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                         public void run() {
                             try {
                                 statusPanel.setStatus("Waiting for " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getUnitType().name()) + " connection...", StatusType.INFO, true);
-                                getRemoteService().waitForConnectionState(ConnectionState.CONNECTED);
+                                getRemoteService().waitForConnectionState(ConnectionState.State.CONNECTED);
                                 statusPanel.setStatus("Connection to " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getUnitType().name()) + " established.", StatusType.INFO, 3);
                             } catch (CouldNotPerformException | InterruptedException ex) {
                                 statusPanel.setError(ex);

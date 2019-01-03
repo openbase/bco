@@ -22,16 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.agent;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
-import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.protobuf.MessageController;
-import org.openbase.jul.iface.Enableable;
-import org.openbase.jul.iface.Identifiable;
-import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData.Builder;
 
 /**
  *

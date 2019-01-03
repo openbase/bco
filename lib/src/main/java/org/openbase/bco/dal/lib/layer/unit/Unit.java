@@ -206,7 +206,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
 
     @RPCMethod(legacy = true)
     @Override
-    default Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+    default Future<Snapshot> recordSnapshot() {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 MultiException.ExceptionStack exceptionStack = null;
@@ -266,7 +266,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
 
     @RPCMethod(legacy = true)
     @Override
-    Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException;
+    Future<Void> restoreSnapshot(final Snapshot snapshot);
 
 
 

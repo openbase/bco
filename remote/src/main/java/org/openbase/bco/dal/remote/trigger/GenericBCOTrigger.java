@@ -30,8 +30,8 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.controller.Remote;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Mes
     private final STE targetState;
     private final ServiceType serviceType;
     private final Observer<DataProvider<DT>, DT> dataObserver;
-    private final Observer<Remote, ConnectionState> connectionObserver;
+    private final Observer<Remote, ConnectionState.State> connectionObserver;
     private boolean active = false;
 
     public GenericBCOTrigger(final UR unitRemote, final STE targetState, final ServiceType serviceType) throws InstantiationException {
@@ -68,8 +68,8 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Mes
             verifyCondition(data);
         };
 
-        this.connectionObserver = (Remote source, ConnectionState data) -> {
-            if (data.equals(ConnectionState.CONNECTED)) {
+        this.connectionObserver = (Remote source, ConnectionState.State data) -> {
+            if (data.equals(ConnectionState.State.CONNECTED)) {
                 verifyCondition((DT) unitRemote.getData());
             } else {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));

@@ -44,8 +44,9 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -53,6 +54,7 @@ import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -241,11 +243,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      * @param failOnError flag decides if an exception should be thrown in case one data request fails.
      *
      * @return the recalculated server state data based on the newly requested data.
-     *
-     * @throws CouldNotPerformException is thrown if non of the request was successful. In case the failOnError is set to true any request error throws an CouldNotPerformException.
      */
     @Override
-    public CompletableFuture<ST> requestData(final boolean failOnError) throws CouldNotPerformException {
+    public CompletableFuture<ST> requestData(final boolean failOnError) {
         final CompletableFuture<ST> requestDataFuture = new CompletableFuture<>();
         GlobalCachedExecutorService.submit(() -> {
             try {
@@ -623,12 +623,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     }
 
 
-    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         return applyAction(actionDescription.toBuilder());
     }
 
     @Override
-    public Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) {
         try {
             if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
@@ -660,7 +660,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 return actionDescriptionBuilder.build();
             }, actionTaskList);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply action!", ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
         }
     }
 
@@ -669,35 +669,41 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      * description encrypted with the session key from the default manager if a user is logged in. Else an action description
      * as a byte string. This method internally calls {@link #applyActionAuthenticated(AuthenticatedValue, Builder, byte[])}.
      *
+     * Note: Future is canceled if no action description is available or can be extracted from the authenticated value.
+     *
      * @param authenticatedValue The authenticated value containing an action description to be applied. Created with the
      *                           default session manager.
      *
      * @return An authenticated value containing an updated action description in which resulting actions are added as impacts.
-     *
-     * @throws CouldNotPerformException if no action description is available or can be extracted from the authenticated value.
      */
     @Override
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        if (!authenticatedValue.hasValue() || authenticatedValue.getValue().isEmpty()) {
-            throw new NotAvailableException("Value in AuthenticatedValue");
-        }
-
-        final ActionDescription actionDescription;
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
         try {
-            if (SessionManager.getInstance().isLoggedIn()) {
-                actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
-            } else {
-                actionDescription = ActionDescription.parseFrom(authenticatedValue.getValue());
+            if (!authenticatedValue.hasValue() || authenticatedValue.getValue().isEmpty()) {
+                throw new NotAvailableException("Value in AuthenticatedValue");
             }
-        } catch (CouldNotPerformException | InvalidProtocolBufferException ex) {
-            throw new CouldNotPerformException("Could not extract ActionDescription from AuthenticatedValue", ex);
-        }
 
-        return applyActionAuthenticated(authenticatedValue, actionDescription.toBuilder(), SessionManager.getInstance().getSessionKey());
+            final ActionDescription actionDescription;
+            try {
+                if (SessionManager.getInstance().isLoggedIn()) {
+                    actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
+                } else {
+                    actionDescription = ActionDescription.parseFrom(authenticatedValue.getValue());
+                }
+            } catch (CouldNotPerformException | InvalidProtocolBufferException ex) {
+                throw new CouldNotPerformException("Could not extract ActionDescription from AuthenticatedValue", ex);
+            }
+
+            return applyActionAuthenticated(authenticatedValue, actionDescription.toBuilder(), SessionManager.getInstance().getSessionKey());
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
+        }
     }
 
     /**
      * Apply an authenticated action on all units contained in this service remote.
+     *
+     * Note: Future is canceled if something fails, e.g. the service provided in the action description does not match this service remote.
      *
      * @param authenticatedValue       the authenticated value with which the action is applied on all internal units. If a session key
      *                                 is provided it has to contain a valid and matching ticket. Optionally, it may contain tokens for the request.
@@ -709,37 +715,40 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      *
      * @return a future which returns the same authenticated value as in the request with an updated action description as its value. Calling get on this future makes sure that the
      * action description builder is updated properly and that all internal actions finished successfully.
-     *
-     * @throws CouldNotPerformException if something fails, e.g. the service provided in the action description does not match this service remote.
      */
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final byte[] sessionKey) throws CouldNotPerformException {
-        if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
-            throw new VerificationFailedException("Service type is not compatible to given action config!");
-        }
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final byte[] sessionKey) {
 
-        if (!actionDescriptionBuilder.getCancel()) {
-            actionDescriptionBuilder.setId(UUID.randomUUID().toString());
-        }
-        final List<Future<AuthenticatedValue>> actionTaskList = new ArrayList<>();
-
-        for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
-            final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
-            unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
-
-            // update action cause
-            ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
-
-            final AuthenticatedValue authValue;
-            // encrypt action description again
-            if (sessionKey != null) {
-                final ByteString encrypt = EncryptionHelper.encryptSymmetric(unitActionDescriptionBuilder.build(), sessionKey);
-                authValue = authenticatedValue.toBuilder().setValue(encrypt).build();
-            } else {
-                authValue = authenticatedValue.toBuilder().setValue(unitActionDescriptionBuilder.build().toByteString()).build();
+        try {
+            if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
+                throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            // apply action on remote
-            actionTaskList.add(unitRemote.applyActionAuthenticated(authValue));
+            if (!actionDescriptionBuilder.getCancel()) {
+                actionDescriptionBuilder.setId(UUID.randomUUID().toString());
+            }
+            final List<Future<AuthenticatedValue>> actionTaskList = new ArrayList<>();
+
+            for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
+                final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
+                unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
+
+                // update action cause
+                ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
+
+                final AuthenticatedValue authValue;
+                // encrypt action description again
+                if (sessionKey != null) {
+                    final ByteString encrypt = EncryptionHelper.encryptSymmetric(unitActionDescriptionBuilder.build(), sessionKey);
+                    authValue = authenticatedValue.toBuilder().setValue(encrypt).build();
+                } else {
+                    authValue = authenticatedValue.toBuilder().setValue(unitActionDescriptionBuilder.build().toByteString()).build();
+                }
+
+                // apply action on remote
+                actionTaskList.add(unitRemote.applyActionAuthenticated(authValue));
+            }
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }
 
         return GlobalCachedExecutorService.allOf(input -> {
@@ -1070,7 +1079,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     }
 
     @Override
-    public void waitForConnectionState(ConnectionState connectionState, long timeout) throws InterruptedException, TimeoutException {
+    public void waitForConnectionState(ConnectionState.State connectionState, long timeout) throws InterruptedException, TimeoutException {
         synchronized (connectionStateLock) {
             if (connectionState == getConnectionState()) {
                 return;

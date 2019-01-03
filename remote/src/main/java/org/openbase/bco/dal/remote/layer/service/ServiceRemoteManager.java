@@ -44,8 +44,9 @@ import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -268,11 +269,11 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     }
 
     @Override
-    public Future<SnapshotType.Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+    public Future<SnapshotType.Snapshot> recordSnapshot() {
         return recordSnapshot(UnitTemplateType.UnitTemplate.UnitType.UNKNOWN);
     }
 
-    public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
+    public Future<Snapshot> recordSnapshot(final UnitType unitType) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 SnapshotType.Snapshot.Builder snapshotBuilder = SnapshotType.Snapshot.newBuilder();
@@ -340,11 +341,11 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     }
 
     @Override
-    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) {
         return restoreSnapshotAuthenticated(snapshot, null);
     }
 
-    public Future<Void> restoreSnapshotAuthenticated(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
+    public Future<Void> restoreSnapshotAuthenticated(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) {
         try {
             if (authenticationBaseData != null) {
                 try {
@@ -367,7 +368,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 return GlobalCachedExecutorService.allOf(input -> null, generateSnapshotActions(snapshot, null, null));
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not record snapshot authenticated!", ex);
+            return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not record snapshot authenticated!", ex));
         }
     }
 

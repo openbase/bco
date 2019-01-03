@@ -35,7 +35,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,8 +152,8 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
 
         // test if the power switch remote has lost its connection
-        powerSwitchRemote.waitForConnectionState(ConnectionState.DISCONNECTED, 1000);
-        assertEquals("Remote has not disconnected even though its config should have been removed!", ConnectionState.DISCONNECTED, powerSwitchRemote.getConnectionState());
+        powerSwitchRemote.waitForConnectionState(ConnectionState.State.DISCONNECTED, 1000);
+        assertEquals("Remote has not disconnected even though its config should have been removed!", ConnectionState.State.DISCONNECTED, powerSwitchRemote.getConnectionState());
     }
 
     private boolean running = true;

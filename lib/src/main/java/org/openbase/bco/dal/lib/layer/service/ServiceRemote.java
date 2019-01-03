@@ -29,20 +29,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -198,7 +197,7 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
      * @param observer the observer to observe the connection state of the internal unit remotes.
      */
     @Override
-    default void addConnectionStateObserver(Observer<Remote, ConnectionState> observer) {
+    default void addConnectionStateObserver(Observer<Remote, ConnectionState.State> observer) {
         for (Remote remote : getInternalUnits()) {
             remote.addConnectionStateObserver(observer);
         }
@@ -210,7 +209,7 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
      * @param observer the observer to remove.
      */
     @Override
-    default void removeConnectionStateObserver(Observer<Remote, ConnectionState> observer) {
+    default void removeConnectionStateObserver(Observer<Remote, ConnectionState.State> observer) {
         for (final Remote remote : getInternalUnits()) {
             remote.removeConnectionStateObserver(observer);
         }
@@ -219,12 +218,12 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
     /**
      * Method returns the connection state of the internal unit remotes.
      * <p>
-     * Note: While unit remotes return ConnectionState.CONNECTING if they try to reach the remote controller this getConnectionState method returns connecting if at least one internal unit remote is already connected.
+     * Note: While unit remotes return ConnectionState.State.CONNECTING if they try to reach the remote controller this getConnectionState method returns connecting if at least one internal unit remote is already connected.
      *
      * @return Method returns DISCONNECTED if non of the internal unit remotes is connected. It returns CONNECTING if at least one remote is connected and returns CONNECTED if all internal unit remotes are successfully connected.
      */
     @Override
-    default ConnectionState getConnectionState() {
+    default ConnectionState.State getConnectionState() {
         boolean disconnectedRemoteDetected = false;
         boolean connectedRemoteDetected = false;
 
@@ -243,13 +242,13 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
         }
 
         if (disconnectedRemoteDetected && connectedRemoteDetected) {
-            return ConnectionState.CONNECTING;
+            return ConnectionState.State.CONNECTING;
         } else if (disconnectedRemoteDetected) {
-            return ConnectionState.DISCONNECTED;
+            return ConnectionState.State.DISCONNECTED;
         } else if (connectedRemoteDetected) {
-            return ConnectionState.CONNECTED;
+            return ConnectionState.State.CONNECTED;
         } else {
-            return ConnectionState.UNKNOWN;
+            return ConnectionState.State.UNKNOWN;
         }
     }
 
@@ -282,10 +281,8 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
      * @param actionDescriptionBuilder the builder containing the description of the action.
      *
      * @return a future which gives feedback about the action execution state.
-     *
-     * @throws CouldNotPerformException is thrown if the action could not be applied.
      */
-    Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException;
+    Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder);
 
     /**
      * {@inheritDoc}
@@ -293,11 +290,9 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
      * @param actionDescriptionBuilder {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    default Future<ActionDescription> applyAction(final ActionDescription actionDescriptionBuilder) throws CouldNotPerformException {
+    default Future<ActionDescription> applyAction(final ActionDescription actionDescriptionBuilder) {
         return applyAction(actionDescriptionBuilder.toBuilder());
     }
 

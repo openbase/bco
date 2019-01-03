@@ -33,7 +33,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.type.domotic.state.ConnectionStateType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -56,7 +57,7 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
             AbstractBCOLocationManagerTest.setUpClass();
 
             connectionRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigs(UnitType.CONNECTION).get(0), true, ConnectionRemote.class);
-            connectionRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            connectionRemote.waitForConnectionState(ConnectionState.State.CONNECTED);
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }

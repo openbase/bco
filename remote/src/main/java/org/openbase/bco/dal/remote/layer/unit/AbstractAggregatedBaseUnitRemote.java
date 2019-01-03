@@ -39,6 +39,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType;
@@ -119,27 +120,28 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
      * @param authenticatedValue the authenticated value containing the applied action.
      *
      * @return a future of the task triggered on the controller.
-     *
-     * @throws CouldNotPerformException if the remote task could not be created.
      */
     @Override
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        if (!authenticatedValue.hasValue() || authenticatedValue.getValue().isEmpty()) {
-            throw new NotAvailableException("Value in AuthenticatedValue");
-        }
-
-        final ActionDescription actionDescription;
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
         try {
-            if (SessionManager.getInstance().isLoggedIn()) {
-                actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
-            } else {
-                actionDescription = ActionDescription.parseFrom(authenticatedValue.getValue());
+            if (!authenticatedValue.hasValue() || authenticatedValue.getValue().isEmpty()) {
+                throw new NotAvailableException("Value in AuthenticatedValue");
             }
-        } catch (CouldNotPerformException | InvalidProtocolBufferException ex) {
-            throw new CouldNotPerformException("Could not extract ActionDescription from AuthenticatedValue", ex);
-        }
 
-        return applyActionAuthenticated(authenticatedValue, actionDescription.getServiceStateDescription().getServiceType());
+            final ActionDescription actionDescription;
+            try {
+                if (SessionManager.getInstance().isLoggedIn()) {
+                    actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
+                } else {
+                    actionDescription = ActionDescription.parseFrom(authenticatedValue.getValue());
+                }
+            } catch (CouldNotPerformException | InvalidProtocolBufferException ex) {
+                throw new CouldNotPerformException("Could not extract ActionDescription from AuthenticatedValue", ex);
+            }
+            return applyActionAuthenticated(authenticatedValue, actionDescription.getServiceStateDescription().getServiceType());
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
+        }
     }
 
     /**
@@ -151,18 +153,20 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
      *                           for synchronization purposes.
      *
      * @return a future of the task triggered on the controller.
-     *
-     * @throws CouldNotPerformException if the remote task could not be created.
      */
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ServiceType serviceType) throws CouldNotPerformException {
-        if (!isServiceAggregated(serviceType)) {
-            return super.applyActionAuthenticated(authenticatedValue);
-        }
-
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ServiceType serviceType) {
         try {
-            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+            if (!isServiceAggregated(serviceType)) {
+                return super.applyActionAuthenticated(authenticatedValue);
+            }
+
+            try {
+                return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not apply action!", ex);
+            }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply action!", ex);
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }
     }
 

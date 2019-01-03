@@ -37,6 +37,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
@@ -143,34 +144,38 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     }
 
     @Override
-    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+    public Future<Snapshot> recordSnapshot() {
         return serviceRemoteManager.recordSnapshot();
     }
 
     @Override
-    public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
+    public Future<Snapshot> recordSnapshot(final UnitType unitType) {
         return serviceRemoteManager.recordSnapshot(unitType);
     }
 
     @Override
-    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) {
         return serviceRemoteManager.restoreSnapshot(snapshot);
     }
 
     @Override
-    protected Future<Void> internalRestoreSnapshot(Snapshot snapshot, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException, InterruptedException {
+    protected Future<Void> internalRestoreSnapshot(Snapshot snapshot, AuthenticationBaseData authenticationBaseData) {
         return serviceRemoteManager.restoreSnapshotAuthenticated(snapshot, authenticationBaseData);
     }
 
     @Override
-    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
-        if (!isServiceAggregated(actionDescription.getServiceStateDescription().getServiceType())) {
-            return super.applyAction(actionDescription);
-        }
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
+        try {
+            if (!isServiceAggregated(actionDescription.getServiceStateDescription().getServiceType())) {
+                return super.applyAction(actionDescription);
+            }
 
-        final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
-        ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
-        return serviceRemoteManager.applyAction(actionDescriptionBuilder.build());
+            final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+            ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
+            return serviceRemoteManager.applyAction(actionDescriptionBuilder.build());
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
+        }
     }
 
     protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {

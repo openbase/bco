@@ -22,8 +22,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import rsb.Handler;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
@@ -54,17 +58,17 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public Future<ActionDescription> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, RejectedException {
-        throw new NotSupportedException("Method[applyAction]", this);
+    public Future<ActionDescription> applyAction(ActionDescription actionDescription) {
+        return FutureProcessor.canceledFuture(ActionDescription.class, new NotSupportedException("Method[applyAction]", this));
     }
 
     @Override
-    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+    public Future<Snapshot> recordSnapshot() {
         return CompletableFuture.completedFuture(Snapshot.getDefaultInstance());
     }
 
     @Override
-    public Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(Snapshot snapshot) {
         return CompletableFuture.completedFuture(null);
     }
 
@@ -79,7 +83,7 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public void addHandler(Handler handler, boolean wait) throws InterruptedException, CouldNotPerformException {
+    public void addHandler(Handler handler, boolean wait) {
         // dummy has no function
     }
 
@@ -99,11 +103,11 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public ConnectionState getConnectionState() {
+    public ConnectionState.State getConnectionState() {
         if (isConnected()) {
-            return ConnectionState.CONNECTED;
+            return ConnectionState.State.CONNECTED;
         } else {
-            return ConnectionState.DISCONNECTED;
+            return ConnectionState.State.DISCONNECTED;
         }
     }
 

@@ -30,10 +30,9 @@ import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.controller.Remote;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +77,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
 
     private UnitRemote unitRemote;
     private final Observer dataObserver;
-    private final Observer<Remote, ConnectionState> connectionStateObserver;
+    private final Observer<Remote, ConnectionState.State> connectionStateObserver;
     protected StatusPanel statusPanel;
     private final SyncObject executerSync = new SyncObject("ExecuterSync");
     private String unitId = "";
@@ -106,8 +105,8 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
                 updateDynamicComponents();
             };
             this.connectionStateObserver = (source, connectionState) -> {
-                enableComponents(this, connectionState.equals(ConnectionState.CONNECTED));
-                logger.info("enable: " + connectionState.equals(ConnectionState.CONNECTED));
+                enableComponents(this, connectionState.equals(ConnectionState.State.CONNECTED));
+                logger.info("enable: " + connectionState.equals(ConnectionState.State.CONNECTED));
             };
 //            GlobalExecutionService.submit(() -> {
 //                while (!Thread.currentThread().isInterrupted()) {

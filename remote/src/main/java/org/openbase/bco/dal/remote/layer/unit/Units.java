@@ -341,10 +341,9 @@ public class Units {
      * the MockRegistry is restarted then the observer is registered on an old instance of the unit remote
      * and thus the effects of the observer cannot be tested.
      *
-     * @throws InterruptedException                                thrown if Registries.getUnitRegistry is interrupted
      * @throws org.openbase.jul.exception.CouldNotPerformException thrown if the unit registry is not available
      */
-    private static void resetUnitRegistryObserver() throws InterruptedException, CouldNotPerformException {
+    private static void resetUnitRegistryObserver() throws CouldNotPerformException {
         Registries.getUnitRegistry().removeDataObserver(UNIT_REGISTRY_OBSERVER);
         UNIT_DIFF.replaceOriginalMap(new IdentifiableMessageMap<>(Registries.getUnitRegistry().getDalUnitConfigs()));
         Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
@@ -838,10 +837,8 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
-    public static Future<UnitRemote<?>> getFutureUnitByAlias(final String alias, final boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<UnitRemote<?>> getFutureUnitByAlias(final String alias, final boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByAlias(alias, waitForData));
     }
 
@@ -859,10 +856,8 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
-    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnitByAlias(final String alias, final boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnitByAlias(final String alias, final boolean waitForData, final Class<UR> unitRemoteClass) {
         return GlobalCachedExecutorService.submit(() -> getUnitByAlias(alias, waitForData, unitRemoteClass));
     }
 
@@ -1107,12 +1102,8 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not
-     *                               available.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted
      */
-    public static Future<UnitRemote<?>> getFutureUnit(final String unitId, final boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<UnitRemote<?>> getFutureUnit(final String unitId, final boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnit(unitId, waitForData));
     }
 
@@ -1138,12 +1129,8 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not
-     *                               available.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted
      */
-    public static Future<UnitRemote<?>> getFutureUnit(final UnitConfig unitConfig, final boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<UnitRemote<?>> getFutureUnit(final UnitConfig unitConfig, final boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnit(unitConfig, waitForData));
     }
 
@@ -1161,15 +1148,9 @@ public class Units {
      *
      * @return an instance of the given remote class.
      *
-     * @throws NotAvailableException Is thrown if the remote instance is not
-     *                               compatible with the given class. See
-     *                               {{@link #getUnit(org.openbase.type.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
-     *                               for further cases.
-     * @throws InterruptedException  Checkout wrapped method doc
-     *                               {@link #getUnit(org.openbase.type.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
      * @see #getUnit(org.openbase.type.domotic.unit.UnitConfigType.UnitConfig, boolean)
      */
-    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnit(final UnitConfig unitConfig, final boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnit(final UnitConfig unitConfig, final boolean waitForData, final Class<UR> unitRemoteClass) {
         return GlobalCachedExecutorService.submit(() -> getUnit(unitConfig, waitForData, unitRemoteClass));
     }
 
@@ -1187,15 +1168,9 @@ public class Units {
      *
      * @return an instance of the given remote class.
      *
-     * @throws NotAvailableException Is thrown if the remote instance is not
-     *                               compatible with the given class. See
-     *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for
-     *                               further cases.
-     * @throws InterruptedException  Checkout wrapped method doc
-     *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)}
      * @see #getUnit(java.lang.String, boolean)
      */
-    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnit(final String unitId, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnit(final String unitId, boolean waitForData, final Class<UR> unitRemoteClass) {
         return GlobalCachedExecutorService.submit(() -> getUnit(unitId, waitForData, unitRemoteClass));
     }
 
@@ -1213,10 +1188,8 @@ public class Units {
      *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
-    public static Future<List<UnitRemote<?>>> getFutureUnits(boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<List<UnitRemote<?>>> getFutureUnits(boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnits(waitForData));
     }
 
@@ -1233,11 +1206,8 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
      *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
-    public static Future<List<UnitRemote<?>>> getFutureUnitsByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<List<UnitRemote<?>>> getFutureUnitsByLabelAndType(final String label, final UnitType unitType, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitsByLabelAndType(label, unitType, waitForData));
     }
 
@@ -1253,11 +1223,8 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
      *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
-    public static Future<List<UnitRemote<?>>> getFutureUnitsByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<List<UnitRemote<?>>> getFutureUnitsByLabel(final String label, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitsByLabel(label, waitForData));
     }
 
@@ -1271,11 +1238,9 @@ public class Units {
      *
      * @return a list of instances of the given remote class.
      *
-     * @throws NotAvailableException Is thrown if the remote instance is not compatible with the given class. See {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for further cases.
-     * @throws InterruptedException  Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @see #getUnitsByLabel(java.lang.String, boolean)
      */
-    public static <UR extends UnitRemote<?>> Future<List<UR>> getFutureUnitsByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote<?>> Future<List<UR>> getFutureUnitsByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) {
         return GlobalCachedExecutorService.submit(() -> getUnitsByLabel(label, waitForData, unitRemoteClass));
     }
 
@@ -1326,15 +1291,10 @@ public class Units {
      *                    controller.
      *
      * @return a new or cached unit remote which can be used to control the unit
-     * or request all current unit states.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
+     * or request all current unit state.
      */
     @Deprecated
-    public static Future<UnitRemote> getFutureUnitByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<UnitRemote> getFutureUnitByLabel(final String label, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByLabel(label, waitForData));
     }
 
@@ -1352,16 +1312,10 @@ public class Units {
      *
      * @return an instance of the given remote class.
      *
-     * @throws NotAvailableException Is thrown if the remote instance is not
-     *                               compatible with the given class. See
-     *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for
-     *                               further cases.
-     * @throws InterruptedException  Checkout wrapped method doc
-     *                               {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @see #getUnitByLabel(java.lang.String, boolean)
      */
     @Deprecated
-    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) {
         return GlobalCachedExecutorService.submit(() -> getUnitByLabel(label, waitForData, unitRemoteClass));
     }
 
@@ -1387,12 +1341,8 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
      */
-    public static Future<UnitRemote<?>> getFutureUnitByScope(final ScopeType.Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<UnitRemote<?>> getFutureUnitByScope(final ScopeType.Scope scope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByScope(scope, waitForData));
     }
 
@@ -1418,12 +1368,8 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
      */
-    public static Future<UnitRemote<?>> getFutureUnitByScope(final Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<UnitRemote<?>> getFutureUnitByScope(final Scope scope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByScope(scope, waitForData));
     }
 
@@ -1449,12 +1395,8 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
      */
-    public static Future<UnitRemote<?>> getFutureUnitByScope(final String scope, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<UnitRemote<?>> getFutureUnitByScope(final String scope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByScope(scope, waitForData));
     }
 
@@ -1500,11 +1442,10 @@ public class Units {
      *
      * @return a transformation future
      *
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
      * @deprecated please use getRootToUnitTransformationFuture(...) instead.
      */
     @Deprecated
-    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws InterruptedException {
+    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfig) {
         return getRootToUnitTransformationFuture(unitConfig);
     }
 
@@ -1633,13 +1574,8 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
      */
-    public Future<UnitRemote<?>> getFutureUnitByLabelAndLocationScope(final String label, final String locationScope, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public Future<UnitRemote<?>> getFutureUnitByLabelAndLocationScope(final String label, final String locationScope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByLabelAndLocationScope(label, locationScope, waitForData));
     }
 }

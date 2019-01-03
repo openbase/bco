@@ -29,10 +29,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.type.domotic.state.ConnectionStateType;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -58,7 +59,7 @@ public class GenericValueBoundaryBCOTrigger<UR extends AbstractUnitRemote, DT ex
     private final ServiceType serviceType;
     private final double boundary;
     private final Observer<DataProvider<DT>,DT> dataObserver;
-    private final Observer<Remote, ConnectionState> connectionObserver;
+    private final Observer<Remote, ConnectionState.State> connectionObserver;
     private final TriggerOperation triggerOperation;
     private final String specificValueCall;
     private boolean active = false;
@@ -76,8 +77,8 @@ public class GenericValueBoundaryBCOTrigger<UR extends AbstractUnitRemote, DT ex
             verifyCondition(data);
         };
 
-        connectionObserver = (Remote source, Remote.ConnectionState data) -> {
-            if (data.equals(Remote.ConnectionState.CONNECTED)) {
+        connectionObserver = (Remote source, ConnectionStateType.ConnectionState.State data) -> {
+            if (data.equals(ConnectionState.State.CONNECTED)) {
                 verifyCondition((DT) unitRemote.getData());
             } else {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));

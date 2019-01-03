@@ -31,6 +31,7 @@ import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -43,22 +44,18 @@ import java.util.concurrent.Future;
  */
 public interface ServiceProvider<ST extends Message> {
 
-    // todo release: Remove  CouldNotPerformException and reflect issues via future type.
-
     /**
      * Method applies the action on this instance.
      *
      * @param actionDescription the description of the action.
      *
      * @return a future which gives feedback about the action execution state.
-     *
-     * @throws CouldNotPerformException is thrown if the action could not be applied.
      */
     @RPCMethod(legacy = true)
-    Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
+    Future<ActionDescription> applyAction(final ActionDescription actionDescription);
 
     @RPCMethod
-    Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue);
 
     /**
      * Method applies the action on this instance.
@@ -66,10 +63,8 @@ public interface ServiceProvider<ST extends Message> {
      * @param actionDescriptionBuilder the description builder of the action.
      *
      * @return a future which gives feedback about the action execution state.
-     *
-     * @throws CouldNotPerformException is thrown if the action could not be applied.
      */
-    default Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
+    default Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) {
         return applyAction(actionDescriptionBuilder.build());
     }
 
@@ -79,13 +74,16 @@ public interface ServiceProvider<ST extends Message> {
      * @param actionParameter the needed parameters to generate a new action.
      *
      * @return a future which gives feedback about the action execution state.
-     *
-     * @throws CouldNotPerformException is thrown if the action could not be applied.
      */
-    default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+    default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
         final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build();
         if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthenticationToken() || actionParameter.hasAuthorizationToken())) {
-            final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
+            final AuthenticatedValue authenticatedValue;
+            try {
+                authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
             final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
             return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
         } else {

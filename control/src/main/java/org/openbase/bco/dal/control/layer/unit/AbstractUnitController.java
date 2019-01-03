@@ -488,24 +488,28 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
-    public Future<ActionDescription> applyAction(ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
-        final ActionParameter.Builder builder;
-        if (actionParameter instanceof ActionParameter.Builder) {
-            builder = ((ActionParameter.Builder) actionParameter);
-        } else {
-            builder = ((ActionParameter) actionParameter).toBuilder();
-        }
-        builder.getServiceStateDescriptionBuilder().setUnitId(getId());
+    public Future<ActionDescription> applyAction(ActionParameterOrBuilder actionParameter) {
+        try {
+            final ActionParameter.Builder builder;
+            if (actionParameter instanceof ActionParameter.Builder) {
+                builder = ((ActionParameter.Builder) actionParameter);
+            } else {
+                builder = ((ActionParameter) actionParameter).toBuilder();
+            }
+            builder.getServiceStateDescriptionBuilder().setUnitId(getId());
 
-        return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
+            return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
+        }
     }
 
-    public Future<ActionDescription> applyUnauthorizedAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyUnauthorizedAction(final ActionDescription actionDescription) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, MOCKUP_SESSION_MANAGER, this::applyActionAuthenticated);
     }
 
     @Override
-    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         try {
             final ActionImpl action = new ActionImpl(actionDescription, this);
             try {
@@ -518,7 +522,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 throw new CouldNotPerformException("Could not check unit allocation flag.", ex);
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply action!", ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
         }
     }
 
@@ -1068,21 +1072,17 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
-    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) {
 //        return internalRestoreSnapshot(snapshot, null);
-        try {
-            Collection<Future> futureCollection = new ArrayList<>();
-            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
-                futureCollection.add(applyAction(actionDescription));
-            }
-            return GlobalCachedExecutorService.allOf(futureCollection);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not record snapshot!", ex);
+        Collection<Future> futureCollection = new ArrayList<>();
+        for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+            ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
+            futureCollection.add(applyAction(actionDescription));
         }
+        return GlobalCachedExecutorService.allOf(futureCollection);
     }
 
-    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException, InterruptedException {
+    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) {
         return restoreSnapshot(snapshot);
         //TODO: implementation has to be fixed like in ServiceRemoteManager
         //        try {

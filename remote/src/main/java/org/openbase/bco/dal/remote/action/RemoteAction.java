@@ -122,11 +122,7 @@ public class RemoteAction implements Action {
                 actionParameterBuilder.setCause(causeActionDescription);
             }
             synchronized (executionSync) {
-                try {
-                    return initFutureObservationTask(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
-                } catch (CouldNotPerformException ex) {
-                    return FutureProcessor.canceledFuture(ex);
-                }
+                return initFutureObservationTask(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
             }
         }
     }

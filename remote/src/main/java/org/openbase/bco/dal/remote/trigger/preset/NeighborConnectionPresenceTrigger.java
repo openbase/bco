@@ -23,13 +23,14 @@ package org.openbase.bco.dal.remote.trigger.preset;
  */
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.type.domotic.state.ConnectionStateType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.controller.Remote;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.DoorStateType.DoorState;
@@ -43,7 +44,7 @@ import org.openbase.type.domotic.state.WindowStateType.WindowState;
 public class NeighborConnectionPresenceTrigger extends AbstractTrigger {
 
     private final Observer dataObserver;
-    private final Observer<Remote, ConnectionState> connectionObserver;
+    private final Observer<Remote, ConnectionState.State> connectionObserver;
     private final LocationRemote locationRemote;
     private final ConnectionRemote connectionRemote;
     private boolean active = false;
@@ -59,7 +60,7 @@ public class NeighborConnectionPresenceTrigger extends AbstractTrigger {
         };
 
         connectionObserver = (source, data) -> {
-            if (data.equals(Remote.ConnectionState.CONNECTED)) {
+            if (data.equals(ConnectionStateType.ConnectionState.State.CONNECTED)) {
                 verifyCondition();
             } else {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));

@@ -153,7 +153,7 @@ public class StandbyController<C extends StandbyStateOperationService & Snapshot
             restoreSnapshotFuture.get(RESTORE_SNAPSHOT_TIMEOUT, TimeUnit.SECONDS);
             snapshot = null;
 
-        } catch (CouldNotPerformException | ExecutionException ex) {
+        } catch (ExecutionException ex) {
             throw new CouldNotPerformException("WakeUp failed!", ex);
         } catch (TimeoutException ex) {
             restoreSnapshotFuture.cancel(true);

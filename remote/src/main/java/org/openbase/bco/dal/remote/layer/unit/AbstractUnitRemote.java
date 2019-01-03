@@ -573,11 +573,10 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      *
      * @return a transformation future
      *
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getRootToUnitTransformationFuture()} instead.
      */
     @Deprecated
-    public Future<Transform> getTransformation() throws InterruptedException {
+    public Future<Transform> getTransformation() {
         try {
             return Units.getRootToUnitTransformationFuture(getConfig());
         } catch (CouldNotPerformException ex) {
@@ -585,7 +584,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         }
     }
 
-    public Future<ActionDescription> applyAction(ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(ActionDescription.Builder actionDescriptionBuilder) {
         return applyAction(actionDescriptionBuilder.build());
     }
 
@@ -595,11 +594,9 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * @param actionDescription {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActionDescription> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(ActionDescription actionDescription) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), this::applyActionAuthenticated);
     }
 
@@ -609,8 +606,6 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * @param actionParameter {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
 //    @Override
 //    public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
@@ -631,17 +626,21 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 //                authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
 //    }
     @Override
-    public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
-        final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
-        if (actionDescriptionBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
-            actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
-        }
-        if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthenticationToken() || actionParameter.hasAuthorizationToken())) {
-            final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescriptionBuilder.build(), actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
-            final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
-            return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
-        } else {
-            return applyAction(actionDescriptionBuilder.build());
+    public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
+        try {
+            final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
+            if (actionDescriptionBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
+                actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
+            }
+            if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthenticationToken() || actionParameter.hasAuthorizationToken())) {
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescriptionBuilder.build(), actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
+                final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
+                return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+            } else {
+                return applyAction(actionDescriptionBuilder.build());
+            }
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
@@ -654,11 +653,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      */
     @Override
     public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
-        try {
-            return applyAction(actionDescription.toBuilder().setCancel(true));
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
-        }
+        return applyAction(actionDescription.toBuilder().setCancel(true));
     }
 
     public Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticationToken, final String authorizationToken) {
@@ -672,16 +667,16 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                 return applyAction(build);
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
     @Override
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
         try {
             return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply action!", ex);
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }
     }
 
@@ -729,16 +724,16 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     }
 
     @Override
-    public Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(Snapshot snapshot) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), this::restoreSnapshotAuthenticated);
     }
 
     @Override
-    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) {
         try {
             return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class), this);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not restore snapshot!", ex);
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, new CouldNotPerformException("Could not restore snapshot!", ex));
         }
     }
 
