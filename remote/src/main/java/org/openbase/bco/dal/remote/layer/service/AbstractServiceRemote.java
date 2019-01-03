@@ -647,7 +647,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // apply action on remote
                 actionTaskList.add(unitRemote.applyAction(builder.build()));
             }
-            return GlobalCachedExecutorService.allOf(input -> {
+            return FutureProcessor.allOf(input -> {
                 for (final Future<ActionDescription> actionTask : input) {
                     try {
                         actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(actionTask.get()));
@@ -745,7 +745,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // apply action on remote
                 actionTaskList.add(unitRemote.applyActionAuthenticated(authValue));
             }
-            return GlobalCachedExecutorService.allOf(input -> {
+            return FutureProcessor.allOf(input -> {
                 for (final Future<AuthenticatedValue> future : input) {
                     try {
                         final AuthenticatedValue unitAuthenticatedValue = future.get();
@@ -1031,7 +1031,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
         }
 
-        return GlobalCachedExecutorService.allOf(input -> {
+        return FutureProcessor.allOf(input -> {
             try {
                 long sum = 0;
                 for (final Future<Long> future : input) {

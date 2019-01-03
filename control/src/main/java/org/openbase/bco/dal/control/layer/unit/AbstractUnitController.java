@@ -1079,7 +1079,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
             futureCollection.add(applyAction(actionDescription));
         }
-        return GlobalCachedExecutorService.allOf(futureCollection);
+        return FutureProcessor.allOf(futureCollection);
     }
 
     protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) {

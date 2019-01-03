@@ -351,7 +351,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 try {
                     final TicketAuthenticatorWrapper initializedTicket = AuthenticationClientHandler.initServiceServerRequest(authenticationBaseData.getSessionKey(), authenticationBaseData.getTicketAuthenticatorWrapper());
 
-                    return GlobalCachedExecutorService.allOf(input -> {
+                    return FutureProcessor.allOf(input -> {
                         try {
                             for (Future<AuthenticatedValue> authenticatedValueFuture : input) {
                                 AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, authenticatedValueFuture.get().getTicketAuthenticatorWrapper());
@@ -365,7 +365,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                     throw new CouldNotPerformException("Could not update ticket for further requests", ex);
                 }
             } else {
-                return GlobalCachedExecutorService.allOf(input -> null, generateSnapshotActions(snapshot, null, null));
+                return FutureProcessor.allOf(input -> null, generateSnapshotActions(snapshot, null, null));
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not record snapshot authenticated!", ex));
@@ -444,7 +444,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 }
             }
 
-            return GlobalCachedExecutorService.allOf(input -> {
+            return FutureProcessor.allOf(input -> {
                 try {
                     long sum = 0;
                     for (final Future<Long> future : input) {
@@ -607,7 +607,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 futureData.add(remote.requestData());
             }
 
-            return GlobalCachedExecutorService.allOf(() -> {
+            return FutureProcessor.allOf(() -> {
                 try {
                     return updateBuilderWithAvailableServiceStates(builder);
                 } catch (CouldNotPerformException ex) {
