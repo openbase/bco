@@ -35,8 +35,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.pattern.Remote;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.controller.Remote;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.processing.StringProcessor.Alignment;
 import org.openbase.jul.storage.registry.RegistryRemote;
@@ -228,7 +228,7 @@ public class BCOSystemValidator {
         if (online) {
             // ping does not cause the connection state to be connected, this is done by a data update, therefore wait a bit for the connection state
             try {
-                remote.waitForConnectionState(ConnectionState.CONNECTED, delayTime);
+                remote.waitForConnectionState(ConnectionState.State.CONNECTED, delayTime);
             } catch (org.openbase.jul.exception.TimeoutException ex) {
                 // just continue and print error for next step
             } catch (CouldNotPerformException ex) {
@@ -236,7 +236,7 @@ public class BCOSystemValidator {
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
-            final ConnectionState connectionState = remote.getConnectionState();
+            final ConnectionState.State connectionState = remote.getConnectionState();
             String connectionDescription = StringProcessor.fillWithSpaces("Connection", LABEL_RANGE, Alignment.RIGHT) + "  ";
             switch (connectionState) {
                 case CONNECTED:

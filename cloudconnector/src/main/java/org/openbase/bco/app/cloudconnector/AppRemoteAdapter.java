@@ -82,12 +82,12 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) {
         return appRemote.restoreSnapshot(snapshot);
     }
 
     @Override
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
         return appRemote.applyActionAuthenticated(authenticatedValue);
     }
 
@@ -122,7 +122,7 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         return appRemote.applyAction(actionDescription);
     }
 
