@@ -161,9 +161,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
             UnitConfig unitHost = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
             if (unitHost.getUnitType() == UnitType.DEVICE) {
                 DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(unitHost.getDeviceConfig().getDeviceClassId());
-                if (deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("openhab")) {
-                    return false;
-                }
+                return !deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("openhab");
             }
         }
 

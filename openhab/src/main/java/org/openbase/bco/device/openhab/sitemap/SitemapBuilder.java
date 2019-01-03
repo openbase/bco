@@ -96,7 +96,7 @@ public interface SitemapBuilder {
         COLORWHEEL,
         SWITCH,
         CORRIDOR,
-        VIDEO;
+        VIDEO
     }
 
     enum SitemapElementType {
