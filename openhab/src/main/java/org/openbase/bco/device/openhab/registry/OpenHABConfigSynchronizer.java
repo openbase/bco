@@ -22,7 +22,6 @@ package org.openbase.bco.device.openhab.registry;
  * #L%
  */
 
-import org.openbase.bco.device.openhab.registry.synchronizer.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.device.openhab.registry.synchronizer.*;
 import org.openbase.bco.registry.remote.Registries;
