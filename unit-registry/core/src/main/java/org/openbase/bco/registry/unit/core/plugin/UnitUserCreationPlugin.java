@@ -38,6 +38,9 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.openbase.type.configuration.EntryType.Entry;
 import org.openbase.type.configuration.MetaConfigType.MetaConfig;
+import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
+import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
+import org.openbase.type.domotic.authentication.PermissionType.Permission;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -46,7 +49,8 @@ import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
 import java.util.concurrent.ExecutionException;
 
 /**
- * This plugin creates a user for every agent and app.
+ * This plugin creates a user for every agent and app. It also makes sure that they have access and read permissions
+ * on their location.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
@@ -69,14 +73,18 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
 
         try {
             for (final UnitConfig unitConfig : registry.getMessages()) {
+                UnitConfig userUnitConfig;
+
                 try {
-                    final UnitConfig userUnitConfig = findUser(unitConfig);
+                    userUnitConfig = findUser(unitConfig);
                     if (!CachedAuthenticationRemote.getRemote().hasUser(userUnitConfig.getId()).get()) {
                         registerUserAtAuthenticator(userUnitConfig.getId());
                     }
                 } catch (NotAvailableException ex) {
-                    registerUser(unitConfig);
+                    userUnitConfig = registerUser(unitConfig);
                 }
+
+                addLocationPermissions(userUnitConfig, unitConfig);
             }
         } catch (CouldNotPerformException | ExecutionException ex) {
             throw new InitializationException(this, ex);
@@ -84,9 +92,13 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
     }
 
     @Override
-    public void beforeRemove(IdentifiableMessage<String, UnitConfig, Builder> unitConfig) throws RejectedException {
+    public void beforeRemove(final IdentifiableMessage<String, UnitConfig, Builder> unitConfig) throws RejectedException {
         try {
-            userRegistry.remove(findUser(unitConfig.getMessage()));
+            // find user belonging to the unit
+            final UnitConfig user = findUser(unitConfig.getMessage());
+
+            // remove user
+            userRegistry.remove(user);
             //TODO: also remove user from authenticator... currently only possible as admin
         } catch (CouldNotPerformException e) {
             throw new RejectedException("Could not remove user of unit[" + unitConfig.getMessage().getAlias(0) + "]");
@@ -95,7 +107,14 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
 
     @Override
     public void afterRegister(IdentifiableMessage<String, UnitConfig, Builder> unitConfig) throws CouldNotPerformException {
-        registerUser(unitConfig.getMessage());
+        final UnitConfig userConfig = registerUser(unitConfig.getMessage());
+
+        addLocationPermissions(userConfig, unitConfig.getMessage());
+    }
+
+    @Override
+    public void afterUpdate(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
+        addLocationPermissions(findUser(identifiableMessage.getId(), userRegistry), identifiableMessage.getMessage());
     }
 
     private UnitConfig findUser(final UnitConfig unitConfig) throws CouldNotPerformException {
@@ -133,7 +152,7 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
         return username;
     }
 
-    private void registerUser(final UnitConfig unitConfig) throws CouldNotPerformException {
+    private UnitConfig registerUser(final UnitConfig unitConfig) throws CouldNotPerformException {
         final UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
         userUnitConfig.setUnitType(UnitType.USER);
         final Entry.Builder entry = userUnitConfig.getMetaConfigBuilder().addEntryBuilder();
@@ -141,7 +160,9 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
         final UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
         userConfig.setSystemUser(true);
         userConfig.setUserName(getUsername(unitConfig));
-        registerUserAtAuthenticator(userRegistry.register(userUnitConfig.build()).getId());
+        final UnitConfig registeredUserConfig = userRegistry.register(userUnitConfig.build());
+        registerUserAtAuthenticator(registeredUserConfig.getId());
+        return registeredUserConfig;
     }
 
     private void registerUserAtAuthenticator(final String id) throws CouldNotPerformException {
@@ -159,5 +180,37 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
             SessionManager.getInstance().login(bcoUserId);
         }
         SessionManager.getInstance().registerClient(id);
+    }
+
+    private static Permission RX_PERMISSION = Permission.newBuilder().setRead(true).setAccess(true).setWrite(false).build();
+
+    private void addLocationPermissions(final UnitConfig userConfig, final UnitConfig unitConfig) throws CouldNotPerformException {
+        // retrieve location of unit
+        final UnitConfig.Builder location = locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).toBuilder();
+
+        // add permission for user
+        final PermissionConfig.Builder permissionConfigBuilder = location.getPermissionConfigBuilder();
+        MapFieldEntry.Builder groupPermissionBuilder = null;
+
+        // check if the user already has the expected permissions
+        for (int i = 0; i < permissionConfigBuilder.getGroupPermissionCount(); i++) {
+            if (permissionConfigBuilder.getGroupPermission(i).getGroupId().equals(userConfig.getId())) {
+                groupPermissionBuilder = permissionConfigBuilder.getGroupPermissionBuilder(i);
+                if (groupPermissionBuilder.getPermission().equals(RX_PERMISSION)) {
+                    // return because the permissions are correctly set
+                    return;
+                }
+            }
+        }
+
+        // user does not have a permission entry yet so add one
+        if (groupPermissionBuilder == null) {
+            groupPermissionBuilder = permissionConfigBuilder.addGroupPermissionBuilder();
+        }
+        // set access and read permissions
+        groupPermissionBuilder.setGroupId(userConfig.getId()).setPermission(RX_PERMISSION);
+
+        // update location
+        locationRegistry.update(location.build());
     }
 }

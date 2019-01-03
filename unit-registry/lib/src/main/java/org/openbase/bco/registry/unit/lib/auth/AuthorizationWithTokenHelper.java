@@ -86,7 +86,7 @@ public class AuthorizationWithTokenHelper {
                     throw new RejectedException("Invalid unit id, service template id or unit template id", ex);
                 }
 
-                // a filter reduces permissions so everything the permission does not need to be verified
+                // a filter reduces permissions so it can be granted anyways
                 if (permissionRule.getFilter()) {
                     continue;
                 }

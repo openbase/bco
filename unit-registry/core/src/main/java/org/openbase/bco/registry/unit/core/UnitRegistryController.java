@@ -59,8 +59,8 @@ import org.openbase.bco.registry.unit.lib.jp.*;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -72,9 +72,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
@@ -96,6 +93,9 @@ import org.openbase.type.domotic.unit.scene.SceneConfigType.SceneConfig;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
 import org.openbase.type.spatial.ShapeType.Shape;
+import org.slf4j.LoggerFactory;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -309,6 +309,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationShapeConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new TileConnectionIdConsistencyHandler(connectionUnitConfigRegistry));
         locationUnitConfigRegistry.registerConsistencyHandler(new RootLocationPermissionConsistencyHandler(aliasIdMap));
+        locationUnitConfigRegistry.registerConsistencyHandler(new UnitUserPermissionConsistencyHandler(this));
 
         sceneUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
@@ -984,7 +985,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected UnitRegistryData filterDataForUser(final UnitRegistryData.Builder dataBuilder, final String userId) throws CouldNotPerformException {
         // Create a filter which removes all unit configs from a list without read permissions to its location by the user
-        final ListFilter<UnitConfig> readFilter = unitConfig ->  {
+        final ListFilter<UnitConfig> readFilter = unitConfig -> {
             try {
                 return !AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
             } catch (CouldNotPerformException e) {
