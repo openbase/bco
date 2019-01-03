@@ -25,7 +25,7 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
+import org.openbase.jul.extension.rsb.com.AbstractControllerServer;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBListener;
@@ -67,7 +67,7 @@ public class SoundScapeApp extends AbstractAppController {
         super(SoundScapeApp.class);
         logger.debug("Creating sound scape app with scope [" + themeScope.toString() + "]!");
         this.listener = RSBFactoryImpl.getInstance().createSynchronizedListener(themeScope, RSBSharedConnectionConfig.getParticipantConfig());
-        this.listenerWatchDog = new WatchDog(listener, "RSBListener[" + themeScope.concat(RSBCommunicationService.SCOPE_SUFFIX_STATUS) + "]");
+        this.listenerWatchDog = new WatchDog(listener, "RSBListener[" + themeScope.concat(AbstractControllerServer.SCOPE_SUFFIX_STATUS) + "]");
         listener.addHandler((Event event) -> {
             logger.debug("Got data [" + event.getData() + "]");
             if (event.getData() instanceof String) {
