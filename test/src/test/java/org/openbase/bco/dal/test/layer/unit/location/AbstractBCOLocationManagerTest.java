@@ -28,7 +28,6 @@ import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 

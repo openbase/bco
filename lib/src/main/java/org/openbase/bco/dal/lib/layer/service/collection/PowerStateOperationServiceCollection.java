@@ -29,7 +29,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 

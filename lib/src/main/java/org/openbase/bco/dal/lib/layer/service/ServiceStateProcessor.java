@@ -25,7 +25,6 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
-import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.jul.exception.CouldNotPerformException;

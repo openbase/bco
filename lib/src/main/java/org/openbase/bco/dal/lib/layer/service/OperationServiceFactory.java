@@ -24,7 +24,6 @@ package org.openbase.bco.dal.lib.layer.service;
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.Factory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**

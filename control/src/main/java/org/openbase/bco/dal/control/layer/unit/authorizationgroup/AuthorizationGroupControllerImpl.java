@@ -24,17 +24,10 @@ package org.openbase.bco.dal.control.layer.unit.authorizationgroup;
 
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroupController;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
-
-import java.util.concurrent.Future;
-
-import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE;
 
 public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController<AuthorizationGroupData, AuthorizationGroupData.Builder> implements AuthorizationGroupController {
 

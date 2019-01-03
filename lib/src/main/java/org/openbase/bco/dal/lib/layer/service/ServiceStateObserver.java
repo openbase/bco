@@ -23,11 +23,8 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import com.google.protobuf.Message;
-import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.provider.DataProvider;
 
 /**
  * An observer which is can be set to filter empty service updates.

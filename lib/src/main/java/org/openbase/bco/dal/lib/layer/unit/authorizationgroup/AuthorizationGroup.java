@@ -22,10 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.authorizationgroup;
  * #L%
  */
 
-import java.util.concurrent.Future;
-
 import org.openbase.bco.dal.lib.layer.service.operation.PresenceStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.UserTransitStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 

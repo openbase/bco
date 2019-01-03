@@ -28,7 +28,6 @@ import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
-import org.openbase.jul.pattern.provider.DataProvider;
 
 /**
  * Observable for service data. It uses a custom hash generator that filters responsible actions, timestamps

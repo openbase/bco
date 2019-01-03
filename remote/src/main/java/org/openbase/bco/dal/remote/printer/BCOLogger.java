@@ -22,11 +22,8 @@ package org.openbase.bco.dal.remote.printer;
  * #L%
  */
 
-import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.remote.printer.jp.JPOutputDirectory;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -38,18 +35,8 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
-import org.openbase.jul.iface.Transformer;
-import org.openbase.jul.pattern.Filter;
-import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
-import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.File;
 import java.io.FileNotFoundException;

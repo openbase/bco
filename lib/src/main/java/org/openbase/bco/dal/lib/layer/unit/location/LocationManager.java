@@ -2,7 +2,6 @@ package org.openbase.bco.dal.lib.layer.unit.location;
 
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.connection.ConnectionController;
-import org.openbase.jul.exception.NotAvailableException;
 
 /*
  * #%L

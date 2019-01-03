@@ -24,7 +24,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.VideoDepthSource;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.dal.VideoDepthSourceDataType.VideoDepthSourceData;

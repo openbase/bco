@@ -22,9 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.Message;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.storage.registry.SynchronizableRegistry;
 
 /**
  *

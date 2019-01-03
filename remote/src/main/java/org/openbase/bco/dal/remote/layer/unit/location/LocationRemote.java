@@ -15,7 +15,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
-import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;

@@ -25,7 +25,6 @@ package org.openbase.bco.dal.visual.util;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 
 /**

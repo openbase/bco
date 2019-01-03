@@ -1,7 +1,6 @@
 package org.openbase.bco.dal.lib.layer.unit.agent;
 
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
-import org.openbase.jul.exception.NotAvailableException;
 
 /*
  * #%L

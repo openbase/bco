@@ -22,38 +22,20 @@ package org.openbase.bco.dal.control.layer.unit.agent;
  * #L%
  */
 
-import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.AbstractAuthorizedBaseUnitController;
-import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
-import org.openbase.jul.extension.type.processing.MetaConfigPool;
-import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData.Builder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
-import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
 import org.openbase.type.domotic.unit.agent.AgentDataType;
 import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

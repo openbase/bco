@@ -23,7 +23,6 @@ package org.openbase.bco.dal.control.layer.unit;
  */
 
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import org.openbase.bco.dal.lib.layer.unit.HostUnit;

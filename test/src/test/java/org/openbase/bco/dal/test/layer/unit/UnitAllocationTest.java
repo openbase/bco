@@ -42,7 +42,6 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
@@ -52,8 +51,6 @@ import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightD
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

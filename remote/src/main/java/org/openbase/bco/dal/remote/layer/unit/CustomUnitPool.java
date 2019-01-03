@@ -23,9 +23,7 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import com.google.protobuf.Message;
-import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitFilters;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;

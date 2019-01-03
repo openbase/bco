@@ -22,9 +22,6 @@ package org.openbase.bco.dal.visual.action;
  * #L%
  */
 
-import javafx.fxml.FXML;
-import javafx.scene.layout.BorderPane;
-import org.openbase.jul.visual.javafx.fxml.FXMLProcessor;
 import org.openbase.jul.visual.javafx.launch.AbstractFXMLApplication;
 
 public class BCOActionInspector extends AbstractFXMLApplication {

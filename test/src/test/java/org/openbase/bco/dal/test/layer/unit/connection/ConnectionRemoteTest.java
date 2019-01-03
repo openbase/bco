@@ -33,7 +33,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.type.domotic.state.ConnectionStateType;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;

@@ -23,11 +23,9 @@ package org.openbase.bco.dal.remote.printer;
  */
 
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;

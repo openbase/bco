@@ -23,7 +23,6 @@ package org.openbase.bco.dal.control.layer.unit.app;
  */
 import org.openbase.bco.dal.control.layer.unit.AbstractAuthorizedBaseUnitController;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
-import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.registry.remote.Registries;
@@ -31,7 +30,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 import org.openbase.type.domotic.unit.app.AppDataType.AppData.Builder;
 import rsb.converter.DefaultConverterRepository;

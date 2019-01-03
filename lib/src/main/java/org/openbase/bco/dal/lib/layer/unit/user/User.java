@@ -25,7 +25,6 @@ package org.openbase.bco.dal.lib.layer.unit.user;
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.unit.user.UserDataType.UserData;
 

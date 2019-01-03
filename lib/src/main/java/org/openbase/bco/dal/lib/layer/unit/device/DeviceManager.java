@@ -25,7 +25,6 @@ package org.openbase.bco.dal.lib.layer.unit.device;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitManager;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 

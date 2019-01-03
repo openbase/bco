@@ -22,11 +22,9 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import rsb.Handler;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;

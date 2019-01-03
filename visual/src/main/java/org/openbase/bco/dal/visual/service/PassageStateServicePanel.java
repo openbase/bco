@@ -24,10 +24,7 @@ package org.openbase.bco.dal.visual.service;
 import org.openbase.bco.dal.lib.layer.service.provider.PassageStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.processing.StringProcessor;
-import java.awt.Color;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 

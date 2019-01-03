@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
-import ch.qos.logback.classic.Logger;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.EncryptionHelper;

@@ -1,7 +1,6 @@
 package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 
 /*
  * #%L

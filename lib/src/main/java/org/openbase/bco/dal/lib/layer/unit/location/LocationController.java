@@ -2,8 +2,6 @@ package org.openbase.bco.dal.lib.layer.unit.location;
 
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
 /*

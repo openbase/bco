@@ -21,26 +21,16 @@ package org.openbase.bco.dal.task;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import de.citec.csra.task.TaskProxy;
 import de.citec.csra.task.srv.LocalTask;
 import de.citec.csra.task.srv.LocalTaskFactory;
-import de.citec.csra.task.srv.TaskExecutionMonitor;
-import de.citec.csra.task.srv.TaskHandler;
-import de.citec.csra.task.srv.TaskServer;
-import java.util.concurrent.Callable;
+
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.exception.RSBResolvedException;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.Event;
-import rsb.Informer;
-import rsb.RSBException;
 //import org.openbase.type.communicationpatterns.TaskStateType.TaskState;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 

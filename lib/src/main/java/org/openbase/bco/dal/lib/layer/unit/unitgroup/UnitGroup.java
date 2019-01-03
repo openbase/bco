@@ -23,16 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit.unitgroup;
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
-import org.openbase.bco.dal.lib.layer.unit.ServiceAggregator;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
-import org.openbase.type.domotic.service.ServiceTemplateType;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
