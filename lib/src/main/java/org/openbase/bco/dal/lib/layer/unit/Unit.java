@@ -307,11 +307,10 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
             if (!getConfig().hasPlacementConfig()) {
                 throw new NotAvailableException("PlacementConfig");
             }
-            //todo release : rename PlacementConfig position into pose.
-            if (!getConfig().getPlacementConfig().hasPosition()) {
-                throw new NotAvailableException("Position");
+            if (!getConfig().getPlacementConfig().hasPose()) {
+                throw new NotAvailableException("Pose");
             }
-            return getConfig().getPlacementConfig().getPosition().getTranslation();
+            return getConfig().getPlacementConfig().getPose().getTranslation();
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitPosition", ex);
         }
@@ -329,10 +328,10 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
             if (!getConfig().hasPlacementConfig()) {
                 throw new NotAvailableException("PlacementConfig");
             }
-            if (!getConfig().getPlacementConfig().hasPosition()) {
+            if (!getConfig().getPlacementConfig().hasPose()) {
                 throw new NotAvailableException("Position");
             }
-            return getConfig().getPlacementConfig().getPosition().getRotation();
+            return getConfig().getPlacementConfig().getPose().getRotation();
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitRotation", ex);
         }

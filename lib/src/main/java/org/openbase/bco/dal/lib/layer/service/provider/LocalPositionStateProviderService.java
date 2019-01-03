@@ -52,10 +52,10 @@ public interface LocalPositionStateProviderService extends ProviderService {
 
         // if the state has a position with a translation fill the location ids accordingly
         LocalPositionState.Builder builder = localPositionState.toBuilder();
-        if (localPositionState.hasPosition() && localPositionState.getPosition().hasTranslation()) {
+        if (localPositionState.hasPose() && localPositionState.getPose().hasTranslation()) {
             builder.clearLocationId();
             // convert the translation to a vector
-            final Translation translation = localPositionState.getPosition().getTranslation();
+            final Translation translation = localPositionState.getPose().getTranslation();
             final Vec3DDouble vec3DDouble = Vec3DDouble.newBuilder().setX(translation.getX()).setY(translation.getY()).setZ(translation.getZ()).build();
             try {
                 // retrieve location list sorted by location type

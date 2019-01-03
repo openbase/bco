@@ -207,7 +207,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         switch (internalBuilder.getPresenceState().getValue()) {
             case ABSENT:
                 updateLastWithCurrentState(LOCAL_POSITION_STATE_SERVICE, internalBuilder);
-                internalBuilder.getLocalPositionStateBuilder().clearLocationId().clearPosition();
+                internalBuilder.getLocalPositionStateBuilder().clearLocationId().clearPose();
                 copyResponsibleAction(PRESENCE_STATE_SERVICE, LOCAL_POSITION_STATE_SERVICE, internalBuilder);
                 break;
             case PRESENT:
