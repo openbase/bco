@@ -54,7 +54,7 @@ import java.util.concurrent.Future;
 
 public interface UnitTransformationProviderRegistry<D> extends RootLocationConfigProvider, DataProvider<D>, UnitConfigCollectionProvider {
 
-    default UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
+    default UnitConfig getRootLocationConfig() throws CouldNotPerformException {
         for (UnitConfig locationConfig : getUnitConfigs(UnitType.LOCATION)) {
             if (locationConfig.getLocationConfig().hasRoot() && locationConfig.getLocationConfig().getRoot()) {
                 return locationConfig;

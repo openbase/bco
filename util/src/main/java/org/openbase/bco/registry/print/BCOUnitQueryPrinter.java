@@ -83,9 +83,9 @@ public class BCOUnitQueryPrinter {
             }
             if (!unitConfigs.isEmpty()) {
                 resultsFound = true;
-                System.out.println("");
+                System.out.println();
                 System.out.println("resolved by unit type:");
-                System.out.println("");
+                System.out.println();
                 printUnits(unitConfigs);
                 System.exit(0);
             }
@@ -99,9 +99,9 @@ public class BCOUnitQueryPrinter {
             }
             if (!unitConfigs.isEmpty()) {
                 resultsFound = true;
-                System.out.println("");
+                System.out.println();
                 System.out.println("resolved by location:");
-                System.out.println("");
+                System.out.println();
                 printUnits(unitConfigs);
                 System.exit(0);
             }
@@ -115,9 +115,9 @@ public class BCOUnitQueryPrinter {
             }
             if (!unitConfigs.isEmpty()) {
                 resultsFound = true;
-                System.out.println("");
+                System.out.println();
                 System.out.println("resolved by label:");
-                System.out.println("");
+                System.out.println();
                 printUnits(unitConfigs);
                 System.exit(0);
             }
@@ -131,9 +131,9 @@ public class BCOUnitQueryPrinter {
             }
             if (!unitConfigs.isEmpty()) {
                 resultsFound = true;
-                System.out.println("");
+                System.out.println();
                 System.out.println("resolved by scope:");
-                System.out.println("");
+                System.out.println();
                 printUnits(unitConfigs);
                 System.exit(0);
             }
@@ -147,9 +147,9 @@ public class BCOUnitQueryPrinter {
             }
             if (!unitConfigs.isEmpty()) {
                 resultsFound = true;
-                System.out.println("");
+                System.out.println();
                 System.out.println("resolved by id:");
-                System.out.println("");
+                System.out.println();
                 printUnits(unitConfigs);
                 System.exit(0);
             }
@@ -160,9 +160,9 @@ public class BCOUnitQueryPrinter {
 
             if (!unitConfigs.isEmpty()) {
                 resultsFound = true;
-                System.out.println("");
+                System.out.println();
                 System.out.println("resolved by alias:");
-                System.out.println("");
+                System.out.println();
                 printUnits(unitConfigs);
                 System.exit(0);
             }
@@ -178,9 +178,9 @@ public class BCOUnitQueryPrinter {
             }
             if (!unitConfigs.isEmpty()) {
                 resultsFound = true;
-                System.out.println("");
+                System.out.println();
                 System.out.println("resolved by description:");
-                System.out.println("");
+                System.out.println();
                 printUnits(unitConfigs);
                 System.exit(0);
             }
@@ -201,22 +201,22 @@ public class BCOUnitQueryPrinter {
     }
 
     private static void printHelp() {
-        System.out.println("");
-        System.out.println("");
+        System.out.println();
+        System.out.println();
         System.out.println("Usage:   bco-registry-query ${UNIT_TYPE}");
         System.out.println("         bco-registry-query ${UNIT_LOCATION}");
         System.out.println("         bco-registry-query ${UNIT_LABEL}");
         System.out.println("         bco-registry-query ${UNIT_ID}");
         System.out.println("         bco-registry-query ${UNIT_ALIAS}");
-        System.out.println("");
+        System.out.println();
         System.out.println("Example: bco-registry-query colorablelight");
         System.out.println("         bco-registry-query livingroom");
         System.out.println("         bco-registry-query ceilinglamp");
         System.out.println("         bco-registry-query 844a5b35-4b9c-4db2-9d22-4842db77bc95");
         System.out.println("         bco-registry-query colorablelight-12");
-        System.out.println("");
+        System.out.println();
         System.out.println("Print:   ${ID} ${LABEL} @ ${LOCATION} ${SCOPE}");
-        System.out.println("");
+        System.out.println();
     }
 
     public static void printUnits(List<UnitConfig> unitConfigList) throws CouldNotPerformException {

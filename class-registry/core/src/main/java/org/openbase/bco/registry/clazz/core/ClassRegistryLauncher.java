@@ -50,7 +50,7 @@ public class ClassRegistryLauncher extends AbstractRegistryLauncher<ClassRegistr
         super(ClassRegistry.class, ClassRegistryController.class);
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         main(args, ClassRegistry.class, ClassRegistryLauncher.class);
     }

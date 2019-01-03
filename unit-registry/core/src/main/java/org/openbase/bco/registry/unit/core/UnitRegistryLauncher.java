@@ -81,7 +81,7 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
         JPService.registerProperty(JPRSBLegacyMode.class);
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         main(args, UnitRegistry.class, UnitRegistryLauncher.class);
     }

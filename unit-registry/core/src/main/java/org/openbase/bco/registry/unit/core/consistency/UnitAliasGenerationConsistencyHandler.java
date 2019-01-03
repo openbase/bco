@@ -114,7 +114,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
     }
 
     private void registerAlias(final String alias, final UnitType unitType) {
-        String split[] = alias.split(ALIAS_NUMBER_SEPARATOR);
+        String[] split = alias.split(ALIAS_NUMBER_SEPARATOR);
 
         if (split.length != 2) {
             return;

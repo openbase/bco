@@ -74,7 +74,7 @@ public class TemplateRegistryLauncher extends AbstractRegistryLauncher<TemplateR
         return true;
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         AbstractLauncher.main(args, TemplateRegistry.class, TemplateRegistryLauncher.class);
     }

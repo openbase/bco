@@ -69,7 +69,7 @@ public class ActivityRegistryLauncher extends AbstractRegistryLauncher<ActivityR
         JPService.registerProperty(JPRSBTransport.class);
     }
 
-    public static void main(String args[]) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         BCO.printLogo();
         AbstractLauncher.main(args, ActivityRegistry.class, ActivityRegistryLauncher.class);
     }

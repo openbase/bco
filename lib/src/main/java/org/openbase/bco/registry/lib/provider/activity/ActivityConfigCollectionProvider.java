@@ -80,5 +80,5 @@ public interface ActivityConfigCollectionProvider {
      * @return a list of activity configs with the given activity type
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    public List<ActivityConfig> getActivityConfigsByType(final ActivityType activityType) throws CouldNotPerformException;
+    List<ActivityConfig> getActivityConfigsByType(final ActivityType activityType) throws CouldNotPerformException;
 }

@@ -37,5 +37,5 @@ public interface UnitRegistryProvider {
      * @return
      * @throws NotAvailableException
      */
-    public UnitRegistry getUnitRegistry() throws NotAvailableException;
+    UnitRegistry getUnitRegistry() throws NotAvailableException;
 }

@@ -280,13 +280,10 @@ public class AuthorizationWithTokenHelper {
             return false;
         }
         // if the given unit type is defined and the rule contains a unit type which does not match return false
-        if (unitType != null
-                && unitType != UnitType.UNKNOWN
-                && permissionRule.hasUnitTemplateId()
-                && templateRegistry.getUnitTemplateById(permissionRule.getUnitTemplateId()).getType() != unitType) {
-            return false;
-        }
-        return true;
+        return unitType == null
+                || unitType == UnitType.UNKNOWN
+                || !permissionRule.hasUnitTemplateId()
+                || templateRegistry.getUnitTemplateById(permissionRule.getUnitTemplateId()).getType() == unitType;
     }
 
     private static boolean containsUnit(final UnitConfig unitConfig, final UnitConfig locationToCheck, final UnitRegistry unitRegistry) throws CouldNotPerformException {

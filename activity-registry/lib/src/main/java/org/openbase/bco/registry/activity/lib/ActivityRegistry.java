@@ -109,7 +109,7 @@ public interface ActivityRegistry extends ActivityConfigCollectionProvider, Data
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    public Boolean isActivityConfigRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isActivityConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
      * Method returns true if the underling registry is marked as consistent.
@@ -118,6 +118,6 @@ public interface ActivityRegistry extends ActivityConfigCollectionProvider, Data
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    public Boolean isActivityConfigRegistryConsistent() throws CouldNotPerformException;
+    Boolean isActivityConfigRegistryConsistent() throws CouldNotPerformException;
 
 }

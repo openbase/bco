@@ -65,7 +65,7 @@ public class BCORegistryPrinter {
     private final Map<UnitType, Integer> unitNumberByTypeMap;
     private final Map<ServiceType, Integer> serviceNumberByTypeMap;
 
-    public BCORegistryPrinter() throws InterruptedException, NotAvailableException, InstantiationException, CouldNotPerformException {
+    public BCORegistryPrinter() throws InterruptedException, CouldNotPerformException {
 
         // pre init
         deviceNumberByClassMap = new HashMap<>();
@@ -105,7 +105,7 @@ public class BCORegistryPrinter {
         LINE_DELIMITER_SMALL = StringProcessor.fillWithSpaces("", LINE_LENGHT).replaceAll(" ", "-");
 
         // print device category
-        System.out.println("");
+        System.out.println();
         System.out.println(LINE_DELIMITER_FAT);
         printEntry("Devices", Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE).size());
         System.out.println(LINE_DELIMITER_FAT);
@@ -128,7 +128,7 @@ public class BCORegistryPrinter {
             printEntry(LabelProcessor.getBestMatch(deviceClass.getLabel()), deviceNumberByClassMap.get(deviceClass.getId()));
         }
         System.out.println(LINE_DELIMITER_SMALL);
-        System.out.println("");
+        System.out.println();
 
         // print unit category
         System.out.println(LINE_DELIMITER_FAT);
@@ -150,7 +150,7 @@ public class BCORegistryPrinter {
             printEntry(StringProcessor.transformUpperCaseToCamelCase(unitType.name()), unitNumberByTypeMap.get(unitType));
         }
         System.out.println(LINE_DELIMITER_SMALL);
-        System.out.println("");
+        System.out.println();
 
         // print service category
         System.out.println(LINE_DELIMITER_FAT);
@@ -172,7 +172,7 @@ public class BCORegistryPrinter {
             printEntry(StringProcessor.transformUpperCaseToCamelCase(serviceType.name()), serviceNumberByTypeMap.get(serviceType));
         }
         System.out.println(LINE_DELIMITER_SMALL);
-        System.out.println("");
+        System.out.println();
     }
 
     private void printEntry(final String context, final int amount) {

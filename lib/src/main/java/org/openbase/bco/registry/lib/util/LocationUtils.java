@@ -78,11 +78,11 @@ public class LocationUtils {
         }
     }
 
-    public static UnitConfig getRootLocation(final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap) throws NotAvailableException, CouldNotPerformException {
+    public static UnitConfig getRootLocation(final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap) throws CouldNotPerformException {
         return getRootLocation(entryMap.getMessages());
     }
 
-    public static UnitConfig getRootLocation(final List<UnitConfig> locationUnitConfigList) throws NotAvailableException, CouldNotPerformException {
+    public static UnitConfig getRootLocation(final List<UnitConfig> locationUnitConfigList) throws CouldNotPerformException {
         UnitConfig rootLocation = null;
         try {
             for (UnitConfig locationConfig : locationUnitConfigList) {

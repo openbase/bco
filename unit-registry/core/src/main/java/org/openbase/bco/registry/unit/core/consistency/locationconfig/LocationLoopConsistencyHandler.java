@@ -46,11 +46,11 @@ public class LocationLoopConsistencyHandler extends AbstractProtoBufRegistryCons
         loopTestBottomUp(entry.getMessage(), registry);
     }
 
-    private void loopTestBottomUp(final UnitConfig locationConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
+    private void loopTestBottomUp(final UnitConfig locationConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException {
         loopTestBottomUp(locationConfig, registry, new ArrayList<>());
     }
 
-    private void loopTestBottomUp(final UnitConfig locationConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
+    private void loopTestBottomUp(final UnitConfig locationConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry, List<String> processedLocations) throws CouldNotPerformException {
 
         if (!locationConfig.hasPlacementConfig()) {
             return;
@@ -70,11 +70,11 @@ public class LocationLoopConsistencyHandler extends AbstractProtoBufRegistryCons
         loopTestBottomUp(registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage(), registry, processedLocations);
     }
 
-    private void loopTestTopDown(final UnitConfig locationConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
+    private void loopTestTopDown(final UnitConfig locationConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException {
         loopTestTopDown(locationConfig, registry, new ArrayList<>());
     }
 
-    private void loopTestTopDown(final UnitConfig locationConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
+    private void loopTestTopDown(final UnitConfig locationConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry, List<String> processedLocations) throws CouldNotPerformException {
         markAsProcessed(locationConfig, processedLocations);
 
         for (String locationId : locationConfig.getLocationConfig().getChildIdList()) {

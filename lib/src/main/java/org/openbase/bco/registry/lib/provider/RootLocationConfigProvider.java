@@ -35,6 +35,6 @@ public interface RootLocationConfigProvider {
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException is thrown if no rood connection exists.
      */
-    public UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException;
+    UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException;
 
 }
