@@ -32,7 +32,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.rct.GlobalTransformReceiver;
 import org.openbase.rct.Transform;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
@@ -170,7 +169,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
                 unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
                 unitConfigSource.getPlacementConfig().getTransformationFrameId(),
                 System.currentTimeMillis());
-        return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
+        return FutureProcessor.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
     }
 
     /**
