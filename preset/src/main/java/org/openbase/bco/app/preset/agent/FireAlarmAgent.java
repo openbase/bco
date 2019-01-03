@@ -33,8 +33,6 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
-import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
-import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;

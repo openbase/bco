@@ -31,7 +31,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;

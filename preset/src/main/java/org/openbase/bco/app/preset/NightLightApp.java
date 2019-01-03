@@ -23,7 +23,6 @@ package org.openbase.bco.app.preset;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
@@ -33,7 +32,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
@@ -47,7 +45,6 @@ import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
-import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 
 import java.util.ArrayList;

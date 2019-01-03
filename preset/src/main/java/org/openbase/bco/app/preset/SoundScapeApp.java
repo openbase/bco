@@ -31,7 +31,6 @@ import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.WatchDog;
-import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import rsb.Event;
 import rsb.Scope;

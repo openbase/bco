@@ -41,7 +41,6 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 /**
  *

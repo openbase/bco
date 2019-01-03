@@ -26,7 +26,6 @@ import org.openbase.bco.dal.remote.layer.unit.app.AppRemote;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.junit.After;
