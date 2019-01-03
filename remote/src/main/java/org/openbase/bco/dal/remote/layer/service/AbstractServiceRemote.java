@@ -745,38 +745,37 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // apply action on remote
                 actionTaskList.add(unitRemote.applyActionAuthenticated(authValue));
             }
+            return GlobalCachedExecutorService.allOf(input -> {
+                for (final Future<AuthenticatedValue> future : input) {
+                    try {
+                        final AuthenticatedValue unitAuthenticatedValue = future.get();
+                        final ActionDescription unitActionResponse;
+                        // validate responses and decrypt results
+                        if (sessionKey != null) {
+                            AuthenticationClientHandler.handleServiceServerResponse(sessionKey, authenticatedValue.getTicketAuthenticatorWrapper(), unitAuthenticatedValue.getTicketAuthenticatorWrapper());
+                            unitActionResponse = EncryptionHelper.decryptSymmetric(unitAuthenticatedValue.getValue(), sessionKey, ActionDescription.class);
+                        } else {
+                            unitActionResponse = ActionDescription.parseFrom(unitAuthenticatedValue.getValue());
+                        }
+                        // add resulting actions as impacts
+                        actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(unitActionResponse));
+                    } catch (ExecutionException ex) {
+                        throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+                    } catch (InvalidProtocolBufferException ex) {
+                        throw new CouldNotPerformException("Could not parse result from unauthenticated applyAction request as action description", ex);
+                    }
+                }
+                final AuthenticatedValue.Builder responseAuthValue = authenticatedValue.toBuilder();
+                if (sessionKey != null) {
+                    responseAuthValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));
+                } else {
+                    responseAuthValue.setValue(actionDescriptionBuilder.build().toByteString());
+                }
+                return authenticatedValue;
+            }, actionTaskList);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }
-
-        return GlobalCachedExecutorService.allOf(input -> {
-            for (final Future<AuthenticatedValue> future : input) {
-                try {
-                    final AuthenticatedValue unitAuthenticatedValue = future.get();
-                    final ActionDescription unitActionResponse;
-                    // validate responses and decrypt results
-                    if (sessionKey != null) {
-                        AuthenticationClientHandler.handleServiceServerResponse(sessionKey, authenticatedValue.getTicketAuthenticatorWrapper(), unitAuthenticatedValue.getTicketAuthenticatorWrapper());
-                        unitActionResponse = EncryptionHelper.decryptSymmetric(unitAuthenticatedValue.getValue(), sessionKey, ActionDescription.class);
-                    } else {
-                        unitActionResponse = ActionDescription.parseFrom(unitAuthenticatedValue.getValue());
-                    }
-                    // add resulting actions as impacts
-                    actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(unitActionResponse));
-                } catch (ExecutionException ex) {
-                    throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
-                } catch (InvalidProtocolBufferException ex) {
-                    throw new CouldNotPerformException("Could not parse result from unauthenticated applyAction request as action description", ex);
-                }
-            }
-            final AuthenticatedValue.Builder responseAuthValue = authenticatedValue.toBuilder();
-            if (sessionKey != null) {
-                responseAuthValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));
-            } else {
-                responseAuthValue.setValue(actionDescriptionBuilder.build().toByteString());
-            }
-            return authenticatedValue;
-        }, actionTaskList);
     }
 
     /**
