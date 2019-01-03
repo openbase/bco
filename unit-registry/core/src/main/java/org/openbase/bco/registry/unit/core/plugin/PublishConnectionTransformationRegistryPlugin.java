@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import org.openbase.rct.Transform;
 import org.openbase.rct.TransformPublisher;
 import org.openbase.rct.TransformType;
-import org.openbase.rct.TransformerException;
 import org.openbase.rct.TransformerFactory;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;

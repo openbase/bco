@@ -35,9 +35,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class UnitAliasUniqueVerificationConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, Builder> {
 

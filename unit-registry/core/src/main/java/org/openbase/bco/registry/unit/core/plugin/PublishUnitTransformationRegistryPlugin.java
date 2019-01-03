@@ -31,7 +31,6 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.rct.Transform;
 import org.openbase.rct.TransformType;
 import org.openbase.rct.type.PoseTransformer;
-import org.openbase.rct.TransformerException;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 

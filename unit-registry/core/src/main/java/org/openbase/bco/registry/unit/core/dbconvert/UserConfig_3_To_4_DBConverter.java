@@ -22,8 +22,6 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * #L%
  */
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.openbase.bco.registry.lib.dbconvert.DescriptionBCO2DBConverter;
 import org.openbase.jul.exception.CouldNotPerformException;

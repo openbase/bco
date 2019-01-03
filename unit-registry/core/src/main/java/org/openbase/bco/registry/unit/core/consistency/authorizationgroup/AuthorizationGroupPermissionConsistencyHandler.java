@@ -22,13 +22,9 @@ package org.openbase.bco.registry.unit.core.consistency.authorizationgroup;
  * #L%
  */
 
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
@@ -36,9 +32,6 @@ import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionC
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.Builder;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

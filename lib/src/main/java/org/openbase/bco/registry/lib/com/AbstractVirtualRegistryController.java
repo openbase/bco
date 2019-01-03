@@ -22,21 +22,11 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.Message;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.storage.registry.RegistryRemote;
 
 /**
  *

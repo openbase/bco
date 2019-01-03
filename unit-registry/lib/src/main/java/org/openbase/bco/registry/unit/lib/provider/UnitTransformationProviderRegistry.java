@@ -35,7 +35,6 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.rct.GlobalTransformReceiver;
 import org.openbase.rct.Transform;
-import org.openbase.rct.TransformerException;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;

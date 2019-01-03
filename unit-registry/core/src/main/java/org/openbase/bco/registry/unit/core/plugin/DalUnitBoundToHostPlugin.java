@@ -26,7 +26,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;

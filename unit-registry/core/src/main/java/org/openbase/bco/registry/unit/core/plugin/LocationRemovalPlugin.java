@@ -28,7 +28,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

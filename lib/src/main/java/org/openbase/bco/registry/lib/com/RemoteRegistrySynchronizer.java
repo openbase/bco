@@ -24,13 +24,11 @@ package org.openbase.bco.registry.lib.com;
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.AbstractFilter;
 import org.openbase.jul.pattern.MockUpFilter;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RemoteRegistry;

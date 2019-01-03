@@ -25,7 +25,6 @@ package org.openbase.bco.registry.unit.lib.jp;
 import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.AbstractJPLocalDatabaseDirectory;
 
 import java.io.File;

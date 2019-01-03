@@ -33,7 +33,6 @@ import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionC
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * Consistency handler which guarantees that access permissions always include read permissions.

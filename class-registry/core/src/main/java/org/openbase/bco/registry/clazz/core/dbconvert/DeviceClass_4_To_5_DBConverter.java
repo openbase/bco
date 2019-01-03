@@ -22,16 +22,8 @@ package org.openbase.bco.registry.clazz.core.dbconvert;
  * #L%
  */
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.openbase.bco.registry.lib.dbconvert.DescriptionBCO2DBConverter;
-import org.openbase.bco.registry.lib.dbconvert.LabelDBConverter;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-
-import java.io.File;
-import java.util.Map;
 
 /**
  * Converter for device classes which updates them to the new label structure.

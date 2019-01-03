@@ -25,7 +25,6 @@ package org.openbase.bco.registry.template.core.consistency.unittemplate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -35,7 +34,6 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.type.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
-import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;

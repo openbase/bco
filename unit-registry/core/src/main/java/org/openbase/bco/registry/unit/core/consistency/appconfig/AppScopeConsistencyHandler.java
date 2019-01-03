@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
-import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -36,7 +35,6 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;

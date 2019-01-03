@@ -35,7 +35,6 @@ import org.openbase.rct.*;
 import org.openbase.rct.type.PoseTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openbase.rct.TransformerFactory;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
