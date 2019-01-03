@@ -24,13 +24,13 @@ package org.openbase.bco.dal.lib.jp;
 
 import java.lang.reflect.Method;
 import org.openbase.jps.preset.AbstractJPMethod;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
+import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPRemoteMethod extends AbstractJPMethod<RSBRemoteService> {
+public class JPRemoteMethod extends AbstractJPMethod<AbstractRemoteClient> {
 
     public final static String[] COMMAND_IDENTIFIERS = {"-m", "--remoteMethod"};
 

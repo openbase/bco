@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.util;
  * #L%
  */
 
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
+import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
@@ -34,7 +34,7 @@ import org.openbase.jul.pattern.Observer;
  */
 public abstract class RSBRemoteViewFrame<M extends Message> extends javax.swing.JFrame implements Observer {
 
-    private final RSBRemoteService<M> remoteService;
+    private final AbstractRemoteClient<M> remoteService;
     /**
      * Creates new form RSBViewService
      */
@@ -43,7 +43,7 @@ public abstract class RSBRemoteViewFrame<M extends Message> extends javax.swing.
         remoteService = null;
     }
     
-    public RSBRemoteViewFrame(RSBRemoteService<M> remoteService) {
+    public RSBRemoteViewFrame(AbstractRemoteClient<M> remoteService) {
         this.remoteService = remoteService;
         remoteService.addDataObserver(this);
     }

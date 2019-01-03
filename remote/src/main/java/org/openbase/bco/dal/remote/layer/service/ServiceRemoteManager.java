@@ -39,7 +39,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
+import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
@@ -621,7 +621,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         synchronized (serviceRemoteMapLock) {
             for (AbstractServiceRemote value : serviceRemoteMap.values()) {
                 for (Object internalUnit : value.getInternalUnits()) {
-                    ((RSBRemoteService) internalUnit).validateMiddleware();
+                    ((AbstractRemoteClient) internalUnit).validateMiddleware();
                 }
             }
         }
