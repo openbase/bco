@@ -134,7 +134,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends Message> extends A
     }
 
     @Override
-    public Boolean isReady() throws InterruptedException {
+    public Boolean isReady() {
         return isDataAvailable() && super.isReady();
     }
 

@@ -259,17 +259,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     @Override
-    public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), authenticatedValue -> registerUnitConfigAuthenticated(authenticatedValue));
     }
 
     @Override
     public Future<AuthenticatedValue> registerUnitConfigAuthenticated(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        try {
             return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not register unit config!", ex);
-        }
     }
 
     /**
@@ -351,31 +347,23 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), authenticatedValue -> updateUnitConfigAuthenticated(authenticatedValue));
     }
 
     @Override
-    public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        try {
-            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update unit config!", ex);
-        }
+    public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) {
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
     }
 
     @Override
-    public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::removeUnitConfigAuthenticated);
     }
 
     @Override
-    public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        try {
-            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not remove unit config!", ex);
-        }
+    public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) {
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
     }
 
     /**
