@@ -24,6 +24,7 @@ package org.openbase.bco.registry.lib.provider;
 
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -76,11 +77,10 @@ public interface UnitConfigCollectionProvider {
      *
      * @return the requested unit config.
      *
-     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException is thrown if the request fails.
      */
     @RPCMethod
-    UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
-    //todo release: use NotAvailableException instead
+    UnitConfig getUnitConfigById(final String unitConfigId) throws NotAvailableException;
 
     /**
      * Method returns the unit config which is registered with the given
@@ -91,16 +91,19 @@ public interface UnitConfigCollectionProvider {
      *
      * @return the requested unit config validated with the given unit type.
      *
-     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException is thrown if the request fails.
      */
     @RPCMethod
-    //todo release: use NotAvailableException instead
-    default UnitConfig getUnitConfigById(final String unitConfigId, final UnitType unitType) throws CouldNotPerformException {
+    default UnitConfig getUnitConfigById(final String unitConfigId, final UnitType unitType) throws NotAvailableException {
         final UnitConfig unitConfig = getUnitConfigById(unitConfigId);
 
-        // validate type
-        if (unitConfig.getUnitType() != unitType) {
-            throw new VerificationFailedException("Referred Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] is not compatible to given type!");
+        try {
+            // validate type
+            if (unitConfig.getUnitType() != unitType) {
+                throw new VerificationFailedException("Referred Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] is not compatible to given type!");
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitConfigId", unitConfigId, ex);
         }
 
         return unitConfig;

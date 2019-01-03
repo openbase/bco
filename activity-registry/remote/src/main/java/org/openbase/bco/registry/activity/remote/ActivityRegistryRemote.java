@@ -36,7 +36,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.controller.Remote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;

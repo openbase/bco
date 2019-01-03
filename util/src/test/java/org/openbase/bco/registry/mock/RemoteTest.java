@@ -30,7 +30,8 @@ import org.junit.Test;
 import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.type.domotic.state.ConnectionStateType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -80,23 +81,23 @@ public class RemoteTest {
         ClassRegistryRemote deviceRemoteAlwaysOn = new ClassRegistryRemote();
         deviceRemoteAlwaysOn.init();
         deviceRemoteAlwaysOn.activate();
-        deviceRemoteAlwaysOn.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        deviceRemoteAlwaysOn.waitForConnectionState(ConnectionState.State.CONNECTED);
 
         ClassRegistryRemote deviceRemoteToggle = new ClassRegistryRemote();
         deviceRemoteToggle.init();
         deviceRemoteToggle.activate();
-        deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        deviceRemoteToggle.waitForConnectionState(ConnectionState.State.CONNECTED);
 
         int testNumber = 1;
         for (int i = 0; i < testNumber; ++i) {
             deviceRemoteToggle.deactivate();
-            deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.DISCONNECTED);
+            deviceRemoteToggle.waitForConnectionState(ConnectionState.State.DISCONNECTED);
 
-            assertEquals("Remote has been shutdown with another in the [" + i + "]s try!", Remote.ConnectionState.CONNECTED, deviceRemoteAlwaysOn.getConnectionState());
+            assertEquals("Remote has been shutdown with another in the [" + i + "]s try!", ConnectionStateType.ConnectionState.State.CONNECTED, deviceRemoteAlwaysOn.getConnectionState());
             deviceRemoteAlwaysOn.requestData().get();
 
             deviceRemoteToggle.activate();
-            deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            deviceRemoteToggle.waitForConnectionState(ConnectionState.State.CONNECTED);
         }
 
         deviceRemoteAlwaysOn.shutdown();

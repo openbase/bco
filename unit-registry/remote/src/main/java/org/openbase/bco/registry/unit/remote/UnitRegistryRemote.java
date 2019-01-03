@@ -279,13 +279,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      *
      * @return {@inheritDoc}
      *
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException, NotAvailableException {
-        validateData();
-        return unitConfigRemoteRegistry.getMessage(unitConfigId);
+    public UnitConfig getUnitConfigById(final String unitConfigId) throws NotAvailableException {
+        try {
+            validateData();
+            return unitConfigRemoteRegistry.getMessage(unitConfigId);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitConfigId", unitConfigId, ex);
+        }
     }
 
     /**

@@ -546,7 +546,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException {
+    public UnitConfig getUnitConfigById(final String unitConfigId) throws NotAvailableException {
         for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
             try {
                 return (UnitConfig) registry.getMessage(unitConfigId);
@@ -554,7 +554,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 // ignore and throw a new exception if no registry contains the entry
             }
         }
-        throw new CouldNotPerformException("None of the unit registries contains an entry with the id [" + unitConfigId + "]");
+        throw new NotAvailableException("UnitConfigId", unitConfigId, new CouldNotPerformException("None of the unit registries contains an entry with the id [" + unitConfigId + "]"));
     }
 
     /**
