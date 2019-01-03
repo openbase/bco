@@ -390,10 +390,6 @@ public class AuthorizationHelper {
             return false;
         }
 
-        if (!permission.getWrite() && subPermission.getWrite()) {
-            return false;
-        }
-
-        return true;
+        return permission.getWrite() || !subPermission.getWrite();
     }
 }

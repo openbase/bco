@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -101,11 +102,11 @@ public class EncryptionHelper {
      */
     public static byte[] hash(final String string) {
         try {
-            byte[] key = string.getBytes("UTF-8");
+            byte[] key = string.getBytes(StandardCharsets.UTF_8);
             MessageDigest sha = MessageDigest.getInstance(HASH_ALGORITHM);
             key = sha.digest(key);
             return Arrays.copyOf(key, 16);
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+        } catch (NoSuchAlgorithmException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException("Hashing[" + string + "] failed!", EncryptionHelper.class, ex), LOGGER);
             return null;
         }

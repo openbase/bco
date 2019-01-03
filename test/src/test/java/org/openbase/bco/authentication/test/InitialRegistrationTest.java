@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.test;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -63,7 +64,7 @@ public class InitialRegistrationTest extends AuthenticationTest {
         String password = "random";
         LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
         loginCredentials.setId(userId);
-        loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(authenticatorController.getInitialPassword())));
+        loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
         CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
 
         // test if login works afterwards
