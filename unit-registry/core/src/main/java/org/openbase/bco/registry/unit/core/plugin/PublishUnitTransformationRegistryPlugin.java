@@ -61,7 +61,7 @@ public class PublishUnitTransformationRegistryPlugin extends AbstractUnitTransfo
                 throw new NotAvailableException("unitconfig.placementconfig");
             }
 
-            if (!unitConfig.getPlacementConfig().hasPosition()) {
+            if (!unitConfig.getPlacementConfig().hasPose()) {
                 throw new NotAvailableException("unitconfig.placementconfig.position");
             }
 
@@ -76,7 +76,7 @@ public class PublishUnitTransformationRegistryPlugin extends AbstractUnitTransfo
             final String parentLocationTransformationFrameId = locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId();
 
             // Create the rct transform object with source and target frames
-            Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId());
+            Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPose(), parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId());
 
             // publish the transform object
             transformation.setAuthority(getRegistry().getName());

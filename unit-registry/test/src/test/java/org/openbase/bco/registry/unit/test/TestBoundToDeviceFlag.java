@@ -65,7 +65,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
         try {
             deviceClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("Label", "Product Number", "Company", unitTypes)).get();
             PlacementConfig placement = generatePlacementConfig();
-            Pose position = placement.getPosition();
+            Pose position = placement.getPose();
             deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(generateDeviceUnitConfig("Label", "Serial Number", deviceClass).toBuilder().setPlacementConfig(placement).build()).get();
             getUpdatedConfigs();
 
@@ -91,8 +91,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
     private PlacementConfig generatePlacementConfig() throws CouldNotPerformException {
         PlacementConfig.Builder placement = PlacementConfig.newBuilder();
         placement.setLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId());
-        placement.getPositionBuilder().getRotationBuilder().setQw(random.nextDouble()).setQx(random.nextDouble()).setQy(random.nextDouble()).setQz(random.nextDouble()).build();
-        placement.getPositionBuilder().getTranslationBuilder().setX(random.nextInt(10)).setY(random.nextInt(10)).setZ(random.nextInt(10));
+        placement.getPoseBuilder().getRotationBuilder().setQw(random.nextDouble()).setQx(random.nextDouble()).setQy(random.nextDouble()).setQz(random.nextDouble()).build();
+        placement.getPoseBuilder().getTranslationBuilder().setX(random.nextInt(10)).setY(random.nextInt(10)).setZ(random.nextInt(10));
         return placement.build();
     }
 
@@ -102,10 +102,10 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
         lightTwo = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(1));
         lightThree = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(2));
 
-        poseDevice = deviceUnitConfig.getPlacementConfig().getPosition();
-        poseLightOne = lightOne.getPlacementConfig().getPosition();
-        poseLightTwo = lightTwo.getPlacementConfig().getPosition();
-        poseLightThree = lightThree.getPlacementConfig().getPosition();
+        poseDevice = deviceUnitConfig.getPlacementConfig().getPose();
+        poseLightOne = lightOne.getPlacementConfig().getPose();
+        poseLightTwo = lightTwo.getPlacementConfig().getPose();
+        poseLightThree = lightThree.getPlacementConfig().getPose();
     }
 
     /**
@@ -118,9 +118,9 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
     public void testDeviceNotBoundAndUnitsNotBound() throws Exception {
         logger.info("testDeviceNotBoundAndUnitsNotBound");
 
-        Pose oldPoseDevice = deviceUnitConfig.getPlacementConfig().getPosition();
-        Pose oldPoseLightTwo = lightTwo.getPlacementConfig().getPosition();
-        Pose oldPoseLightThree = lightThree.getPlacementConfig().getPosition();
+        Pose oldPoseDevice = deviceUnitConfig.getPlacementConfig().getPose();
+        Pose oldPoseLightTwo = lightTwo.getPlacementConfig().getPose();
+        Pose oldPoseLightThree = lightThree.getPlacementConfig().getPose();
 
         // change placement of light one and check what happens in the device
         // and all other lights
@@ -129,7 +129,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
         getUpdatedConfigs();
 
         // everything but light one should stay the same
-        assertEquals(placementConfig.getPosition(), poseLightOne);
+        assertEquals(placementConfig.getPose(), poseLightOne);
         assertEquals(oldPoseDevice, poseDevice);
         assertEquals(oldPoseLightTwo, poseLightTwo);
         assertEquals(oldPoseLightThree, poseLightThree);
@@ -191,7 +191,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
 
         // change position of light one and check if the position is updated in the device and all other bound units
         PlacementConfig tmp = generatePlacementConfig();
-        Pose newPoseLightOne = tmp.getPosition();
+        Pose newPoseLightOne = tmp.getPose();
         Registries.getUnitRegistry().updateUnitConfig(lightOne.toBuilder().setPlacementConfig(tmp).build()).get();
         getUpdatedConfigs();
 
@@ -227,7 +227,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
         
         // update light one and check if everything else adapts
         PlacementConfig tmp = generatePlacementConfig();
-        Pose newPoseLightOne = tmp.getPosition();
+        Pose newPoseLightOne = tmp.getPose();
         Registries.getUnitRegistry().updateUnitConfig(lightOne.toBuilder().setPlacementConfig(tmp).build()).get();
         getUpdatedConfigs();
         

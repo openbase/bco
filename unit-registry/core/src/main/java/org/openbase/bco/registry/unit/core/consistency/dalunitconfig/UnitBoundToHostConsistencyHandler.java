@@ -84,8 +84,8 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
             }
 
             // copy position
-            if (deviceUnitConfig.getPlacementConfig().hasPosition() && !dalUnitConfig.getPlacementConfig().getPosition().equals(deviceUnitConfig.getPlacementConfig().getPosition())) {
-                dalUnitConfig.getPlacementConfigBuilder().setPosition(deviceUnitConfig.getPlacementConfig().getPosition());
+            if (deviceUnitConfig.getPlacementConfig().hasPose() && !dalUnitConfig.getPlacementConfig().getPose().equals(deviceUnitConfig.getPlacementConfig().getPose())) {
+                dalUnitConfig.getPlacementConfigBuilder().setPose(deviceUnitConfig.getPlacementConfig().getPose());
                 modification = true;
             }
         }

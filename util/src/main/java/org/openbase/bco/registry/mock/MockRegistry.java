@@ -338,7 +338,7 @@ public class MockRegistry {
         Rotation rotation = Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         Translation translation = Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         Pose pose = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
-        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(location.getId()).build();
+        return PlacementConfig.newBuilder().setPose(pose).setLocationId(location.getId()).build();
     }
 
     public static Iterable<ServiceConfigType.ServiceConfig> generateServiceConfig(final UnitTemplate template) {
@@ -481,7 +481,7 @@ public class MockRegistry {
             Shape hellShape = Shape.newBuilder().addAllFloor(hellVertices).build();
             Pose hellPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(3).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
-            PlacementConfig hellPlacement = PlacementConfig.newBuilder().setPosition(hellPosition).setShape(hellShape).setLocationId(paradise.getId()).build();
+            PlacementConfig hellPlacement = PlacementConfig.newBuilder().setPose(hellPosition).setShape(hellShape).setLocationId(paradise.getId()).build();
             registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_HELL, tileLocationConfig, hellPlacement));
 
             // Create stairway to heaven
@@ -493,7 +493,7 @@ public class MockRegistry {
             Shape stairwayShape = Shape.newBuilder().addAllFloor(stairwayVertices).build();
             Pose stairwayPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(0).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
-            PlacementConfig stairwayPlacement = PlacementConfig.newBuilder().setPosition(stairwayPosition).setShape(stairwayShape).setLocationId(paradise.getId()).build();
+            PlacementConfig stairwayPlacement = PlacementConfig.newBuilder().setPose(stairwayPosition).setShape(stairwayShape).setLocationId(paradise.getId()).build();
             UnitConfig stairwayLocation = registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, tileLocationConfig, stairwayPlacement));
 
             // Create heaven
@@ -505,7 +505,7 @@ public class MockRegistry {
             Shape heavenShape = Shape.newBuilder().addAllFloor(heavenVertices).build();
             Pose heavenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
-            PlacementConfig heavenPlacement = PlacementConfig.newBuilder().setPosition(heavenPosition).setShape(heavenShape).setLocationId(paradise.getId()).build();
+            PlacementConfig heavenPlacement = PlacementConfig.newBuilder().setPose(heavenPosition).setShape(heavenShape).setLocationId(paradise.getId()).build();
             UnitConfig heavenLocation = registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_HEAVEN, tileLocationConfig, heavenPlacement));
 
             // Create Garden of Eden
@@ -517,7 +517,7 @@ public class MockRegistry {
             Shape edenShape = Shape.newBuilder().addAllFloor(edenVertices).build();
             Pose edenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(0).setY(2).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
-            PlacementConfig edenPlacement = PlacementConfig.newBuilder().setPosition(edenPosition).setShape(edenShape).setLocationId(heavenLocation.getId()).build();
+            PlacementConfig edenPlacement = PlacementConfig.newBuilder().setPose(edenPosition).setShape(edenShape).setLocationId(heavenLocation.getId()).build();
             registerUnitConfig(getLocationUnitConfig(ALIAS_LOCATION_GARDEN, regionLocationConfig, edenPlacement));
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);

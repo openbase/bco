@@ -83,7 +83,7 @@ public class PublishDeviceTransformationRegistryPlugin extends ProtobufRegistryP
                 throw new NotAvailableException("deviceconfig.placement");
             }
 
-            if (!deviceConfig.getPlacementConfig().hasPosition()) {
+            if (!deviceConfig.getPlacementConfig().hasPose()) {
                 throw new NotAvailableException("deviceconfig.placement.position");
             }
 
@@ -98,9 +98,9 @@ public class PublishDeviceTransformationRegistryPlugin extends ProtobufRegistryP
             Transform transformation;
 
             // publish device transformation
-            if (deviceConfig.getPlacementConfig().hasPosition()) {
+            if (deviceConfig.getPlacementConfig().hasPose()) {
                 logger.info("Publish " + locationRegistry.getMessage(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId() + " to " + deviceConfig.getPlacementConfig().getTransformationFrameId());
-                transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
+                transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPose(), locationRegistry.getMessage(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
 
                 transformation.setAuthority(getRegistry().getName());
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
