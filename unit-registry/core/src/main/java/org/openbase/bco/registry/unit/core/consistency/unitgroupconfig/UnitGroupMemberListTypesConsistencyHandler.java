@@ -152,7 +152,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
     private List<UnitType> getSubTypes(UnitType type) throws CouldNotPerformException {
         List<UnitType> unitTypes = new ArrayList<>();
         for (UnitTemplate template : CachedTemplateRegistryRemote.getRegistry().getUnitTemplates()) {
-            if (template.getIncludedTypeList().contains(type)) {
+            if (template.getSuperTypeList().contains(type)) {
                 unitTypes.add(template.getType());
             }
         }

@@ -933,10 +933,10 @@ public class MockRegistry {
 
             switch (type) {
                 case COLORABLE_LIGHT:
-                    templateBuilder.addIncludedType(UnitType.DIMMABLE_LIGHT);
+                    templateBuilder.addSuperType(UnitType.DIMMABLE_LIGHT);
                     break;
                 case DIMMABLE_LIGHT:
-                    templateBuilder.addIncludedType(UnitType.LIGHT);
+                    templateBuilder.addSuperType(UnitType.LIGHT);
                     break;
             }
 

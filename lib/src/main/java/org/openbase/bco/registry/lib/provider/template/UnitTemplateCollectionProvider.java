@@ -95,7 +95,7 @@ public interface UnitTemplateCollectionProvider {
     default List<UnitType> getSubUnitTypes(final UnitType type) throws CouldNotPerformException {
         List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
         for (UnitTemplate template : getUnitTemplates()) {
-            if (template.getIncludedTypeList().contains(type)) {
+            if (template.getSuperTypeList().contains(type)) {
                 unitTypes.add(template.getType());
                 unitTypes.addAll(getSubUnitTypes(template.getType()));
             }
@@ -115,7 +115,7 @@ public interface UnitTemplateCollectionProvider {
         UnitTemplate unitTemplate = getUnitTemplateByType(type);
         List<UnitType> unitTypes = new ArrayList<>();
         for (UnitTemplate template : getUnitTemplates()) {
-            if (unitTemplate.getIncludedTypeList().contains(template.getType())) {
+            if (unitTemplate.getSuperTypeList().contains(template.getType())) {
                 unitTypes.add(template.getType());
                 unitTypes.addAll(getSuperUnitTypes(template.getType()));
             }
