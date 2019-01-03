@@ -3,7 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase</groupId>
     <artifactId>bco.device.openhab</artifactId>
     <name>BCO Openhab Device Manager</name>
     <description>BCO device manager used to communicate with openhab.</description>
@@ -164,11 +163,6 @@
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>bco.dal.control</artifactId>
-            <version>${dependency.bco.registry.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.dal.lib</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
     </dependencies>

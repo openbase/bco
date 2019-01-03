@@ -33,8 +33,9 @@ import org.openbase.jul.pattern.provider.ObservableDataProviderAdapter;
  * Abstract observable for server send events. Implementing classes need to provide an observer
  * that converts from received json object from the server to another type.
  *
- * @param DTO the type of data the implementing class converts the json object to.
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @param DTO the type of data the implementing class converts the json object to.
+ *
  */
 public abstract class AbstractSSEObservable<DTO> extends ObservableDataProviderAdapter<DTO> {
 
