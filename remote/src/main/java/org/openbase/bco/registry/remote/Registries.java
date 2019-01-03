@@ -38,7 +38,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
+import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
@@ -494,7 +494,7 @@ public class Registries {
         }
 
         try {
-            final RSBRemoteService remote = getRegistryRemoteByType(messageOrBuilder);
+            final AbstractRemoteClient remote = getRegistryRemoteByType(messageOrBuilder);
             Method method = remote.getClass().getMethod(methodName, classes);
             return method.invoke(remote, parameters);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
@@ -510,7 +510,7 @@ public class Registries {
         return messageOrBuilder.getDescriptorForType().getName();
     }
 
-    private static RSBRemoteService getRegistryRemoteByType(final MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
+    private static AbstractRemoteClient getRegistryRemoteByType(final MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
         switch (messageOrBuilder.getDescriptorForType().getName()) {
             case "UnitConfig":
                 return getUnitRegistry();
