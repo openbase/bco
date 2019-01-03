@@ -252,11 +252,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     /**
      * {@inheritDoc}
      *
-     * @param unitConfig
+     * @param unitConfig {@inheritDoc}
      *
-     * @return
-     *
-     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @return {@inheritDoc}
      */
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) {
@@ -275,7 +273,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      *
      * @return {@inheritDoc}
      *
-     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public UnitConfig getUnitConfigById(final String unitConfigId) throws NotAvailableException {
