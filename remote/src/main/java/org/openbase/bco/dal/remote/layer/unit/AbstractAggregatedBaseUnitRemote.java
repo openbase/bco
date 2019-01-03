@@ -158,12 +158,7 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
             if (!isServiceAggregated(serviceType)) {
                 return super.applyActionAuthenticated(authenticatedValue);
             }
-
-            try {
-                return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not apply action!", ex);
-            }
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }

@@ -673,11 +673,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
-        try {
-            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
-        }
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
     }
 
     @Override
@@ -730,11 +726,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) {
-        try {
-            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class), this);
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(AuthenticatedValue.class, new CouldNotPerformException("Could not restore snapshot!", ex));
-        }
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class), this);
     }
 
     @Override
