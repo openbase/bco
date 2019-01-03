@@ -100,7 +100,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
          * For source: If all targets are of the source stays in its current state.
          * For targets: If the source is turned on all targets remain in their current state.
          */
-        LAST_STATE;
+        LAST_STATE
     }
 
     private final Object AGENT_LOCK = new SyncObject("PowerStateLock");

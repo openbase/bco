@@ -129,7 +129,7 @@ public class AmbientColorAgent extends AbstractAgentController {
          * After the holding time all lights are change their color to a random
          * different one.
          */
-        ALL;
+        ALL
     }
 
     private ColoringStrategy strategy;
@@ -139,7 +139,7 @@ public class AmbientColorAgent extends AbstractAgentController {
     private final List<HSBColor> colors = new ArrayList<>();
     private final Random random;
 
-    public AmbientColorAgent() throws InstantiationException, InterruptedException, CouldNotPerformException {
+    public AmbientColorAgent() throws InterruptedException, CouldNotPerformException {
         super(AmbientColorAgent.class);
         random = new Random();
     }

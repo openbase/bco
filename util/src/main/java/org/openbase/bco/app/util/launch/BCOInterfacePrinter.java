@@ -69,7 +69,7 @@ public class BCOInterfacePrinter {
 
         private String color;
 
-        private AnsiColor(String color) {
+        AnsiColor(String color) {
             this.color = color;
         }
 

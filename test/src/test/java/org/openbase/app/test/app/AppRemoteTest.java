@@ -56,7 +56,7 @@ public class AppRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
+    public static void setUpClass() throws CouldNotPerformException, JPServiceException, InterruptedException {
 //        registry = MockRegistryHolder.newMockRegistry();
 //
 //        appManagerLauncher = new UserManagerLauncher();

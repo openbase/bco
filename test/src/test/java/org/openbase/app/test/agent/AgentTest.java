@@ -46,7 +46,7 @@ public class AgentTest {
      * @throws java.lang.InterruptedException
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public static void main(String[] args) throws InterruptedException, Exception {
+    public static void main(String[] args) throws Exception {
 
         /* Setup JPService */
         JPService.setApplicationName(AgentTest.class);

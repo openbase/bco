@@ -57,7 +57,7 @@ public class DefaultUnitDataMapper<UR extends UnitRemote<?>> implements UnitData
                 final ServiceType serviceType = unitTypeMapping.getServiceType(trait);
 
                 try {
-                    final Message serviceState = (Message) Services.invokeProviderServiceMethod(serviceType, unitRemote);
+                    final Message serviceState = Services.invokeProviderServiceMethod(serviceType, unitRemote);
                     final ServiceStateTraitMapper serviceStateTraitMapper = ServiceStateTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait);
                     serviceStateTraitMapper.map(serviceState, deviceState);
                 } catch (CouldNotPerformException ex) {

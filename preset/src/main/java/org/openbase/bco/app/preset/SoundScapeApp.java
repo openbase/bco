@@ -50,7 +50,7 @@ public class SoundScapeApp extends AbstractAppController {
         FOREST,
         BEACH,
         NIGHT,
-        ZEN;
+        ZEN
     }
 
     private final RSBListener listener;

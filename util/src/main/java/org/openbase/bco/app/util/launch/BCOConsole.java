@@ -55,28 +55,28 @@ public class BCOConsole {
             System.exit(0);
         }
 
-        System.out.println("");
+        System.out.println();
         System.out.println("Welcome to the bco console, connect to bco... ");
         Registries.waitForData();
         Registries.waitUntilReady();
         System.out.println("connected");
-        System.out.println("");
+        System.out.println();
         System.out.println("Login required");
         try {
             SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: ")), new String(console.readPassword("password: ")));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Login not possible!", ex, LOGGER);
         }
-        System.out.println("");
+        System.out.println();
         System.out.println("available commands:");
-        System.out.println("");
+        System.out.println();
         System.out.println("passwd - change the password of a given user");
         System.out.println("cloud connect - connect a user with the bco cloud service");
         System.out.println("cloud disconnect - disconnect a user from the bco cloud service");
         System.out.println("exit, quit, logout - close this console");
         System.out.println("register user - creates a new user account");
-        System.out.println("");
-        System.out.println("");
+        System.out.println();
+        System.out.println();
 
         mainloop:
         while (!Thread.interrupted()) {
@@ -93,7 +93,7 @@ public class BCOConsole {
                         String newUser = console.readLine("user: ");
                         String newUserPwd = new String(console.readPassword("new password: "));
                         String newUserPwdConfirm = new String(console.readPassword("confirm new password: "));
-                        System.out.println("");
+                        System.out.println();
                         if (!newUserPwd.equals(newUserPwdConfirm)) {
                             System.err.println("match failed!");
                             continue;
@@ -105,7 +105,7 @@ public class BCOConsole {
                         String oldPwd = new String(console.readPassword("old password: "));
                         String newPwd = new String(console.readPassword("new password: "));
                         String newPwdConfirm = new String(console.readPassword("confirm new password:"));
-                        System.out.println("");
+                        System.out.println();
 
                         if (!newPwd.equals(newPwdConfirm)) {
                             System.err.println("match failed!");
@@ -120,7 +120,7 @@ public class BCOConsole {
                         System.out.println("Please choose a strong password to protect the remote access of your home!");
                         String cloudPwd = new String(console.readPassword("your new cloud password:"));
                         String cloudPwdConfirm = new String(console.readPassword("confirm your new cloud password:"));
-                        System.out.println("");
+                        System.out.println();
 
                         if (!cloudPwd.equals(cloudPwdConfirm)) {
                             throw new InvalidStateException("match failed!");

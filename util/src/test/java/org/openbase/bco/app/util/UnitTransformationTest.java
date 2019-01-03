@@ -137,7 +137,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
         }
     }
 
-    private void verifyTransformations() throws NotAvailableException, InterruptedException, CouldNotPerformException, ExecutionException {
+    private void verifyTransformations() throws InterruptedException, CouldNotPerformException, ExecutionException {
         for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
 
             if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {

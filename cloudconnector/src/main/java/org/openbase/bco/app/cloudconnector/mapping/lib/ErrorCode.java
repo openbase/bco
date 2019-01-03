@@ -82,7 +82,7 @@ public enum ErrorCode {
      */
     @Override
     public String toString() {
-        char charArray[] = StringProcessor.transformUpperCaseToCamelCase(name()).toCharArray();
+        char[] charArray = StringProcessor.transformUpperCaseToCamelCase(name()).toCharArray();
         charArray[0] = Character.toLowerCase(charArray[0]);
         return new String(charArray);
     }
