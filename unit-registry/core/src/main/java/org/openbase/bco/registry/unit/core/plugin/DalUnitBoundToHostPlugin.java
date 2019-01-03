@@ -59,13 +59,13 @@ public class DalUnitBoundToHostPlugin extends ProtobufRegistryPluginAdapter<Stri
                     modification = true;
                 }
 
-                if (!unitPlacement.hasPosition() && deviceUnitConfig.getPlacementConfig().hasPosition()) {
-                    devicePlacement.clearPosition();
+                if (!unitPlacement.hasPose() && deviceUnitConfig.getPlacementConfig().hasPose()) {
+                    devicePlacement.clearPose();
                     modification = true;
                 }
 
-                if (unitPlacement.hasPosition() && !unitPlacement.getPosition().equals(devicePlacement.getPosition())) {
-                    devicePlacement.setPosition(unitPlacement.getPosition());
+                if (unitPlacement.hasPose() && !unitPlacement.getPose().equals(devicePlacement.getPose())) {
+                    devicePlacement.setPose(unitPlacement.getPose());
                     modification = true;
                 }
 

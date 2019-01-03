@@ -113,20 +113,19 @@ public abstract class AbstractRegistryRemote<M extends Message> extends Abstract
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
      */
     @Override
-    public Boolean isReady() throws InterruptedException {
-        // todo release: "is" method should not block and return an InterruptedException
+    public Boolean isReady() {
         try {
             if (!isConnected()) {
                 return false;
             }
-
-            ping().get();
-            return RPCHelper.callRemoteMethod(this, Boolean.class).get(30000, TimeUnit.MILLISECONDS);
-        } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
+            ping().get(1000, TimeUnit.MILLISECONDS);
+            return RPCHelper.callRemoteMethod(this, Boolean.class).get(1000, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException | TimeoutException ex) {
             ExceptionPrinter.printHistory("Could not check if registry is ready!", ex, logger);
+            return false;
+        } catch (InterruptedException ex) {
             return false;
         }
     }

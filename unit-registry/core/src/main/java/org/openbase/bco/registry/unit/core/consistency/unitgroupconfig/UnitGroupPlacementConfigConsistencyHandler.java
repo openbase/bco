@@ -133,7 +133,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
             if (memberConf == null) {
                 throw new CouldNotPerformException("Group member not found in registries.");
             }
-            if (memberConf.hasPlacementConfig() && memberConf.getPlacementConfig().hasPosition()) {
+            if (memberConf.hasPlacementConfig() && memberConf.getPlacementConfig().hasPose()) {
                 try {
                     List<Point3d> pointsToCheck = getPointsToCheck(locationFrameId, memberConf);
                     minPosition = pointsToCheck.stream().reduce(minPosition, (result, element) -> getMin(result, element));
@@ -182,7 +182,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
                         .setWidth((float) dimensions.x)
                         .setDepth((float) dimensions.y)
                         .setHeight((float) dimensions.z)))
-                .setPosition(Pose.newBuilder()
+                .setPose(Pose.newBuilder()
                         .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0))
                         .setTranslation(Translation.newBuilder()
                                 .setX(minPosition.x)

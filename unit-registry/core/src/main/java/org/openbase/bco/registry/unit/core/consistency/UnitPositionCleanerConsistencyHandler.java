@@ -45,10 +45,10 @@ public class UnitPositionCleanerConsistencyHandler extends AbstractProtoBufRegis
             return;
         }
 
-        if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasPosition()) {
-            final Pose pose = unitConfig.getPlacementConfig().getPosition();
+        if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasPose()) {
+            final Pose pose = unitConfig.getPlacementConfig().getPose();
             if (pose.getTranslation().getX() == 0 && pose.getTranslation().getY() == 0 && pose.getTranslation().getZ() == 0) {
-                unitConfig.getPlacementConfigBuilder().clearPosition();
+                unitConfig.getPlacementConfigBuilder().clearPose();
                 throw new EntryModification(entry.setMessage(unitConfig, this), this);
             }
         }

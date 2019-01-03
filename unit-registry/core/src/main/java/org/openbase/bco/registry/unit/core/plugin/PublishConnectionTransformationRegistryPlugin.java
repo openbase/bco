@@ -80,7 +80,7 @@ public class PublishConnectionTransformationRegistryPlugin extends ProtobufRegis
         try {
             UnitConfig connectionConfig = entry.getMessage();
 
-            if (connectionConfig.hasPlacementConfig() && connectionConfig.getPlacementConfig().hasPosition()) {
+            if (connectionConfig.hasPlacementConfig() && connectionConfig.getPlacementConfig().hasPose()) {
 
                 if (!connectionConfig.hasId()) {
                     throw new NotAvailableException("connectionconfig.id");
@@ -90,7 +90,7 @@ public class PublishConnectionTransformationRegistryPlugin extends ProtobufRegis
                     throw new NotAvailableException("connectionconfig.placement");
                 }
 
-                if (!connectionConfig.getPlacementConfig().hasPosition()) {
+                if (!connectionConfig.getPlacementConfig().hasPose()) {
                     throw new NotAvailableException("connectionconfig.placement.position");
                 }
 
@@ -107,7 +107,7 @@ public class PublishConnectionTransformationRegistryPlugin extends ProtobufRegis
                 }
 
                 // Create the rct transform object with source and target frames
-                Transform transformation = PoseTransformer.transform(connectionConfig.getPlacementConfig().getPosition(), locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), connectionConfig.getPlacementConfig().getTransformationFrameId());
+                Transform transformation = PoseTransformer.transform(connectionConfig.getPlacementConfig().getPose(), locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), connectionConfig.getPlacementConfig().getTransformationFrameId());
 
                 // Publish the transform object
                 transformation.setAuthority(getRegistry().getName());

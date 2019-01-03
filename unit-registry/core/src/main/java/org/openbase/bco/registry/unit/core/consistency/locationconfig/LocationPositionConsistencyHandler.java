@@ -48,8 +48,8 @@ public class LocationPositionConsistencyHandler extends AbstractProtoBufRegistry
         }
 
         // setup position
-        if (!locationConfig.getPlacementConfig().hasPosition()) {
-            entry.setMessage(locationConfig.toBuilder().setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setPosition(generateDefaultInstance())), this);
+        if (!locationConfig.getPlacementConfig().hasPose()) {
+            entry.setMessage(locationConfig.toBuilder().setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setPose(generateDefaultInstance())), this);
             throw new EntryModification(entry, this);
         }
     }
