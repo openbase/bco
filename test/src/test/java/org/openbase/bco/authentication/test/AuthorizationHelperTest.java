@@ -23,28 +23,26 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
+import org.junit.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
-import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig;
 import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- *
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
 public class AuthorizationHelperTest {
@@ -85,10 +83,10 @@ public class AuthorizationHelperTest {
         LocationConfig locationRoot = LocationConfig.newBuilder().setRoot(true).build();
         PermissionConfig permissionConfig = PermissionConfig.newBuilder().setOtherPermission(READ_ONLY).build();
         UnitConfig.Builder unitConfig4 = UnitConfig.newBuilder()
-          .setId(LOCATION_ROOT)
-          .setUnitType(UnitType.LOCATION)
-          .setLocationConfig(locationRoot)
-          .setPermissionConfig(permissionConfig);
+                .setId(LOCATION_ROOT)
+                .setUnitType(UnitType.LOCATION)
+                .setLocationConfig(locationRoot)
+                .setPermissionConfig(permissionConfig);
         locations.put(LOCATION_ROOT, new IdentifiableMessage<>(unitConfig4.build()));
         LabelProcessor.addLabel(unitConfig4.getLabelBuilder(), Locale.ENGLISH, LOCATION_ROOT);
     }
@@ -111,6 +109,7 @@ public class AuthorizationHelperTest {
 
     /**
      * Tests all possible permission combinations for the owner, while keeping the "other" permissions false.
+     *
      * @throws java.lang.Exception
      */
     @Test
@@ -118,7 +117,7 @@ public class AuthorizationHelperTest {
         System.out.println("testOwnerPermissions");
 
         PlacementConfig.Builder placement = PlacementConfig.newBuilder()
-          .setLocationId(LOCATION_ROOT);
+                .setLocationId(LOCATION_ROOT);
         UnitConfig.Builder unitConfigBuilder = UnitConfig.newBuilder().setId(UNIT_ID).setPlacementConfig(placement);
         System.out.println(unitConfigBuilder.build());
         PermissionConfig.Builder configBuilder = unitConfigBuilder.getPermissionConfigBuilder()
@@ -155,6 +154,7 @@ public class AuthorizationHelperTest {
     /**
      * Tests all possible permission combinations for a member of the group,
      * while keeping the "other" permissions false and the "owner" permissions true.
+     *
      * @throws java.lang.Exception
      */
     @Test
@@ -164,7 +164,7 @@ public class AuthorizationHelperTest {
                 .setGroupId(GROUP_2).setPermission(NONE);
 
         PlacementConfig.Builder placement = PlacementConfig.newBuilder()
-          .setLocationId(LOCATION_ROOT);
+                .setLocationId(LOCATION_ROOT);
         UnitConfig.Builder unitConfigBuilder = UnitConfig.newBuilder().setId(UNIT_ID).setPlacementConfig(placement);
         PermissionConfig.Builder configBuilder = unitConfigBuilder.getPermissionConfigBuilder()
                 .setOwnerId(USER_1)
@@ -218,6 +218,7 @@ public class AuthorizationHelperTest {
 
     /**
      * Tests all possible permission combinations for "other", while keeping the owner permissions true.
+     *
      * @throws java.lang.Exception
      */
     @Test
@@ -225,7 +226,7 @@ public class AuthorizationHelperTest {
         System.out.println("testOtherPermissions");
 
         PlacementConfig.Builder placement = PlacementConfig.newBuilder()
-          .setLocationId(LOCATION_ROOT);
+                .setLocationId(LOCATION_ROOT);
         UnitConfig.Builder unitConfigBuilder = UnitConfig.newBuilder().setId(UNIT_ID).setPlacementConfig(placement);
         PermissionConfig.Builder configBuilder = unitConfigBuilder.getPermissionConfigBuilder()
                 .setOwnerId(USER_1)
@@ -261,6 +262,7 @@ public class AuthorizationHelperTest {
 
     /**
      * Tests permissions of a user@client.
+     *
      * @throws java.lang.Exception
      */
     @Test
@@ -268,7 +270,7 @@ public class AuthorizationHelperTest {
         System.out.println("testOtherPermissions");
 
         PlacementConfig.Builder placement = PlacementConfig.newBuilder()
-          .setLocationId(LOCATION_ROOT);
+                .setLocationId(LOCATION_ROOT);
         UnitConfig.Builder unitConfigBuilder = UnitConfig.newBuilder().setId(UNIT_ID).setPlacementConfig(placement);
         PermissionConfig.Builder configBuilder = unitConfigBuilder.getPermissionConfigBuilder()
                 .setOwnerId(USER_1)
@@ -312,11 +314,11 @@ public class AuthorizationHelperTest {
         PermissionConfig.Builder permissionConfigLocation = PermissionConfig.newBuilder().setOtherPermission(NONE);
         PlacementConfig placementConfigLocation = PlacementConfig.newBuilder().setLocationId(LOCATION_ROOT).build();
         UnitConfig.Builder unitConfigLocationBuilder = UnitConfig.newBuilder()
-          .setId(LOCATION_1)
-          .setUnitType(UnitType.LOCATION)
-          .setLocationConfig(location1)
-          .setPlacementConfig(placementConfigLocation)
-          .setPermissionConfig(permissionConfigLocation);
+                .setId(LOCATION_1)
+                .setUnitType(UnitType.LOCATION)
+                .setLocationConfig(location1)
+                .setPlacementConfig(placementConfigLocation)
+                .setPermissionConfig(permissionConfigLocation);
         LabelProcessor.addLabel(unitConfigLocationBuilder.getLabelBuilder(), Locale.ENGLISH, LOCATION_1);
         locations.put(LOCATION_1, new IdentifiableMessage<>(unitConfigLocationBuilder.build()));
 
@@ -355,5 +357,26 @@ public class AuthorizationHelperTest {
             }
 
         }
+    }
+
+    /**
+     * Validate that a user can also be a group with permissions.
+     */
+    @Test
+    public void testUserAsGroupPermissions() {
+        // create user id
+        final String userId = "UserWhichIsAlsoAGroup";
+        // create unit config at root location
+        UnitConfig.Builder unitConfigBuilder = UnitConfig.newBuilder();
+        unitConfigBuilder.getPlacementConfigBuilder().setLocationId(LOCATION_ROOT);
+        // remove other permissions for everyone on the unit
+        PermissionConfig.Builder permissionConfigBuilder = unitConfigBuilder.getPermissionConfigBuilder();
+        permissionConfigBuilder.setOtherPermission(NONE);
+        // validate that user does not have any permissions for the unit
+        assertEquals("User should not have any permissions!", NONE, AuthorizationHelper.getPermission(unitConfigBuilder.build(), userId, groups, locations));
+        // add user as group with rwx permissions
+        permissionConfigBuilder.addGroupPermissionBuilder().setGroupId(userId).setPermission(RWX);
+        // validate that user now has rwx permissions
+        assertEquals("User is added as a group but did not get the according permissions", RWX, AuthorizationHelper.getPermission(unitConfigBuilder.build(), userId, groups, locations));
     }
 }

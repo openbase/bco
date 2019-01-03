@@ -31,12 +31,12 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -110,10 +110,8 @@ public class AuthorizationHelper {
      * @param locations  All available locations in the system, indexed by their id.
      *
      * @return Permission object representing the maximum permissions for the given user on the given unit.
-     *
-     * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
-    public static Permission getPermission(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws CouldNotPerformException {
+    public static Permission getPermission(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
         return Permission.newBuilder()
                 .setAccess(canAccess(unitConfig, userId, groups, locations))
                 .setRead(canRead(unitConfig, userId, groups, locations))
@@ -141,7 +139,7 @@ public class AuthorizationHelper {
         }
 
         try {
-            return canDo(getPermissionConfig(unitConfig, locations), userId, groups, locations, type);
+            return canDo(getPermissionConfig(unitConfig, locations), userId, groups, type);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("can not perform the canDo check! Permission will be denied!", ex, LOGGER, LogLevel.WARN);
             return false;
@@ -158,7 +156,7 @@ public class AuthorizationHelper {
      *
      * @return True if the user has the given permission, false if not.
      */
-    private static boolean canDo(final PermissionConfig permissionConfig, String userId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, PermissionType type) {
+    private static boolean canDo(final PermissionConfig permissionConfig, String userId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, PermissionType type) {
         // Other
         if (permitted(permissionConfig.getOtherPermission(), type)) {
             return true;
@@ -171,9 +169,8 @@ public class AuthorizationHelper {
 
         // If the given ID has the form user@client, we check both.
         String[] split = userId.split("@", 2);
-
         if (split.length > 1 && !split[0].isEmpty() && !split[1].isEmpty()) {
-            return canDo(permissionConfig, split[0], groups, locations, type) || canDo(permissionConfig, split[1], groups, locations, type);
+            return canDo(permissionConfig, split[0], groups, type) || canDo(permissionConfig, split[1], groups, type);
         } else {
             userId = userId.replace("@", "");
         }
@@ -188,15 +185,22 @@ public class AuthorizationHelper {
             return false;
         }
 
+        // check the groups defined in the permission config
         ProtocolStringList groupMembers;
         for (final MapFieldEntry entry : permissionConfig.getGroupPermissionList()) {
-            if (groups.get(entry.getGroupId()) == null) {
-                LOGGER.warn("No Group for id[" + entry.getGroupId() + "] available");
+            // every user is also a group so check if the group id matches the user id
+            if (entry.getGroupId().equals(userId) && permitted(entry.getPermission(), type)) {
+                return true;
+            }
+
+            // continue if the provided group id is a user which is not the checked one
+            if (!groups.containsKey(entry.getGroupId())) {
                 continue;
             }
-            groupMembers = groups.get(entry.getGroupId()).getMessage().getAuthorizationGroupConfig().getMemberIdList();
 
-            // Check if the user belongs to the group.
+            // retrieve group
+            groupMembers = groups.get(entry.getGroupId()).getMessage().getAuthorizationGroupConfig().getMemberIdList();
+            // Check if the user belongs to the group and the group has the according permissions
             if (groupMembers.contains(userId) && permitted(entry.getPermission(), type)) {
                 return true;
             }
