@@ -71,6 +71,7 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
 
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
+        // todo: replace by bco system user and use other humand rights for thing updates (e.g. to represent a user button press)
         SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin", true);
 
         thingDeviceUnitSynchronization.activate();
