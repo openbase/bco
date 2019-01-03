@@ -82,7 +82,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             final PoseType.Pose.Builder pose = PoseType.Pose.newBuilder();
             pose.getRotationBuilder().setQw(1).setQx(0).setQy(0).setQz(0);
             pose.getTranslationBuilder().setX(3).setY(2).setZ(1);
-            hostUnitConfigBuilder.getPlacementConfigBuilder().setPosition(pose);
+            hostUnitConfigBuilder.getPlacementConfigBuilder().setPose(pose);
             final UnitConfig hostUnitConfig = Registries.getUnitRegistry().updateUnitConfig(hostUnitConfigBuilder.build()).get();
 
             // verify child unit positions are updated and published
@@ -94,7 +94,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             // todo: sleep is actually to long!
             Thread.sleep(500);
 
-            Assert.assertEquals("Positions are not synchronized!", lightUnitConfig.getPlacementConfig().getPosition(), hostUnitConfig.getPlacementConfig().getPosition());
+            Assert.assertEquals("Positions are not synchronized!", lightUnitConfig.getPlacementConfig().getPose(), hostUnitConfig.getPlacementConfig().getPose());
             Assert.assertNotEquals("TransformationFrameId are not unique!", lightUnitConfig.getPlacementConfig().getTransformationFrameId(), hostUnitConfig.getPlacementConfig().getTransformationFrameId());
             Assert.assertEquals("Transformations are not synchronized!", Units.getRootToUnitTransformationFuture(lightUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), Units.getRootToUnitTransformationFuture(hostUnitConfig).get(5, TimeUnit.SECONDS).getTransform());
 
@@ -109,7 +109,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
 
 //                System.out.println("setup transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel())+ ", " + unitConfig.getUnitType().name());
                 final UnitConfig.Builder unitConfigBuilder = unitConfig.toBuilder();
-                unitConfigBuilder.getPlacementConfigBuilder().setPosition(pose);
+                unitConfigBuilder.getPlacementConfigBuilder().setPose(pose);
                 unitConfig = Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get();
 //                System.out.println("request modified transformation of " + unitConfig.getLabel());
 
@@ -144,7 +144,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             }
 
             if (!unitConfig.hasPlacementConfig()
-                    || !unitConfig.getPlacementConfig().hasPosition()
+                    || !unitConfig.getPlacementConfig().hasPose()
                     || !unitConfig.getPlacementConfig().hasTransformationFrameId()
                     || unitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
 
