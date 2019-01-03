@@ -27,8 +27,8 @@ import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedCommunicationService;
-import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedRemoteService;
+import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedControllerServer;
+import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedRemoteClient;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -54,8 +54,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
 
-    private AuthenticatedCommunicationService communicationService;
-    private AuthenticatedRemoteService remoteService;
+    private AuthenticatedControllerServer communicationService;
+    private AuthenticatedRemoteClient remoteService;
 
     public AuthenticatedCommunicationTest() {
 
@@ -78,8 +78,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
 
     @Before
     public void setUp() throws Exception {
-        communicationService = new AuthenticatedCommunicationService();
-        remoteService = new AuthenticatedRemoteService();
+        communicationService = new AuthenticatedControllerServer();
+        remoteService = new AuthenticatedRemoteClient();
 
         communicationService.init(SCOPE);
         remoteService.init(SCOPE);
@@ -147,14 +147,14 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         assertTrue(!remoteService.getData().getAgentUnitConfigList().contains(userAgentConfig.build()));
     }
 
-    private class AuthenticatedCommunicationService extends AbstractAuthenticatedCommunicationService<UnitRegistryData, UnitRegistryData.Builder> {
+    private class AuthenticatedControllerServer extends AbstractAuthenticatedControllerServer<UnitRegistryData, Builder> {
 
         /**
          * Create a communication service.
          *
          * @throws InstantiationException if the creation fails
          */
-        public AuthenticatedCommunicationService() throws InstantiationException {
+        public AuthenticatedControllerServer() throws InstantiationException {
             super(UnitRegistryData.newBuilder());
         }
 
@@ -196,9 +196,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
 
     }
 
-    private class AuthenticatedRemoteService extends AbstractAuthenticatedRemoteService<UnitRegistryData> {
+    private class AuthenticatedRemoteClient extends AbstractAuthenticatedRemoteClient<UnitRegistryData> {
 
-        public AuthenticatedRemoteService() {
+        public AuthenticatedRemoteClient() {
             super(UnitRegistryData.class);
         }
     }

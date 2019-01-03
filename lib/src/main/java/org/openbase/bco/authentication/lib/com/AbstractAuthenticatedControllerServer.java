@@ -36,8 +36,8 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.com.AbstractControllerServer;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -47,7 +47,7 @@ import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.T
 import java.io.Serializable;
 
 
-public abstract class AbstractAuthenticatedCommunicationService<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements AuthenticatedRequestable {
+public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>> extends AbstractControllerServer<M, MB> implements AuthenticatedRequestable {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
@@ -59,7 +59,7 @@ public abstract class AbstractAuthenticatedCommunicationService<M extends Abstra
      * @param builder the initial data builder
      * @throws InstantiationException if the creation fails
      */
-    public AbstractAuthenticatedCommunicationService(final MB builder) throws InstantiationException {
+    public AbstractAuthenticatedControllerServer(final MB builder) throws InstantiationException {
         super(builder);
     }
 
