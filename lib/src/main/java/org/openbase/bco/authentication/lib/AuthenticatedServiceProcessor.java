@@ -30,6 +30,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.iface.TransactionIdProvider;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
@@ -150,6 +151,8 @@ public class AuthenticatedServiceProcessor {
     /**
      * Method used by the remote to request an authenticated action from a server.
      *
+     * Note: The future object is canceled if a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
+     *
      * @param <SEND>              The type which is send to server for this request.
      * @param <RESPONSE>          The type with which the server should respond.
      * @param message             The message which is encrypted and send to the server.
@@ -157,47 +160,50 @@ public class AuthenticatedServiceProcessor {
      * @param sessionManager      The session manager from which the ticket is used if a user it logged in.
      * @param internalRequestable Interface for the internal authenticated request which is called.
      * @return A future containing the response.
-     * @throws CouldNotPerformException If a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
      */
-    public static <SEND extends Serializable, RESPONSE> AuthenticatedValueFuture<RESPONSE> requestAuthenticatedAction(
+    public static <SEND extends Serializable, RESPONSE> Future<RESPONSE> requestAuthenticatedAction(
             final SEND message,
             final Class<RESPONSE> responseClass,
             final SessionManager sessionManager,
-            final InternalRequestable internalRequestable) throws CouldNotPerformException {
-        if (sessionManager.isLoggedIn()) {
-            // someone is logged in with the session manager
-            try {
-                // initialize a ticket for the request
-                TicketAuthenticatorWrapper ticketAuthenticatorWrapper = sessionManager.initializeServiceServerRequest();
-                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
-                // add the ticket to the authenticated value which is send
-                authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+            final InternalRequestable internalRequestable) {
+        try {
+            if (sessionManager.isLoggedIn()) {
+                // someone is logged in with the session manager
+                try {
+                    // initialize a ticket for the request
+                    TicketAuthenticatorWrapper ticketAuthenticatorWrapper = sessionManager.initializeServiceServerRequest();
+                    AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+                    // add the ticket to the authenticated value which is send
+                    authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
 
+                    if (message != null) {
+                        // encrypt the message which is send with the session key
+                        authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(message, sessionManager.getSessionKey()));
+                    }
+                    // perform the internal request
+                    Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
+                    // wrap the response in an authenticated synchronization future
+                    return new AuthenticatedValueFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not request authenticated Action!", ex);
+                }
+            } else {
+                // no one is logged in so do not encrypt but convert message to a byte string, only if there is a parameter
+                AuthenticatedValue.Builder authenticateValue = AuthenticatedValue.newBuilder();
                 if (message != null) {
-                    // encrypt the message which is send with the session key
-                    authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(message, sessionManager.getSessionKey()));
+                    if (!(message instanceof Message)) {
+                        throw new CouldNotPerformException("Could not convert [" + message + "] to byte string");
+                    }
+
+                    authenticateValue.setValue(((Message) message).toByteString());
                 }
                 // perform the internal request
-                Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
+                Future<AuthenticatedValue> future = internalRequestable.request(authenticateValue.build());
                 // wrap the response in an authenticated synchronization future
-                return new AuthenticatedValueFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not request authenticated Action!", ex);
+                return new AuthenticatedValueFuture<>(future, responseClass, null, sessionManager);
             }
-        } else {
-            // no one is logged in so do not encrypt but convert message to a byte string, only if there is a parameter
-            AuthenticatedValue.Builder authenticateValue = AuthenticatedValue.newBuilder();
-            if (message != null) {
-                if (!(message instanceof Message)) {
-                    throw new CouldNotPerformException("Could not convert [" + message + "] to byte string");
-                }
-
-                authenticateValue.setValue(((Message) message).toByteString());
-            }
-            // perform the internal request
-            Future<AuthenticatedValue> future = internalRequestable.request(authenticateValue.build());
-            // wrap the response in an authenticated synchronization future
-            return new AuthenticatedValueFuture<>(future, responseClass, null, sessionManager);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ex);
         }
     }
 
