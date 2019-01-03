@@ -50,7 +50,6 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.binding.BindingConfigType.BindingConfig;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
@@ -84,6 +83,7 @@ import org.openbase.type.geometry.TranslationType.Translation;
 import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
 import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 import org.openbase.type.spatial.ShapeType.Shape;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -810,7 +810,17 @@ public class MockRegistry {
         private final ServiceTemplate serviceTemplate;
 
         MockServiceTemplate(final ServiceType serviceType, final CommunicationType communicationType) {
-            this.serviceTemplate = ServiceTemplate.newBuilder().setType(serviceType).setCommunicationType(communicationType).build();
+            ServiceTemplate.Builder serviceTemplateBuilder = ServiceTemplate.newBuilder().setType(serviceType).setCommunicationType(communicationType);
+
+            switch (serviceTemplateBuilder.getType()) {
+                case BRIGHTNESS_STATE_SERVICE:
+                    serviceTemplateBuilder.addSuperType(ServiceType.POWER_STATE_SERVICE);
+                    break;
+                case COLOR_STATE_SERVICE:
+                    serviceTemplateBuilder.addSuperType(ServiceType.BRIGHTNESS_STATE_SERVICE);
+                    break;
+            }
+            this.serviceTemplate = serviceTemplateBuilder.build();
         }
 
         public ServiceTemplate getServiceTemplate() {

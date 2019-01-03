@@ -48,6 +48,7 @@ import org.openbase.bco.registry.unit.core.consistency.deviceconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneServiceStateConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.sceneconfig.ServiceStateDescriptionHiararchyConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.*;
 import org.openbase.bco.registry.unit.core.plugin.*;
@@ -313,8 +314,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         sceneUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
-        //TODO: this consistency handle currently removes all service states, fix it and then reactivate it again
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneServiceStateConsistencyHandler(unitConfigRegistryList));
+        sceneUnitConfigRegistry.registerConsistencyHandler(new ServiceStateDescriptionHiararchyConsistencyHandler());
 
         // add consistency handler for all unitConfig registries
         registerConsistencyHandler(new BaseUnitTypeFieldConsistencyHandler(), UnitConfig.class);

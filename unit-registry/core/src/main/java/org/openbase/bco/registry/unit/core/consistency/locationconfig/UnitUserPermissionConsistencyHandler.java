@@ -94,7 +94,7 @@ public class UnitUserPermissionConsistencyHandler extends AbstractProtoBufRegist
 
         // if a modification occurred publish it
         if (modification) {
-            throw new EntryModification(location, this);
+            throw new EntryModification(entry.setMessage(location, this), this);
         }
     }
 

@@ -22,11 +22,12 @@ package org.openbase.bco.registry.lib.provider.template;
  * #L%
  */
 
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface ServiceTemplateCollectionProvider {
@@ -37,7 +38,9 @@ public interface ServiceTemplateCollectionProvider {
      * comparison.
      *
      * @param serviceTemplate the service template which is tested
+     *
      * @return if the service template with the given id is registered, otherwise false
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -48,7 +51,9 @@ public interface ServiceTemplateCollectionProvider {
      * registered, otherwise false.
      *
      * @param serviceTemplateId the id of the service template
+     *
      * @return if the service template with the given id is registered, otherwise false
+     *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
@@ -59,7 +64,9 @@ public interface ServiceTemplateCollectionProvider {
      * id.
      *
      * @param serviceTemplateId the id of the service template
+     *
      * @return the requested service template.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
@@ -69,6 +76,7 @@ public interface ServiceTemplateCollectionProvider {
      * Method returns all registered service template.
      *
      * @return the service templates stored in this registry.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException;
@@ -77,9 +85,54 @@ public interface ServiceTemplateCollectionProvider {
      * Method returns the service template with the given type.
      *
      * @param serviceType the service type
+     *
      * @return the requested service template.
+     *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
     ServiceTemplate getServiceTemplateByType(final ServiceType serviceType) throws CouldNotPerformException;
+
+    /**
+     * Get all sub types of a service type. E.g. COLOR_STATE_SERVICE and BRIGHTNESS_STATE_SERVICE are
+     * sub types of POWER_STATE_SERVICE.
+     *
+     * @param type the super type whose sub types are searched
+     *
+     * @return all types of which the given type is a super type
+     *
+     * @throws CouldNotPerformException
+     */
+    default List<ServiceType> getSubServiceTypes(final ServiceType type) throws CouldNotPerformException {
+        List<ServiceType> serviceTypes = new ArrayList<>();
+        for (ServiceTemplate template : getServiceTemplates()) {
+            if (template.getSuperTypeList().contains(type)) {
+                serviceTypes.add(template.getType());
+                serviceTypes.addAll(getSubServiceTypes(template.getType()));
+            }
+        }
+        return serviceTypes;
+    }
+
+    /**
+     * Get all super types of a service type. E.g. BRIGHTNESS_STATE_SERVICE and POWER_STATE_SERVICE are
+     * super types of COLOR_STATE_SERVICE.
+     *
+     * @param type the type whose super types are returned
+     *
+     * @return all super types of a given service type
+     *
+     * @throws CouldNotPerformException
+     */
+    default List<ServiceType> getSuperServiceTypes(final ServiceType type) throws CouldNotPerformException {
+        ServiceTemplate serviceTemplate = getServiceTemplateByType(type);
+        List<ServiceType> serviceTypes = new ArrayList<>();
+        for (ServiceTemplate template : getServiceTemplates()) {
+            if (serviceTemplate.getSuperTypeList().contains(template.getType())) {
+                serviceTypes.add(template.getType());
+                serviceTypes.addAll(getSuperServiceTypes(template.getType()));
+            }
+        }
+        return serviceTypes;
+    }
 }
