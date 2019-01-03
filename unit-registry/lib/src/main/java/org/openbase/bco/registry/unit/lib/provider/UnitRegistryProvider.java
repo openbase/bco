@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.scene.lib.provider;
+package org.openbase.bco.registry.unit.lib.provider;
 
 /*
  * #%L
