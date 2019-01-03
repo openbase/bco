@@ -198,9 +198,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      */
     default Set<ServiceDescription> getAvailableServiceDescriptions() throws NotAvailableException {
         final Set<ServiceDescription> serviceDescriptionList = new HashSet<>();
-        for (final ServiceDescription serviceDescription : getUnitTemplate(true).getServiceDescriptionList()) {
-            serviceDescriptionList.add(serviceDescription);
-        }
+        serviceDescriptionList.addAll(getUnitTemplate(true).getServiceDescriptionList());
         return serviceDescriptionList;
     }
 

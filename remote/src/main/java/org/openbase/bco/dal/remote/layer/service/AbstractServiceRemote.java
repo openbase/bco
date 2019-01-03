@@ -1021,7 +1021,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     @Override
     public Future<Long> ping() {
         if (unitRemoteMap.isEmpty()) {
-            return CompletableFuture.completedFuture(0l);
+            return CompletableFuture.completedFuture(0L);
         }
 
         final List<Future<Long>> futurePings = new ArrayList<>();

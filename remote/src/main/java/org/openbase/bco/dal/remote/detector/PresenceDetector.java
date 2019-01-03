@@ -56,7 +56,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
      * Default 3 minute window of no movement unit the state switches to
      * NO_MOTION.
      */
-    public static final long PRESENCE_TIMEOUT = JPService.testMode() ? 50 : 60000 * 1;
+    public static final long PRESENCE_TIMEOUT = JPService.testMode() ? 50 : 60000;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 

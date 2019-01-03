@@ -178,12 +178,12 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
 
     @Override
     public Future<Long> ping() {
-        return CompletableFuture.completedFuture(0l);
+        return CompletableFuture.completedFuture(0L);
     }
 
     @Override
     public Long getPing() {
-        return 0l;
+        return 0L;
     }
 
     @Override

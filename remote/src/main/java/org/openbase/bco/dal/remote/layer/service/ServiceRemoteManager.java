@@ -433,7 +433,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     public Future<Long> ping() {
         synchronized (serviceRemoteMapLock) {
             if (serviceRemoteMap.isEmpty()) {
-                return CompletableFuture.completedFuture(0l);
+                return CompletableFuture.completedFuture(0L);
             }
 
             final List<Future<Long>> futurePings = new ArrayList<>();
