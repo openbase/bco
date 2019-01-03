@@ -39,7 +39,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
+import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
@@ -351,7 +351,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 try {
                     final TicketAuthenticatorWrapper initializedTicket = AuthenticationClientHandler.initServiceServerRequest(authenticationBaseData.getSessionKey(), authenticationBaseData.getTicketAuthenticatorWrapper());
 
-                    return GlobalCachedExecutorService.allOf(input -> {
+                    return FutureProcessor.allOf(input -> {
                         try {
                             for (Future<AuthenticatedValue> authenticatedValueFuture : input) {
                                 AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, authenticatedValueFuture.get().getTicketAuthenticatorWrapper());
@@ -365,7 +365,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                     throw new CouldNotPerformException("Could not update ticket for further requests", ex);
                 }
             } else {
-                return GlobalCachedExecutorService.allOf(input -> null, generateSnapshotActions(snapshot, null, null));
+                return FutureProcessor.allOf(input -> null, generateSnapshotActions(snapshot, null, null));
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not record snapshot authenticated!", ex));
@@ -444,7 +444,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 }
             }
 
-            return GlobalCachedExecutorService.allOf(input -> {
+            return FutureProcessor.allOf(input -> {
                 try {
                     long sum = 0;
                     for (final Future<Long> future : input) {
@@ -607,7 +607,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 futureData.add(remote.requestData());
             }
 
-            return GlobalCachedExecutorService.allOf(() -> {
+            return FutureProcessor.allOf(() -> {
                 try {
                     return updateBuilderWithAvailableServiceStates(builder);
                 } catch (CouldNotPerformException ex) {
@@ -621,7 +621,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         synchronized (serviceRemoteMapLock) {
             for (AbstractServiceRemote value : serviceRemoteMap.values()) {
                 for (Object internalUnit : value.getInternalUnits()) {
-                    ((RSBRemoteService) internalUnit).validateMiddleware();
+                    ((AbstractRemoteClient) internalUnit).validateMiddleware();
                 }
             }
         }

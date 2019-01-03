@@ -30,7 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
+import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -51,7 +51,7 @@ public class DALRemote {
 
     public DALRemote() throws InitializationException {
         try {
-            RSBRemoteService remote;
+            AbstractRemoteClient remote;
             try {
                 remote = JPService.getProperty(JPRemoteService.class).getValue().newInstance();
             } catch (InstantiationException ex) {

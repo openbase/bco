@@ -26,7 +26,6 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -85,23 +84,4 @@ public interface ColorStateOperationService extends OperationService, ColorState
     default Future<ActionDescription> setColor(final RGBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.RGB).setRgbColor(color).build());
     }
-
-    /**
-     *
-     * @param color
-     * @return
-     * @throws CouldNotPerformException
-     * @deprecated Please use the org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer or org.openbase.jul.visual.javafx.transform.JFXColorToHSBColorTransformer to tranform colors into compatible types.
-     */
-    @Deprecated
-    default Future<ActionDescription> setColor(final java.awt.Color color) throws CouldNotPerformException {
-        try {
-            float[] hsb = new float[3];
-            java.awt.Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-            return setColor(HSBColor.newBuilder().setHue(hsb[0] * 360).setSaturation(hsb[1] * 100).setBrightness(hsb[2] * 100).build());
-        } catch (Exception ex) {
-            throw new CouldNotTransformException("Could not transform " + java.awt.Color.class.getName() + " to " + HSBColor.class.getName() + "!", ex);
-        }
-    }
-    // todo release: remove deprecation.
 }

@@ -260,11 +260,7 @@ public class LoginDialog extends javax.swing.JFrame {
 
         } catch (CouldNotPerformException ex) {
             statusLabel.setForeground(Color.RED.darker().darker().darker());
-            try {
-                statusLabel.setText(ExceptionProcessor.getInitialCauseMessage(ex));
-            } catch (NotAvailableException ex1) {
-                statusLabel.setText("?");
-            }
+            statusLabel.setText(ExceptionProcessor.getInitialCauseMessage(ex));
         } finally {
             loginButton.setEnabled(true);
         }

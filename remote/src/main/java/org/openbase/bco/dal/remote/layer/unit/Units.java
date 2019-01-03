@@ -1460,7 +1460,7 @@ public class Units {
         final Future<UnitRegistryData> dataFuture;
         try {
             dataFuture = Registries.getUnitRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitToRootTransformationFuture(unitConfig), dataFuture);
+            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitToRootTransformationFuture(unitConfig), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1477,7 +1477,7 @@ public class Units {
         final Future<UnitRegistryData> dataFuture;
         try {
             dataFuture = Registries.getUnitRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
+            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1496,7 +1496,7 @@ public class Units {
         final Future<UnitRegistryData> dataFuture;
         try {
             dataFuture = Registries.getUnitRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
+            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }

@@ -23,13 +23,13 @@ package org.openbase.bco.dal.lib.jp;
  */
 
 import org.openbase.jps.preset.AbstractJPClass;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
+import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPRemoteService extends AbstractJPClass<RSBRemoteService> {
+public class JPRemoteService extends AbstractJPClass<AbstractRemoteClient> {
 
     public final static String[] COMMAND_IDENTIFIERS = {"-r", "--remote"};
 
@@ -43,7 +43,7 @@ public class JPRemoteService extends AbstractJPClass<RSBRemoteService> {
     }
 
     @Override
-    protected Class<RSBRemoteService> getPropertyDefaultValue() {
+    protected Class<AbstractRemoteClient> getPropertyDefaultValue() {
         return null;
     }
 }

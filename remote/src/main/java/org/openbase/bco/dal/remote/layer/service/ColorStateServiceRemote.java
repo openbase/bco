@@ -31,7 +31,7 @@ import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
@@ -111,6 +111,6 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
         for(ColorStateOperationService colorStateOperationService : getServices()) {
             futureList.add(colorStateOperationService.setNeutralWhite());
         }
-        return GlobalCachedExecutorService.allOf(ActionDescription.getDefaultInstance(), futureList);
+        return FutureProcessor.allOf(ActionDescription.getDefaultInstance(), futureList);
     }
 }
