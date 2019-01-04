@@ -161,8 +161,15 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                 updateLastWithCurrentState(BRIGHTNESS_STATE_SERVICE, internalBuilder);
                 updateLastWithCurrentState(POWER_STATE_SERVICE, internalBuilder);
 
-                internalBuilder.getBrightnessStateBuilder().setBrightness(internalBuilder.getColorState().getColor().getHsbColor().getBrightness());
-                internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
+                final HSBColor hsbColor = internalBuilder.getColorState().getColor().getHsbColor();
+                internalBuilder.getBrightnessStateBuilder().setBrightness(hsbColor.getBrightness());
+
+
+                if (hsbColor.getBrightness() == 0) {
+                    internalBuilder.getPowerStateBuilder().setValue(PowerState.State.OFF);
+                } else {
+                    internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
+                }
 
                 copyResponsibleAction(COLOR_STATE_SERVICE, BRIGHTNESS_STATE_SERVICE, internalBuilder);
                 copyResponsibleAction(COLOR_STATE_SERVICE, POWER_STATE_SERVICE, internalBuilder);
