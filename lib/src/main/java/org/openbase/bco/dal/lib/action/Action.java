@@ -28,11 +28,11 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Identifiable;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -204,6 +204,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
             case FINISHED:
             case SCHEDULED:
             case EXECUTING:
+            case EXECUTION_FAILED:
                 return true;
             default:
                 return false;

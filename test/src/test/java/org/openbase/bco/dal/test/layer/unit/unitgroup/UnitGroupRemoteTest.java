@@ -49,9 +49,10 @@ import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState.DataUnit;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
@@ -180,20 +181,22 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     /**
-     * Test of setBrightness method, of class UnitGroupRemote.
+     * Test if controlling an unsupported service of a unit group fails.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception if something fails.
      */
     @Test(timeout = 10000)
-    public void testSetBrightness() throws Exception {
-        System.out.println("setBrightness");
+    public void testSetUnsupportedService() throws Exception {
+        System.out.println("testSetUnsupportedService");
+
         unitGroupRemote.waitForData();
-        Double brightness = 75d;
-        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).build();
+        TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(20).setTemperatureDataUnit(DataUnit.CELSIUS).build();
+
         try {
-            unitGroupRemote.setBrightnessState(brightnessState).get();
-            fail("Brightness service has been used even though the group config is only defined for power service");
-        } catch (CouldNotPerformException | ExecutionException ex) {
+            unitGroupRemote.setTargetTemperatureState(temperatureState).get();
+            fail("UnitGroup allows to set the unsupported target temperature state!");
+        } catch (ExecutionException ex) {
+            // do nothing because this action should fail
         }
     }
 

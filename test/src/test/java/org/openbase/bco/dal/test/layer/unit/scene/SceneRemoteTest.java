@@ -376,13 +376,14 @@ public class SceneRemoteTest extends AbstractBCOTest {
     public void testTriggerUnitGroupByScene() throws Exception {
         System.out.println("testTriggerUnitGroupByScene");
 
-        UnitGroupRemote unitGroupRemote = Units.getUnitsByLabel(COLORABLE_LIGHT_GROUP, true, UnitGroupRemote.class).get(0);
+        final UnitGroupRemote unitGroupRemote = Units.getUnitsByLabel(COLORABLE_LIGHT_GROUP, true, UnitGroupRemote.class).get(0);
+        final SceneRemote sceneRemote = Units.getUnitsByLabel(SCENE_GROUP, true, Units.SCENE).get(0);
 
         List<ColorableLightRemote> colorableLightRemotes = new ArrayList<>();
         for (String memberId : unitGroupRemote.getConfig().getUnitGroupConfig().getMemberIdList()) {
             colorableLightRemotes.add(Units.getUnit(memberId, true, ColorableLightRemote.class));
         }
-        activateScene(SCENE_GROUP);
+        Actions.waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
 
         for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
             assertEquals("ColorState has not been set for light[" + colorableLightRemote.getLabel() + "]", GROUP_COLOR_VALUE, colorableLightRemote.getColorState().getColor().getHsbColor());
@@ -425,15 +426,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
         final SceneRemote sceneRemoteDevicesOff = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_ALL_DEVICES_OFF, true, Units.SCENE).get(0);
         sceneRemoteDevicesOn.setActivationState(State.DEACTIVE).get();
         sceneRemoteDevicesOff.setActivationState(State.DEACTIVE).get();
-
-        LOGGER.warn("SCENE_DEVICES_ON");
-        for (ServiceStateDescription serviceStateDescription : sceneRemoteDevicesOn.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
-            LOGGER.warn("{} of {} to {}", serviceStateDescription.getServiceType().name(), serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
-        }
-        LOGGER.warn("SCENE_DEVICES_OFF");
-        for (ServiceStateDescription serviceStateDescription : sceneRemoteDevicesOff.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
-            LOGGER.warn("{} of {} to {}", serviceStateDescription.getServiceType().name(), serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
-        }
 
         int TEST_ITERATIONS = 3;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
@@ -501,21 +493,9 @@ public class SceneRemoteTest extends AbstractBCOTest {
         sceneRemoteOn.setActivationState(State.DEACTIVE).get();
         sceneRemoteOff.setActivationState(State.DEACTIVE).get();
 
-        LOGGER.warn("SCENE_ROOT_LOCATION_ON");
-        for (ServiceStateDescription serviceStateDescription : sceneRemoteOn.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
-            LOGGER.warn("{} of {} to {}", serviceStateDescription.getServiceType().name(), serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
-        }
-        LOGGER.warn("SCENE_ROOT_LOCATION_OFF");
-        for (ServiceStateDescription serviceStateDescription : sceneRemoteOff.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
-            LOGGER.warn("{} of {} to {}", serviceStateDescription.getServiceType().name(), serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
-        }
-
-        System.out.println("Initial states ONREMOTE[" + sceneRemoteOn.getActivationState().getValue() + "] OFFRemote[" + sceneRemoteOff.getActivationState().getValue() + "]");
-
         int TEST_ITERATIONS = 3;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             System.out.println("Current iteration: " + i);
-            LOGGER.warn("Activate scene on");
             Actions.waitForExecution(sceneRemoteOn.setActivationState(State.ACTIVE));
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
                 System.out.println("location was not yet switched " + POWER_ON);
@@ -530,7 +510,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertEquals("Location off scene is not deactive", State.DEACTIVE, sceneRemoteOff.getActivationState().getValue());
 
             Thread.sleep(100);
-            LOGGER.warn("Activate scene off");
             Actions.waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE));
             while (locationRemote.getPowerState().getValue() != POWER_OFF) {
                 System.out.println("location was not yet switched " + POWER_OFF);

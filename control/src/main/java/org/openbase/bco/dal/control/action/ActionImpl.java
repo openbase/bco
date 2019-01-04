@@ -146,6 +146,9 @@ public class ActionImpl implements SchedulableAction {
                                     }
                                 }
 
+                                // Execute
+                                updateActionState(ActionState.State.EXECUTING);
+
                                 // only update requested state if it is an operation state, else throw an exception if not in provider control mode
                                 if (!hasOperationService) {
                                     if (!JPService.getValue(JPProviderControlMode.class, false)) {
@@ -154,9 +157,6 @@ public class ActionImpl implements SchedulableAction {
                                 } else {
                                     setRequestedState();
                                 }
-
-                                // Execute
-                                updateActionState(ActionState.State.EXECUTING);
 
                                 LOGGER.debug("Wait for execution...");
                                 unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.SECONDS);

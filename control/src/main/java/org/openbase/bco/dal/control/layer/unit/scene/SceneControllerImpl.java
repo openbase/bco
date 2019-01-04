@@ -298,9 +298,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     final Observer<RemoteAction, ActionDescription> requiredActionPoolObserver = new Observer<RemoteAction, ActionDescription>() {
                         @Override
                         public void update(RemoteAction source, ActionDescription data) throws Exception {
-                            logger.warn("Scene {} received required state update {}.", SceneControllerImpl.this, source);
                             if (source.isDone() || source.isScheduled()) {
-                                logger.warn("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
+                                logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
                                 requiredActionPool.removeActionDescriptionObserver(this);
                                 stop();
                                 applyDataUpdate(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);

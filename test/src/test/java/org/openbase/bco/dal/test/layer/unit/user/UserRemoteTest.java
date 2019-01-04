@@ -24,18 +24,19 @@ package org.openbase.bco.dal.test.layer.unit.user;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.user.UserRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import org.openbase.type.domotic.state.LocalPositionStateType.LocalPositionState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
 import org.openbase.type.domotic.state.UserTransitStateType.UserTransitState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
@@ -82,12 +83,12 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
     public void testSetPresenceState() throws Exception {
         System.out.println("testSetPresenceState");
 
-        userRemote.setPresenceState(State.PRESENT).get();
+        Actions.waitForExecution(userRemote.setPresenceState(State.PRESENT));
         assertEquals("User presence state has not updated as expected", State.PRESENT, userRemote.getPresenceState().getValue());
         assertTrue("Local position state has not updated as expected",
                 userRemote.getLocalPositionState().getLocationIdList().contains(Registries.getUnitRegistry().getRootLocationConfig().getId()));
 
-        userRemote.setPresenceState(State.ABSENT).get();
+        Actions.waitForExecution(userRemote.setPresenceState(State.ABSENT));
         assertEquals("User presence state has not updated as expected", State.ABSENT, userRemote.getPresenceState().getValue());
         assertTrue("Local position state has not updated as expected", userRemote.getLocalPositionState().getLocationIdList().isEmpty());
     }
@@ -105,17 +106,17 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
         final ActivityMultiState activityMultiState = ActivityMultiState.newBuilder().addActivityId(activityId).build();
 
         // test setting an activity
-        userRemote.setActivityMultiState(activityMultiState).get();
+        Actions.waitForExecution(userRemote.setActivityMultiState(activityMultiState));
         assertTrue("Activity multi state does not contain the expected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
         assertEquals("User performs an unexpected number of activities", 1, userRemote.getActivityMultiState().getActivityIdCount());
 
         // test if duplicates will be removed, so nothing should change doing this
-        userRemote.addActivityState(activityId).get();
+        Actions.waitForExecution(userRemote.addActivityState(activityId));
         assertTrue("Activity multi state does not contain the expected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
         assertEquals("User performs an unexpected number of activities", 1, userRemote.getActivityMultiState().getActivityIdCount());
 
         // test removing the activity
-        userRemote.removeActivityState(activityId).get();
+        Actions.waitForExecution(userRemote.removeActivityState(activityId));
         assertFalse("Activity multi state does contains an unexpected activity id", userRemote.getActivityMultiState().getActivityIdList().contains(activityId));
         assertEquals("User performs more activities than expected", 0, userRemote.getActivityMultiState().getActivityIdCount());
     }
@@ -129,12 +130,12 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
     public void testUserTransitState() throws Exception {
         System.out.println("testUserTransitState");
 
-        userRemote.setUserTransitState(UserTransitState.State.LONG_TERM_ABSENT).get();
+        Actions.waitForExecution(userRemote.setUserTransitState(UserTransitState.State.LONG_TERM_ABSENT));
         assertEquals("User transit state has not updated as expected", UserTransitState.State.LONG_TERM_ABSENT, userRemote.getUserTransitState().getValue());
         assertEquals("User presence state has not updated as expected", State.ABSENT, userRemote.getPresenceState().getValue());
         assertTrue("Local position state has not updated as expected", userRemote.getLocalPositionState().getLocationIdList().isEmpty());
 
-        userRemote.setUserTransitState(UserTransitState.State.SOON_ABSENT).get();
+        Actions.waitForExecution(userRemote.setUserTransitState(UserTransitState.State.SOON_ABSENT));
         assertEquals("User transit state has not updated as expected", UserTransitState.State.SOON_ABSENT, userRemote.getUserTransitState().getValue());
         assertEquals("User presence state has not updated as expected", State.PRESENT, userRemote.getPresenceState().getValue());
         assertTrue("Local position state has not updated as expected",
@@ -153,14 +154,14 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
         LocalPositionState localPositionState;
         // create state with random location
         localPositionState = LocalPositionState.newBuilder().addLocationId(Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION).get(0).getId()).build();
-        userRemote.setLocalPositionState(localPositionState).get();
+        Actions.waitForExecution(userRemote.setLocalPositionState(localPositionState));
         assertTrue("Local position state has not updated as expected",
                 userRemote.getLocalPositionState().getLocationIdList().contains(localPositionState.getLocationId(0)));
         assertEquals("User presence state has not updated as expected", State.PRESENT, userRemote.getPresenceState().getValue());
 
         // create state without location
         localPositionState = localPositionState.toBuilder().clearLocationId().build();
-        userRemote.setLocalPositionState(localPositionState).get();
+        Actions.waitForExecution(userRemote.setLocalPositionState(localPositionState));
         assertTrue("Local position state has not updated as expected", userRemote.getLocalPositionState().getLocationIdList().isEmpty());
         assertEquals("User presence state has not updated as expected", State.ABSENT, userRemote.getPresenceState().getValue());
     }

@@ -166,6 +166,10 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         try {
+            if (!isServiceAvailable(actionDescription.getServiceStateDescription().getServiceType())) {
+                throw new NotAvailableException("ServiceType[" + actionDescription.getServiceStateDescription().getServiceType().name() + "] is not available for " + this);
+            }
+
             if (!isServiceAggregated(actionDescription.getServiceStateDescription().getServiceType())) {
                 return super.applyAction(actionDescription);
             }
