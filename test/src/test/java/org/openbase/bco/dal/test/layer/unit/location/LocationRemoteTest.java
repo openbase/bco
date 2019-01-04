@@ -403,7 +403,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception if something fails.
      */
-    @Test
+    @Test(timeout = 5000)
     public void testApplyActionAuthenticated() throws Exception {
         System.out.println("testApplyActionAuthenticated");
 
@@ -419,7 +419,12 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         // perform request
         final AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(locationRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
         // wait for request
-        future.get();
+        Actions.waitForExecution(future);
+
+        while (locationRemote.getPowerState().getValue() != serviceState.getValue()) {
+            // sleep until state is published back to location
+            Thread.sleep(10);
+        }
 
         // test if new value has been set
         assertEquals(serviceState.getValue(), locationRemote.getPowerState().getValue());

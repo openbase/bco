@@ -388,7 +388,14 @@ public class SceneRemoteTest extends AbstractBCOTest {
         for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
             assertEquals("ColorState has not been set for light[" + colorableLightRemote.getLabel() + "]", GROUP_COLOR_VALUE, colorableLightRemote.getColorState().getColor().getHsbColor());
         }
-        // for the group the values can be slighlty modified
+
+        while (!(unitGroupRemote.getColorState().getColor().getHsbColor().getBrightness() > GROUP_COLOR_VALUE.getBrightness() - 0.5 && unitGroupRemote.getColorState().getColor().getHsbColor().getBrightness() < GROUP_COLOR_VALUE.getBrightness() + 0.5)) {
+            Thread.sleep(10);
+        }
+
+        unitGroupRemote.requestData().get();
+
+        // for the group the values can be slightly modified because of computing averages
         assertEquals("Brightness in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getBrightness(), unitGroupRemote.getColorState().getColor().getHsbColor().getBrightness(), 1.0);
         assertEquals("Hue in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getHue(), unitGroupRemote.getColorState().getColor().getHsbColor().getHue(), 1.0);
         assertEquals("Saturation in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getSaturation(), unitGroupRemote.getColorState().getColor().getHsbColor().getSaturation(), 1.0);

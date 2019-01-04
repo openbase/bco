@@ -57,7 +57,7 @@ import java.util.concurrent.Future;
  */
 public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements MultiUnit<D> {
 
-    private static final long MINIMAL_UPDATE_FREQUENCY = 10;
+    public static final long MINIMAL_UPDATE_FREQUENCY = 10;
 
     private final RecurrenceEventFilter unitEventFilter;
     private final ServiceRemoteManager<D> serviceRemoteManager;
@@ -116,6 +116,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         logger.debug("Activate unit [" + getLabel() + "]!");
         super.activate();
         serviceRemoteManager.activate();
+
         updateUnitData();
     }
 

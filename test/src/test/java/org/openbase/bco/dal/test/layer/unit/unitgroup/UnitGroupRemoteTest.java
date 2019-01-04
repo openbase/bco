@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -205,7 +206,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception if something fails.
      */
-    @Test
+    @Test(timeout = 5000)
     public void testApplyActionAuthenticated() throws Exception {
         System.out.println("testApplyActionAuthenticated");
 
@@ -223,6 +224,11 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         final AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(unitGroupRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
         // wait for request
         Actions.waitForExecution(future);
+
+        while (unitGroupRemote.getPowerState().getValue() != serviceState.getValue()) {
+            // sleep until state is published back to location
+            Thread.sleep(10);
+        }
 
         // test if new value has been set
         assertEquals(serviceState.getValue(), unitGroupRemote.getPowerState().getValue());
