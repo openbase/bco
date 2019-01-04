@@ -34,7 +34,7 @@ import org.openbase.jul.pattern.provider.ObservableDataProviderAdapter;
  * that converts from received json object from the server to another type.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
- * @param DTO the type of data the implementing class converts the json object to.
+ * @param <DTO> the type of data the implementing class converts the json object to.
  *
  */
 public abstract class AbstractSSEObservable<DTO> extends ObservableDataProviderAdapter<DTO> {
