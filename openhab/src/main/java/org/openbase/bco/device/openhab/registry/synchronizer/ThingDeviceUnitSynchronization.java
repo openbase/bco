@@ -72,13 +72,13 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             final UnitConfig.Builder deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(updatedThing).toBuilder();
 
             if (SynchronizationProcessor.updateUnitToThing(updatedThing, deviceUnitConfig)) {
-                // disabled to test the blocking variant
-                //Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build());
-                try {
-                    Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
-                } catch (ExecutionException ex) {
-                    throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
-                }
+                Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build());
+                // disabled because it seems to cause an deadlock
+                //try {
+                //    Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
+                //} catch (ExecutionException ex) {
+                //    throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
+                //}
             }
         } catch (NotAvailableException ex) {
             logger.warn("Unit for thing {} not available", identifiableEnrichedThingDTO.getDTO().UID);
