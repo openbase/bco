@@ -25,7 +25,6 @@ package org.openbase.bco.dal.remote.action;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -135,28 +134,21 @@ public class RemoteActionPool {
      * @return a future object referring the submission state.
      */
     public MultiFuture<ActionDescription> execute(final ActionDescription causeActionDescription, final boolean cancelSubmissionAfterTimeout) {
-
         final List<Future<ActionDescription>> submissionFutureList = new ArrayList<>();
 
         synchronized (actionListSync) {
-
             if (remoteActionList.isEmpty()) {
-                LOGGER.warn("Remote action pool is empty, skip execution...");
+                LOGGER.debug("Remote action pool is empty, skip execution...");
             }
 
             for (final RemoteAction action : remoteActionList) {
-                try {
-                    LOGGER.warn("Execute action {}", action.getActionDescription().getServiceStateDescription());
-                } catch (NotAvailableException e) {
-                    //
-                }
                 submissionFutureList.add(action.execute(causeActionDescription));
             }
         }
 
         // handle auto cancellation after timeout
         if (cancelSubmissionAfterTimeout) {
-            submissionFutureList.add(GlobalCachedExecutorService.submit(() -> {
+            GlobalCachedExecutorService.submit(() -> {
                 try {
                     LOGGER.info("Waiting for action submission...");
 
@@ -189,7 +181,7 @@ public class RemoteActionPool {
                     }
                 }
                 return null;
-            }));
+            });
         }
 
         return new MultiFuture<>(submissionFutureList);

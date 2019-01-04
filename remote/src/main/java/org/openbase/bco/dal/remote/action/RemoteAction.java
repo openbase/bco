@@ -50,7 +50,9 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -77,6 +79,7 @@ public class RemoteAction implements Action {
             ExceptionPrinter.printHistory("Incoming DataType[" + data.getClass().getSimpleName() + "] does not provide an action list!", ex, LOGGER, LogLevel.WARN);
         }
     };
+    private final List<RemoteAction> impactedRemoteActions = new ArrayList<>();
 
     public RemoteAction(final Future<ActionDescription> actionFuture) {
         this.actionParameterBuilder = null;
@@ -105,7 +108,6 @@ public class RemoteAction implements Action {
     }
 
     public Future<ActionDescription> execute(final ActionDescription causeActionDescription) {
-
         // check if action remote was instantiated via task future.
         if (actionParameterBuilder == null) {
             return FutureProcessor.canceledFuture(new NotAvailableException("ActionParameter"));
@@ -144,17 +146,30 @@ public class RemoteAction implements Action {
                         targetUnit = Units.getUnit(actionDescription.getServiceStateDescription().getUnitId(), false);
                     }
 
-                    // register action update observation
-                    targetUnit.addDataObserver(unitObserver);
+                    if (actionDescription.getIntermediary()) {
+                        for (ActionReference actionReference : actionDescription.getActionImpactList()) {
+                            RemoteAction remoteAction = new RemoteAction(actionReference);
+                            remoteAction.addActionDescriptionObserver(actionDescriptionObservable::notifyObservers);
+                            impactedRemoteActions.add(remoteAction);
+                        }
 
-                    executionSync.notifyAll();
+                    } else {
+                        // register action update observation
+                        targetUnit.addDataObserver(unitObserver);
 
-                    // because future can already be outdated but the update not received because
-                    // the action id was not yet available we need to trigger an manual update.
-                    updateActionDescription(targetUnit.getActionList());
+                        executionSync.notifyAll();
+
+                        // because future can already be outdated but the update not received because
+                        // the action id was not yet available we need to trigger an manual update.
+                        updateActionDescription(targetUnit.getActionList());
+                    }
                 }
                 return actionDescription;
             } catch (InterruptedException ex) {
+                // this is useful to cancel actions through cancelling the execute task of a remote actions
+                // it allows to easily handle remote actions through the provided future because remote actions pools do not allow to access them
+                // it is used to cancel optional actions from scenes
+                targetUnit.cancelAction(actionDescription);
                 throw ex;
             } catch (CancellationException ex) {
                 // in case the action is canceled, this is done via the futureObservationTask which than causes this cancellation exception.
@@ -172,6 +187,8 @@ public class RemoteAction implements Action {
         futureObservationTask = GlobalCachedExecutorService.submit(() -> {
             try {
                 synchronized (executionSync) {
+                    // Note: this action can never be intermediary because else it cannot be retrieved from an action reference
+                    // therefore, the difference between this initialization and the one above
                     targetUnit = Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true);
 
                     for (final ActionDescription actionDescription : targetUnit.getActionList()) {
@@ -221,7 +238,24 @@ public class RemoteAction implements Action {
 
     @Override
     public boolean isRunning() {
-        return isValid() && futureObservationTask != null && (!futureObservationTask.isDone() || Action.super.isRunning());
+        if (isValid() && futureObservationTask != null) {
+            if (!futureObservationTask.isDone()) {
+                return true;
+            }
+
+            if (actionDescription.getIntermediary()) {
+                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                    if (!impactedRemoteAction.isRunning()) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return Action.super.isRunning();
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -233,9 +267,18 @@ public class RemoteAction implements Action {
                 }
 
                 if (!futureObservationTask.isDone()) {
+                    // task is not yet done, so cancel it which will result in cancelling the action on the controller
                     futureObservationTask.cancel(true);
+                    return targetUnit.cancelAction(getActionDescription());
+                } else {
+                    if (actionDescription.getIntermediary()) {
+                        // cancel all impacts of this actions and return the current action description
+                        return FutureProcessor.allOf(impactedRemoteActions, input -> actionDescription, RemoteAction::cancel);
+                    } else {
+                        // cancel the action on the controller
+                        return targetUnit.cancelAction(getActionDescription());
+                    }
                 }
-                return targetUnit.cancelAction(getActionDescription());
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ex);
@@ -243,7 +286,6 @@ public class RemoteAction implements Action {
     }
 
     private void updateActionDescription(final Collection<ActionDescription> actionDescriptions) {
-
         if (actionDescriptions == null) {
             LOGGER.warn("Update skipped because no action descriptions passed!");
             return;
@@ -276,25 +318,19 @@ public class RemoteAction implements Action {
     @Override
     public void waitUntilDone() throws CouldNotPerformException, InterruptedException {
         waitForSubmission();
+
+        if (actionDescription.getIntermediary()) {
+            for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                impactedRemoteAction.waitUntilDone();
+            }
+            return;
+        }
+
         synchronized (executionSync) {
             // wait until done
             while (actionDescription == null || isRunning() || !isDone()) {
                 executionSync.wait();
             }
-        }
-    }
-
-    public void waitForSubmission() throws CouldNotPerformException, InterruptedException {
-        synchronized (executionSync) {
-            if (futureObservationTask == null) {
-                throw new InvalidStateException("Action was never executed!");
-            }
-        }
-
-        try {
-            futureObservationTask.get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not wait for submission!", ex);
         }
     }
 
@@ -313,6 +349,14 @@ public class RemoteAction implements Action {
             throw new CouldNotPerformException("Cannot wait for state[" + actionState + "] because it is not always notified");
         }
         waitForSubmission();
+
+        if (actionDescription.getIntermediary()) {
+            for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                impactedRemoteAction.waitForActionState(actionState);
+            }
+            return;
+        }
+
         synchronized (executionSync) {
             // wait until state is reached
             while (actionDescription == null || actionDescription.getActionState().getValue() != actionState) {
@@ -339,10 +383,9 @@ public class RemoteAction implements Action {
     public void waitForExecution() throws CouldNotPerformException, InterruptedException {
         waitForSubmission();
 
-        if (!actionDescription.getActionImpactList().isEmpty()) {
-            // action impacted others, so wait for these
-            for (final ActionReference actionReference : actionDescription.getActionImpactList()) {
-                new RemoteAction(actionReference).waitForExecution();
+        if (actionDescription.getIntermediary()) {
+            for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                impactedRemoteAction.waitForExecution();
             }
             return;
         }
@@ -367,6 +410,26 @@ public class RemoteAction implements Action {
         return actionDescription.getId().equals(responsibleAction.getId());
     }
 
+    public void waitForSubmission() throws CouldNotPerformException, InterruptedException {
+        synchronized (executionSync) {
+            if (futureObservationTask == null) {
+                throw new InvalidStateException("Action was never executed!");
+            }
+        }
+
+        try {
+            futureObservationTask.get();
+
+            if (actionDescription.getIntermediary()) {
+                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                    impactedRemoteAction.waitForSubmission();
+                }
+            }
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not wait for submission!", ex);
+        }
+    }
+
     public void waitForSubmission(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException {
         synchronized (executionSync) {
             if (futureObservationTask == null) {
@@ -376,13 +439,32 @@ public class RemoteAction implements Action {
 
         try {
             futureObservationTask.get(timeout, timeUnit);
+
+            //TODO: split timeout
+            if (actionDescription.getIntermediary()) {
+                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                    impactedRemoteAction.waitForSubmission(timeout, timeUnit);
+                }
+            }
         } catch (ExecutionException | CancellationException ex) {
             throw new CouldNotPerformException("Could not wait for submission!", ex);
         }
     }
 
     public boolean isSubmissionDone() {
-        return futureObservationTask != null && futureObservationTask.isDone();
+        if (futureObservationTask != null && futureObservationTask.isDone()) {
+            if (actionDescription.getIntermediary()) {
+                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                    if (!impactedRemoteAction.isSubmissionDone()) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public void addActionDescriptionObserver(final Observer<RemoteAction, ActionDescription> observer) {

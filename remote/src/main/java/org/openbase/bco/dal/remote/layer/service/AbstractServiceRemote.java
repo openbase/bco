@@ -647,10 +647,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // apply action on remote
                 actionTaskList.add(unitRemote.applyAction(builder.build()));
             }
+            actionDescriptionBuilder.setIntermediary(true);
             return FutureProcessor.allOf(input -> {
                 for (final Future<ActionDescription> actionTask : input) {
                     try {
-                        actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(actionTask.get()));
+                        ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, actionTask.get());
                     } catch (ExecutionException ex) {
                         throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                     }
@@ -666,7 +667,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      * Apply an authenticated action with the default session manager. The authenticated value has to contain an action
      * description encrypted with the session key from the default manager if a user is logged in. Else an action description
      * as a byte string. This method internally calls {@link #applyActionAuthenticated(AuthenticatedValue, Builder, byte[])}.
-     *
+     * <p>
      * Note: Future is canceled if no action description is available or can be extracted from the authenticated value.
      *
      * @param authenticatedValue The authenticated value containing an action description to be applied. Created with the
@@ -700,7 +701,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
     /**
      * Apply an authenticated action on all units contained in this service remote.
-     *
+     * <p>
      * Note: Future is canceled if something fails, e.g. the service provided in the action description does not match this service remote.
      *
      * @param authenticatedValue       the authenticated value with which the action is applied on all internal units. If a session key
@@ -745,6 +746,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // apply action on remote
                 actionTaskList.add(unitRemote.applyActionAuthenticated(authValue));
             }
+            actionDescriptionBuilder.setIntermediary(true);
             return FutureProcessor.allOf(input -> {
                 for (final Future<AuthenticatedValue> future : input) {
                     try {

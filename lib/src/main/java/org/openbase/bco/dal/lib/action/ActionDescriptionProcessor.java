@@ -415,6 +415,25 @@ public class ActionDescriptionProcessor {
     }
 
     /**
+     * Update the impacts of an actions. This methods differentiates between impacted actions that impacted actions on
+     * their own and those that do not. If an action impacted further actions its impacts are taken over and else
+     * the action itself is an impact.
+     *
+     * @param impactingAction the actions which impacted the other one.
+     * @param impactedAction  the action which was impacted by the other one.
+     *
+     * @return the impacting actions with its impacts updated accordingly.
+     */
+    public static ActionDescription.Builder updateActionImpacts(final ActionDescription.Builder impactingAction, final ActionDescriptionOrBuilder impactedAction) {
+        if (impactedAction.getActionImpactList().isEmpty()) {
+            impactingAction.addActionImpact(generateActionReference(impactedAction));
+        } else {
+            impactingAction.addAllActionImpact(impactedAction.getActionImpactList());
+        }
+        return impactingAction;
+    }
+
+    /**
      * Prepare an action description. This sets the timestamp, the action initiator type, the id, labels and descriptions.
      *
      * @param actionDescriptionBuilder the action description builder which is prepared.
@@ -515,7 +534,7 @@ public class ActionDescriptionProcessor {
                 } catch (CouldNotPerformException ex) {
                     targetUnitLabel = actionDescriptionBuilder.getServiceStateDescription().getUnitId();
                 }
-                throw new InvalidStateException("Referred Unit["+targetUnitLabel+"] is not compatible with the registered UnitController["+unit.getLabel("?")+"]!");
+                throw new InvalidStateException("Referred Unit[" + targetUnitLabel + "] is not compatible with the registered UnitController[" + unit.getLabel("?") + "]!");
             }
 
             for (ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {

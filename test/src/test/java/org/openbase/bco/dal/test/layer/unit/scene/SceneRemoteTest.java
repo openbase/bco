@@ -72,7 +72,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -332,14 +331,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         System.out.println("testTriggerScenePerRemote");
 
         SceneRemote sceneRemote = Units.getUnitsByLabel(SCENE_TEST, true, Units.SCENE).get(0);
-
-        //TODO scenes should only contain one action per unit because else one of the actions will always be rejected, there should be a consistency handler for this, have a look at recording snapshots in aggregated units
-        for (final ServiceStateDescription serviceStateDescription : sceneRemote.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
-            LOGGER.warn("Scene changes unit {} to state {}", serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
-        }
-        LOGGER.warn("Await scene execution....");
         Actions.waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
-        LOGGER.warn("Scene executed....");
 
         powerStateServiceRemote.requestData().get();
         colorStateServiceRemote.requestData().get();
@@ -363,7 +355,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
         LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, LocationRemote.class);
         assertTrue("LocationState has the correct temperature to begin with!", locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE);
 
-        activateScene(SCENE_ROOT_LOCATION);
+        final SceneRemote sceneRemote = Units.getUnitsByLabel(SCENE_ROOT_LOCATION, true, Units.SCENE).get(0);
+        Actions.waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
         locationRemote.requestData().get();
 
         while (locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE) {
@@ -428,9 +421,23 @@ public class SceneRemoteTest extends AbstractBCOTest {
         assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
         assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
 
+        final SceneRemote sceneRemoteDevicesOn = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_ALL_DEVICES_ON, true, Units.SCENE).get(0);
+        final SceneRemote sceneRemoteDevicesOff = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_ALL_DEVICES_OFF, true, Units.SCENE).get(0);
+        sceneRemoteDevicesOn.setActivationState(State.DEACTIVE).get();
+        sceneRemoteDevicesOff.setActivationState(State.DEACTIVE).get();
+
+        LOGGER.warn("SCENE_DEVICES_ON");
+        for (ServiceStateDescription serviceStateDescription : sceneRemoteDevicesOn.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
+            LOGGER.warn("{} of {} to {}", serviceStateDescription.getServiceType().name(), serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
+        }
+        LOGGER.warn("SCENE_DEVICES_OFF");
+        for (ServiceStateDescription serviceStateDescription : sceneRemoteDevicesOff.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
+            LOGGER.warn("{} of {} to {}", serviceStateDescription.getServiceType().name(), serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
+        }
+
         int TEST_ITERATIONS = 3;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
-            activateScene(SCENE_ROOT_LOCATION_ALL_DEVICES_ON);
+            Actions.waitForExecution(sceneRemoteDevicesOn.setActivationState(State.ACTIVE));
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
                 Thread.sleep(100);
                 locationRemote.requestData();
@@ -439,8 +446,11 @@ public class SceneRemoteTest extends AbstractBCOTest {
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
             assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
+            assertEquals("Devices on scene is not active", State.ACTIVE, sceneRemoteDevicesOn.getActivationState().getValue());
+            assertEquals("Devices off scene is not deactive", State.DEACTIVE, sceneRemoteDevicesOff.getActivationState().getValue());
+
             Thread.sleep(100);
-            activateScene(SCENE_ROOT_LOCATION_ALL_DEVICES_OFF);
+            Actions.waitForExecution(sceneRemoteDevicesOff.setActivationState(State.ACTIVE));
             while (locationRemote.getPowerState().getValue() != POWER_OFF) {
                 System.out.println("location was not yet switched " + POWER_OFF);
                 Thread.sleep(100);
@@ -450,6 +460,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
             assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
+            assertEquals("Devices on scene is not deactive", State.DEACTIVE, sceneRemoteDevicesOn.getActivationState().getValue());
+            assertEquals("Devices off scene is not active", State.ACTIVE, sceneRemoteDevicesOff.getActivationState().getValue());
 
             System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
             Thread.sleep(1000);
@@ -484,10 +496,27 @@ public class SceneRemoteTest extends AbstractBCOTest {
         assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
         assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
 
+        final SceneRemote sceneRemoteOn = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_ON, true, Units.SCENE).get(0);
+        final SceneRemote sceneRemoteOff = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_OFF, true, Units.SCENE).get(0);
+        sceneRemoteOn.setActivationState(State.DEACTIVE).get();
+        sceneRemoteOff.setActivationState(State.DEACTIVE).get();
+
+        LOGGER.warn("SCENE_ROOT_LOCATION_ON");
+        for (ServiceStateDescription serviceStateDescription : sceneRemoteOn.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
+            LOGGER.warn("{} of {} to {}", serviceStateDescription.getServiceType().name(), serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
+        }
+        LOGGER.warn("SCENE_ROOT_LOCATION_OFF");
+        for (ServiceStateDescription serviceStateDescription : sceneRemoteOff.getConfig().getSceneConfig().getRequiredServiceStateDescriptionList()) {
+            LOGGER.warn("{} of {} to {}", serviceStateDescription.getServiceType().name(), serviceStateDescription.getUnitId(), serviceStateDescription.getServiceAttribute());
+        }
+
+        System.out.println("Initial states ONREMOTE[" + sceneRemoteOn.getActivationState().getValue() + "] OFFRemote[" + sceneRemoteOff.getActivationState().getValue() + "]");
+
         int TEST_ITERATIONS = 3;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             System.out.println("Current iteration: " + i);
-            activateScene(SCENE_ROOT_LOCATION_ON);
+            LOGGER.warn("Activate scene on");
+            Actions.waitForExecution(sceneRemoteOn.setActivationState(State.ACTIVE));
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
                 System.out.println("location was not yet switched " + POWER_ON);
                 Thread.sleep(100);
@@ -497,8 +526,12 @@ public class SceneRemoteTest extends AbstractBCOTest {
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
             assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
+            assertEquals("Location on scene is not active", State.ACTIVE, sceneRemoteOn.getActivationState().getValue());
+            assertEquals("Location off scene is not deactive", State.DEACTIVE, sceneRemoteOff.getActivationState().getValue());
+
             Thread.sleep(100);
-            activateScene(SCENE_ROOT_LOCATION_OFF);
+            LOGGER.warn("Activate scene off");
+            Actions.waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE));
             while (locationRemote.getPowerState().getValue() != POWER_OFF) {
                 System.out.println("location was not yet switched " + POWER_OFF);
                 Thread.sleep(100);
@@ -508,6 +541,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
             assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
+            assertEquals("Location on scene is not deactive", State.DEACTIVE, sceneRemoteOn.getActivationState().getValue());
+            assertEquals("Location off scene is not active", State.ACTIVE, sceneRemoteOff.getActivationState().getValue());
 
             System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
             Thread.sleep(1000);

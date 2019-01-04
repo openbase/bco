@@ -40,6 +40,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
@@ -66,6 +67,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -196,6 +199,9 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         // verify and prepare action description and retrieve the service state
         final ActivationState.Builder activationState = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
         activationState.setResponsibleAction(actionDescriptionBuilder.build());
+        TimestampProcessor.updateTimestampWithCurrentTime(activationState);
+
+        updateTransactionId();
 
         // publish new state as requested
         try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
@@ -215,13 +221,14 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         @Override
         public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
             final ActionDescription.Builder actionDescriptionBuilder = activationState.getResponsibleAction().toBuilder();
+            actionDescriptionBuilder.setIntermediary(true);
             switch (activationState.getValue()) {
                 case DEACTIVE:
                     stop();
                     break;
                 case ACTIVE:
-                    final MultiFuture<ActionDescription> requiredActionsFuture = requiredActionPool.execute(activationState.getResponsibleAction(), true);
-                    final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(activationState.getResponsibleAction(), true);
+                    final MultiFuture<ActionDescription> requiredActionsFuture = requiredActionPool.execute(activationState.getResponsibleAction());
+                    final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(activationState.getResponsibleAction());
 
                     // legacy handling
 //                    final ActivationState deactivated = ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
@@ -238,42 +245,69 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 //                        applyDataUpdate(deactivated, ServiceType.ACTIVATION_STATE_SERVICE);
 //                    }
 
-
-                    logger.error("perform action observation");
-
-                    List<ActionDescription> actionList = new ArrayList<>();
+                    final List<ActionDescription> actionList = new ArrayList<>();
+                    final long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
+                    long timeout;
                     try {
-                        actionList.addAll(requiredActionsFuture.get());
-                        actionList.addAll(optionalActionsFuture.get());
-                    } catch (ExecutionException ex) {
-                        throw new CouldNotPerformException("Could not submit all actions", ex);
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                        return null;
-                    }
+                        // wait for all required actions with a timeout, it at least one fails cancel all actions and leave with an exception
+                        try {
+                            for (final Future<ActionDescription> actionFuture : requiredActionsFuture.getFutureList()) {
+                                timeout = checkStart - System.currentTimeMillis();
+                                if (timeout <= 0) {
+                                    throw new CouldNotPerformException("Timeout on submitting required actions.");
+                                }
 
-                    for (final ActionDescription actionDescription : actionList) {
-                        if (actionDescription == null || actionDescription.getId().isEmpty()) {
-                            logger.error("RemoteActionPool returned action {} without id", actionDescription);
-                            continue;
+                                actionList.add(actionFuture.get(timeout, TimeUnit.MILLISECONDS));
+                            }
+                        } catch (TimeoutException | ExecutionException | CouldNotPerformException ex) {
+                            stop();
+                            throw new CouldNotPerformException("At least one required action could not be executed", ex);
                         }
-                        actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(actionDescription));
+
+                        // wait for all optional actions with a timeout, if one fails ignore its result and cancel the according action
+                        for (final Future<ActionDescription> actionFuture : optionalActionsFuture.getFutureList()) {
+                            try {
+                                timeout = checkStart - System.currentTimeMillis();
+                                if (timeout <= 0) {
+                                    // if the timeout is exhausted cancel all actions that are not yet done
+                                    if (actionFuture.isDone()) {
+                                        actionList.add(actionFuture.get());
+                                    } else {
+                                        actionFuture.cancel(true);
+                                    }
+                                    continue;
+                                }
+
+                                actionList.add(actionFuture.get(timeout, TimeUnit.MILLISECONDS));
+                            } catch (TimeoutException | ExecutionException ex) {
+                                actionFuture.cancel(true);
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        stop();
+                        Thread.currentThread().interrupt();
+                        throw new CouldNotPerformException("Scene execution interrupted", ex);
                     }
 
+                    // add all action impacts
+                    for (final ActionDescription actionDescription : actionList) {
+                        ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, actionDescription);
+                    }
+
+                    // register an observer which will deactivate the scene if one required action is now longer running
                     final Observer<RemoteAction, ActionDescription> requiredActionPoolObserver = new Observer<RemoteAction, ActionDescription>() {
                         @Override
                         public void update(RemoteAction source, ActionDescription data) throws Exception {
-                            if (source.isDone() && source.isScheduled()) {
+                            logger.warn("Scene {} received required state update {}.", SceneControllerImpl.this, source);
+                            if (source.isDone() || source.isScheduled()) {
+                                logger.warn("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
                                 requiredActionPool.removeActionDescriptionObserver(this);
-                                logger.warn("deactivate scene because at least one required state can not be reached.");
                                 stop();
-                                applyDataUpdate(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                                applyDataUpdate(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
                             }
                         }
                     };
                     requiredActionPool.addActionDescriptionObserver(requiredActionPoolObserver);
-
-                    logger.error("Return action {}", actionDescriptionBuilder.build());
             }
 
             applyDataUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE);
