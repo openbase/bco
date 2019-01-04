@@ -1025,6 +1025,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     /**
      * Method copies the responsible action of the source state to the target state.
      * Source as well as the target state are resolved via the builder instance.
+     * The timestamp of the service state is copied as well.
      *
      * @param sourceServiceType the type which refers the source service state.
      * @param targetServiceType the type which refers the target service state.
@@ -1032,11 +1033,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     protected void copyResponsibleAction(final ServiceType sourceServiceType, final ServiceType targetServiceType, final DB builder) {
         try {
+            // extract source and target message
             final Message sourceServiceState = (Message) Services.invokeServiceMethod(sourceServiceType, PROVIDER, ServiceTempus.CURRENT, builder);
             Message targetServiceState = (Message) Services.invokeServiceMethod(targetServiceType, PROVIDER, ServiceTempus.CURRENT, builder);
             targetServiceState = Services.setResponsibleAction(Services.getResponsibleAction(sourceServiceState), targetServiceState);
+
+            // copy state
             Services.invokeOperationServiceMethod(targetServiceType, builder, targetServiceState);
 
+            // copy timestamp
+            TimestampProcessor.copyTimestamp(sourceServiceState, targetServiceState);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not copy responsible action!", ex, logger);
         }

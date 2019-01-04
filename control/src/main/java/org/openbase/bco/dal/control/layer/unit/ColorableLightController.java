@@ -164,7 +164,6 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                 final HSBColor hsbColor = internalBuilder.getColorState().getColor().getHsbColor();
                 internalBuilder.getBrightnessStateBuilder().setBrightness(hsbColor.getBrightness());
 
-
                 if (hsbColor.getBrightness() == 0) {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.OFF);
                 } else {
@@ -180,10 +179,10 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                 updateLastWithCurrentState(COLOR_STATE_SERVICE, internalBuilder);
                 updateLastWithCurrentState(POWER_STATE_SERVICE, internalBuilder);
 
-                HSBColor hsb = internalBuilder.getColorState().getColor().getHsbColor().toBuilder().setBrightness(internalBuilder.getBrightnessState().getBrightness()).build();
-                Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsb).build();
-                internalBuilder.setColorState(internalBuilder.getColorState().toBuilder().setColor(color).build());
+                // sync color brightness state.
+                internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().setBrightness(internalBuilder.getBrightnessState().getBrightness());
 
+                // sync power state
                 if (internalBuilder.getBrightnessState().getBrightness() == 0) {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.OFF);
                 } else {
@@ -192,6 +191,33 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
                 copyResponsibleAction(BRIGHTNESS_STATE_SERVICE, COLOR_STATE_SERVICE, internalBuilder);
                 copyResponsibleAction(BRIGHTNESS_STATE_SERVICE, POWER_STATE_SERVICE, internalBuilder);
+
+                break;
+            case POWER_STATE_SERVICE:
+
+                updateLastWithCurrentState(COLOR_STATE_SERVICE, internalBuilder);
+                updateLastWithCurrentState(BRIGHTNESS_STATE_SERVICE, internalBuilder);
+
+                // sync brightness and color state.
+                switch (internalBuilder.getPowerState().getValue()) {
+                    case ON:
+                        if(internalBuilder.getBrightnessStateBuilder().getBrightness() == 0) {
+                            internalBuilder.getBrightnessStateBuilder().setBrightness(0);
+                        }
+                        if(internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().getBrightness() == 0) {
+                            internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().setBrightness(0);
+                        }
+                        break;
+                    case OFF:
+                        internalBuilder.getBrightnessStateBuilder().setBrightness(0);
+                        internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().setBrightness(0);
+                        break;
+                    default:
+                        break;
+                }
+
+                copyResponsibleAction(POWER_STATE_SERVICE, COLOR_STATE_SERVICE, internalBuilder);
+                copyResponsibleAction(POWER_STATE_SERVICE, BRIGHTNESS_STATE_SERVICE, internalBuilder);
 
                 break;
         }
