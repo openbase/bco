@@ -31,6 +31,10 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.RGBColorType.RGBColor;
 
+/**
+ * ColorTemperature was marked as deprecated by Google. Use {@link ColorStateColorSettingMapper} instead.
+ */
+@Deprecated
 public class ColorStateColorTemperatureMapper extends AbstractServiceStateTraitMapper<ColorState> {
 
     public static final String MIN_KELVIN_ATTRIBUTE_KEY = "temperatureMinK";

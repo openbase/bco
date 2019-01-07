@@ -33,24 +33,28 @@ import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 
 /**
- * ColorSpectrum was marked as deprecated by Google. Use {@link ColorStateColorSettingMapper} instead.
+ * Implement a mapping from Google's ColorSetting (<a href="https://developers.google.com/actions/smarthome/traits/colorsetting"></a>)
+ * to BCO's ColorState.
+ *
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-@Deprecated
-public class ColorStateColorSpectrumMapper extends AbstractServiceStateTraitMapper<ColorState> {
+public class ColorStateColorSettingMapper extends AbstractServiceStateTraitMapper<ColorState> {
 
+    /**
+     * Required if the device supports the full spectrum color model.
+     * Required if the colorTemperatureRange attribute is not set.
+     * Must be set to exactly one of the following values: rgb, hsv
+     */
     public static final String COLOR_MODEL_ATTRIBUTE_KEY = "colorModel";
-    //    public static final String COLOR_MODEL_RGB = "rgb";
     public static final String COLOR_MODEL_HSB = "hsv";
 
     public static final String COLOR_KEY = "color";
-    public static final String COLOR_NAME_KEY = "name";
-    //    public static final String COLOR_SPECTRUM_KEY = "spectrumRGB";
     public static final String COLOR_SPECTRUM_HSV_KEY = "spectrumHSV";
     public static final String HSV_HUE_KEY = "hue";
     public static final String HSV_SATURATION_KEY = "saturation";
     public static final String HSV_VALUE_KEY = "value";
 
-    public ColorStateColorSpectrumMapper() {
+    public ColorStateColorSettingMapper() {
         super(ServiceType.COLOR_STATE_SERVICE);
     }
 
@@ -71,7 +75,6 @@ public class ColorStateColorSpectrumMapper extends AbstractServiceStateTraitMapp
             }
 
             final JsonObject hsvColor = colorJson.getAsJsonObject(COLOR_SPECTRUM_HSV_KEY);
-
             if (!hsvColor.has(HSV_HUE_KEY) || !hsvColor.has(HSV_SATURATION_KEY) || !hsvColor.has(HSV_VALUE_KEY)) {
                 throw new CouldNotPerformException("Could not map from jsonObject[" + hsvColor.toString() + "] to [" +
                         ColorState.class.getSimpleName() + "]. One of the Attributes[" +
@@ -112,7 +115,6 @@ public class ColorStateColorSpectrumMapper extends AbstractServiceStateTraitMapp
                 throw new CouldNotPerformException("Cannot handle transformation for type of [" + colorState.getColor() + "]");
         }
 
-        //TODO: name for color
         final JsonObject color = new JsonObject();
         final JsonObject hsvColor = new JsonObject();
         hsvColor.addProperty(HSV_HUE_KEY, hsbColor.getHue());

@@ -23,8 +23,6 @@ package org.openbase.bco.app.cloudconnector.mapping.lib;
  */
 
 import com.google.gson.JsonObject;
-import org.openbase.bco.app.cloudconnector.mapping.service.ColorStateColorSpectrumMapper;
-import org.openbase.bco.app.cloudconnector.mapping.service.ColorStateColorTemperatureMapper;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.processing.StringProcessor;
 
@@ -43,7 +41,16 @@ import java.util.Set;
 public enum Trait {
 
     BRIGHTNESS(Command.BRIGHTNESS_ABSOLUTE),
+    COLOR_SETTING(Command.COLOR_ABSOLUTE),
+    /**
+     * Type was marked as deprecated by Google. Use COLOR_SETTING instead.
+     */
+    @Deprecated
     COLOR_SPECTRUM(Command.COLOR_ABSOLUTE),
+    /**
+     * Type was marked as deprecated by Google. Use COLOR_SETTING instead.
+     */
+    @Deprecated
     COLOR_TEMPERATURE(Command.COLOR_ABSOLUTE),
     MODES(Command.SET_MODES),
     ON_OFF(Command.ON_OFF),
@@ -70,13 +77,9 @@ public enum Trait {
     }
 
     public static Trait getByCommand(final Command command, final JsonObject params) throws NotAvailableException {
+        // TODO: this block can be removed when the deprecated types are removed
         if (command == Command.COLOR_ABSOLUTE) {
-            JsonObject color = params.getAsJsonObject(ColorStateColorSpectrumMapper.COLOR_KEY);
-            if (color.has(ColorStateColorTemperatureMapper.TEMPERATURE_KEY)) {
-                return COLOR_TEMPERATURE;
-            } else if (color.has(ColorStateColorSpectrumMapper.COLOR_MODEL_HSB)) {
-                return COLOR_SPECTRUM;
-            }
+            return COLOR_SETTING;
         }
 
 
