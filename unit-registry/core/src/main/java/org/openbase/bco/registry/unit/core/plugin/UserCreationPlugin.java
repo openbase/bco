@@ -106,7 +106,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
             UnitConfig openhab;
             try {
-                openhab = getUserByAlias(OPENHAB_USERNAME);
+                openhab = getUserByAlias(UnitRegistry.OPENHAB_USER_ALIAS);
             } catch (NotAvailableException ex) {
                 openhab = registerOpenHAB();
 
