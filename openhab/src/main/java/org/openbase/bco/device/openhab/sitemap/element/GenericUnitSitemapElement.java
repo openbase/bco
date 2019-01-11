@@ -53,8 +53,8 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
         this.serviceType = ServiceType.UNKNOWN;
     }
 
-    public GenericUnitSitemapElement(final UnitConfig unitConfig, final ServiceType serviceType, final boolean absolutLabel) throws InstantiationException {
-        super(unitConfig, absolutLabel);
+    public GenericUnitSitemapElement(final UnitConfig unitConfig, final ServiceType serviceType, final boolean absoluteLabel) throws InstantiationException {
+        super(unitConfig, absoluteLabel);
         this.serviceType = serviceType;
     }
 

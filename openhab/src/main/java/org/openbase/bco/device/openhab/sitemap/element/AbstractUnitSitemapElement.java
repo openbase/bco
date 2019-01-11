@@ -26,37 +26,40 @@ import org.openbase.bco.device.openhab.registry.synchronizer.OpenHABItemProcesso
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.iface.provider.LabelProvider;
-import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement implements Initializable<UnitConfig>, LabelProvider {
 
-    protected final boolean absolutLabel;
+    protected final boolean absoluteLabel;
     protected UnitConfig unitConfig;
     protected UnitConfig parentUnitConfig;
 
     public AbstractUnitSitemapElement() throws InstantiationException {
-        this.absolutLabel = false;
+        this.absoluteLabel = false;
     }
 
     public AbstractUnitSitemapElement(final String unitId) throws InstantiationException {
         try {
-            this.absolutLabel = false;
+            this.absoluteLabel = false;
             init(Registries.getUnitRegistry().getUnitConfigById(unitId));
-            parentUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
+            this.parentUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    public AbstractUnitSitemapElement(final UnitConfig unitConfig, final boolean absolutLabel) throws InstantiationException {
-        this.absolutLabel = absolutLabel;
+    public AbstractUnitSitemapElement(final UnitConfig unitConfig, final boolean absoluteLabel) throws InstantiationException {
+        this.absoluteLabel = absoluteLabel;
         init(unitConfig);
+        try {
+            this.parentUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
 
@@ -67,7 +70,7 @@ public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement 
 
     @Override
     public String getLabel() {
-        return LabelProcessor.getBestMatch(unitConfig.getLabel(), "?") + (absolutLabel  && parentUnitConfig != null ? " @ " +
+        return LabelProcessor.getBestMatch(unitConfig.getLabel(), "?") + (absoluteLabel && parentUnitConfig != null ? " @ " +
                 LabelProcessor.getBestMatch(parentUnitConfig.getLabel(), "?") : "");
     }
 
