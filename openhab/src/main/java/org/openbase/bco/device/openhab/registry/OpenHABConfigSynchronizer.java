@@ -25,6 +25,7 @@ package org.openbase.bco.device.openhab.registry;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.device.openhab.registry.synchronizer.*;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -70,9 +71,7 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
     }
 
     public void activate() throws CouldNotPerformException, InterruptedException {
-        Registries.waitForData();
-        // todo: replace by bco system user and use other humand rights for thing updates (e.g. to represent a user button press)
-        SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin", true);
+        SessionManager.getInstance().login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.OPENHAB_USER_ALIAS).getId(), true);
 
         thingDeviceUnitSynchronization.activate();
         deviceUnitThingSynchronization.activate();

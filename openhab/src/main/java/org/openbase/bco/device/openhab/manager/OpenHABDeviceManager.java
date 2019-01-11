@@ -22,9 +22,9 @@ package org.openbase.bco.device.openhab.manager;
  * #L%
  */
 
+import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerImpl;
 import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.device.openhab.manager.service.OpenHABOperationServiceFactory;
-import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerImpl;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -35,11 +35,10 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.Map.Entry;
 
@@ -61,7 +60,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
             @Override
             public boolean isSupported(UnitConfig config) {
-                DeviceClass deviceClass = null;
+                DeviceClass deviceClass;
                 try {
                     try {
                         deviceClass = Registries.getClassRegistry(true).getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
@@ -109,10 +108,6 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        // TODO: this is a hack implemented because waitForData did not work correctly last time tested
-        while (Registries.getUnitRegistry().getUnitConfigs(UnitType.USER).size() == 0) {
-            Thread.sleep(100);
-        }
         deviceManager.getUnitControllerRegistry().addObserver(synchronizationObserver);
         deviceManager.activate();
         OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
