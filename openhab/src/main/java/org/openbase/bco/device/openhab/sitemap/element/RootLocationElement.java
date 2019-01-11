@@ -27,6 +27,7 @@ import org.openbase.bco.device.openhab.sitemap.SitemapBuilder.SitemapIconType;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -47,11 +48,11 @@ public class RootLocationElement extends LocationElement {
 
     @Override
     public void serialize(final SitemapBuilder sitemap) throws CouldNotPerformException {
-        sitemap.openFrameContext("Allgemeine Informationen");
-        sitemap.addTextElement("Date", "Datum");
-        sitemap.addTextElement("Mails", "Mails");
-        sitemap.addTextElement("SystemState", "System Status");
-        sitemap.closeContext();
+//        sitemap.openFrameContext("Allgemeine Informationen");
+//        sitemap.addTextElement("Date", "Datum");
+//        sitemap.addTextElement("Mails", "Mails");
+//        sitemap.addTextElement("SystemState", "System Status");
+//        sitemap.closeContext();
 
         super.serialize(sitemap);
 
@@ -62,6 +63,12 @@ public class RootLocationElement extends LocationElement {
 
         // load unit configs
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
+
+            // filter devices
+            if (unitConfig.getUnitType() == UnitType.DEVICE) {
+                continue;
+            }
+
             if (!unitTypeUnitConfigMap.containsKey(unitConfig.getUnitType())) {
                 unitTypeUnitConfigMap.put(unitConfig.getUnitType(), new ArrayList<>());
             }
@@ -70,7 +77,7 @@ public class RootLocationElement extends LocationElement {
 
         for (List<UnitConfig> unitConfigListValue : unitTypeUnitConfigMap.values()) {
             // sort by name
-            Collections.sort(unitConfigListValue, Comparator.comparing(o -> label(o.getLabel())));
+            Collections.sort(unitConfigListValue, Comparator.comparing(o -> LabelProcessor.getBestMatch(o.getLabel(), "?")));
         }
 
         for (UnitType unitType : unitTypeUnitConfigMap.keySet()) {
@@ -81,7 +88,7 @@ public class RootLocationElement extends LocationElement {
 
             sitemap.openFrameContext(unitType.name());
             for (UnitConfig unitConfig : unitTypeUnitConfigMap.get(unitType)) {
-                sitemap.append(new GenericUnitSitemapElement(unitConfig));
+                sitemap.append(new GenericUnitSitemapElement(unitConfig, true));
             }
             sitemap.closeContext();
         }
@@ -102,7 +109,7 @@ public class RootLocationElement extends LocationElement {
 
         for (List<UnitConfig> unitConfigListValue : serviceTypeUnitConfigMap.values()) {
             // sort by name
-            Collections.sort(unitConfigListValue, Comparator.comparing(o -> label(o.getLabel())));
+            Collections.sort(unitConfigListValue, Comparator.comparing(o ->  LabelProcessor.getBestMatch(o.getLabel(), "?")));
         }
 
         for (ServiceType serviceType : serviceTypeUnitConfigMap.keySet()) {
@@ -113,7 +120,7 @@ public class RootLocationElement extends LocationElement {
 
             sitemap.openFrameContext(serviceType.name());
             for (UnitConfig unitConfig : serviceTypeUnitConfigMap.get(serviceType)) {
-                sitemap.append(new GenericUnitSitemapElement(unitConfig, serviceType));
+                sitemap.append(new GenericUnitSitemapElement(unitConfig, serviceType, true));
             }
             sitemap.closeContext();
         }

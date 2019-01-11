@@ -36,20 +36,26 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement implements Initializable<UnitConfig>, LabelProvider {
 
+    protected final boolean absolutLabel;
     protected UnitConfig unitConfig;
+    protected UnitConfig parentUnitConfig;
 
     public AbstractUnitSitemapElement() throws InstantiationException {
+        this.absolutLabel = false;
     }
 
     public AbstractUnitSitemapElement(final String unitId) throws InstantiationException {
         try {
+            this.absolutLabel = false;
             init(Registries.getUnitRegistry().getUnitConfigById(unitId));
+            parentUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    public AbstractUnitSitemapElement(final UnitConfig unitConfig) throws InstantiationException {
+    public AbstractUnitSitemapElement(final UnitConfig unitConfig, final boolean absolutLabel) throws InstantiationException {
+        this.absolutLabel = absolutLabel;
         init(unitConfig);
     }
 
@@ -61,15 +67,8 @@ public abstract class AbstractUnitSitemapElement extends AbstractSitemapElement 
 
     @Override
     public String getLabel() {
-        return label(unitConfig.getLabel());
-    }
-
-    public static String label(final Label label) {
-        try {
-            return LabelProcessor.getBestMatch(label);
-        } catch (NotAvailableException ex) {
-            return "?";
-        }
+        return LabelProcessor.getBestMatch(unitConfig.getLabel(), "?") + (absolutLabel  && parentUnitConfig != null ? " @ " +
+                LabelProcessor.getBestMatch(parentUnitConfig.getLabel(), "?") : "");
     }
 
     protected String getItem(final ServiceType serviceType) {

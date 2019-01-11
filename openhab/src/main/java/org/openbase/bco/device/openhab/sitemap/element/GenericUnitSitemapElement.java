@@ -39,12 +39,22 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
     }
 
     public GenericUnitSitemapElement(final UnitConfig unitConfig) throws InstantiationException {
-        super(unitConfig);
+        super(unitConfig, false);
         this.serviceType = ServiceType.UNKNOWN;
     }
 
     public GenericUnitSitemapElement(final UnitConfig unitConfig, final ServiceType serviceType) throws InstantiationException {
-        super(unitConfig);
+        super(unitConfig, false);
+        this.serviceType = serviceType;
+    }
+
+    public GenericUnitSitemapElement(final UnitConfig unitConfig, final boolean absolutLabel) throws InstantiationException {
+        super(unitConfig, absolutLabel);
+        this.serviceType = ServiceType.UNKNOWN;
+    }
+
+    public GenericUnitSitemapElement(final UnitConfig unitConfig, final ServiceType serviceType, final boolean absolutLabel) throws InstantiationException {
+        super(unitConfig, absolutLabel);
         this.serviceType = serviceType;
     }
 

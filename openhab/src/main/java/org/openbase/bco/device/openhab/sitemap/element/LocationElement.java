@@ -27,6 +27,7 @@ import org.openbase.bco.device.openhab.sitemap.SitemapBuilder.SitemapIconType;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -53,7 +54,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
             final Map<String, UnitConfig> labelSortedUnitConfigMap = new TreeMap<>();
             for (String childId : unitConfig.getLocationConfig().getChildIdList()) {
                 final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
-                labelSortedUnitConfigMap.put(label(locationUnitConfig.getLabel()), locationUnitConfig);
+                labelSortedUnitConfigMap.put(LabelProcessor.getBestMatch(locationUnitConfig.getLabel(),"?"), locationUnitConfig);
             }
             for (Entry<String, UnitConfig> labelUnitConfigEntry : labelSortedUnitConfigMap.entrySet()) {
                 sitemap.openTextContext(labelUnitConfigEntry.getKey(), SitemapIconType.CORRIDOR);
@@ -125,6 +126,27 @@ public class LocationElement extends AbstractUnitSitemapElement {
 
                 // load unit configs
                 for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(unitConfig.getId(), false)) {
+
+                    // filter devices
+                    if (unitConfig.getUnitType() == UnitType.DEVICE) {
+                        continue;
+                    }
+
+                    // filter user
+                    if (unitConfig.getUnitType() == UnitType.USER) {
+                        continue;
+                    }
+
+                    // filter auth groups
+                    if (unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) {
+                        continue;
+                    }
+
+                    // filter buttons
+                    if (unitConfig.getUnitType() == UnitType.BUTTON) {
+                        continue;
+                    }
+
                     if (!unitTypeUnitConfigMap.containsKey(unitConfig.getUnitType())) {
                         unitTypeUnitConfigMap.put(unitConfig.getUnitType(), new ArrayList<>());
                     }
@@ -133,7 +155,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
 
                 for (List<UnitConfig> unitConfigListValue : unitTypeUnitConfigMap.values()) {
                     // sort by name
-                    Collections.sort(unitConfigListValue, Comparator.comparing(o -> label(o.getLabel())));
+                    Collections.sort(unitConfigListValue, Comparator.comparing(o -> LabelProcessor.getBestMatch(o.getLabel(), "?")));
                 }
 
                 for (UnitType unitType : unitTypeUnitConfigMap.keySet()) {
