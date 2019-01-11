@@ -656,6 +656,16 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         return applyAction(actionDescription.toBuilder().setCancel(true));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param actionDescription   {@inheritDoc}
+     * @param authenticationToken {@inheritDoc}
+     * @param authorizationToken  {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
     public Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticationToken, final String authorizationToken) {
         try {
             ActionDescription build = actionDescription.toBuilder().setCancel(true).build();

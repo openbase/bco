@@ -26,9 +26,12 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.controller.ConfigurableRemote;
-import rsb.Scope;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.com.ScopeType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import rsb.Scope;
+
+import java.util.concurrent.Future;
 
 /**
  * @param <M> Message
@@ -110,4 +113,15 @@ public interface UnitRemote<M extends Message> extends Unit<M>, ConfigurableRemo
      * @return if the the infrastructure flag is set to true in a meta config for this unit
      */
     boolean isInfrastructure();
+
+    /**
+     * Cancel an action with permission given through token. The provided token can be null.
+     *
+     * @param actionDescription   the action to cancel.
+     * @param authenticationToken the authentication token.
+     * @param authorizationToken  the authorization token.
+     *
+     * @return a future of the cancel request.
+     */
+    Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticationToken, final String authorizationToken);
 }

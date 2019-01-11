@@ -204,7 +204,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals("Consumption of location has not been updated!", powerConsumptionState.getConsumption() * powerConsumptionSensorList.size(), locationRemote.getPowerConsumptionState().getConsumption(), 0.01);
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     public void testRecordAndRestoreSnapshots() throws Exception {
         BlindState snapshotBlindState = BlindState.newBuilder().setValue(BlindState.State.DOWN).setOpeningRatio(0).build();
         BlindState newBlindState = BlindState.newBuilder().setValue(BlindState.State.UP).setOpeningRatio(50).build();
@@ -215,10 +215,14 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         TemperatureState snapshotTemperatureState = TemperatureState.newBuilder().setTemperature(20).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
         TemperatureState newTemperatureState = TemperatureState.newBuilder().setTemperature(22).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
 
+        logger.info("Set initial states");
+
         Actions.waitForExecution(locationRemote.setBlindState(snapshotBlindState));
         Actions.waitForExecution(locationRemote.setColorState(snapshotColorState));
         Actions.waitForExecution(locationRemote.setPowerState(snapshotPowerState));
         Actions.waitForExecution(locationRemote.setTargetTemperatureState(snapshotTemperatureState));
+
+        logger.info("Record snapshot");
 
         Snapshot snapshot = locationRemote.recordSnapshot().get();
 
@@ -227,6 +231,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         snapshotColorState = locationRemote.getColorState(UnitType.UNKNOWN);
         snapshotPowerState = locationRemote.getPowerState(UnitType.UNKNOWN);
         snapshotTemperatureState = locationRemote.getTargetTemperatureState(UnitType.UNKNOWN);
+
+        logger.info("Change states");
 
         Actions.waitForExecution(locationRemote.setBlindState(newBlindState));
         Actions.waitForExecution(locationRemote.setColorState(newColorState));
@@ -237,6 +243,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertTrue("ColorState of location has not changed!", !locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
         assertTrue("PowerState of location has not changed!", locationRemote.getPowerState(UnitType.UNKNOWN).getValue() != snapshotPowerState.getValue());
         assertTrue("TargetTemperatureState of location has not changed!", locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() != snapshotTemperatureState.getTemperature());
+
+        logger.info("Restore snapshot");
 
         locationRemote.restoreSnapshot(snapshot).get();
         locationRemote.requestData().get();

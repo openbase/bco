@@ -566,12 +566,23 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 if (!Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(authenticatedId)) {
                     // authenticated is not an admin
-                    if (!ActionDescriptionProcessor.getInitialInitiator(actionToCancel.getActionDescription()).getInitiatorId().equals(authenticatedId)) {
+                    if (!actionToCancel.getActionDescription().getActionInitiator().getInitiatorId().equals(authenticatedId)) {
                         // authenticated user is not the direct initiator
-                        throw new PermissionDeniedException("User [" + authenticatedId + "] is not allowed to cancel action [" + actionDescription.getId() + "]");
+                        boolean isAuthenticated = false;
+                        // // check if the authenticated user appears somewhere in the chain
+                        for (ActionReference actionReference : actionToCancel.getActionDescription().getActionCauseList()) {
+                            if (actionReference.getActionInitiator().getInitiatorId().equals(authenticatedId)) {
+                                isAuthenticated = true;
+                                break;
+                            }
+                        }
+
+                        if (!isAuthenticated) {
+                            throw new PermissionDeniedException("User [" + authenticatedId + "] is not allowed to cancel action [" + actionDescription.getId() + "]");
+                        }
                     }
                 }
-                // cancel the action which triggers automatically a reschedule.
+                // cancel the action which automatically triggers a reschedule.
                 return actionToCancel.cancel();
             }
         } catch (CouldNotPerformException ex) {

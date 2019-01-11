@@ -29,6 +29,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -64,7 +65,7 @@ public class RemoteAction implements Action {
     private final SyncObject executionSync = new SyncObject("ExecutionSync");
     private final ActionParameter.Builder actionParameterBuilder;
     private ActionDescription actionDescription;
-    private Unit<?> targetUnit;
+    private UnitRemote<?> targetUnit;
     private Future<ActionDescription> futureObservationTask;
     private final ObservableImpl<RemoteAction, ActionDescription> actionDescriptionObservable;
     private final Observer unitObserver = (source, data) -> {
@@ -260,6 +261,10 @@ public class RemoteAction implements Action {
 
     @Override
     public Future<ActionDescription> cancel() {
+        return cancel(null, null);
+    }
+
+    public Future<ActionDescription> cancel(final String authenticationToken, final String authorizationToken) {
         try {
             synchronized (executionSync) {
                 if (futureObservationTask == null) {
@@ -269,14 +274,14 @@ public class RemoteAction implements Action {
                 if (!futureObservationTask.isDone()) {
                     // task is not yet done, so cancel it which will result in cancelling the action on the controller
                     futureObservationTask.cancel(true);
-                    return targetUnit.cancelAction(getActionDescription());
+                    return targetUnit.cancelAction(getActionDescription(), authenticationToken, authorizationToken);
                 } else {
                     if (actionDescription.getIntermediary()) {
                         // cancel all impacts of this actions and return the current action description
                         return FutureProcessor.allOf(impactedRemoteActions, input -> actionDescription, RemoteAction::cancel);
                     } else {
                         // cancel the action on the controller
-                        return targetUnit.cancelAction(getActionDescription());
+                        return targetUnit.cancelAction(getActionDescription(), authenticationToken, authorizationToken);
                     }
                 }
             }
@@ -284,6 +289,7 @@ public class RemoteAction implements Action {
             return FutureProcessor.canceledFuture(ex);
         }
     }
+
 
     private void updateActionDescription(final Collection<ActionDescription> actionDescriptions) {
         if (actionDescriptions == null) {
