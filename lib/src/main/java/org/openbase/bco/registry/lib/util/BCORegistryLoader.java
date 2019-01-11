@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 
+@Deprecated
 public class BCORegistryLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BCORegistryLoader.class);

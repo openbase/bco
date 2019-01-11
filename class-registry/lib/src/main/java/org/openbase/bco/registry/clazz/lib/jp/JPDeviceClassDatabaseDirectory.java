@@ -22,32 +22,15 @@ package org.openbase.bco.registry.clazz.lib.jp;
  * #L%
  */
 
-import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
-
-import java.io.File;
+import org.openbase.bco.registry.lib.jp.AbstractJPGitBCODatabaseDirectory;
 
 /**
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPDeviceClassDatabaseDirectory extends AbstractJPDatabaseDirectory {
-
-    public final static String[] COMMAND_IDENTIFIERS = {"--device-class-db"};
+public class JPDeviceClassDatabaseDirectory extends AbstractJPGitBCODatabaseDirectory {
 
     public JPDeviceClassDatabaseDirectory() {
-        super(COMMAND_IDENTIFIERS);
-    }
-
-    @Override
-    public File getParentDirectory() throws JPNotAvailableException {
-        return JPService.getProperty(JPBCODatabaseDirectory.class).getValue();
-    }
-
-    @Override
-    protected File getPropertyDefaultValue() {
-        return new File("device-class-db");
+        super(JPDeviceClassDatabaseDirectory.class);
     }
 }

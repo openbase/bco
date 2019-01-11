@@ -80,21 +80,24 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
                     getDataFieldDescriptor(ClassRegistryData.AGENT_CLASS_FIELD_NUMBER),
                     new UUIDGenerator<>(),
                     JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(),
-                    protoBufJSonFileProvider);
+                    protoBufJSonFileProvider,
+                    false);
 
             appClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AppClass.class,
                     getBuilderSetup(),
                     getDataFieldDescriptor(ClassRegistryData.APP_CLASS_FIELD_NUMBER),
                     new UUIDGenerator<>(),
                     JPService.getProperty(JPAppClassDatabaseDirectory.class).getValue(),
-                    protoBufJSonFileProvider);
+                    protoBufJSonFileProvider,
+                    false);
 
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class,
                     getBuilderSetup(),
                     getDataFieldDescriptor(ClassRegistryData.DEVICE_CLASS_FIELD_NUMBER),
                     new UUIDGenerator<>(),
                     JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(),
-                    protoBufJSonFileProvider);
+                    protoBufJSonFileProvider,
+                    false);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

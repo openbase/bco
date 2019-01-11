@@ -103,20 +103,6 @@ public class JPBCODatabaseDirectory extends AbstractJPDirectory {
     }
 
     @Override
-    public void validate() throws JPValidationException {
-        super.validate();
-
-        // during tests the registry generation is skipped because the mock registry is handling the db initialization.
-        if (!JPService.testMode()) {
-            try {
-                BCORegistryLoader.prepareRegistry(getValue());
-            } catch (CouldNotPerformException ex) {
-                throw new JPValidationException(ex);
-            }
-        }
-    }
-
-    @Override
     public String getDescription() {
         return "Specifies the bco database directory. If not already exist, this database directory is auto generated from provided templates during startup.";
     }

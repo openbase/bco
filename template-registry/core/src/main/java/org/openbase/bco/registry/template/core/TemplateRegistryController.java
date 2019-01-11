@@ -87,21 +87,24 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
                     getDataFieldDescriptor(TemplateRegistryData.ACTIVITY_TEMPLATE_FIELD_NUMBER),
                     new UUIDGenerator<>(),
                     JPService.getProperty(JPActivityTemplateDatabaseDirectory.class).getValue(),
-                    protoBufJSonFileProvider);
+                    protoBufJSonFileProvider,
+                    false);
 
             serviceTemplateRemoteRegistry = new ProtoBufFileSynchronizedRegistry<>(ServiceTemplate.class,
                     getBuilderSetup(),
                     getDataFieldDescriptor(TemplateRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER),
                     new UUIDGenerator<>(),
                     JPService.getProperty(JPServiceTemplateDatabaseDirectory.class).getValue(),
-                    protoBufJSonFileProvider);
+                    protoBufJSonFileProvider,
+                    false);
 
             unitTemplateRemoteRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class,
                     getBuilderSetup(),
                     getDataFieldDescriptor(TemplateRegistryData.UNIT_TEMPLATE_FIELD_NUMBER),
                     new UUIDGenerator<>(),
                     JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(),
-                    protoBufJSonFileProvider);
+                    protoBufJSonFileProvider,
+                    false);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
