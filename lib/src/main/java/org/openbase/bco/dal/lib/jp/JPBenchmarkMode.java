@@ -46,12 +46,12 @@ public class JPBenchmarkMode extends AbstractJPBoolean {
         if (!getValueType().equals((AbstractJavaProperty.ValueType.PropertyDefault))) {
             try {
                 if (!JPService.getProperty(JPForce.class).getValue()) {
+
                     logger.warn("Started in benchmark mode!! Make sure no hardware is connected to avoid hardware damage.");
-                    String userConfirmation = System.console().readLine("Please confirm the benchmark by pressing 'Y'").toLowerCase();
-                    if (!userConfirmation.contains("y") && !userConfirmation.contains("j") && !userConfirmation.contains("z")) {
-                        logger.warn("Benchmark canceled by user...");
-                        System.exit(22);
-                    }
+                    JPService.awaitUserConfirmationOrExit(
+                            "Please confirm the benchmark by pressing 'Y'",
+                            "Benchmark canceled by user...",
+                            22);
                 }
             } catch (JPNotAvailableException ex) {
                 logger.warn("JPForce property not available", ex);
