@@ -80,12 +80,12 @@ public abstract class AbstractRegistryRemote<M extends Message> extends Abstract
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
         for (final RemoteRegistry remoteRegistry : remoteRegistries) {
             if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
                 ((SynchronizedRemoteRegistry) remoteRegistry).activate();
             }
         }
+        super.activate();
     }
 
     @Override
