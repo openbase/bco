@@ -38,15 +38,16 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.security.KeyPair;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -224,6 +225,10 @@ public class SessionManager implements Shutdownable {
      */
     public synchronized void login(final String userId, final String password) throws CouldNotPerformException {
         login(userId, password, false);
+    }
+
+    public synchronized void loginClient(final String clientId, final String base64Credentials) throws CouldNotPerformException {
+        internalLogin(clientId, Base64.getDecoder().decode(base64Credentials), true, false);
     }
 
     /**
