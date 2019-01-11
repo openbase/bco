@@ -45,6 +45,8 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
@@ -57,6 +59,8 @@ import java.util.concurrent.ExecutionException;
 public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
     public static final String UNIT_ID_KEY = "UNIT_ID";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnitUserCreationPlugin.class);
 
     private final ProtoBufRegistry<String, UnitConfig, Builder> userRegistry;
     private final ProtoBufRegistry<String, UnitConfig, Builder> locationRegistry;
@@ -114,7 +118,12 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
 
     @Override
     public void afterUpdate(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws CouldNotPerformException {
-        addLocationPermissions(findUser(identifiableMessage.getId(), userRegistry), identifiableMessage.getMessage());
+        try {
+            addLocationPermissions(findUser(identifiableMessage.getId(), userRegistry), identifiableMessage.getMessage());
+        } catch (NotAvailableException ex) {
+            // do nothing because user has not yet been registered
+            // this method is also called if the entry is modified through consistency checks and thus can be called before afterRegisters
+        }
     }
 
     private UnitConfig findUser(final UnitConfig unitConfig) throws CouldNotPerformException {
