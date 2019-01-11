@@ -356,7 +356,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 authorizationGroupUnitConfigRegistry.registerPlugin(new AuthorizationGroupCreationPlugin());
-                userUnitConfigRegistry.registerPlugin(new UserCreationPlugin());
+                userUnitConfigRegistry.registerPlugin(new UserCreationPlugin(locationUnitConfigRegistry));
             }
         } catch (JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Could not load " + JPAuthentication.class.getSimpleName(), ex, LOGGER, LogLevel.WARN);

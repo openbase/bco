@@ -88,6 +88,10 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * This alias can be used for fast lookups of the bco user.
      */
     String BCO_USER_ALIAS = "BCOUser";
+    /**
+     * This alias can be used for fast lookups of the openhab user.
+     */
+    String OPENHAB_USER_ALIAS = "OpenHABUser";
 
     /**
      * The default radius used for the unit by coordinate lookup is set to 1 metre.

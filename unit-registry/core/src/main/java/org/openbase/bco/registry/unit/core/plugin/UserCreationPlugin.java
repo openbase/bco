@@ -32,16 +32,19 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
+import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,14 +59,18 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
     private static final String ADMIN_USERNAME = "Admin";
     private static final String BCO_USERNAME = "BCO";
+    private static final String OPENHAB_USERNAME = "OpenHAB";
+
     public static final String ADMIN_PASSWORD = "admin";
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserCreationPlugin.class);
 
     private final Map<String, String> idAliasMap;
+    final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRegistry;
 
-    public UserCreationPlugin() {
+    public UserCreationPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> locationUnitConfigRegistry) {
         this.idAliasMap = new HashMap<>();
+        this.locationUnitConfigRegistry = locationUnitConfigRegistry;
     }
 
     @Override
@@ -94,9 +101,42 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
             if (!CachedAuthenticationRemote.getRemote().hasUser(bco.getId()).get(3, TimeUnit.SECONDS)) {
                 // bco user registered in registry but not at the authenticator
-                registerBCOAtAuthenticator(bco.getId(), admin.getId());
+                registerClientAtAuthenticator(bco.getId(), admin.getId());
             }
 
+            UnitConfig openhab;
+            try {
+                openhab = getUserByAlias(OPENHAB_USERNAME);
+            } catch (NotAvailableException ex) {
+                openhab = registerOpenHAB();
+
+                // to start provide all permissions on the root location for the openhab user
+                UnitConfig.Builder rootLocation = null;
+                for (final UnitConfig message : locationUnitConfigRegistry.getMessages()) {
+                    if (!message.getLocationConfig().getRoot()) {
+                        continue;
+                    }
+
+                    rootLocation = message.toBuilder();
+                    break;
+                }
+
+                if (rootLocation == null) {
+                    throw new NotAvailableException("Root Location");
+                }
+
+                MapFieldEntry.Builder builder = rootLocation.getPermissionConfigBuilder().addGroupPermissionBuilder();
+                builder.setGroupId(openhab.getId());
+                builder.getPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
+                locationUnitConfigRegistry.update(rootLocation.build());
+            }
+
+            if (!CachedAuthenticationRemote.getRemote().hasUser(openhab.getId()).get(3, TimeUnit.SECONDS)) {
+                // bco user registered in registry but not at the authenticator
+                registerClientAtAuthenticator(openhab.getId(), admin.getId());
+            }
+
+            idAliasMap.put(openhab.getId(), UnitRegistry.OPENHAB_USER_ALIAS);
             idAliasMap.put(admin.getId(), UnitRegistry.ADMIN_USER_ALIAS);
             idAliasMap.put(bco.getId(), UnitRegistry.BCO_USER_ALIAS);
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
@@ -201,7 +241,23 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         return getRegistry().register(unitConfig.build());
     }
 
-    private void registerBCOAtAuthenticator(final String bcoId, final String adminId) throws CouldNotPerformException {
+    private UnitConfig registerOpenHAB() throws CouldNotPerformException {
+        final UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
+        unitConfig.setUnitType(UnitType.USER).addAlias(UnitRegistry.OPENHAB_USER_ALIAS);
+
+        final PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
+        permissionConfig.getOtherPermissionBuilder().setRead(true).setAccess(false).setWrite(false);
+
+        final UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
+        userConfig.setFirstName("Open");
+        userConfig.setLastName("HAB");
+        userConfig.setUserName(OPENHAB_USERNAME);
+        userConfig.setSystemUser(false);
+
+        return getRegistry().register(unitConfig.build());
+    }
+
+    private void registerClientAtAuthenticator(final String clientId, final String adminId) throws CouldNotPerformException {
         // login as admin
         try {
             SessionManager.getInstance().login(adminId, ADMIN_PASSWORD);
@@ -210,7 +266,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         }
 
         // register bco user as a client at the authenticator
-        SessionManager.getInstance().registerClient(bcoId);
+        SessionManager.getInstance().registerClient(clientId);
 
         // logout
         SessionManager.getInstance().logout();
