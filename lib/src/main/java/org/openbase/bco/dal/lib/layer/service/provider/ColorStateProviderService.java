@@ -21,23 +21,26 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType.RGBColor;
-import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.slf4j.LoggerFactory;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ColorStateProviderService extends ProviderService {
@@ -60,8 +63,8 @@ public interface ColorStateProviderService extends ProviderService {
     }
 
     /**
-     *
      * @return
+     *
      * @throws CouldNotPerformException
      * @deprecated please use org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer instead.
      */
@@ -74,9 +77,9 @@ public interface ColorStateProviderService extends ProviderService {
             throw new CouldNotTransformException("Could not transform " + HSBColor.class.getName() + " to " + java.awt.Color.class.getName() + "!", ex);
         }
     }
-    
+
     static void verifyColorState(final ColorState colorState) throws VerificationFailedException {
-        if(!colorState.hasColor()) {
+        if (!colorState.hasColor()) {
             throw new VerificationFailedException("Color state not available!");
         }
         verifyColor(colorState.getColor());
@@ -113,5 +116,24 @@ public interface ColorStateProviderService extends ProviderService {
         OperationService.verifyValueRange("red", rgbColor.getRed(), 0, 255);
         OperationService.verifyValueRange("green", rgbColor.getGreen(), 0, 255);
         OperationService.verifyValueRange("blue", rgbColor.getBlue(), 0, 255);
+    }
+
+    static BrightnessState colorStateToBrightnessState(final ColorState colorState) {
+        HSBColor hsbColor;
+        if (colorState.getColor().getType() == Type.RGB) {
+            try {
+                hsbColor = HSBColorToRGBColorTransformer.transform(colorState.getColor().getRgbColor());
+            } catch (CouldNotTransformException ex) {
+                LoggerFactory.getLogger(ColorStateProviderService.class).warn("Could not transform rgb to hsb. Continue with default value.", ex);
+                hsbColor = HSBColor.getDefaultInstance();
+            }
+        } else {
+            hsbColor = colorState.getColor().getHsbColor();
+        }
+        return BrightnessState.newBuilder().setBrightness(hsbColor.getBrightness()).build();
+    }
+
+    static PowerState colorStateToPowerState(final ColorState colorState) {
+        return BrightnessStateProviderService.brightnessStateToPowerState(colorStateToBrightnessState(colorState));
     }
 }

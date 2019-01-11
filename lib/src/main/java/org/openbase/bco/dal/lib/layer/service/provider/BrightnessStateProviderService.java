@@ -21,16 +21,18 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface BrightnessStateProviderService extends ProviderService {
@@ -49,6 +51,14 @@ public interface BrightnessStateProviderService extends ProviderService {
                 throw new VerificationFailedException("BrightnessState data unit unknown!");
             default:
                 break;
+        }
+    }
+
+    static PowerState brightnessStateToPowerState(final BrightnessState brightnessState) {
+        if (brightnessState.getBrightness() == 0) {
+            return PowerState.newBuilder().setValue(State.OFF).build();
+        } else {
+            return PowerState.newBuilder().setValue(State.ON).build();
         }
     }
 }
