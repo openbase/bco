@@ -23,6 +23,7 @@ package org.openbase.bco.dal.control.layer.unit.location;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.location.LocationController;
@@ -97,7 +98,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
         super(LocationControllerImpl.class, LocationData.newBuilder());
 
         try {
-            registerOperationService(ServiceType.STANDBY_STATE_SERVICE, new StandbyStateOperationServiceImpl());
+            registerOperationService(ServiceType.STANDBY_STATE_SERVICE, new StandbyStateOperationServiceImpl(this));
 
             this.presenceDetector = new PresenceDetector();
             this.presenceDetector.addDataObserver(new Observer<DataProvider<PresenceState>, PresenceState>() {
@@ -171,7 +172,10 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
 
         private StandbyController<LocationController> standbyController;
 
-        public StandbyStateOperationServiceImpl() {
+        private final ServiceProvider serviceProvider;
+
+        public StandbyStateOperationServiceImpl(final ServiceProvider serviceProvider) {
+            this.serviceProvider = serviceProvider;
             this.standbyController = new StandbyController();
             standbyController.init(LocationControllerImpl.this);
         }
@@ -222,7 +226,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
 
         @Override
         public ServiceProvider getServiceProvider() {
-            return null;
+            return serviceProvider;
         }
     }
 }
