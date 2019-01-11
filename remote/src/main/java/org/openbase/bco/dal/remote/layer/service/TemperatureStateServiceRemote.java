@@ -63,7 +63,7 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
         int amount = temperatureStateProviderServices.size();
         long timestamp = 0;
         for (TemperatureStateProviderService service : temperatureStateProviderServices) {
-            if (!((UnitRemote) service).isDataAvailable()) {
+            if (!((UnitRemote) service).isDataAvailable() || !service.getTemperatureState().hasTemperature()) {
                 amount--;
                 continue;
             }
