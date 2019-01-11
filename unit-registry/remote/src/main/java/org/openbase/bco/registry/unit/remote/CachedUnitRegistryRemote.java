@@ -68,7 +68,10 @@ public class CachedUnitRegistryRemote {
      */
     public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
-            getRegistry().reinit(REMOTE_LOCK);
+            // only call re-init if the registry was activated and initialized in the first place
+            if (registryRemote != null) {
+                getRegistry().reinit(REMOTE_LOCK);
+            }
             getRegistry().requestData().get(30, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedUnitRegistryRemote.class.getSimpleName() + "!", ex);
@@ -79,6 +82,7 @@ public class CachedUnitRegistryRemote {
      * Get a cached UnitRegistryRemote.
      *
      * @return a cached UnitRegistryRemote
+     *
      * @throws NotAvailableException if the initial startup of the UnitRegistryRemote fails
      */
     public synchronized static UnitRegistryRemote getRegistry() throws NotAvailableException {

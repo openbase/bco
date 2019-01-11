@@ -47,8 +47,6 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
@@ -60,6 +58,8 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -137,6 +137,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
 
+
             aliasMapUpdateObserver = (source, data) -> {
                 synchronized (aliasIdMapLock) {
                     aliasIdMap.clear();
@@ -151,16 +152,12 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         }
     }
 
+
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
         CachedActivityRegistryRemote.getRegistry().waitForData();
         CachedClassRegistryRemote.getRegistry().waitForData();
         super.waitForData();
-        // TODO: test and fix this issue
-        while (getUnitConfigs(UnitType.USER).size() == 0) {
-            logger.error("Wait for data on unit registry returned but no user available!");
-            Thread.sleep(100);
-        }
     }
 
     @Override
@@ -263,7 +260,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public Future<AuthenticatedValue> registerUnitConfigAuthenticated(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-            return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
     }
 
     /**

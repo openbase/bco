@@ -39,6 +39,7 @@ import java.util.List;
 
 /**
  * @param <M>
+ *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class RemoteRegistrySynchronizer<M extends AbstractMessage> implements Observer<DataProvider<M>, M> {

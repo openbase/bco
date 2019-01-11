@@ -26,8 +26,8 @@ import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedControllerServer;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -58,22 +58,24 @@ import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONV
 /**
  * @param <M>
  * @param <MB>
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractRegistryController<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>> extends AbstractAuthenticatedControllerServer<M, MB> implements RegistryController<M>, Launchable<Scope> {
 
     public static final boolean SPARSELY_REGISTRY_DATA_FILTERED = true;
     public static final boolean SPARSELY_REGISTRY_DATA_NOTIFIED = false;
+
     private final SyncObject CHANGE_NOTIFIER = new SyncObject("WaitUntilReadySync");
     private final List<ProtoBufFileSynchronizedRegistry> registryList;
-    private final Class<? extends JPScope> jpScopePropery;
+    private final Class<? extends JPScope> jpScopeProperty;
     private final boolean filterSparselyRegistryData;
     private final List<Registry> lockedRegistries;
     private final Random randomJitter;
     private final ReentrantReadWriteLock lock;
-    protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
+    protected ProtoBufJSonFileProvider protoBufJSonFileProvider;
     private Future notifyChangeFuture;
-    ChangeListener transactionListener;
+    private ChangeListener transactionListener;
 
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
@@ -84,6 +86,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
      *
      * @param jpScopeProperty the scope which is used for registry communication and data publishing.
      * @param builder         the builder to build the registry data message.
+     *
      * @throws InstantiationException
      */
     public AbstractRegistryController(final Class<? extends JPScope> jpScopeProperty, MB builder) throws InstantiationException {
@@ -96,12 +99,13 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
      * @param jpScopeProperty            the scope which is used for registry communication and data publishing.
      * @param builder                    the builder to build the registry data message.
      * @param filterSparselyRegistryData if this flag is true the registry data is only published if non of the internal registries is busy.
+     *
      * @throws InstantiationException
      */
     public AbstractRegistryController(final Class<? extends JPScope> jpScopeProperty, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
         super(builder);
         this.filterSparselyRegistryData = filterSparselyRegistryData;
-        this.jpScopePropery = jpScopeProperty;
+        this.jpScopeProperty = jpScopeProperty;
 
         this.registryList = new ArrayList<>();
         this.protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
@@ -109,15 +113,13 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
         this.randomJitter = new Random();
         this.lockedRegistries = new ArrayList<>();
         this.lock = new ReentrantReadWriteLock();
-        this.transactionListener = () -> {
-            updateTransactionId();
-        };
+        this.transactionListener = this::updateTransactionId;
     }
 
     @Override
     public ScopeType.Scope getDefaultConfig() throws NotAvailableException {
         try {
-            return ScopeTransformer.transform(JPService.getProperty(jpScopePropery).getValue());
+            return ScopeTransformer.transform(JPService.getProperty(jpScopeProperty).getValue());
         } catch (JPNotAvailableException | CouldNotTransformException ex) {
             throw new NotAvailableException("DefaultConfig", ex);
         }

@@ -67,7 +67,10 @@ public class CachedActivityRegistryRemote {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
-            getRegistry().reinit(REMOTE_LOCK);
+            // only call re-init if the registry was activated and initialized in the first place
+            if (registryRemote != null) {
+                getRegistry().reinit(REMOTE_LOCK);
+            }
             getRegistry().requestData().get(30, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedActivityRegistryRemote.class.getSimpleName() + "!", ex);
