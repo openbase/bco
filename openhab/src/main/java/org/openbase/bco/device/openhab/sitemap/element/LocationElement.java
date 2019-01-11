@@ -71,14 +71,14 @@ public class LocationElement extends AbstractUnitSitemapElement {
         sitemap.closeContext();
 
         sitemap.openFrameContext("Steuerung");
-        sitemap.addColorpickerElement(getItem(ServiceType.POWER_STATE_SERVICE), "Raumfarbe", SitemapIconType.COLORWHEEL);
+        sitemap.addColorpickerElement(getItem(ServiceType.COLOR_STATE_SERVICE), "Raumfarbe", SitemapIconType.COLORWHEEL);
         sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), "Geräte", SitemapIconType.SWITCH);
         sitemap.addSwitchElement(getItem(ServiceType.STANDBY_STATE_SERVICE), "Standby", SitemapIconType.SWITCH);
         sitemap.addSliderElement(getItem(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE), "Wunschtemperatur [%.1f °C]", SitemapIconType.HEATING);
         sitemap.closeContext();
 
 //        sitemap.openFrameContext("Aktivitäten");
-//        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.AC, unitConfig.getId())) {
+//        for (UnitConfig unitConfig : Registries.getActivityRegistry().getActivityConfigByLocation(UnitType., unitConfig.getId())) {
 //            sitemap.append(new GenericUnitSitemapElement(unitConfig));
 //        }
 //        sitemap.closeContext();
