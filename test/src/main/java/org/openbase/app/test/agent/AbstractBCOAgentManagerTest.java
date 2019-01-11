@@ -28,16 +28,19 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
+import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
-import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
+import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -101,11 +104,14 @@ public abstract class AbstractBCOAgentManagerTest extends AbstractBCOTest {
             agentConfig = Registries.getUnitRegistry().registerUnitConfig(getAgentConfig()).get(5, TimeUnit.SECONDS);
             // activate agent
             agentRemote = Units.getUnit(agentConfig, true, Units.AGENT);
-            agentRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
 
-            // it can take a while until the execute method has finished
-            //TODO: implement something to wait for that
-            Registries.waitForData();
+            if (!agentConfig.getAgentConfig().getAutostart()) {
+                // activate agent if not in auto start
+                Actions.waitForExecution(agentRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+            } else {
+                // wait until active
+                new UnitStateAwaiter<>(agentRemote).waitForState(data -> data.getActivationState().getValue() == State.ACTIVE);
+            }
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

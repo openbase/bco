@@ -34,6 +34,7 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -78,8 +79,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private final Map<ServiceType, Observer<ServiceStateProvider<Message>, Message>> serviceTypeRequestedObserverMap;
     private final Map<ServiceType, Observer<ServiceStateProvider<Message>, Message>> serviceTypeCurrentObserverMap;
 
-    private UnitRemote sourceRemote;
-    private RemoteAction sourceOnAction, sourceOffAction;
+    private String sourceId;
+    private RemoteAction remoteAction;
 
     public PowerStateSynchroniserAgent() throws CouldNotPerformException {
         super(PowerStateSynchroniserAgent.class);
@@ -112,21 +113,10 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                     return;
                 }
 
-                if (sourceOnAction != null) {
-                    // source was already turned on through a previous update
-                    return;
-                }
-
-                // cancel and delete off action because source should now turn on
-                if (sourceOffAction != null) {
-                    sourceOffAction.cancel();
-                    sourceOffAction = null;
-                }
-
                 // create action, copy priority and execute with responsible action as cause
                 final ActionParameter.Builder actionParameter = generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(PowerState.State.ON)).setPriority(powerState.getResponsibleAction().getPriority());
-                sourceOnAction = new RemoteAction(sourceRemote, actionParameter.build());
-                sourceOnAction.execute(powerState.getResponsibleAction());
+                actionParameter.getServiceStateDescriptionBuilder().setUnitId(sourceId);
+                executeAction(actionParameter.build(), powerState.getResponsibleAction());
             }
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(ex, logger);
@@ -141,24 +131,22 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                     return;
                 }
 
-                if (sourceOffAction != null) {
-                    // source was already off through a previous update
-                    return;
-                }
-
-                // cancel and delete on action because source should now turn on
-                if (sourceOnAction != null) {
-                    sourceOnAction.cancel();
-                    sourceOnAction = null;
-                }
-
                 // create action, set priority to low and execute with responsible action as cause
                 final ActionParameter.Builder actionParameter = generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(PowerState.State.OFF)).setPriority(Priority.LOW);
-                sourceOffAction = new RemoteAction(sourceRemote, actionParameter.build());
-                sourceOffAction.execute(powerState.getResponsibleAction());
+                actionParameter.getServiceStateDescriptionBuilder().setUnitId(sourceId);
+                executeAction(actionParameter.build(), powerState.getResponsibleAction());
             }
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(ex, logger);
+        }
+    }
+
+    private void executeAction(final ActionParameter actionParameter, final ActionDescription responsibleAction) throws InterruptedException, InstantiationException {
+        remoteAction = new RemoteAction(this, actionParameter);
+        if (responsibleAction.getId().isEmpty()) {
+            remoteAction.execute();
+        } else {
+            remoteAction.execute(responsibleAction);
         }
     }
 
@@ -185,7 +173,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             if (sourceUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                 throw new NotAvailableException("Source[" + ScopeGenerator.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
             }
-            sourceRemote = Units.getUnit(sourceUnitConfig, false);
+            sourceId = sourceUnitConfig.getId();
 
             // get target remotes
             targetRemotes.clear();
@@ -280,14 +268,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             }
         });
 
-        if (sourceOffAction != null) {
-            sourceOffAction.cancel();
-            sourceOffAction = null;
-        }
-
-        if (sourceOnAction != null) {
-            sourceOnAction.cancel();
-            sourceOnAction = null;
+        if (remoteAction != null) {
+            remoteAction.cancel(getDefaultActionParameter().getAuthenticationToken(), null);
+            remoteAction = null;
         }
     }
 }
