@@ -38,7 +38,6 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-// TODO pleminoq: This seems to cause in problems because units using this service in different ways.
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -74,7 +73,7 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
         Double average = 0d;
         long timestamp = 0;
         for (BrightnessStateOperationService service : brightnessStateOperationServices) {
-            if (!((UnitRemote) service).isDataAvailable()) {
+            if (!((UnitRemote) service).isDataAvailable() || !service.getBrightnessState().hasBrightness()) {
                 serviceNumber--;
                 continue;
             }

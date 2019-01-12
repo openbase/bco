@@ -40,7 +40,7 @@ public interface PowerConsumptionStateProviderService extends ProviderService {
         return (PowerConsumptionState) getServiceProvider().getServiceState(POWER_CONSUMPTION_STATE_SERVICE);
     }
 
-    static void verifyPowerConsumptionState(final PowerConsumptionState powerConsumptionState) throws VerificationFailedException {
+    static PowerConsumptionState verifyPowerConsumptionState(final PowerConsumptionState powerConsumptionState) throws VerificationFailedException {
         if (powerConsumptionState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));
         }
@@ -49,17 +49,36 @@ public interface PowerConsumptionStateProviderService extends ProviderService {
             throw new VerificationFailedException("PowerConsumptionState does not contain any values!");
         }
 
-        // range check
+        // consumption range check
         if (powerConsumptionState.hasConsumption()) {
             OperationService.verifyValueRange("Consumption", powerConsumptionState.getConsumption(), 0, Double.MAX_VALUE);
         }
 
+        // voltage range check
         if (powerConsumptionState.hasVoltage()) {
             OperationService.verifyValueRange("Voltage", powerConsumptionState.getVoltage(), 0, Double.MAX_VALUE);
         }
 
+        // current range check
         if (powerConsumptionState.hasCurrent()) {
             OperationService.verifyValueRange("Current", powerConsumptionState.getCurrent(), 0, Double.MAX_VALUE);
         }
+
+        // try to compute missing consumption
+        if(!powerConsumptionState.hasConsumption() && powerConsumptionState.hasVoltage() && powerConsumptionState.hasCurrent()) {
+            return powerConsumptionState.toBuilder().setConsumption(powerConsumptionState.getVoltage() * powerConsumptionState.getCurrent()).build();
+        }
+
+        // try to compute missing voltage
+        if(!powerConsumptionState.hasVoltage() && powerConsumptionState.hasConsumption() && powerConsumptionState.hasCurrent()) {
+            return powerConsumptionState.toBuilder().setVoltage(powerConsumptionState.getConsumption() / powerConsumptionState.getCurrent()).build();
+        }
+
+        // try to compute missing current
+        if(!powerConsumptionState.hasCurrent() && powerConsumptionState.hasVoltage() && powerConsumptionState.hasConsumption()) {
+            return powerConsumptionState.toBuilder().setCurrent(powerConsumptionState.getConsumption() / powerConsumptionState.getVoltage()).build();
+        }
+
+        return powerConsumptionState;
     }
 }

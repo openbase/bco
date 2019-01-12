@@ -67,7 +67,10 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
         Double averageSecurity = 0d;
         long timestamp = 0;
         for (EmphasisStateOperationService service : emphasisStateOperationServices) {
-            if (!((UnitRemote) service).isDataAvailable()) {
+            if (!((UnitRemote) service).isDataAvailable()|| !(
+                    service.getEmphasisState().hasComfort() ||
+                    service.getEmphasisState().hasEconomy() ||
+                    service.getEmphasisState().hasSecurity())) {
                 serviceNumber--;
                 continue;
             }

@@ -58,7 +58,7 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
     @Override
     public MotionState getMotionState(UnitType unitType) throws NotAvailableException {
         try {
-            return (MotionState) generateFusedState(unitType, State.NO_MOTION, State.MOTION).build();
+            return (MotionState) generateAggregatedState(unitType, State.NO_MOTION, State.MOTION).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }

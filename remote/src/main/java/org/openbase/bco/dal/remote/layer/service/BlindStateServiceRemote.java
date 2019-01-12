@@ -65,7 +65,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         long timestamp = 0;
         float openingRatioAverage = 0;
         for (BlindStateOperationService service : getServices(unitType)) {
-            if (!((UnitRemote) service).isDataAvailable()) {
+            if (!((UnitRemote) service).isDataAvailable() || !service.getBlindState().hasValue()) {
                 serviceNumber--;
                 continue;
             }

@@ -65,7 +65,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     @Override
     public StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException {
         try {
-            return (StandbyState) generateFusedState(unitType, State.RUNNING, State.STANDBY).build();
+            return (StandbyState) generateAggregatedState(unitType, State.RUNNING, State.STANDBY).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }

@@ -21,21 +21,48 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.exception.VerificationFailedException;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface OperationService extends Service {
 
-    // move to jul math module
+    // todo: move methods to a new jul math module
+
+    /**
+     * Method verifies the range of the value.
+     *
+     * @param name  the name of the value.
+     * @param value the value to check.
+     * @param min   the lower border of a valid value.
+     * @param max   the upper border of a valid value.
+     *
+     * @throws VerificationFailedException is thrown if the value is not within the expected range.
+     */
     static void verifyValueRange(final String name, final double value, final double min, final double max) throws VerificationFailedException {
         if (value < min) {
             throw new VerificationFailedException("The value of " + name + " is " + value + " which is lower than the defined minimum of " + min);
         } else if (value > max) {
             throw new VerificationFailedException("The value of " + name + " is " + value + " which is higher than the defined maximum of " + max);
+        }
+    }
+
+    /**
+     * Method checks if the given value is within the margin of the default value.
+     *
+     * @param name         the name of the value.
+     * @param value        the value to check.
+     * @param defaultValue the expected value.
+     * @param margin       the still valid distance between the value and the default value.
+     *
+     * @throws VerificationFailedException is thrown if the value is not within the default value margin.
+     */
+    static void verifyValue(final String name, final double value, final double defaultValue, final double margin) throws VerificationFailedException {
+        if (value < defaultValue - margin || value > defaultValue + margin) {
+            throw new VerificationFailedException("The value of " + name + " is " + value + " but should be " + defaultValue);
         }
     }
 }

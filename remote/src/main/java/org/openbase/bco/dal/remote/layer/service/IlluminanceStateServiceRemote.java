@@ -69,7 +69,7 @@ public class IlluminanceStateServiceRemote extends AbstractServiceRemote<Illumin
         Collection<IlluminanceStateProviderService> illuminanceStateProviderServices = getServices(unitType);
         int amount = illuminanceStateProviderServices.size();
         for (IlluminanceStateProviderService service : illuminanceStateProviderServices) {
-            if (!((UnitRemote) service).isDataAvailable()) {
+            if (!((UnitRemote) service).isDataAvailable() || !service.getIlluminanceState().hasIlluminance()) {
                 amount--;
                 continue;
             }

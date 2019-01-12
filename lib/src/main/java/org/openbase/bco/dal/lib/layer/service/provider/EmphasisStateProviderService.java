@@ -35,27 +35,38 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
  */
 public interface EmphasisStateProviderService extends ProviderService {
 
+    @RPCMethod(legacy = true)
+    default EmphasisState getEmphasisState() throws NotAvailableException {
+        return (EmphasisState) getServiceProvider().getServiceState(EMPHASIS_STATE_SERVICE);
+    }
+
     static void verifyEmphasisState(final EmphasisState emphasisState) throws VerificationFailedException {
 
         if (emphasisState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));
         }
 
-        if (emphasisState.hasComfort()) {
-            OperationService.verifyValueRange("comfort", emphasisState.getComfort(), 0, 100);
-            return;
-        } else if (emphasisState.hasEconomy()) {
-            OperationService.verifyValueRange("economy", emphasisState.getEconomy(), 0, 100);
-            return;
-        } else if (emphasisState.hasSecurity()) {
-            OperationService.verifyValueRange("security", emphasisState.getSecurity(), 0, 100);
-            return;
-        }
-        throw new VerificationFailedException("EmphasisState does not contain emphasis!");
-    }
+        boolean emphasisFound = false;
 
-    @RPCMethod(legacy = true)
-    default EmphasisState getEmphasisState() throws NotAvailableException {
-        return (EmphasisState) getServiceProvider().getServiceState(EMPHASIS_STATE_SERVICE);
+        if (emphasisState.hasComfort()) {
+            OperationService.verifyValueRange("comfort", emphasisState.getComfort(), 0d, 1d);
+            emphasisFound = true;
+        }
+
+        if (emphasisState.hasEconomy()) {
+            OperationService.verifyValueRange("economy", emphasisState.getEconomy(), 0d, 1d);
+            emphasisFound = true;
+        }
+
+        if (emphasisState.hasSecurity()) {
+            OperationService.verifyValueRange("security", emphasisState.getSecurity(), 0d, 1d);
+            emphasisFound = true;
+        }
+
+        if(!emphasisFound) {
+            throw new VerificationFailedException("EmphasisState does not contain emphasis!");
+        }
+
+        OperationService.verifyValue("emphasis sum", emphasisState.getComfort() + emphasisState.getEconomy() + emphasisState.getSecurity(), 1d, 0.01d);
     }
 }

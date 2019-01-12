@@ -42,7 +42,7 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
         super(ServiceType.TAMPER_STATE_SERVICE, TamperState.class);
     }
 
-    /**
+    /**§
      * {@inheritDoc}
      * Computes the tamper state as tamper if at least one underlying service detects tamper and else no tamper.
      * Additionally the last detection timestamp as set as the latest of the underlying services.
@@ -58,7 +58,7 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
     @Override
     public TamperState getTamperState(final UnitType unitType) throws NotAvailableException {
         try {
-            return (TamperState) generateFusedState(unitType, State.NO_TAMPER, State.TAMPER).build();
+            return (TamperState) generateAggregatedState(unitType, State.NO_TAMPER, State.TAMPER).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }

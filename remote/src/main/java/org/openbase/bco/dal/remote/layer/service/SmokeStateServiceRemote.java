@@ -63,7 +63,7 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
         double averageSmokeLevel = 0;
         long timestamp = 0;
         for (SmokeStateProviderService service : getServices(unitType)) {
-            if (!((UnitRemote) service).isDataAvailable()) {
+            if (!((UnitRemote) service).isDataAvailable() || !service.getSmokeState().hasValue()) {
                 amount--;
                 continue;
             }

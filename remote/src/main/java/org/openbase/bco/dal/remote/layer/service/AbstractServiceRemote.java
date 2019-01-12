@@ -791,7 +791,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      *
      * @throws CouldNotPerformException is thrown in case the fusion fails.
      */
-    protected Message.Builder generateFusedState(final UnitType unitType, final ProtocolMessageEnum neutralState, final ProtocolMessageEnum effectiveState) throws CouldNotPerformException {
+    protected Message.Builder generateAggregatedState(final UnitType unitType, final ProtocolMessageEnum neutralState, final ProtocolMessageEnum effectiveState) throws CouldNotPerformException {
 
         try {
             // generate builder
@@ -825,7 +825,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
                 // handle state
                 final Message state = Services.invokeProviderServiceMethod(getServiceType(), service);
-                if (state.getField(valueDescriptor).equals(effectiveState.getValueDescriptor())) {
+                if (state.hasField(valueDescriptor) && state.getField(valueDescriptor).equals(effectiveState.getValueDescriptor())) {
                     stateBuilder.setField(valueDescriptor, state.getField(valueDescriptor));
                 }
 

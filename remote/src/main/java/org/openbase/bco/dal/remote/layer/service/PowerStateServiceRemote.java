@@ -81,7 +81,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     @Override
     public PowerState getPowerState(final UnitType unitType) throws NotAvailableException {
         try {
-            return (PowerState) generateFusedState(unitType, State.OFF, State.ON).build();
+            return (PowerState) generateAggregatedState(unitType, State.OFF, State.ON).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }

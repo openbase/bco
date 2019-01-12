@@ -63,7 +63,7 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
         int amount = handleStateProviderServices.size();
         long timestamp = 0;
         for (HandleStateProviderService service : handleStateProviderServices) {
-            if (!((UnitRemote) service).isDataAvailable()) {
+            if (!((UnitRemote) service).isDataAvailable() || !service.getHandleState().hasPosition()) {
                 amount--;
                 continue;
             }

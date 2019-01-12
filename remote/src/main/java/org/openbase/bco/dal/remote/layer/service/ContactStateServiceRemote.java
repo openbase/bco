@@ -57,7 +57,7 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
     @Override
     public ContactState getContactState(final UnitType unitType) throws NotAvailableException {
         try {
-            return (ContactState) generateFusedState(unitType, State.CLOSED, State.OPEN).build();
+            return (ContactState) generateAggregatedState(unitType, State.CLOSED, State.OPEN).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }

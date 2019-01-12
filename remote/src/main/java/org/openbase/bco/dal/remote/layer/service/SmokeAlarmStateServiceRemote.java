@@ -57,7 +57,7 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
     @Override
     public AlarmState getSmokeAlarmState(final UnitType unitType) throws NotAvailableException {
         try {
-            return (AlarmState) generateFusedState(unitType, State.NO_ALARM, State.ALARM).build();
+            return (AlarmState) generateAggregatedState(unitType, State.NO_ALARM, State.ALARM).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }

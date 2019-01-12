@@ -83,7 +83,12 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             long timestamp = 0;
             Collection<ColorStateOperationService> colorStateOperationServiceCollection = getServices(unitType);
             for (ColorStateOperationService service : colorStateOperationServiceCollection) {
-                if (!((UnitRemote) service).isDataAvailable()) {
+                if (!((UnitRemote) service).isDataAvailable()
+                        || !service.getColorState().hasColor()
+                        || !service.getColorState().getColor().hasHsbColor()
+                        || !service.getColorState().getColor().getHsbColor().hasHue()
+                        || !service.getColorState().getColor().getHsbColor().hasSaturation()
+                        || !service.getColorState().getColor().getHsbColor().hasBrightness()) {
                     amount--;
                     continue;
                 }

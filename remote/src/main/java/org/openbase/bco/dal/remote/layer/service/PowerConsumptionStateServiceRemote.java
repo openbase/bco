@@ -57,25 +57,36 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
 
     @Override
     public PowerConsumptionState getPowerConsumptionState(final UnitType unitType) throws NotAvailableException {
-        double consumptionSum = 0;
-        double averageCurrent = 0;
-        double averageVoltage = 0;
+
         long timestamp = 0;
-        Collection<PowerConsumptionStateProviderService> powerConsumptionStateProviderServices = getServices(unitType);
-        int amount = powerConsumptionStateProviderServices.size();
-        for (PowerConsumptionStateProviderService service : powerConsumptionStateProviderServices) {
+        double averageVoltage = 0;
+        double averageCurrent = 0;
+        double consumptionSum = 0;
+        int voltageValueAmount = 0;
+        int currentValueAmount = 0;
+
+        for (PowerConsumptionStateProviderService service : getServices(unitType)) {
+
+            // skip service if data is not available
             if (!((UnitRemote) service).isDataAvailable()) {
-                amount--;
                 continue;
             }
 
+            if (service.getPowerConsumptionState().hasVoltage()) {
+                voltageValueAmount++;
+                averageVoltage += service.getPowerConsumptionState().getVoltage();
+            }
+
+            if (service.getPowerConsumptionState().hasCurrent()) {
+                currentValueAmount++;
+                averageCurrent += service.getPowerConsumptionState().getCurrent();
+            }
+
+            averageVoltage = averageVoltage / voltageValueAmount;
+            averageCurrent = averageCurrent / currentValueAmount;
             consumptionSum += service.getPowerConsumptionState().getConsumption();
-            averageCurrent += service.getPowerConsumptionState().getCurrent();
-            averageVoltage += service.getPowerConsumptionState().getVoltage();
             timestamp = Math.max(timestamp, service.getPowerConsumptionState().getTimestamp().getTime());
         }
-        averageCurrent = averageCurrent / amount;
-        averageVoltage = averageVoltage / amount;
 
         return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage), TimeUnit.MICROSECONDS, logger).build();
     }
