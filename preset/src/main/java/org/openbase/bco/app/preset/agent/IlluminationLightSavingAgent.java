@@ -123,7 +123,7 @@ public class IlluminationLightSavingAgent extends AbstractTriggerableAgent {
     }
 
     @Override
-    void trigger(ActivationStateType.ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected void trigger(ActivationStateType.ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
                 regulateLightIntensity();

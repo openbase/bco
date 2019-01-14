@@ -28,6 +28,7 @@ import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -39,16 +40,22 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
+public class AbsenceEnergySavingAgent extends AbstractDelayedTriggerableAgent {
+
+    /**
+     * 30 minutes max absence timeout
+     */
+    public static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(30);
 
     private LocationRemote locationRemote;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
-        super(AbsenceEnergySavingAgent.class);
+        super(DelayMode.DELAY_ACTIVATION, 0, MAX_TIMEOUT);
     }
 
     @Override
@@ -65,7 +72,7 @@ public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
     private ActionDescription taskActionDescription;
 
     @Override
-    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected void delayedTrigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
                 taskActionDescription = locationRemote.applyAction(generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF)).setExecutionTimePeriod(Long.MAX_VALUE)).get();
@@ -78,5 +85,10 @@ public class AbsenceEnergySavingAgent extends AbstractTriggerableAgent {
                 }
                 break;
         }
+    }
+
+    @Override
+    protected double getDelayScaleFactor() throws NotAvailableException {
+        return 1d - locationRemote.getEmphasisState().getEconomy();
     }
 }

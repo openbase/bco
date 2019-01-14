@@ -28,6 +28,7 @@ import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType;
@@ -40,17 +41,23 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class PresenceLightAgent extends AbstractTriggerableAgent {
+public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
+
+    /**
+     * 30 minutes max presence timeout
+     */
+    public static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(30);
 
     private LocationRemote locationRemote;
     private final PresenceState.State triggerState = PresenceState.State.PRESENT;
 
     public PresenceLightAgent() throws InstantiationException {
-        super(PresenceLightAgent.class);
+        super(DelayMode.DELAY_DEACTIVATION, 0, MAX_TIMEOUT);
     }
 
     @Override
@@ -67,7 +74,7 @@ public class PresenceLightAgent extends AbstractTriggerableAgent {
     private ActionDescription taskActionDescription;
 
     @Override
-    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
                 taskActionDescription = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.ON)).setExecutionTimePeriod(Long.MAX_VALUE)).get();
@@ -80,5 +87,10 @@ public class PresenceLightAgent extends AbstractTriggerableAgent {
                 }
                 break;
         }
+    }
+
+    @Override
+    protected double getDelayScaleFactor() throws NotAvailableException {
+        return locationRemote.getEmphasisState().getComfort();
     }
 }

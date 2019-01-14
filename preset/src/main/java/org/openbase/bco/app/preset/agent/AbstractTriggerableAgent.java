@@ -51,6 +51,12 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     private TriggerPool triggerPool;
     private Observer<Trigger, ActivationState> triggerHolderObserver;
 
+
+    public AbstractTriggerableAgent() throws InstantiationException {
+        this(null);
+    }
+
+
     public AbstractTriggerableAgent(final Class unitClass) throws InstantiationException {
         super(unitClass);
         this.triggerPool = new TriggerPool();
@@ -59,7 +65,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
                 try {
                     trigger(data);
                 } catch (CouldNotPerformException | CancellationException ex) {
-                    ExceptionPrinter.printHistory("Could no trigger agent!", ex, logger);
+                    ExceptionPrinter.printHistory("Could not trigger agent!", ex, logger);
                 }
                 return null;
             });
@@ -111,5 +117,5 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         super.shutdown();
     }
 
-    abstract void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException;
+    abstract protected void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException;
 }

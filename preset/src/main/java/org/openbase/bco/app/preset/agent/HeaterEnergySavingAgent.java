@@ -82,7 +82,7 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
     }
 
     @Override
-    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
                 taskActionDescription = locationRemote.applyAction(generateAction(UnitType.TEMPERATURE_CONTROLLER,

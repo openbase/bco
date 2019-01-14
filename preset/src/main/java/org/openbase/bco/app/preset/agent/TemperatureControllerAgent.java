@@ -140,7 +140,7 @@ public class TemperatureControllerAgent extends AbstractTriggerableAgent {
     }
 
     @Override
-    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
 
     }
 }

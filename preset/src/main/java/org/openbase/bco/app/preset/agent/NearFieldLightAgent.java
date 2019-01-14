@@ -72,7 +72,7 @@ public class NearFieldLightAgent extends AbstractTriggerableAgent {
     }
 
     @Override
-    void trigger(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected void trigger(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
 //        try {
 //            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
 //                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,

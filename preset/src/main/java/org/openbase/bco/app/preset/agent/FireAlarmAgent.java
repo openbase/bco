@@ -91,7 +91,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
     }
 
     @Override
-    void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
                 alarmRoutine();
