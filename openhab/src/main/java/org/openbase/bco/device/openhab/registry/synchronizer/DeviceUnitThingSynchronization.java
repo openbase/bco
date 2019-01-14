@@ -348,7 +348,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
                         continue;
                 }
                 channelDTO.channelTypeUID = channelTypeUID.toString();
-                channelDTO.label = StringProcessor.transformToCamelCase(channelId);
+                channelDTO.label = StringProcessor.transformToPascalCase(channelId);
                 channelDTO.itemType = itemType;
                 channelDTO.kind = CHANNEL_KIND;
                 channelDTO.configuration = new HashMap<>();

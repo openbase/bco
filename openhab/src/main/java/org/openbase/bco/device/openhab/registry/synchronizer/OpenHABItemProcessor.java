@@ -53,7 +53,7 @@ public class OpenHABItemProcessor {
         // openHAB only supports underscores as special characters in item names
         return UnitConfigProcessor.getDefaultAlias(unitConfig, "?").replace(UnitAliasGenerationConsistencyHandler.ALIAS_NUMBER_SEPARATOR, ITEM_SUBSEGMENT_DELIMITER) +
                 ITEM_SEGMENT_DELIMITER +
-                StringProcessor.transformUpperCaseToCamelCase(serviceType.name());
+                StringProcessor.transformUpperCaseToPascalCase(serviceType.name());
     }
 
     public static OpenHABItemNameMetaData getMetaData(final String itemName) throws CouldNotPerformException {

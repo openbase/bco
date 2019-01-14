@@ -68,7 +68,7 @@ public class ServiceStateCommandTransformerPool {
 
     @SuppressWarnings("unchecked")
     public <C extends Command> ServiceStateCommandTransformer getTransformer(final ServiceType serviceType, final Class<C> commandClass) throws CouldNotPerformException {
-        final String serviceStateName = StringProcessor.transformToCamelCase(
+        final String serviceStateName = StringProcessor.transformToPascalCase(
                 Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType().name());
         return getTransformer(serviceStateName, commandClass);
     }
