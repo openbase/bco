@@ -146,7 +146,7 @@ public class BCORegistryPrinter {
             if (unitNumberByTypeMap.get(unitType) == 0) {
                 continue;
             }
-            printEntry(StringProcessor.transformUpperCaseToCamelCase(unitType.name()), unitNumberByTypeMap.get(unitType));
+            printEntry(StringProcessor.transformUpperCaseToPascalCase(unitType.name()), unitNumberByTypeMap.get(unitType));
         }
         System.out.println(LINE_DELIMITER_SMALL);
         System.out.println();
@@ -168,7 +168,7 @@ public class BCORegistryPrinter {
             if (serviceNumberByTypeMap.get(serviceType) == 0) {
                 continue;
             }
-            printEntry(StringProcessor.transformUpperCaseToCamelCase(serviceType.name()), serviceNumberByTypeMap.get(serviceType));
+            printEntry(StringProcessor.transformUpperCaseToPascalCase(serviceType.name()), serviceNumberByTypeMap.get(serviceType));
         }
         System.out.println(LINE_DELIMITER_SMALL);
         System.out.println();

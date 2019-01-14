@@ -61,8 +61,8 @@ public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAda
                     if (!containsUnitTemplateByType(unitType)) {
                         template = UnitTemplate.newBuilder().setType(unitType);
                         LabelProcessor.addLabel(template.getLabelBuilder(), Locale.ENGLISH,
-                                StringProcessor.insertSpaceBetweenCamelCase(
-                                        StringProcessor.transformUpperCaseToCamelCase(unitType.name())));
+                                StringProcessor.insertSpaceBetweenPascalCase(
+                                        StringProcessor.transformUpperCaseToPascalCase(unitType.name())));
                         registry.register(template.build());
                     }
                 }

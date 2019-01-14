@@ -161,7 +161,7 @@ public class ClassAuthorizationGroupCreationPlugin extends ProtobufRegistryPlugi
     private UnitConfig registerGroup(final String propertyKey, final String id, final Label classLabel) throws CouldNotPerformException {
         final UnitConfig.Builder authGroup = UnitConfig.newBuilder();
         authGroup.setUnitType(UnitType.AUTHORIZATION_GROUP);
-        final String label = LabelProcessor.getBestMatch(classLabel) + StringProcessor.transformUpperCaseToCamelCase(UnitType.AUTHORIZATION_GROUP.name());
+        final String label = LabelProcessor.getBestMatch(classLabel) + StringProcessor.transformUpperCaseToPascalCase(UnitType.AUTHORIZATION_GROUP.name());
         LabelProcessor.addLabel(authGroup.getLabelBuilder(), Locale.ENGLISH, label);
         Entry.Builder entry = authGroup.getMetaConfigBuilder().addEntryBuilder();
         entry.setKey(propertyKey).setValue(id);

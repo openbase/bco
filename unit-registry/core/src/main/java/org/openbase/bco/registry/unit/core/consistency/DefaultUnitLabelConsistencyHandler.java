@@ -80,7 +80,7 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
                 final String key = generateKey(label, unitConfig);
 
                 if (unitMap.containsKey(key)) {
-                    final String typeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
+                    final String typeName = StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name());
                     throw new InvalidStateException(
                             typeName + "[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "] and " +
                                     typeName + "[" + unitMap.get(key).getAlias(0) +

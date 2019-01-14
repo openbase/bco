@@ -61,8 +61,8 @@ public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugin
                     if (!containsServiceTemplateByType(serviceType)) {
                         template = ServiceTemplate.newBuilder().setType(serviceType);
                         LabelProcessor.addLabel(template.getLabelBuilder(), Locale.ENGLISH,
-                                StringProcessor.insertSpaceBetweenCamelCase(
-                                        StringProcessor.transformUpperCaseToCamelCase(serviceType.name())));
+                                StringProcessor.insertSpaceBetweenPascalCase(
+                                        StringProcessor.transformUpperCaseToPascalCase(serviceType.name())));
                         registry.register(template.build());
                     }
                 }

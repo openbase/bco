@@ -149,7 +149,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      */
     default String getServiceAttributeType(final ServiceType serviceType) throws CouldNotPerformException {
         final ServiceTemplate serviceTemplate = getServiceTemplateByType(serviceType);
-        final String communicationTypeName = StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getCommunicationType().name());
+        final String communicationTypeName = StringProcessor.transformUpperCaseToPascalCase(serviceTemplate.getCommunicationType().name());
         return PowerState.class.getName().replaceAll(PowerState.class.getSimpleName(), communicationTypeName);
     }
 

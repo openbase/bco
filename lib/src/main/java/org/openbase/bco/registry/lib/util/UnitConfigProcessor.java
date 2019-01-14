@@ -190,7 +190,7 @@ public class UnitConfigProcessor {
      * @return the unit data class name.
      */
     public static String getUnitDataClassName(final UnitType unitType) {
-        return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Data";
+        return StringProcessor.transformUpperCaseToPascalCase(unitType.name()) + "Data";
     }
 
     /**
@@ -229,7 +229,7 @@ public class UnitConfigProcessor {
     public static Message.Builder generateUnitDataBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
         Message.Builder builder;
         try {
-            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
+            String unitTypeName = StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name());
             String unitMessageClassName = "org.openbase.type.domotic.unit.dal." + unitTypeName + "DataType$" + unitTypeName + "Data";
             Class messageClass;
             try {

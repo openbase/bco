@@ -103,7 +103,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
         registerNumber(newNumber, unitType);
 
         // generate and return alias string
-        return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + ALIAS_NUMBER_SEPARATOR + newNumber;
+        return StringProcessor.transformUpperCaseToPascalCase(unitType.name()) + ALIAS_NUMBER_SEPARATOR + newNumber;
     }
 
 
@@ -120,7 +120,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
             return;
         }
 
-        if (!split[0].equals(StringProcessor.transformUpperCaseToCamelCase(unitType.name()))) {
+        if (!split[0].equals(StringProcessor.transformUpperCaseToPascalCase(unitType.name()))) {
             return;
         }
 

@@ -88,6 +88,8 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.*;
 
@@ -239,7 +241,13 @@ public class MockRegistry {
             }));
             LOGGER.debug("Starting all registries: unit, class, template, activity...");
             for (Future<Void> task : registryStartupTasks) {
-                task.get();
+                while (true) {
+                try {
+                    task.get(5, TimeUnit.SECONDS);
+                    break;
+                } catch (TimeoutException e) {
+                }}
+                System.out.println("still waiting for registry tasks.");
             }
             registryStartupTasks.clear();
             LOGGER.debug("Registries started!");
@@ -307,7 +315,7 @@ public class MockRegistry {
     }
 
     public static String getUnitAlias(final UnitType unitType, final int number) {
-        return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "-" + number;
+        return StringProcessor.transformUpperCaseToPascalCase(unitType.name()) + "-" + number;
     }
 
     private static void registerActivities() throws CouldNotPerformException, ExecutionException, InterruptedException {

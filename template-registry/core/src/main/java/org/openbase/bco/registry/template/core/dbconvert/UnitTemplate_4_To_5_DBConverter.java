@@ -71,8 +71,8 @@ public class UnitTemplate_4_To_5_DBConverter extends AbstractDBVersionConverter 
     }
 
     public static JsonObject generateLabelForEnum(final JsonObject jsonObject, final Enum enumValue) {
-        final String labelString = StringProcessor.insertSpaceBetweenCamelCase(
-                StringProcessor.transformUpperCaseToCamelCase(enumValue.name()));
+        final String labelString = StringProcessor.insertSpaceBetweenPascalCase(
+                StringProcessor.transformUpperCaseToPascalCase(enumValue.name()));
 
         final JsonObject label = new JsonObject();
         final JsonArray entryList = new JsonArray();

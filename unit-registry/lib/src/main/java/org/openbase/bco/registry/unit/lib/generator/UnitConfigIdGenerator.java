@@ -35,7 +35,7 @@ public class UnitConfigIdGenerator extends UUIDGenerator<UnitConfig> {
     @Override
     public String generateId(UnitConfig message) {
         if (JPService.testMode()) {
-            return StringProcessor.transformUpperCaseToCamelCase(message.getUnitType().name()) + ":" + super.generateId(message);
+            return StringProcessor.transformUpperCaseToPascalCase(message.getUnitType().name()) + ":" + super.generateId(message);
         }
         return super.generateId(message);
     }
