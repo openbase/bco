@@ -571,7 +571,7 @@ public class ActionDescriptionProcessor {
 
                 // setup service type
                 description = description.replace(SERVICE_TYPE_KEY,
-                        StringProcessor.transformToCamelCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
+                        StringProcessor.transformToPascalCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
 
                 // setup initiator
                 if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {

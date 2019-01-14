@@ -66,7 +66,7 @@ public class ServiceSimulatorFactory implements Factory<AbstractServiceSimulator
     public AbstractServiceSimulator newInstance(final Pair<UnitController, ServiceType> configPair) throws InstantiationException, InterruptedException {
         try {
             // try to return custom service simulator
-            final String serviceSimulatorClassName = AbstractServiceSimulator.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(configPair.getValue().name()) + "Simulator";
+            final String serviceSimulatorClassName = AbstractServiceSimulator.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(configPair.getValue().name()) + "Simulator";
             return ((Class<? extends AbstractServiceSimulator>) Class.forName(serviceSimulatorClassName)).getConstructor(UnitController.class).newInstance(configPair.getKey());
         } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | java.lang.InstantiationException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
             ExceptionPrinter.printHistory("Could not find custom service simulator for " + configPair.getValue().getClass().getName() + "[" + configPair.getValue().name() + "]", ex, LOGGER, LogLevel.DEBUG);

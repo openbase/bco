@@ -30,7 +30,6 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
-import static org.openbase.type.domotic.state.ActivationStateType.ActivationState.State.UNKNOWN;
 
 /**
  *
@@ -154,7 +153,7 @@ public class ActivationStateServicePanel extends AbstractServicePanel<Activation
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getActivationState().getValue() + "] is unknown.");
             }
-            activationStatusLabel.setText("Current ActivationState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getActivationState().getValue().name()));
+            activationStatusLabel.setText("Current ActivationState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getActivationState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

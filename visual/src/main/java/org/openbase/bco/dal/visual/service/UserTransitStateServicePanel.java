@@ -154,7 +154,7 @@ public class UserTransitStateServicePanel extends AbstractServicePanel<UserTrans
                     throw new InvalidStateException("State[" + getProviderService().getUserTransitState().getValue() + "] is unknown.");
             }
             userTransitStateComboBox.getModel().setSelectedItem(getProviderService().getUserTransitState().getValue());
-            userTransitStateLabel.setText("Current UserTransitState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getUserTransitState().getValue().name()));
+            userTransitStateLabel.setText("Current UserTransitState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getUserTransitState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

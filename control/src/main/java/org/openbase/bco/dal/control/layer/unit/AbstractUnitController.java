@@ -433,8 +433,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         HashMap<String, ServiceDescription> serviceInterfaceMap = new HashMap<>();
         for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
             final String serviceInterfaceName =
-                    StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name()) +
-                            StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name());
+                    StringProcessor.transformUpperCaseToPascalCase(serviceDescription.getServiceType().name()) +
+                            StringProcessor.transformUpperCaseToPascalCase(serviceDescription.getPattern().name());
             serviceInterfaceMap.put(serviceInterfaceName, serviceDescription);
         }
 
@@ -463,8 +463,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
 
                 // Identify interface class
-                String serviceDataTypeName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getServiceType().name()).replaceAll("Service", "");
-                String servicePatternName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getPattern().name());
+                String serviceDataTypeName = StringProcessor.transformUpperCaseToPascalCase(serviceInterfaceMapEntry.getValue().getServiceType().name()).replaceAll("Service", "");
+                String servicePatternName = StringProcessor.transformUpperCaseToPascalCase(serviceInterfaceMapEntry.getValue().getPattern().name());
                 String serviceClassName = servicePackage.getName() + "." + serviceDataTypeName + servicePatternName + "Service";
                 try {
                     serviceInterfaceClass = (Class<? extends Service>) Class.forName(serviceClassName);
@@ -1303,7 +1303,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
 
-        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name()) + "Controller";
+        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + "Controller";
         try {
             return (Class<? extends UnitController>) Class.forName(className);
         } catch (ClassNotFoundException ex) {

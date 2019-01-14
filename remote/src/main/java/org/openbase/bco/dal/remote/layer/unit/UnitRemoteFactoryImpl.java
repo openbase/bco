@@ -127,9 +127,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
             String remoteClassName = null;
             // check unit type and load related class.
             if (UnitConfigProcessor.isBaseUnit(unitType)) {
-                remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + unitType.name().toLowerCase().replaceAll("_", "") + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+                remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + unitType.name().toLowerCase().replaceAll("_", "") + "." + StringProcessor.transformUpperCaseToPascalCase(unitType.name()) + "Remote";
             } else if (UnitConfigProcessor.isDalUnit(unitType)) {
-                remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+                remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(unitType.name()) + "Remote";
             } else {
                 throw new EnumNotSupportedException(unitType, UnitRemoteFactoryImpl.class);
             }

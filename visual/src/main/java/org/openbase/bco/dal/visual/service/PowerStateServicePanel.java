@@ -154,7 +154,7 @@ public class PowerStateServicePanel extends AbstractServicePanel<PowerStateProvi
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getPowerState().getValue() + "] is unknown.");
             }
-            powerStatusLabel.setText("Current PowerState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getPowerState().getValue().name()));
+            powerStatusLabel.setText("Current PowerState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getPowerState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

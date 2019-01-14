@@ -126,7 +126,7 @@ public class WindowStateServicePanel extends AbstractServicePanel<WindowStatePro
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getWindowState().getValue() + "] is unknown.");
             }
-            windowStatusLabel.setText("Current WindowState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getWindowState().getValue().name()));
+            windowStatusLabel.setText("Current WindowState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getWindowState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

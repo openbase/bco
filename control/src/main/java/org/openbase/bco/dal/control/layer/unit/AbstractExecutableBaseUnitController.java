@@ -161,7 +161,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                         logger.trace("inform about " + activationState.getValue().name());
                         applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
                     } catch (CouldNotPerformException ex) {
-                        throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activationState.getValue().name()) + " " + this, ex);
+                        throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
                     }
 
                     // filter duplicated execution
@@ -210,7 +210,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                         logger.trace("inform about " + activationState.getValue().name());
                         applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
                     } catch (CouldNotPerformException ex) {
-                        throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activationState.getValue().name()) + " " + this, ex);
+                        throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
                     }
                 }
             }

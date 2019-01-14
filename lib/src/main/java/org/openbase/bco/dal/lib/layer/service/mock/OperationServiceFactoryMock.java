@@ -73,7 +73,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
     public <UNIT extends Unit> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
         try {
             final Class<?> operationServiceClass = Services.loadOperationServiceClass(operationServiceType);
-            String mockClassName = StringProcessor.transformUpperCaseToCamelCase(operationServiceType.name());
+            String mockClassName = StringProcessor.transformUpperCaseToPascalCase(operationServiceType.name());
             mockClassName = mockClassName.replace(Service.class.getSimpleName(), OperationService.class.getSimpleName());
             mockClassName += "Mock";
             Constructor<?> constructor = getClass().getClassLoader().loadClass(getClass().getName() + "$" + mockClassName).getConstructor(operationServiceClass);

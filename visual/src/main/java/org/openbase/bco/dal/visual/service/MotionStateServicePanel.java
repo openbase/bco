@@ -191,14 +191,14 @@ public class MotionStateServicePanel extends AbstractServicePanel<MotionStatePro
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getMotionState().getValue() + "] is unknown.");
             }
-            motionStatusLabel.setText(StringProcessor.transformUpperCaseToCamelCase(getProviderService().getMotionState().getValue().name()));
+            motionStatusLabel.setText(StringProcessor.transformUpperCaseToPascalCase(getProviderService().getMotionState().getValue().name()));
 
             switch (getProviderService().getMotionState().getValue()) {
                 case MOTION:
-                    applyMotionStateButton.setText(StringProcessor.transformUpperCaseToCamelCase(MotionState.State.NO_MOTION.name()));
+                    applyMotionStateButton.setText(StringProcessor.transformUpperCaseToPascalCase(MotionState.State.NO_MOTION.name()));
                     break;
                 default:
-                    applyMotionStateButton.setText(StringProcessor.transformUpperCaseToCamelCase(MotionState.State.MOTION.name()));
+                    applyMotionStateButton.setText(StringProcessor.transformUpperCaseToPascalCase(MotionState.State.MOTION.name()));
                     break;
             }
 

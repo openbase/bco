@@ -123,7 +123,7 @@ public class PassageStateServicePanel extends AbstractServicePanel<PassageStateP
 //                default:
 //                    throw new InvalidStateException("State[" + getProviderService().getPassageState().getValue() + "] is unknown.");
 //            }
-//            passageStatusLabel.setText("Current PassageState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getPassageState().getValue().name()));
+//            passageStatusLabel.setText("Current PassageState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getPassageState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

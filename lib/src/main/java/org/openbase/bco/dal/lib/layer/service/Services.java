@@ -76,7 +76,7 @@ public class Services extends ServiceStateProcessor {
      * @return the service base name.
      */
     public static String getServiceBaseName(ServiceType serviceType) {
-        return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll(Service.SERVICE_LABEL, "");
+        return StringProcessor.transformUpperCaseToPascalCase(serviceType.name()).replaceAll(Service.SERVICE_LABEL, "");
     }
 
     public static String getServiceMethodPrefix(final ServicePattern pattern) throws CouldNotPerformException {
@@ -107,7 +107,7 @@ public class Services extends ServiceStateProcessor {
                 assert false;
                 throw new NotAvailableException("ServiceState");
             }
-            return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Service", "");
+            return StringProcessor.transformUpperCaseToPascalCase(serviceType.name()).replaceAll("Service", "");
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ServiceStateName", ex);
         }
@@ -342,7 +342,7 @@ public class Services extends ServiceStateProcessor {
             if (communicationType == CommunicationType.UNKNOWN) {
                 throw new InvalidStateException("CommunicationType is not configured in ServiceTemplate!");
             }
-            serviceStateName = StringProcessor.transformUpperCaseToCamelCase(communicationType.name());
+            serviceStateName = StringProcessor.transformUpperCaseToPascalCase(communicationType.name());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("CommunicationType", communicationType.name());
         }
@@ -366,7 +366,7 @@ public class Services extends ServiceStateProcessor {
     public static Method detectServiceMethod(final ServiceType serviceType, final String serviceMethodPrefix, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         String messageName = "?";
         try {
-            messageName = serviceMethodPrefix + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(ServiceTempus.CURRENT.name(), ""));
+            messageName = serviceMethodPrefix + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToPascalCase(serviceTempus.name().replace(ServiceTempus.CURRENT.name(), ""));
             return instanceClass.getMethod(messageName, argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not detect service method[" + messageName + "]!", ex);
@@ -609,7 +609,7 @@ public class Services extends ServiceStateProcessor {
     }
 
     public static Class<?> loadOperationServiceClass(final ServiceType serviceType) throws ClassNotFoundException {
-        final String className = StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replace("Service", "") + OperationService.class.getSimpleName();
+        final String className = StringProcessor.transformUpperCaseToPascalCase(serviceType.name()).replace("Service", "") + OperationService.class.getSimpleName();
         final String packageString = OperationService.class.getPackage().getName();
         return Services.class.getClassLoader().loadClass(packageString + "." + className);
     }

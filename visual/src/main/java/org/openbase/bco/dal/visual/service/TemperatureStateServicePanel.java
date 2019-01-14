@@ -94,7 +94,7 @@ public class TemperatureStateServicePanel extends AbstractServicePanel<Temperatu
     @Override
     protected void updateDynamicComponents() {
         try {
-            temperatureValueLabel.setText(numberFormat.format(getProviderService().getTemperatureState().getTemperature()) + "° " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getTemperatureState().getTemperatureDataUnit().name()));
+            temperatureValueLabel.setText(numberFormat.format(getProviderService().getTemperatureState().getTemperature()) + "° " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getTemperatureState().getTemperatureDataUnit().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

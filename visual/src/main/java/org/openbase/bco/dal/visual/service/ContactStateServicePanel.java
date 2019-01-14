@@ -122,7 +122,7 @@ public class ContactStateServicePanel extends AbstractServicePanel<ContactStateP
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getContactState().getValue() + "] is unknown.");
             }
-            reedSwitchStateLabel.setText("Current ReedState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getContactState().getValue().name()));
+            reedSwitchStateLabel.setText("Current ReedState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getContactState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

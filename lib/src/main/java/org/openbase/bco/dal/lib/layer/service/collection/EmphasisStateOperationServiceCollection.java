@@ -64,5 +64,4 @@ public interface EmphasisStateOperationServiceCollection extends EmphasisStateOp
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     EmphasisState getEmphasisState(final UnitType unitType) throws NotAvailableException;
-
 }

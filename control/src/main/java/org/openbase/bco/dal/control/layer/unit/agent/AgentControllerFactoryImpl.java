@@ -83,7 +83,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
                 String className = CUSTOM_AGENT_PACKAGE_PREFIX
                         + "." + StringProcessor.removeWhiteSpaces(agentLabel).toLowerCase()
                         + ".agent"
-                        + "." + StringProcessor.transformToCamelCase(StringProcessor.removeWhiteSpaces(agentLabel)) + "Agent";
+                        + "." + StringProcessor.transformToPascalCase(StringProcessor.removeWhiteSpaces(agentLabel)) + "Agent";
                 agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
             }
             logger.debug("Creating agent of type [" + LabelProcessor.getBestMatch(agentClass.getLabel()) + "]");

@@ -124,7 +124,7 @@ public class ButtonStateServicePanel extends AbstractServicePanel<ButtonStatePro
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getButtonState().getValue() + "] is unknown.");
             }
-            buttonStatusLabel.setText("Current ButtonState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getButtonState().getValue().name()));
+            buttonStatusLabel.setText("Current ButtonState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getButtonState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

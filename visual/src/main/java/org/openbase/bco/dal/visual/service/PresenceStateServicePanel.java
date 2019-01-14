@@ -181,7 +181,7 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
     @Override
     protected void updateDynamicComponents() {
         try {
-            stateLabel.setText(StringProcessor.transformUpperCaseToCamelCase(getProviderService().getPresenceState().getValue().name()));
+            stateLabel.setText(StringProcessor.transformUpperCaseToPascalCase(getProviderService().getPresenceState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

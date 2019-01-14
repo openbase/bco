@@ -132,7 +132,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 }
 
                 remoteLabel = LabelProcessor.getBestMatch(unitConfig.getLabel())
-                        + " (" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name()) + ")"
+                        + " (" + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + ")"
                         + " @ " + locationLabel
                         + (unitHostLabel.isEmpty() ? "" : "of " + unitHostLabel)
                         + (unitConfig.getDescription().getEntryList().isEmpty() ? "" : "[" + MultiLanguageTextProcessor.getBestMatch(unitConfig.getDescription()) + "]");
@@ -154,9 +154,9 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                         @Override
                         public void run() {
                             try {
-                                statusPanel.setStatus("Waiting for " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getUnitType().name()) + " connection...", StatusType.INFO, true);
+                                statusPanel.setStatus("Waiting for " + StringProcessor.transformUpperCaseToPascalCase(getRemoteService().getUnitType().name()) + " connection...", StatusType.INFO, true);
                                 getRemoteService().waitForConnectionState(ConnectionState.State.CONNECTED);
-                                statusPanel.setStatus("Connection to " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getUnitType().name()) + " established.", StatusType.INFO, 3);
+                                statusPanel.setStatus("Connection to " + StringProcessor.transformUpperCaseToPascalCase(getRemoteService().getUnitType().name()) + " established.", StatusType.INFO, 3);
                             } catch (CouldNotPerformException | InterruptedException ex) {
                                 statusPanel.setError(ex);
                             }
@@ -173,7 +173,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                     break;
             }
 
-//            TitledBorder titledBorder = BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + ":" + getRemoteService().getId() + " [" + textSuffix + "]");
+//            TitledBorder titledBorder = BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToPascalCase(getRemoteService().getType().name()) + ":" + getRemoteService().getId() + " [" + textSuffix + "]");
             TitledBorder titledBorder = BorderFactory.createTitledBorder(remoteLabel + " (" + textSuffix + ")");
             titledBorder.setTitleColor(textColor);
             setBorder(titledBorder);
@@ -232,7 +232,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                     if (!servicePanelMap.containsKey(serviceConfig.getServiceDescription().getServiceType())) {
                         try {
                             servicePanel = new JPanel();
-                            servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceDescription().getServiceType().name()) + " " + ScopeGenerator.generateStringRep(unitConfig.getScope())));
+                            servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToPascalCase(serviceConfig.getServiceDescription().getServiceType().name()) + " " + ScopeGenerator.generateStringRep(unitConfig.getScope())));
                             AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceDescription().getServiceType()), getRemoteService());
                             abstractServicePanel.setUnitId(unitConfig.getId());
                             abstractServicePanel.setServiceType(serviceConfig.getServiceDescription().getServiceType());
@@ -280,7 +280,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
 
     public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceAttribute) throws CouldNotPerformException, InterruptedException {
         updateUnitConfig(unitConfig, serviceType);
-        String methodName = "set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", "");
+        String methodName = "set" + StringProcessor.transformUpperCaseToPascalCase(serviceType.toString()).replaceAll("Service", "");
         logger.info("Calling method [" + methodName + "] with parameter [" + serviceAttribute.getClass() + "] on remote [" + getRemoteService().getId() + "]");
 
         try {
@@ -291,7 +291,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
     }
 
     private Class<? extends AbstractServicePanel> loadServicePanelClass(final ServiceType serviceType) throws CouldNotPerformException {
-        String remoteClassName = AbstractServicePanel.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()) + SERVICE_PANEL_SUFFIX;
+        String remoteClassName = AbstractServicePanel.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(serviceType.name()) + SERVICE_PANEL_SUFFIX;
         try {
             return (Class<? extends AbstractServicePanel>) getClass().getClassLoader().loadClass(remoteClassName);
         } catch (Exception ex) {

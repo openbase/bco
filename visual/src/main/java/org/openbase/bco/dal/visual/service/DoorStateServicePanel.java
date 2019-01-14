@@ -121,7 +121,7 @@ public class DoorStateServicePanel extends AbstractServicePanel<DoorStateProvide
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getDoorState().getValue() + "] is unknown.");
             }
-            doorStatusLabel.setText("Current DoorState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getDoorState().getValue().name()));
+            doorStatusLabel.setText("Current DoorState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getDoorState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

@@ -161,7 +161,7 @@ public class StandbyStateServicePanel extends AbstractServicePanel<StandbyStateP
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getStandbyState().getValue() + "] is unknown.");
             }
-            standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getStandbyState().getValue().name()));
+            standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getStandbyState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

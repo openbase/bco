@@ -771,7 +771,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (isNotSpecified()) {
                 return "All";
             }
-            return StringProcessor.transformUpperCaseToCamelCase(type.name());
+            return StringProcessor.transformUpperCaseToPascalCase(type.name());
         }
 
         public boolean isNotSpecified() {
@@ -819,7 +819,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (type.equals(ServiceType.UNKNOWN)) {
                 return "All";
             }
-            return StringProcessor.transformUpperCaseToCamelCase(type.name());
+            return StringProcessor.transformUpperCaseToPascalCase(type.name());
         }
 
         public boolean isNotSpecified() {
@@ -885,7 +885,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             }
 
             final String description = MultiLanguageTextProcessor.getBestMatch(unitConfig.getDescription(), "");
-            return StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name())
+            return StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name())
                     + " = " + label + ""
                     + " @ " + locationLabel
                     + (description.isEmpty() ? "" : " (" + description + ")");

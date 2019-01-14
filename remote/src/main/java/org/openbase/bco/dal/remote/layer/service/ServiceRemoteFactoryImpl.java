@@ -97,7 +97,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
     }
 
     public static Class<? extends AbstractServiceRemote> loadServiceRemoteClass(final ServiceType serviceType) throws CouldNotPerformException {
-        String remoteClassName = AbstractServiceRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()) + "Remote";
+        String remoteClassName = AbstractServiceRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(serviceType.name()) + "Remote";
         try {
             return (Class<? extends AbstractServiceRemote>) ServiceRemoteFactoryImpl.class.getClassLoader().loadClass(remoteClassName);
         } catch (NullPointerException | ClassNotFoundException ex) {

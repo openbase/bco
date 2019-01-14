@@ -78,7 +78,7 @@ public class AppControllerFactoryImpl implements AppControllerFactory {
                 // try to load custom app
                 String className = CUSTOM_APP_PACKAGE_PREFIX
                         + "." + StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel())).toLowerCase()
-                        + "." + StringProcessor.transformToCamelCase(StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel()))) + "App";
+                        + "." + StringProcessor.transformToPascalCase(StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel()))) + "App";
                 app = (AppController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
             }
             logger.debug("Creating app of type [" + LabelProcessor.getBestMatch(appClass.getLabel()) + "]");
