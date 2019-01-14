@@ -41,6 +41,6 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
     }
 
     public BatteryController(final HostUnitController hostUnitController, BatteryData.Builder builder) throws InstantiationException {
-        super(BatteryController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

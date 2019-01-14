@@ -52,8 +52,8 @@ public abstract class AbstractDALUnitController<M extends AbstractMessage & Seri
     private final HostUnitController hostUnit;
     private final OperationServiceFactory operationServiceFactory;
 
-    public AbstractDALUnitController(final Class unitClass, final HostUnitController hostUnitController, final MB builder) throws InstantiationException {
-        super(unitClass, builder);
+    public AbstractDALUnitController(final HostUnitController hostUnitController, final MB builder) throws InstantiationException {
+        super(builder);
         try {
             if (hostUnitController.getOperationServiceFactory() == null) {
                 throw new NotAvailableException("service factory");

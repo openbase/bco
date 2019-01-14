@@ -63,8 +63,8 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
     private Future<ActionDescription> executionFuture;
     private final ActivationStateOperationServiceImpl activationStateOperationService;
 
-    public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
-        super(unitClass, builder);
+    public AbstractExecutableBaseUnitController(final DB builder) throws org.openbase.jul.exception.InstantiationException {
+        super(builder);
         try {
             this.activationStateOperationService = new ActivationStateOperationServiceImpl(this);
             registerOperationService(ServiceType.ACTIVATION_STATE_SERVICE, activationStateOperationService);

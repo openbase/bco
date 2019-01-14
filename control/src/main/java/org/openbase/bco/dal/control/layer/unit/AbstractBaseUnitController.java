@@ -42,8 +42,8 @@ import java.util.concurrent.Future;
  */
 public abstract class AbstractBaseUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractUnitController<D, DB> implements BaseUnitController<D, DB> {
 
-    public AbstractBaseUnitController(final Class unitClass, final DB builder) throws InstantiationException {
-        super(unitClass, builder);
+    public AbstractBaseUnitController(final DB builder) throws InstantiationException {
+        super(builder);
     }
 
     @Override

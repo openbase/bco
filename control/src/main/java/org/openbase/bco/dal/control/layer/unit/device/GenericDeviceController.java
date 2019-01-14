@@ -36,7 +36,6 @@ public class GenericDeviceController extends AbstractDeviceController {
     private final OperationServiceFactory operationServiceFactory;
 
     public GenericDeviceController(final OperationServiceFactory operationServiceFactory) throws CouldNotPerformException {
-        super(GenericDeviceController.class);
         try {
             if (operationServiceFactory == null) {
                 throw new NotAvailableException("service factory");

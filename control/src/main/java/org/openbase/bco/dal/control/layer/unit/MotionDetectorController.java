@@ -42,6 +42,6 @@ public class MotionDetectorController extends AbstractDALUnitController<MotionDe
     }
 
     public MotionDetectorController(final HostUnitController hostUnitController, final MotionDetectorData.Builder builder) throws InstantiationException {
-        super(MotionDetectorController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

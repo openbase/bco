@@ -41,6 +41,6 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
     }
 
     public TamperDetectorController(final HostUnitController hostUnitController, final TamperDetectorData.Builder builder) throws InstantiationException {
-        super(TamperDetectorController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

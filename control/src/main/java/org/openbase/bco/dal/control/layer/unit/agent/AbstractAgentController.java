@@ -47,8 +47,8 @@ public abstract class AbstractAgentController extends AbstractAuthorizedBaseUnit
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
-    public AbstractAgentController(final Class unitClass) throws InstantiationException {
-        super(unitClass, AgentDataType.AgentData.newBuilder());
+    public AbstractAgentController() throws InstantiationException {
+        super(AgentDataType.AgentData.newBuilder());
     }
 
     @Override

@@ -36,6 +36,6 @@ public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController
     }
 
     public AuthorizationGroupControllerImpl() throws InstantiationException {
-        super(AuthorizationGroupControllerImpl.class, AuthorizationGroupData.newBuilder());
+        super(AuthorizationGroupData.newBuilder());
     }
 }

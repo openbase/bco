@@ -44,7 +44,7 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     }
 
     public DimmerController(final HostUnitController hostUnitController, DimmerData.Builder builder) throws InstantiationException {
-        super(DimmerController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 
     @Override

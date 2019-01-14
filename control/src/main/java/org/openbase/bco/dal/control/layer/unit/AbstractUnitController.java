@@ -148,7 +148,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private Timeout scheduleTimeout;
     private boolean actionNotificationSkipped = false;
 
-    public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
+    public AbstractUnitController(final DB builder) throws InstantiationException {
         super(builder);
         this.unitDataObservableMap = new HashMap<>();
         this.operationServiceMap = new TreeMap<>();

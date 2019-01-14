@@ -39,6 +39,6 @@ public class VideoDepthSourceController extends AbstractDALUnitController<VideoD
     }
 
     public VideoDepthSourceController(final HostUnitController hostUnitController, VideoDepthSourceData.Builder builder) throws CouldNotPerformException {
-        super(VideoDepthSourceController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

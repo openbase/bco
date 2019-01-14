@@ -42,6 +42,6 @@ public class PowerConsumptionSensorController extends AbstractDALUnitController<
     }
     
     public PowerConsumptionSensorController(final HostUnitController hostUnitController, final PowerConsumptionSensorData.Builder builder) throws InstantiationException {
-        super(PowerConsumptionSensorController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

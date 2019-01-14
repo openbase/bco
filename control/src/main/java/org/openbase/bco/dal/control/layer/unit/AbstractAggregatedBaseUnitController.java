@@ -62,12 +62,12 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     private final RecurrenceEventFilter unitEventFilter;
     private final ServiceRemoteManager<D> serviceRemoteManager;
 
-    public AbstractAggregatedBaseUnitController(final Class unitClass, final DB builder) throws InstantiationException {
-        this(unitClass, builder, 0);
+    public AbstractAggregatedBaseUnitController(final DB builder) throws InstantiationException {
+        this(builder, 0);
     }
 
-    public AbstractAggregatedBaseUnitController(final Class unitClass, final DB builder, final long maxUpdateFrequency) throws InstantiationException {
-        super(unitClass, builder);
+    public AbstractAggregatedBaseUnitController(final DB builder, final long maxUpdateFrequency) throws InstantiationException {
+        super(builder);
 
         // filter updates through internal units by the provided frequency
         unitEventFilter = new RecurrenceEventFilter(Math.max(maxUpdateFrequency, MINIMAL_UPDATE_FREQUENCY)) {

@@ -58,8 +58,8 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
     private final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> hostedUnitDiff;
     private final SyncObject unitMapLock = new SyncObject("UnitMapLock");
 
-    public AbstractHostUnitController(final Class unitClass, final DB builder) throws InstantiationException {
-        super(unitClass, builder);
+    public AbstractHostUnitController(final DB builder) throws InstantiationException {
+        super(builder);
         this.unitMap = new HashMap<>();
         this.hostedUnitDiff = new ProtobufListDiff<>();
     }

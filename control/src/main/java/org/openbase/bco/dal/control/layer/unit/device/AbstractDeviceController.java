@@ -48,8 +48,8 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
 
     private final SyncObject configUpdateLock = new SyncObject("ApplyConfigUpdateLock");
 
-    public AbstractDeviceController(final Class deviceClass) throws InstantiationException {
-        super(deviceClass, DeviceData.newBuilder());
+    public AbstractDeviceController() throws InstantiationException {
+        super(DeviceData.newBuilder());
     }
 
     @Override

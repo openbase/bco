@@ -133,7 +133,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
     private final Set<ServiceType> supportedServiceTypes;
 
     public ConnectionControllerImpl() throws InstantiationException {
-        super(ConnectionControllerImpl.class, ConnectionData.newBuilder());
+        super(ConnectionData.newBuilder());
         this.contactDoorPositionMap = new HashMap<>();
         this.contactWindowPositionMap = new HashMap<>();
         this.supportedServiceTypes = new HashSet<>();

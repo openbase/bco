@@ -44,6 +44,6 @@ public class SmokeDetectorController extends AbstractDALUnitController<SmokeDete
     }
 
     public SmokeDetectorController(final HostUnitController hostUnitController, SmokeDetectorData.Builder builder) throws InstantiationException {
-        super(SmokeDetectorController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

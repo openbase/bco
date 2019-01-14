@@ -39,6 +39,6 @@ public class AudioSourceController extends AbstractDALUnitController<AudioSource
     }
 
     public AudioSourceController(final HostUnitController hostUnitController, AudioSourceData.Builder builder) throws CouldNotPerformException {
-        super(AudioSourceController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

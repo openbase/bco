@@ -94,7 +94,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     private final ActivationStateOperationServiceImpl activationStateOperationService;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
-        super(SceneControllerImpl.class, SceneData.newBuilder());
+        super(SceneData.newBuilder());
         this.buttonRemoteSet = new HashSet<>();
         this.requiredActionPool = new RemoteActionPool(this);
         this.optionalActionPool = new RemoteActionPool(this);

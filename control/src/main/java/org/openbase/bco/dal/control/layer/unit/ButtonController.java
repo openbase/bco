@@ -67,7 +67,7 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
     };
 
     public ButtonController(final HostUnitController hostUnitController, final ButtonData.Builder builder) throws InstantiationException {
-        super(ButtonController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 
     @Override

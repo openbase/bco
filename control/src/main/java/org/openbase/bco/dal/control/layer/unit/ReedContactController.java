@@ -42,6 +42,6 @@ public class ReedContactController extends AbstractDALUnitController<ReedContact
     }
     
     public ReedContactController(final HostUnitController hostUnitController, ReedContactData.Builder builder) throws InstantiationException {
-        super(ReedContactController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

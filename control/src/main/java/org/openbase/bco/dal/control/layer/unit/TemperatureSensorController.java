@@ -44,6 +44,6 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
     }
     
     public TemperatureSensorController(final HostUnitController hostUnitController, final TemperatureSensorData.Builder builder) throws InstantiationException {
-        super(TemperatureSensorController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

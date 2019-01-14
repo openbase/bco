@@ -39,6 +39,6 @@ public class VideoRgbSourceController extends AbstractDALUnitController<VideoRgb
     }
 
     public VideoRgbSourceController(final HostUnitController hostUnitController, VideoRgbSourceData.Builder builder) throws CouldNotPerformException {
-        super(VideoRgbSourceController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

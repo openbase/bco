@@ -72,7 +72,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     private Color neutralWhite;
 
     public ColorableLightController(final HostUnitController hostUnitController, final ColorableLightData.Builder builder) throws InstantiationException {
-        super(ColorableLightController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
         this.neutralWhite = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;
     }
 

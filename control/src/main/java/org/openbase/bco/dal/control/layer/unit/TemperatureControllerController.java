@@ -42,6 +42,6 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
     }
     
     public TemperatureControllerController(final HostUnitController hostUnitController, final TemperatureControllerData.Builder builder) throws InstantiationException {
-        super(TemperatureControllerController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

@@ -95,7 +95,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
     private final PresenceDetector presenceDetector;
 
     public LocationControllerImpl() throws InstantiationException {
-        super(LocationControllerImpl.class, LocationData.newBuilder());
+        super(LocationData.newBuilder());
 
         try {
             registerOperationService(ServiceType.STANDBY_STATE_SERVICE, new StandbyStateOperationServiceImpl(this));

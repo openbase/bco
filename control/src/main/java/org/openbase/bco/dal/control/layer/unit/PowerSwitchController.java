@@ -42,6 +42,6 @@ public class PowerSwitchController extends AbstractDALUnitController<PowerSwitch
     }
     
     public PowerSwitchController(final HostUnitController hostUnitController, final PowerSwitchData.Builder builder) throws InstantiationException {
-        super(PowerSwitchController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

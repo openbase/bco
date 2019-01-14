@@ -54,12 +54,12 @@ public abstract class AbstractAppController extends AbstractAuthorizedBaseUnitCo
 
     private final OperationServiceFactory operationServiceFactory;
 
-    public AbstractAppController(final Class unitClass) throws org.openbase.jul.exception.InstantiationException {
-        this(unitClass, null);
+    public AbstractAppController() throws org.openbase.jul.exception.InstantiationException {
+        this(null);
     }
 
-    public AbstractAppController(final Class unitClass, final OperationServiceFactory operationServiceFactory) throws org.openbase.jul.exception.InstantiationException {
-        super(unitClass, AppData.newBuilder());
+    public AbstractAppController(final OperationServiceFactory operationServiceFactory) throws org.openbase.jul.exception.InstantiationException {
+        super(AppData.newBuilder());
         this.operationServiceFactory = operationServiceFactory;
     }
 

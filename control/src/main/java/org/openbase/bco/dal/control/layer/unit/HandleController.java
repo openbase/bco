@@ -41,6 +41,6 @@ public class HandleController extends AbstractDALUnitController<HandleData, Hand
     }
     
     public HandleController(final HostUnitController hostUnitController, final HandleData.Builder builder) throws InstantiationException {
-        super(HandleController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

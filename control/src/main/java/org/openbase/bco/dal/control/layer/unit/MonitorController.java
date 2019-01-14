@@ -44,6 +44,6 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     }
     
     public MonitorController(final HostUnitController hostUnitController, final MonitorData.Builder builder) throws InstantiationException {
-        super(MonitorController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

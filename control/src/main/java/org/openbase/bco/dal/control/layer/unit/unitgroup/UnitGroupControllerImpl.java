@@ -79,7 +79,7 @@ public class UnitGroupControllerImpl extends AbstractAggregatedBaseUnitControlle
     }
 
     public UnitGroupControllerImpl() throws org.openbase.jul.exception.InstantiationException {
-        super(UnitGroupControllerImpl.class, UnitGroupData.newBuilder());
+        super(UnitGroupData.newBuilder());
     }
 
     @Override

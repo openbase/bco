@@ -86,7 +86,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     private boolean enabled;
 
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
-        super(UserControllerImpl.class, UserData.newBuilder());
+        super(UserData.newBuilder());
         try {
             this.netDeviceDetectorMap = new HashMap<>();
             registerOperationService(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, new ActivityMultiStateOperationServiceImpl(this));

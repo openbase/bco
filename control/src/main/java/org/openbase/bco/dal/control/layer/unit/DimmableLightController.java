@@ -45,7 +45,7 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
     }
 
     public DimmableLightController(final HostUnitController hostUnitController, DimmableLightData.Builder builder) throws InstantiationException {
-        super(DimmableLightController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 
     @Override

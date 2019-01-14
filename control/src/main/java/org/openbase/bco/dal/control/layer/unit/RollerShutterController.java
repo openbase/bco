@@ -42,6 +42,6 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     }
 
     public RollerShutterController(final HostUnitController hostUnitController, final RollerShutterData.Builder builder) throws InstantiationException {
-        super(RollerShutterController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

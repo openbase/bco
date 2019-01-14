@@ -47,6 +47,6 @@ public class LightSensorController extends AbstractDALUnitController<LightSensor
     }
     
     public LightSensorController(final HostUnitController hostUnitController, LightSensorData.Builder builder) throws InstantiationException {
-        super(LightSensorController.class, hostUnitController, builder);
+        super(hostUnitController, builder);
     }
 }

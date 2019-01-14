@@ -54,8 +54,8 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
 
     private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
 
-    public AbstractAuthorizedBaseUnitController(Class unitClass, DB builder) throws InstantiationException {
-        super(unitClass, builder);
+    public AbstractAuthorizedBaseUnitController(DB builder) throws InstantiationException {
+        super(builder);
     }
 
     @Override
