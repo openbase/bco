@@ -239,7 +239,7 @@ public class AuthorizationHelper {
             // user or authentication group permissions are independent of there location referred location.
             if (isAuthenticationUnit(unitConfig)) {
                 if (!unitConfig.hasPermissionConfig()) {
-                    throw new InvalidStateException(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name()) + " should always provide a permission config!");
+                    throw new InvalidStateException(StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + " should always provide a permission config!");
                 }
                 return unitConfig.getPermissionConfig();
             }
