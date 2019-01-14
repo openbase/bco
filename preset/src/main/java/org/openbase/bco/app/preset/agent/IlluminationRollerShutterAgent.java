@@ -49,7 +49,6 @@ public class IlluminationRollerShutterAgent extends AbstractTriggerableAgent {
     private LocationRemote locationRemote;
 
     public IlluminationRollerShutterAgent() throws InstantiationException {
-        super(IlluminationRollerShutterAgent.class);
 
 //        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 

@@ -83,7 +83,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private RemoteAction remoteAction;
 
     public PowerStateSynchroniserAgent() throws CouldNotPerformException {
-        super(PowerStateSynchroniserAgent.class);
 
         serviceTypeRequestedObserverMap = new HashMap<>();
         serviceTypeCurrentObserverMap = new HashMap<>();

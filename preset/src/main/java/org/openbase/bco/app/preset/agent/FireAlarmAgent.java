@@ -57,7 +57,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
     private ActionDescription taskActionDescriptionBlinds;
 
     public FireAlarmAgent() throws InstantiationException {
-        super(FireAlarmAgent.class);
+        super();
     }
 
     @Override

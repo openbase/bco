@@ -60,7 +60,7 @@ public class IlluminationLightSavingAgent extends AbstractTriggerableAgent {
     private ActionDescription taskActionDescription;
 
     public IlluminationLightSavingAgent() throws InstantiationException {
-        super(IlluminationLightSavingAgent.class);
+        super();
     }
 
     @Override

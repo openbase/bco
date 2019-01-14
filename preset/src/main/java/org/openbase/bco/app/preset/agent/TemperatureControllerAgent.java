@@ -48,7 +48,6 @@ public class TemperatureControllerAgent extends AbstractTriggerableAgent {
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
 
     public TemperatureControllerAgent() throws InstantiationException {
-        super(TemperatureControllerAgent.class);
 
         previousTemperatureState = new HashMap();
 

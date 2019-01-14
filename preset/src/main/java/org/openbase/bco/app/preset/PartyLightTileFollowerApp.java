@@ -61,7 +61,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     private SyncObject taskLock = new SyncObject("TaskLock");
 
     public PartyLightTileFollowerApp() throws InstantiationException, InterruptedException {
-        super(PartyLightTileFollowerApp.class);
         try {
             Registries.waitForData();
             this.actionLocationMap = new HashMap<>();

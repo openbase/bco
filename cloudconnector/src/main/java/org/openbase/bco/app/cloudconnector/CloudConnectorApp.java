@@ -70,7 +70,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
     private final Map<String, SocketWrapper> userIdSocketMap;
 
     public CloudConnectorApp() throws InstantiationException {
-        super(CloudConnectorApp.class);
+        super();
         this.userIdSocketMap = new HashMap<>();
         this.tokenStore = new CloudConnectorTokenStore();
         this.jsonParser = new JsonParser();

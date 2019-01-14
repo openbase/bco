@@ -51,14 +51,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     private TriggerPool triggerPool;
     private Observer<Trigger, ActivationState> triggerHolderObserver;
 
-
     public AbstractTriggerableAgent() throws InstantiationException {
-        this(null);
-    }
-
-
-    public AbstractTriggerableAgent(final Class unitClass) throws InstantiationException {
-        super(unitClass);
         this.triggerPool = new TriggerPool();
         this.triggerHolderObserver = (Trigger source, ActivationState data) -> {
             GlobalCachedExecutorService.submit(() -> {

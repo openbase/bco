@@ -55,7 +55,7 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
 
 
     public HeaterEnergySavingAgent() throws InstantiationException {
-        super(HeaterEnergySavingAgent.class);
+        super();
     }
 
     @Override

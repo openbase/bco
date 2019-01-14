@@ -139,7 +139,6 @@ public class AmbientColorAgent extends AbstractAgentController {
     private final Random random;
 
     public AmbientColorAgent() throws InterruptedException, CouldNotPerformException {
-        super(AmbientColorAgent.class);
         random = new Random();
     }
 

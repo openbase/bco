@@ -41,7 +41,7 @@ public class NearFieldLightAgent extends AbstractTriggerableAgent {
     private List<LocationRemote> neighborRemotes;
 
     public NearFieldLightAgent() throws InstantiationException {
-        super(NearFieldLightAgent.class);
+        super();
     }
 
     @Override

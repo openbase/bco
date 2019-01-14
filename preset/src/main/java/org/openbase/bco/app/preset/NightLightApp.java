@@ -71,7 +71,6 @@ public class NightLightApp extends AbstractAppController {
     private Map<LocationRemote, Observer> locationMap;
 
     public NightLightApp() throws InstantiationException, InterruptedException {
-        super(NightLightApp.class);
         this.locationMap = new HashMap<>();
         this.presentsActionLocationMap = new HashMap<>();
         this.absenceActionLocationMap = new HashMap<>();

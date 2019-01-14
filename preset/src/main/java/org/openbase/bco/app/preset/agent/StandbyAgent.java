@@ -55,7 +55,6 @@ public class StandbyAgent extends AbstractAgentController {
 
 
     public StandbyAgent() throws CouldNotPerformException {
-        super(StandbyAgent.class);
         this.timeout = new Timeout(TIMEOUT) {
 
             @Override

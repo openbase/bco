@@ -44,7 +44,6 @@ public class RandomLightPatternAgent extends AbstractTriggerableAgent {
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
 
     public RandomLightPatternAgent() throws InstantiationException {
-        super(RandomLightPatternAgent.class);
 
 //        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 

@@ -40,7 +40,6 @@ import java.util.concurrent.ExecutionException;
 
 public class HeaterComfortAgent extends AbstractTriggerableAgent{
 
-
     private LocationRemote locationRemote;
     private final PresenceState.State triggerState = PresenceState.State.PRESENT;
     private ActionDescription taskActionDescription;
@@ -48,7 +47,7 @@ public class HeaterComfortAgent extends AbstractTriggerableAgent{
     private final double comfortTemperature = 21.0;
 
     public HeaterComfortAgent() throws InstantiationException {
-        super(HeaterComfortAgent.class);
+        super();
     }
 
     @Override

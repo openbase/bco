@@ -64,7 +64,6 @@ public class SoundScapeApp extends AbstractAppController {
     private AgentRemote agentBathAmbientColorZen;
 
     public SoundScapeApp() throws CouldNotPerformException, InterruptedException {
-        super(SoundScapeApp.class);
         logger.debug("Creating sound scape app with scope [" + themeScope.toString() + "]!");
         this.listener = RSBFactoryImpl.getInstance().createSynchronizedListener(themeScope, RSBSharedConnectionConfig.getParticipantConfig());
         this.listenerWatchDog = new WatchDog(listener, "RSBListener[" + themeScope.concat(AbstractControllerServer.SCOPE_SUFFIX_STATUS) + "]");
