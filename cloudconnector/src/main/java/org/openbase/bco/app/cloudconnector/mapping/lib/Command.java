@@ -60,7 +60,7 @@ public enum Command {
     private final String representation;
 
     Command() {
-        this.representation = COMMAND_PREFIX + StringProcessor.transformUpperCaseToCamelCase(this.name());
+        this.representation = COMMAND_PREFIX + StringProcessor.transformUpperCaseToPascalCase(this.name());
     }
 
     /**

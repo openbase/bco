@@ -323,11 +323,11 @@ public class FulfillmentHandler {
         device.addProperty("roomHint", LabelProcessor.getBestMatch(userLocale, location.getLabel()));
 
         final JsonObject name = new JsonObject();
-        final String mainName = StringProcessor.insertSpaceBetweenCamelCase(LabelProcessor.getBestMatch(userLocale, host.getLabel()));
+        final String mainName = StringProcessor.insertSpaceBetweenPascalCase(LabelProcessor.getBestMatch(userLocale, host.getLabel()));
         name.addProperty("name", mainName);
         final JsonArray defaultNames = new JsonArray();
         for (final String alias : host.getAliasList()) {
-            defaultNames.add(StringProcessor.insertSpaceBetweenCamelCase(alias.replace("-", " ")));
+            defaultNames.add(StringProcessor.insertSpaceBetweenPascalCase(alias.replace("-", " ")));
         }
         name.add("defaultNames", defaultNames);
 
@@ -336,12 +336,12 @@ public class FulfillmentHandler {
             final JsonArray nickNames = new JsonArray();
             for (final Label.MapFieldEntry mapFieldEntry : host.getLabel().getEntryList()) {
                 for (final String label : mapFieldEntry.getValueList()) {
-                    final String nickName = StringProcessor.insertSpaceBetweenCamelCase(label);
+                    final String nickName = StringProcessor.insertSpaceBetweenPascalCase(label);
                     if (nickName.equals(mainName)) {
                         continue;
                     }
 
-                    nickNames.add(StringProcessor.insertSpaceBetweenCamelCase(label));
+                    nickNames.add(StringProcessor.insertSpaceBetweenPascalCase(label));
                 }
             }
             if (nickNames.size() != 0) {

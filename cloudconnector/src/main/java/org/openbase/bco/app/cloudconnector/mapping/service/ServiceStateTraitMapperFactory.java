@@ -57,7 +57,7 @@ public class ServiceStateTraitMapperFactory {
 
     public ServiceStateTraitMapper getServiceStateMapper(final ServiceType serviceType, final Trait trait) throws CouldNotPerformException {
         final CommunicationType communicationType = Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType();
-        final String key = StringProcessor.transformUpperCaseToCamelCase(communicationType.name() + "_" + trait.name());
+        final String key = StringProcessor.transformUpperCaseToPascalCase(communicationType.name() + "_" + trait.name());
         if (!mapperMap.containsKey(key)) {
             mapperMap.put(key, loadMapper(communicationType, trait));
         }
@@ -66,8 +66,8 @@ public class ServiceStateTraitMapperFactory {
     }
 
     private ServiceStateTraitMapper loadMapper(final CommunicationType communicationType, final Trait trait) throws CouldNotPerformException {
-        final String serviceTypeComponent = StringProcessor.transformUpperCaseToCamelCase(communicationType.name());
-        final String traitComponent = StringProcessor.transformUpperCaseToCamelCase(trait.name());
+        final String serviceTypeComponent = StringProcessor.transformUpperCaseToPascalCase(communicationType.name());
+        final String traitComponent = StringProcessor.transformUpperCaseToPascalCase(trait.name());
         final String className = serviceTypeComponent + traitComponent + MAPPER_CLASS_NAME_ENDING;
         final String fullClassName = getClass().getPackage().getName() + "." + className;
 

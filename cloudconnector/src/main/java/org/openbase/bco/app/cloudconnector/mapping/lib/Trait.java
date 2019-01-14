@@ -64,7 +64,7 @@ public enum Trait {
     private final Set<Command> commandSet;
 
     Trait(final Command... commands) {
-        this.representation = REPRESENTATION_PREFIX + StringProcessor.transformUpperCaseToCamelCase(this.name());
+        this.representation = REPRESENTATION_PREFIX + StringProcessor.transformUpperCaseToPascalCase(this.name());
         this.commandSet = new HashSet<>(Arrays.asList(commands));
     }
 
