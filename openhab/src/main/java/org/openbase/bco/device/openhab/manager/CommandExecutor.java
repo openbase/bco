@@ -22,6 +22,8 @@ package org.openbase.bco.device.openhab.manager;
  * #L%
  */
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.Descriptors;
@@ -99,7 +101,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             // update the responsible action to show that it was triggered by openHAB and add other parameters
             // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
             final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceDataBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceDataBuilder.build(), metaData.getServiceType());
+            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceDataBuilder.build(), metaData.getServiceType(), unitController);
             actionParameter.setInterruptible(false);
             actionParameter.setSchedulable(false);
             actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
