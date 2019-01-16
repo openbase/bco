@@ -24,25 +24,31 @@ package org.openbase.bco.device.openhab.manager;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.eclipse.smarthome.core.types.Command;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.device.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.device.openhab.manager.transform.ServiceTypeCommandMapping;
 import org.openbase.bco.device.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.device.openhab.registry.synchronizer.OpenHABItemProcessor.OpenHABItemNameMetaData;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
@@ -88,20 +94,26 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
         }
         try {
             final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
-            final Message serviceData = getServiceData(state, metaData.getServiceType());
+            final Message.Builder serviceDataBuilder = getServiceData(state, metaData.getServiceType()).toBuilder();
 
-            if (serviceData == null) {
-                // unsupported state for service, see CommandTransformer for details
-                return;
-            }
+            // update the responsible action to show that it was triggered by openHAB and add other parameters
+            // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
+            final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceDataBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceDataBuilder.build(), metaData.getServiceType());
+            actionParameter.setInterruptible(false);
+            actionParameter.setSchedulable(false);
+            actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+            serviceDataBuilder.setField(descriptor, ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
 
-            unitController.applyDataUpdate(serviceData, metaData.getServiceType());
+            unitController.applyDataUpdate(serviceDataBuilder.build(), metaData.getServiceType());
         } catch (NotAvailableException ex) {
             if (!unitControllerRegistry.isInitiallySynchronized()) {
                 LOGGER.debug("ItemUpdate[" + itemName + "=" + state + "] skipped because controller registry was not ready yet!");
                 return;
             }
             throw ex;
+        } catch (InvalidStateException ex) {
+            LOGGER.debug("Ignore state update [" + state + "] for service[" + metaData.getServiceType() + "]", ex);
         }
     }
 
@@ -109,8 +121,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
 
     public static Message getServiceData(final String commandString, final ServiceType serviceType) throws CouldNotPerformException {
         if (commandString.equalsIgnoreCase(EMPTY_COMMAND_STRING)) {
-            LOGGER.debug("Ignore state update [" + commandString + "] for service[" + serviceType + "]");
-            return null;
+            throw new InvalidStateException("Received null for state update");
         }
 
         try {
