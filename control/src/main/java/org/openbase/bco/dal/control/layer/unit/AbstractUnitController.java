@@ -726,6 +726,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // detect action with highest ranking
                 final SchedulableAction nextAction = scheduledActionList.get(0);
 
+                // if new action is not schedulable and not immediately scheduled reject it
+                if (actionToSchedule != null && !actionToSchedule.equals(nextAction)) {
+                    if (actionToSchedule.getActionDescription().getSchedulable()) {
+                        actionToSchedule.schedule();
+                    } else {
+                        actionToSchedule.reject();
+                    }
+                }
+
                 // handle current action
                 if (currentAction != null) {
                     // if the next action is still the same than we are finished
@@ -734,8 +743,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     // abort the current action
-                    logger.warn("Abort current action {}, because new one {} has higher priority", currentAction, nextAction);
-                    currentAction.abort();
+                    logger.warn("Abort or reject current action {}, because new one {} has higher priority", currentAction, nextAction);
+                    // if action is interruptible it can be scheduled an thus is only aborted, else it is rejected
+                    if (currentAction.getActionDescription().getInterruptible()) {
+                        currentAction.abort();
+                    } else {
+                        currentAction.reject();
+                    }
                 }
 
                 // execute action with highest ranking
@@ -961,7 +975,26 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
                     internalBuilder.clearField(requestedStateField);
                 } else {
+                    // operation service but action was triggered outside BCO e.g. via openHAB
+                    // as a result the responsible action is set and it has to be rescheduled to maintain priorities from BCO
                     newState = serviceState;
+
+                    // retrieve the responsible action
+                    final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+                    final ActionDescription responsibleAction = (ActionDescription) newState.getField(descriptor);
+                    synchronized (scheduledActionListLock) {
+                        // add the new action as executing to the front of the stack
+                        final ActionImpl action = new ActionImpl(responsibleAction, this, false);
+                        scheduledActionList.add(0, action);
+
+                        // if there was another action executing before, abort it
+                        if (scheduledActionList.size() > 1) {
+                            scheduledActionList.get(1).abort();
+                        }
+
+                        // trigger a reschedule which can trigger the action with a higher priority again
+                        reschedule();
+                    }
                 }
             } else {
                 // no operation service or no requested state, so just update the current state
@@ -970,10 +1003,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // verify the service state
             newState = Services.verifyAndRevalidateServiceState(newState);
-
-            // update the action description
-            Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-            newState = newState.toBuilder().setField(descriptor, newState.getField(descriptor)).build();
 
             // copy latestValueOccurrence map from current state, only if available
             try {

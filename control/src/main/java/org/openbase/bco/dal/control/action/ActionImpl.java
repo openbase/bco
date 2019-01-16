@@ -85,8 +85,22 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
+    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit, final boolean setInitialState) throws InstantiationException {
+        try {
+            this.unit = unit;
+            this.init(actionDescription, setInitialState);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
+
     @Override
     public void init(final ActionDescription actionDescription) throws InitializationException {
+        init(actionDescription, true);
+    }
+
+    private void init(final ActionDescription actionDescription, final boolean setInitialState) throws InitializationException {
         LOGGER.info("================================================================================");
         try {
             actionDescriptionBuilder = actionDescription.toBuilder();
@@ -101,7 +115,9 @@ public class ActionImpl implements SchedulableAction {
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
 
             // mark action as initialized.
-            updateActionState(State.INITIALIZED);
+            if (setInitialState) {
+                updateActionState(State.INITIALIZED);
+            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

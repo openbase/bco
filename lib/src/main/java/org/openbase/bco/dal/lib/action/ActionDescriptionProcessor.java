@@ -543,6 +543,11 @@ public class ActionDescriptionProcessor {
                 }
             }
 
+            // if the action is not schedulable it is also not interruptible
+            if(!actionDescriptionBuilder.getSchedulable()) {
+                actionDescriptionBuilder.setInterruptible(false);
+            }
+
             Message serviceState = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute(), actionDescriptionBuilder.getServiceStateDescription().getServiceAttributeType());
             serviceState = Services.verifyAndRevalidateServiceState(serviceState);
             if (prepare) {
