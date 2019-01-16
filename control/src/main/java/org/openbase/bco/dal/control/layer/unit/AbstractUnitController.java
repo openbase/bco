@@ -742,8 +742,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         return currentAction;
                     }
 
-                    // abort the current action
-                    logger.warn("Abort or reject current action {}, because new one {} has higher priority", currentAction, nextAction);
                     // if action is interruptible it can be scheduled an thus is only aborted, else it is rejected
                     if (currentAction.getActionDescription().getInterruptible()) {
                         currentAction.abort();
@@ -933,63 +931,83 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // move current state to last state
             updateLastWithCurrentState(serviceType, internalBuilder);
 
-            Message newState;
+            Message newState = null;
 
             // only operation service action can be remapped
-            if (hasOperationServiceForType(serviceType) && Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
-                // if it is an operation service test if the requested state is the new current state
+            if (hasOperationServiceForType(serviceType)) {
+                boolean requestedStateDoesNotMatch;
+                if (Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
 
-                // test if all fields match to the last request
-                boolean equalFields = true;
+                    // test if all fields match to the last request
+                    boolean equalFields = true;
 
-                Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
-                for (Descriptors.FieldDescriptor field : serviceState.getDescriptorForType().getFields()) {
-                    // ignore repeated fields, which should be last value occurrences
-                    if (field.isRepeated()) {
-                        continue;
+                    Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
+                    for (Descriptors.FieldDescriptor field : serviceState.getDescriptorForType().getFields()) {
+                        // ignore repeated fields, which should be last value occurrences
+                        if (field.isRepeated()) {
+                            continue;
+                        }
+
+                        // ignore timestamps
+                        if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD_NAME)) {
+                            continue;
+                        }
+
+                        // ignore responsible action
+                        if (field.getName().equals(Service.RESPONSIBLE_ACTION_FIELD_NAME)) {
+                            continue;
+                        }
+
+                        if (serviceState.hasField(field) && requestedState.hasField(field) && !(serviceState.getField(field).equals(requestedState.getField(field)))) {
+                            equalFields = false;
+                            break;
+                        }
                     }
 
-                    // ignore timestamps
-                    if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD_NAME)) {
-                        continue;
-                    }
+                    // choose with which value to update
+                    if (equalFields) {
+                        requestedStateDoesNotMatch = false;
 
-                    if (serviceState.hasField(field) && requestedState.hasField(field) && !(serviceState.getField(field).equals(requestedState.getField(field)))) {
-                        equalFields = false;
-                        break;
+                        // use the requested state but update the timestamp if not available
+                        if (TimestampProcessor.hasTimestamp(serviceState)) {
+                            Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTEMP_FIELD_NAME);
+                            newState = requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
+                        } else {
+                            newState = requestedState;
+                        }
+
+                        // clear requested state
+                        Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
+                        internalBuilder.clearField(requestedStateField);
+                    } else {
+                        requestedStateDoesNotMatch = true;
                     }
+                } else {
+                    requestedStateDoesNotMatch = true;
                 }
 
-                // choose with which value to update
-                if (equalFields) {
-
-                    // use the requested state but update the timestamp if not available
-                    if (TimestampProcessor.hasTimestamp(serviceState)) {
-                        Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTEMP_FIELD_NAME);
-                        newState = requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
-                    } else {
-                        newState = requestedState;
-                    }
-
-                    // clear requested state
-                    Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
-                    internalBuilder.clearField(requestedStateField);
-                } else {
+                if (requestedStateDoesNotMatch) {
                     // operation service but action was triggered outside BCO e.g. via openHAB
                     // as a result the responsible action is set and it has to be rescheduled to maintain priorities from BCO
                     newState = serviceState;
 
                     // retrieve the responsible action
                     final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-                    final ActionDescription responsibleAction = (ActionDescription) newState.getField(descriptor);
+                    final ActionDescription.Builder responsibleActionBuilder = ((ActionDescription) newState.getField(descriptor)).toBuilder();
+                    responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
                     synchronized (scheduledActionListLock) {
                         // add the new action as executing to the front of the stack
-                        final ActionImpl action = new ActionImpl(responsibleAction, this, false);
+                        final ActionImpl action = new ActionImpl(responsibleActionBuilder.build(), this, false);
                         scheduledActionList.add(0, action);
 
                         // if there was another action executing before, abort it
                         if (scheduledActionList.size() > 1) {
-                            scheduledActionList.get(1).abort();
+                            final SchedulableAction schedulableAction = scheduledActionList.get(1);
+                            if(schedulableAction.getActionDescription().getInterruptible()) {
+                                schedulableAction.abort();
+                            } else {
+                                schedulableAction.reject();
+                            }
                         }
 
                         // trigger a reschedule which can trigger the action with a higher priority again

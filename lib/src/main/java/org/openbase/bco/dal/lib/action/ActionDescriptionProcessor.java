@@ -348,6 +348,8 @@ public class ActionDescriptionProcessor {
         actionDescription.setServiceStateDescription(actionParameter.getServiceStateDescription());
         actionDescription.setExecutionTimePeriod(actionParameter.getExecutionTimePeriod());
         actionDescription.setPriority(actionParameter.getPriority());
+        actionDescription.setInterruptible(actionParameter.getInterruptible());
+        actionDescription.setSchedulable(actionParameter.getSchedulable());
 
         // if an initiator action is defined in ActionParameter the actionChain is updated
         if (actionParameter.hasCause()) {
