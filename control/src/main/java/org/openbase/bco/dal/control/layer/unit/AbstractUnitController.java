@@ -126,6 +126,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
     private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
+    /**
+     * Timeout defining how long a requested state for a given service is cached.
+     */
+    private static final long REQUESTED_STATE_CACHE_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
@@ -147,6 +151,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
     private boolean actionNotificationSkipped = false;
+    private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
+    private final Map<ServiceType, Message> requestedStateCache;
+    private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
         super(builder);
@@ -181,6 +188,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
             }
         };
+
+        this.requestedStateCache = new HashMap<>();
+        this.requestedStateCacheTimeouts = new HashMap<>();
 
         this.scheduleTimeout = new Timeout(1000) {
             @Override
@@ -271,6 +281,26 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             final Set<ServiceType> serviceTypeSet = new HashSet<>();
             for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                // update requested state cache and create timeouts
+                if (serviceTempus == ServiceTempus.REQUESTED && serviceDescription.getPattern() == OPERATION) {
+                    if (Services.hasServiceState(serviceDescription.getServiceType(), serviceTempus, data)) {
+                        synchronized (requestedStateCacheSync) {
+                            requestedStateCache.put(serviceDescription.getServiceType(), Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), serviceTempus, data));
+                            if (requestedStateCacheTimeouts.containsKey(serviceDescription.getServiceType())) {
+                                requestedStateCacheTimeouts.get(serviceDescription.getServiceType()).restart();
+                            } else {
+                                requestedStateCacheTimeouts.put(serviceDescription.getServiceType(), new Timeout(REQUESTED_STATE_CACHE_TIMEOUT) {
+                                    @Override
+                                    public void expired() {
+                                        synchronized (requestedStateCacheSync) {
+                                            requestedStateCache.remove(serviceDescription.getServiceType());
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
 
                 // check if already handled
                 if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
@@ -281,6 +311,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     } catch (CouldNotPerformException ex) {
                         logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this controller.", ex);
                     }
+
                 }
             }
         }
@@ -987,6 +1018,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
 
                 if (requestedStateDoesNotMatch) {
+                    //TODO: also validate requested states of other service types and the own from cache before doing this...
+
                     // operation service but action was triggered outside BCO e.g. via openHAB
                     // as a result the responsible action is set and it has to be rescheduled to maintain priorities from BCO
                     newState = serviceState;
@@ -1003,7 +1036,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         // if there was another action executing before, abort it
                         if (scheduledActionList.size() > 1) {
                             final SchedulableAction schedulableAction = scheduledActionList.get(1);
-                            if(schedulableAction.getActionDescription().getInterruptible()) {
+                            if (schedulableAction.getActionDescription().getInterruptible()) {
                                 schedulableAction.abort();
                             } else {
                                 schedulableAction.reject();
