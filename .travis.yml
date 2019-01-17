@@ -1,12 +1,16 @@
 language: java
 
+dist: xenial
+
 branches:
   except:
       #- /^(?i:feature)-.*$/
       #- /^(?i:release)-.*$/
 
 jdk:
-  - oraclejdk8
+  - openjdk8
+  - openjdk11
+  - openjdk-ea
 
 install:
   - mvn --settings .travis/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -q
@@ -32,14 +36,14 @@ deploy:
     on:
         repo: openbase/bco.registry
         branch: master
-        jdk: oraclejdk8
+        jdk: openjdk8
   - provider: script
     script: .travis/deploy.sh
     on:
         repo: openbase/bco.registry
         tags: true
-        jdk: oraclejdk8
-        
+        jdk: openjdk8
+
 after_deploy:
    - |
        if [[ ($TRAVIS_BRANCH == master) &&
@@ -50,5 +54,5 @@ after_deploy:
          # trigger upstream projects
          sh trigger-travis.sh openbase bco.dal $TRAVIS_ACCESS_TOKEN
          sh trigger-travis.sh openbase bco.registry.editor $TRAVIS_ACCESS_TOKEN
-                  
-       fi        
+
+       fi
