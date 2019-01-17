@@ -88,12 +88,12 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         serviceTypeCurrentObserverMap = new HashMap<>();
 
         final Observer<ServiceStateProvider<Message>, Message> requestedPowerStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleRequestedPowerStateUpdate((PowerState) data);
-        final Observer<ServiceStateProvider<Message>, Message> requestedBrightnessStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleRequestedPowerStateUpdate(BrightnessStateProviderService.brightnessStateToPowerState((BrightnessState) data));
-        final Observer<ServiceStateProvider<Message>, Message> requestedColorStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleRequestedPowerStateUpdate(ColorStateProviderService.colorStateToPowerState((ColorState) data));
+        final Observer<ServiceStateProvider<Message>, Message> requestedBrightnessStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleRequestedPowerStateUpdate(BrightnessStateProviderService.toPowerState((BrightnessState) data));
+        final Observer<ServiceStateProvider<Message>, Message> requestedColorStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleRequestedPowerStateUpdate(ColorStateProviderService.toPowerState((ColorState) data));
 
         final Observer<ServiceStateProvider<Message>, Message> currentPowerStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleCurrentPowerStateUpdate((PowerState) data);
-        final Observer<ServiceStateProvider<Message>, Message> currentBrightnessStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleCurrentPowerStateUpdate(BrightnessStateProviderService.brightnessStateToPowerState((BrightnessState) data));
-        final Observer<ServiceStateProvider<Message>, Message> currentColorStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleCurrentPowerStateUpdate(ColorStateProviderService.colorStateToPowerState((ColorState) data));
+        final Observer<ServiceStateProvider<Message>, Message> currentBrightnessStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleCurrentPowerStateUpdate(BrightnessStateProviderService.toPowerState((BrightnessState) data));
+        final Observer<ServiceStateProvider<Message>, Message> currentColorStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleCurrentPowerStateUpdate(ColorStateProviderService.toPowerState((ColorState) data));
 
         serviceTypeRequestedObserverMap.put(ServiceType.POWER_STATE_SERVICE, requestedPowerStateObserver);
         serviceTypeRequestedObserverMap.put(ServiceType.BRIGHTNESS_STATE_SERVICE, requestedBrightnessStateObserver);
