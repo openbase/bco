@@ -54,7 +54,7 @@ public interface BrightnessStateProviderService extends ProviderService {
         }
     }
 
-    static PowerState brightnessStateToPowerState(final BrightnessState brightnessState) {
+    static PowerState toPowerState(final BrightnessState brightnessState) {
         if (brightnessState.getBrightness() == 0) {
             return PowerState.newBuilder().setValue(State.OFF).build();
         } else {

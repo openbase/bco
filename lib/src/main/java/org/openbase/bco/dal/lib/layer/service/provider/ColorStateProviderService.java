@@ -118,7 +118,7 @@ public interface ColorStateProviderService extends ProviderService {
         OperationService.verifyValueRange("blue", rgbColor.getBlue(), 0, 255);
     }
 
-    static BrightnessState colorStateToBrightnessState(final ColorState colorState) {
+    static BrightnessState toBrightnessState(final ColorState colorState) {
         HSBColor hsbColor;
         if (colorState.getColor().getType() == Type.RGB) {
             try {
@@ -133,7 +133,7 @@ public interface ColorStateProviderService extends ProviderService {
         return BrightnessState.newBuilder().setBrightness(hsbColor.getBrightness()).build();
     }
 
-    static PowerState colorStateToPowerState(final ColorState colorState) {
-        return BrightnessStateProviderService.brightnessStateToPowerState(colorStateToBrightnessState(colorState));
+    static PowerState toPowerState(final ColorState colorState) {
+        return BrightnessStateProviderService.toPowerState(toBrightnessState(colorState));
     }
 }

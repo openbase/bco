@@ -191,6 +191,40 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
         this.requestedStateCache = new HashMap<>();
         this.requestedStateCacheTimeouts = new HashMap<>();
+        this.addDataObserver(ServiceTempus.REQUESTED, (source, data) -> {
+            // update requested state cache and create timeouts
+            for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                // skip if the service is not an operation service
+                if (serviceDescription.getPattern() != OPERATION) {
+                    continue;
+                }
+
+                // skip if the update contains a cleared requested state
+                if (!Services.hasServiceState(serviceDescription.getServiceType(), ServiceTempus.REQUESTED, data)) {
+                    continue;
+                }
+
+                // synchronize access to requestedStateCache
+                synchronized (requestedStateCacheSync) {
+                    // put new value into the cache
+                    requestedStateCache.put(serviceDescription.getServiceType(), Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), ServiceTempus.REQUESTED, data));
+
+                    // create or restart timeout to clear te cache
+                    if (requestedStateCacheTimeouts.containsKey(serviceDescription.getServiceType())) {
+                        requestedStateCacheTimeouts.get(serviceDescription.getServiceType()).restart();
+                    } else {
+                        requestedStateCacheTimeouts.put(serviceDescription.getServiceType(), new Timeout(REQUESTED_STATE_CACHE_TIMEOUT) {
+                            @Override
+                            public void expired() {
+                                synchronized (requestedStateCacheSync) {
+                                    requestedStateCache.remove(serviceDescription.getServiceType());
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
 
         this.scheduleTimeout = new Timeout(1000) {
             @Override
@@ -281,27 +315,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             final Set<ServiceType> serviceTypeSet = new HashSet<>();
             for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-                // update requested state cache and create timeouts
-                if (serviceTempus == ServiceTempus.REQUESTED && serviceDescription.getPattern() == OPERATION) {
-                    if (Services.hasServiceState(serviceDescription.getServiceType(), serviceTempus, data)) {
-                        synchronized (requestedStateCacheSync) {
-                            requestedStateCache.put(serviceDescription.getServiceType(), Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), serviceTempus, data));
-                            if (requestedStateCacheTimeouts.containsKey(serviceDescription.getServiceType())) {
-                                requestedStateCacheTimeouts.get(serviceDescription.getServiceType()).restart();
-                            } else {
-                                requestedStateCacheTimeouts.put(serviceDescription.getServiceType(), new Timeout(REQUESTED_STATE_CACHE_TIMEOUT) {
-                                    @Override
-                                    public void expired() {
-                                        synchronized (requestedStateCacheSync) {
-                                            requestedStateCache.remove(serviceDescription.getServiceType());
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    }
-                }
-
                 // check if already handled
                 if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
                     serviceTypeSet.add(serviceDescription.getServiceType());
@@ -968,83 +981,84 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (hasOperationServiceForType(serviceType)) {
                 boolean requestedStateDoesNotMatch;
                 if (Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
-
-                    // test if all fields match to the last request
-                    boolean equalFields = true;
-
-                    Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
-                    for (Descriptors.FieldDescriptor field : serviceState.getDescriptorForType().getFields()) {
-                        // ignore repeated fields, which should be last value occurrences
-                        if (field.isRepeated()) {
-                            continue;
-                        }
-
-                        // ignore timestamps
-                        if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD_NAME)) {
-                            continue;
-                        }
-
-                        // ignore responsible action
-                        if (field.getName().equals(Service.RESPONSIBLE_ACTION_FIELD_NAME)) {
-                            continue;
-                        }
-
-                        if (serviceState.hasField(field) && requestedState.hasField(field) && !(serviceState.getField(field).equals(requestedState.getField(field)))) {
-                            equalFields = false;
-                            break;
-                        }
-                    }
+                    final Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
 
                     // choose with which value to update
-                    if (equalFields) {
+                    if (Services.equalServiceStates(serviceState, requestedState)) {
                         requestedStateDoesNotMatch = false;
 
                         // use the requested state but update the timestamp if not available
                         if (TimestampProcessor.hasTimestamp(serviceState)) {
-                            Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTEMP_FIELD_NAME);
+                            Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTAMP_FIELD_NAME);
                             newState = requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
                         } else {
                             newState = requestedState;
                         }
 
                         // clear requested state
-                        Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
+                        final Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
                         internalBuilder.clearField(requestedStateField);
                     } else {
+                        // requested state does not match the current state
                         requestedStateDoesNotMatch = true;
                     }
                 } else {
+                    // requested state is not available so obviously it does not match
                     requestedStateDoesNotMatch = true;
                 }
 
                 if (requestedStateDoesNotMatch) {
-                    //TODO: also validate requested states of other service types and the own from cache before doing this...
-
                     // operation service but action was triggered outside BCO e.g. via openHAB
                     // as a result the responsible action is set and it has to be rescheduled to maintain priorities from BCO
                     newState = serviceState;
 
-                    // retrieve the responsible action
-                    final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-                    final ActionDescription.Builder responsibleActionBuilder = ((ActionDescription) newState.getField(descriptor)).toBuilder();
-                    responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
-                    synchronized (scheduledActionListLock) {
-                        // add the new action as executing to the front of the stack
-                        final ActionImpl action = new ActionImpl(responsibleActionBuilder.build(), this, false);
-                        scheduledActionList.add(0, action);
-
-                        // if there was another action executing before, abort it
-                        if (scheduledActionList.size() > 1) {
-                            final SchedulableAction schedulableAction = scheduledActionList.get(1);
-                            if (schedulableAction.getActionDescription().getInterruptible()) {
-                                schedulableAction.abort();
-                            } else {
-                                schedulableAction.reject();
-                            }
+                    // however, the problem remains that openHAB notifies all service states as new updates
+                    // e.g. if the power of a colorable light is set a brightness state and a color state are also updated
+                    // furthermore the power state is notified twice
+                    // this is a problem because it overwrites the scheduling of actions performed though bco
+                    // e.g. an agent controlling something would always be superseded by these actions scheduled through
+                    // the openHAB user
+                    // therefore, in the following a hack strategy is implemented which tests if a matching requested
+                    // state was cached and if yes this update will not be scheduled
+                    boolean schedulingRequired = true;
+                    synchronized (requestedStateCacheSync) {
+                        if (Services.equalServiceStates(newState, requestedStateCache.get(serviceType))) {
+                            schedulingRequired = false;
                         }
 
-                        // trigger a reschedule which can trigger the action with a higher priority again
-                        reschedule();
+                        if (schedulingRequired) {
+                            for (final ServiceType superServiceType : Registries.getTemplateRegistry().getSuperServiceTypes(serviceType)) {
+                                Message superServiceState = Services.convertToSuperState(serviceType, newState, superServiceType);
+                                if (Services.equalServiceStates(superServiceState, requestedStateCache.get(superServiceType))) {
+                                    schedulingRequired = false;
+                                }
+                            }
+                        }
+                    }
+
+                    if (schedulingRequired) {
+                        // retrieve the responsible action
+                        final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+                        final ActionDescription.Builder responsibleActionBuilder = ((ActionDescription) newState.getField(descriptor)).toBuilder();
+                        responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
+                        synchronized (scheduledActionListLock) {
+                            // add the new action as executing to the front of the stack
+                            final ActionImpl action = new ActionImpl(responsibleActionBuilder.build(), this, false);
+                            scheduledActionList.add(0, action);
+
+                            // if there was another action executing before, abort it
+                            if (scheduledActionList.size() > 1) {
+                                final SchedulableAction schedulableAction = scheduledActionList.get(1);
+                                if (schedulableAction.getActionDescription().getInterruptible()) {
+                                    schedulableAction.abort();
+                                } else {
+                                    schedulableAction.reject();
+                                }
+                            }
+
+                            // trigger a reschedule which can trigger the action with a higher priority again
+                            reschedule();
+                        }
                     }
                 }
             } else {

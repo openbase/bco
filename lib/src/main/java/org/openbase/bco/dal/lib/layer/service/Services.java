@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Message;
@@ -37,8 +38,6 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -46,6 +45,9 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -256,10 +258,10 @@ public class Services extends ServiceStateProcessor {
     /**
      * Method generates a new service state builder related to the given {@code serviceType} and initializes this instance with the given {@code stateValue}.
      *
-     * @param <SC>        the service class of the service state.
-     * @param <SV>        the state enum of the service.
+     * @param <SC>              the service class of the service state.
+     * @param <SV>              the state enum of the service.
      * @param communicationType the communication type of the service state.
-     * @param stateValue  a compatible state value related to the given service state.
+     * @param stateValue        a compatible state value related to the given service state.
      *
      * @return a new service state initialized with the state value.
      *
@@ -585,9 +587,10 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleAction the action to setup.
      * @param serviceState      the message which is updated with the given responsible action.
      * @param <M>               the type of the service state message.
-     * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      *
      * @return the modified message instance.
+     *
+     * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      */
     public static <M extends Message> M setResponsibleAction(final ActionDescription responsibleAction, final M serviceState) throws NotAvailableException {
         return (M) setResponsibleAction(responsibleAction, serviceState.toBuilder()).build();
@@ -599,9 +602,10 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleAction   the action to setup.
      * @param serviceStateBuilder the builder which is updated with the given responsible action.
      * @param <B>                 the type of the service state builder.
-     * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      *
      * @return the modified builder instance.
+     *
+     * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      */
     public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) throws NotAvailableException {
         serviceStateBuilder.setField(ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME), responsibleAction);
@@ -816,6 +820,79 @@ public class Services extends ServiceStateProcessor {
             stateValues.add(fieldDescriptor.getName() + "=" + stateValue.toLowerCase());
         }
         return stateValues;
+    }
+
+    /**
+     * Test if two service states are equal to each other. This test iterates over all fields of serviceState1 and
+     * tests if they have the same value in serviceState2. It ignores the following utility fields:
+     * <ul>
+     * <li>timestamp</li>
+     * <li>responsible_action</li>
+     * <li>last</li>
+     * <li>state_transaction_reference</li>
+     * </ul>
+     *
+     * @param serviceState1 the first state compared.
+     * @param serviceState2 the second state compared.
+     *
+     * @return if all fields except the fields mentioned above are equal.
+     */
+    public static boolean equalServiceStates(final Message serviceState1, final Message serviceState2) {
+        for (final Descriptors.FieldDescriptor field : serviceState1.getDescriptorForType().getFields()) {
+            if (field.getName().equals(ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE)) {
+                continue;
+            }
+
+            if (field.getName().equals("state_transaction_reference")) {
+                continue;
+            }
+
+            // ignore timestamps
+            if (field.getName().equals(TimestampProcessor.TIMESTAMP_FIELD_NAME)) {
+                continue;
+            }
+
+            // ignore responsible action
+            if (field.getName().equals(Service.RESPONSIBLE_ACTION_FIELD_NAME)) {
+                continue;
+            }
+
+            if (serviceState1.hasField(field) && serviceState2.hasField(field) && !(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Convert a generic service state of a service type to one of its super service types. This is done by resolving
+     * the provider service interface belonging to the service type and calling the toSuperServiceState method. E.g.
+     * converting a ColorState as a COLOR_STATE_SERVICE to a POWER_STATE_SERVICE will result in a call to the method
+     * {@link org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService#toPowerState(ColorState)}.
+     *
+     * @param serviceType      the service type of the service state.
+     * @param serviceState     the service state to be converted.
+     * @param superServiceType the super service type describing the state into which to convert.
+     *
+     * @return a state matching the super service type.
+     *
+     * @throws CouldNotPerformException if the conversion fails because of invalid arguments or because conversion methods
+     *                                  are not available.
+     */
+    public static Message convertToSuperState(final ServiceType serviceType, final Message serviceState, final ServiceType superServiceType) throws CouldNotPerformException {
+        try {
+            // retrieve provider service class
+            final String simpleClassName = StringProcessor.transformUpperCaseToPascalCase(serviceType.name()).replace(Service.class.getSimpleName(), ProviderService.class.getSimpleName());
+            final String className = ProviderService.class.getPackage().getName() + "." + simpleClassName;
+            final Class providerClass = Services.class.getClassLoader().loadClass(className);
+
+            final String methodName = "to" + StringProcessor.transformToPascalCase(superServiceType.name()).replace(Service.class.getSimpleName(), "");
+            final Method method = providerClass.getMethod(methodName, serviceState.getClass());
+
+            return (Message) method.invoke(null, serviceState);
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException ex) {
+            throw new CouldNotPerformException("Could not convert state[" + serviceState.getClass().getSimpleName() + "] of serviceType[" + serviceType.name() + "] to state of superServiceType[" + superServiceType.name() + "]", ex);
+        }
     }
 }
 
