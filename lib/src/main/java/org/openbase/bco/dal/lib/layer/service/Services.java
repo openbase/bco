@@ -848,6 +848,12 @@ public class Services extends ServiceStateProcessor {
             return false;
         }
 
+        if (!serviceState1.getClass().equals(serviceState2.getClass())) {
+            return false;
+        }
+
+        //TODO: for performance reasons it would be nice if all the fields skipped below had the same field number in all
+        // service states. It would reduce the string comparison to an integer comparison.
         for (final Descriptors.FieldDescriptor field : serviceState1.getDescriptorForType().getFields()) {
             if (field.getName().equals(ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE)) {
                 continue;
