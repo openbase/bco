@@ -35,13 +35,13 @@ deploy:
     on:
         repo: openbase/bco.dal
         branch: master
-        jdk: openjdk8
+        jdk: openjdk11
   - provider: script
     script: .travis/deploy.sh
     on:
         repo: openbase/bco.dal
         tags: true
-        jdk: openjdk8
+        jdk: openjdk11
 
 after_deploy:
    - |
