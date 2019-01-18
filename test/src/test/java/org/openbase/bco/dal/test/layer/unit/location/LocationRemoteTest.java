@@ -35,6 +35,7 @@ import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -58,6 +59,7 @@ import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.LoggerFactory;
@@ -97,7 +99,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     public void testLocationToUnitPipeline() throws Exception {
         System.out.println("testLocationToUnitPipeline");
 
@@ -257,6 +259,23 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
         locationRemote.restoreSnapshot(snapshot).get();
         locationRemote.requestData().get();
+
+        final BlindState.State blindStateValue = snapshotBlindState.getValue();
+        final HSBColor hsbColor = snapshotColorState.getColor().getHsbColor();
+        final PowerState.State powerStateValue = snapshotPowerState.getValue();
+        final double targetTemperature = snapshotTemperatureState.getTemperature();
+        final UnitStateAwaiter<LocationData, LocationRemote> stateAwaiter = new UnitStateAwaiter<>(locationRemote);
+        logger.warn("Wait for blindState");
+        stateAwaiter.waitForState(data -> blindStateValue == data.getBlindState().getValue());
+        logger.warn("Wait for Color");
+        stateAwaiter.waitForState(data -> hsbColor.equals(data.getColorState().getColor().getHsbColor()));
+        logger.warn("Wait for power");
+        stateAwaiter.waitForState(data -> powerStateValue == data.getPowerState().getValue());
+        logger.warn("Wait for target temperature");
+        stateAwaiter.waitForState(data -> {
+            logger.warn("Expected {} but is {}", targetTemperature, data.getTargetTemperatureState().getTemperature());
+            return targetTemperature == data.getTargetTemperatureState().getTemperature();
+        });
 
         assertEquals("BlindState of location has not been restored through snapshot!", snapshotBlindState.getValue(), locationRemote.getBlindState(UnitType.UNKNOWN).getValue());
         assertEquals("ColorState of location has not been restored through snapshot!", snapshotColorState.getColor().getHsbColor(), locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor());

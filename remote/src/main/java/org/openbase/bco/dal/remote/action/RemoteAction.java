@@ -410,9 +410,9 @@ public class RemoteAction implements Action {
     }
 
     private boolean isStateExecuting() throws CouldNotPerformException {
-        Message serviceState = Services.invokeProviderServiceMethod(actionDescription.getServiceStateDescription().getServiceType(), targetUnit);
-        Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-        ActionDescription responsibleAction = (ActionDescription) serviceState.getField(descriptor);
+        final Message serviceState = Services.invokeProviderServiceMethod(actionDescription.getServiceStateDescription().getServiceType(), targetUnit);
+        final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+        final ActionDescription responsibleAction = (ActionDescription) serviceState.getField(descriptor);
         return actionDescription.getId().equals(responsibleAction.getId());
     }
 

@@ -104,10 +104,7 @@ import rsb.converter.ProtocolBufferConverter;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
@@ -1061,7 +1058,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             }
 
                             // trigger a reschedule which can trigger the action with a higher priority again
-                            reschedule();
+                            GlobalCachedExecutorService.submit((Callable<Action>) this::reschedule);
                         }
                     }
                 }
