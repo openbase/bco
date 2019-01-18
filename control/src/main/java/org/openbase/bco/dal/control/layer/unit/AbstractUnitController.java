@@ -1022,14 +1022,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // state was cached and if yes this update will not be scheduled
                     boolean schedulingRequired = true;
                     synchronized (requestedStateCacheSync) {
-                        if (Services.equalServiceStates(newState, requestedStateCache.get(serviceType))) {
+                        if (requestedStateCache.containsKey(serviceType) && Services.equalServiceStates(newState, requestedStateCache.get(serviceType))) {
                             schedulingRequired = false;
                         }
 
                         if (schedulingRequired) {
                             for (final ServiceType superServiceType : Registries.getTemplateRegistry().getSuperServiceTypes(serviceType)) {
                                 Message superServiceState = Services.convertToSuperState(serviceType, newState, superServiceType);
-                                if (Services.equalServiceStates(superServiceState, requestedStateCache.get(superServiceType))) {
+                                if (requestedStateCache.containsKey(superServiceType) && Services.equalServiceStates(superServiceState, requestedStateCache.get(superServiceType))) {
                                     schedulingRequired = false;
                                 }
                             }
