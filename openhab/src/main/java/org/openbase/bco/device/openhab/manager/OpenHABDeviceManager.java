@@ -56,7 +56,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
     private final Observer synchronizationObserver;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
-        this.deviceManager = new DeviceManagerImpl(new OpenHABOperationServiceFactory()) {
+        this.deviceManager = new DeviceManagerImpl(new OpenHABOperationServiceFactory() ,false) {
 
             @Override
             public boolean isSupported(UnitConfig config) {
