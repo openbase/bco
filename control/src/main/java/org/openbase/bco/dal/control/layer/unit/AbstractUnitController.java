@@ -1063,13 +1063,22 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                             // if there was another action executing before, abort it
                             if (scheduledActionList.size() > 1) {
-                                final SchedulableAction schedulableAction = scheduledActionList.get(1);
-                                if (schedulableAction.getActionDescription().getInterruptible()) {
-                                    schedulableAction.abort();
-                                } else {
-                                    schedulableAction.reject();
+                                // locking this lock skips the notification by calling reject or abort below
+                                // else the builderSyncSetup is retrieved twice by the same thread which can cause a deadlock because the lock is held during the notification
+                                // if the applyDataUpdate method finished these new states are notified anyway
+                                actionListNotificationLock.writeLock().lock();
+                                try {
+                                    final SchedulableAction schedulableAction = scheduledActionList.get(1);
+                                    if (schedulableAction.getActionDescription().getInterruptible()) {
+                                        schedulableAction.abort();
+                                    } else {
+                                        schedulableAction.reject();
+                                    }
+                                } finally {
+                                    actionListNotificationLock.writeLock().unlock();
                                 }
                             }
+
 
                             // trigger a reschedule which can trigger the action with a higher priority again
                             GlobalCachedExecutorService.submit((Callable<Action>) this::reschedule);
