@@ -78,8 +78,10 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
                 sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), getLabel(), SitemapIconType.SWITCH);
                 break;
             case TAMPER_DETECTOR:
+                sitemap.addTextElement(getItem(ServiceType.TAMPER_STATE_SERVICE), getLabel() + "[]", SitemapIconType.ERROR);
+                break;
             case REED_CONTACT:
-                sitemap.addDefaultElement(getItem(ServiceType.POWER_STATE_SERVICE), getLabel());
+                sitemap.addTextElement(getItem(ServiceType.CONTACT_STATE_SERVICE), getLabel() + "[]", SitemapIconType.CONTACT);
                 break;
             case MOTION_DETECTOR:
                 sitemap.addTextElement(getItem(ServiceType.MOTION_STATE_SERVICE), getLabel(), SitemapIconType.MOTION);
@@ -97,19 +99,47 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
                 sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), getLabel(), SitemapIconType.LIGHT);
                 break;
             case DIMMABLE_LIGHT:
+            case DIMMER:
                 sitemap.addDefaultElement(getItem(ServiceType.BRIGHTNESS_STATE_SERVICE), getLabel());
                 break;
             case COLORABLE_LIGHT:
                 sitemap.addColorpickerElement(getItem(ServiceType.COLOR_STATE_SERVICE), getLabel(), SitemapIconType.COLORWHEEL);
                 break;
             case LIGHT_SENSOR:
-                sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), getLabel() + " Helligkeit [%.1f Lux]");
+                sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), getLabel() + " Helligkeit [%.1f Lux]", SitemapIconType.SUN);
                 break;
             case BUTTON:
-                sitemap.addDefaultElement(getItem(ServiceType.BUTTON_STATE_SERVICE), getLabel());
+                sitemap.addTextElement(getItem(ServiceType.BUTTON_STATE_SERVICE), getLabel(), SitemapIconType.WALLSWITCH);
                 break;
             case POWER_CONSUMPTION_SENSOR:
-                sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), getLabel() + " Vebrauch [%.1f Watt]");
+                sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), getLabel() + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
+                break;
+            case USER:
+                sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), getLabel(), SitemapIconType.MOTION);
+                break;
+            case ROLLER_SHUTTER:
+                sitemap.addDefaultElement(getItem(ServiceType.BLIND_STATE_SERVICE), getLabel());
+                break;
+            case SWITCH:
+                sitemap.addDefaultElement(getItem(ServiceType.SWITCH_STATE_SERVICE), getLabel());
+                break;
+            case SMOKE_DETECTOR:
+                sitemap.addTextElement(getItem(ServiceType.SMOKE_ALARM_STATE_SERVICE), getLabel(), SitemapIconType.SIREN);
+                sitemap.addTextElement(getItem(ServiceType.SMOKE_STATE_SERVICE), getLabel(), SitemapIconType.FIRE);
+                break;
+            case CONNECTION:
+                switch (unitConfig.getConnectionConfig().getType()) {
+                    case DOOR:
+                        sitemap.addTextElement(getItem(ServiceType.DOOR_STATE_SERVICE), getLabel(), SitemapIconType.DOOR);
+                        break;
+                    case WINDOW:
+                        sitemap.addTextElement(getItem(ServiceType.WINDOW_STATE_SERVICE), getLabel(), SitemapIconType.WINDOW);
+                        break;
+                    case PASSAGE:
+                        sitemap.addDefaultElement(getItem(ServiceType.PASSAGE_STATE_SERVICE), getLabel());
+                        break;
+                }
+                sitemap.addDefaultElement(getItem(ServiceType.BLIND_STATE_SERVICE), getLabel());
                 break;
             case UNKNOWN:
             default:

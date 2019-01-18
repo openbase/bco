@@ -48,15 +48,9 @@ public class RootLocationElement extends LocationElement {
 
     @Override
     public void serialize(final SitemapBuilder sitemap) throws CouldNotPerformException {
-//        sitemap.openFrameContext("Allgemeine Informationen");
-//        sitemap.addTextElement("Date", "Datum");
-//        sitemap.addTextElement("Mails", "Mails");
-//        sitemap.addTextElement("SystemState", "System Status");
-//        sitemap.closeContext();
-
         super.serialize(sitemap);
 
-        sitemap.openFrameContext("Alle Geräte");
+        sitemap.openFrameContext("Settings", SitemapIconType.SETTINGS);
 
         sitemap.openTextContext("Units", SitemapIconType.NONE);
         final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
@@ -66,6 +60,16 @@ public class RootLocationElement extends LocationElement {
 
             // filter devices
             if (unitConfig.getUnitType() == UnitType.DEVICE) {
+                continue;
+            }
+
+            // filter system user
+            if (unitConfig.getUnitType() == UnitType.USER && unitConfig.getUserConfig().getSystemUser()) {
+                continue;
+            }
+
+            // filter system auth groups
+            if (unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) {
                 continue;
             }
 

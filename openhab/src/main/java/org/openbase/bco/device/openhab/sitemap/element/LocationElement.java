@@ -65,9 +65,9 @@ public class LocationElement extends AbstractUnitSitemapElement {
         }
 
         sitemap.openFrameContext("Übersicht");
-        sitemap.addTextElement(getItem(ServiceType.TEMPERATURE_STATE_SERVICE), "Raumtemperatur [%.1f °C]");
-        sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), "Anwesenheit");
-        sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), "Helligkeit [%.1f Lux]");
+        sitemap.addTextElement(getItem(ServiceType.TEMPERATURE_STATE_SERVICE), "Raumtemperatur [%.1f °C]", SitemapIconType.TEMPERATURE);
+        sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), "Anwesenheit [%]", SitemapIconType.MOTION);
+        sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), "Helligkeit [%.1f Lux]", SitemapIconType.SUN);
         sitemap.closeContext();
 
         sitemap.openFrameContext("Steuerung");
@@ -111,7 +111,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
             sitemap.openFrameContext("Sonstiges");
             // add agents
             if (!unitConfigList.isEmpty()) {
-                sitemap.openTextContext("Verhaltensweisen", SitemapIconType.NONE);
+                sitemap.openTextContext("Verhaltensweisen", SitemapIconType.CHART);
                 for (UnitConfig unitConfig : unitConfigList) {
                     sitemap.append(new GenericUnitSitemapElement(unitConfig));
                 }
@@ -120,7 +120,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
 
             // add all other units
             if (!unitConfig.getLocationConfig().getUnitIdList().isEmpty()) {
-                sitemap.openTextContext("Geräte Übersicht", SitemapIconType.NONE);
+                sitemap.openTextContext("Geräte Übersicht", SitemapIconType.FLOW);
                 final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
 
 

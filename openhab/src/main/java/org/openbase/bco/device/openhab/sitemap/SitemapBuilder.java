@@ -22,6 +22,7 @@ package org.openbase.bco.device.openhab.sitemap;
  * #L%
  */
 
+import com.sun.org.apache.bcel.internal.generic.SWITCH;
 import org.openbase.bco.device.openhab.sitemap.element.SitemapElement;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -89,16 +90,29 @@ public interface SitemapBuilder {
     SitemapBuilder addDefaultElement(final String item, final String label);
 
     enum SitemapIconType {
-        NONE,
         BATTERY,
+        CHART,
+        COLORWHEEL,
+        DOOR,
+        WINDOW,
+        CONTACT,
+        CORRIDOR,
+        ENERGY,
+        ERROR,
+        FIRE,
+        FLOW,
         HEATING,
         LIGHT,
-        COLORWHEEL,
-        SWITCH,
-        CORRIDOR,
-        VIDEO,
         MOTION,
-        FIRE
+        NONE,
+        ROLLERSHUTTER,
+        SETTINGS,
+        SIREN,
+        SUN,
+        SWITCH,
+        TEMPERATURE,
+        VIDEO,
+        WALLSWITCH;
     }
 
     enum SitemapElementType {
