@@ -159,6 +159,7 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
             case LOCATION:
                 switch (serviceType) {
                     case POWER_CONSUMPTION_STATE_SERVICE:
+                        sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), getLabel() + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
                         break;
                     case POWER_STATE_SERVICE:
                         sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), "Geräte", SitemapIconType.SWITCH);
@@ -189,6 +190,7 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
                         sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), "Anwesenheit [%s]", SitemapIconType.MOTION);
                         sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), "Helligkeit [%.1f Lux]", SitemapIconType.SUN);
                         sitemap.addSwitchElement(getItem(ServiceType.STANDBY_STATE_SERVICE), "Standby", SitemapIconType.SWITCH);
+                        sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), getLabel() + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
                         break;
                 }
                 break;
