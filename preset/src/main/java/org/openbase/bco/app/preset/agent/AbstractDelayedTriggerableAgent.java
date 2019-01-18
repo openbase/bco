@@ -64,7 +64,9 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
         this.minDelay = minDelay;
         this.maxDelay = maxDelay;
 
-        this.timeout = new Timeout(computeDelay()) {
+        // Use min delay as initial timeout because the delay scale factor might not be available at this stage.
+        // Once the timeout is started, the value will recomputed anyway.
+        this.timeout = new Timeout(minDelay) {
 
             @Override
             public void expired() {
