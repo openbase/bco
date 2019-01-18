@@ -67,15 +67,18 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
      * @throws InterruptedException
      */
     public DeviceManagerImpl() throws InstantiationException, InterruptedException {
-        this(OperationServiceFactoryMock.getInstance());
+        this(OperationServiceFactoryMock.getInstance(), true);
     }
 
-    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory) throws InstantiationException, InterruptedException {
-        this(operationServiceFactory, new DeviceControllerFactoryImpl(operationServiceFactory));
+    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final boolean autoLogin) throws InstantiationException, InterruptedException {
+        this(operationServiceFactory, new DeviceControllerFactoryImpl(operationServiceFactory), autoLogin);
     }
 
-    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final DeviceControllerFactory deviceControllerFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final DeviceControllerFactory deviceControllerFactory, final boolean autoLogin) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
+            if(autoLogin) {
+                BCOLogin.loginBCOUser();
+            }
             DeviceManagerImpl.instance = this;
 
             this.deviceControllerFactory = deviceControllerFactory;
@@ -107,8 +110,6 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        BCOLogin.loginBCOUser();
-
         deviceControllerRegistry.activate();
         unitControllerRegistry.activate();
 
