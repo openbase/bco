@@ -1081,7 +1081,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
 
                             // trigger a reschedule which can trigger the action with a higher priority again
-                            GlobalCachedExecutorService.submit((Callable<Action>) this::reschedule);
+                            reschedule();
                         }
                     }
                 }
