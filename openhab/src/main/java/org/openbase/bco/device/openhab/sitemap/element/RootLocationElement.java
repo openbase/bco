@@ -173,6 +173,5 @@ public class RootLocationElement extends LocationElement {
         sitemap.closeContext();
         sitemap.closeContext();
         sitemap.closeContext();
-        sitemap.closeContext();
     }
 }
