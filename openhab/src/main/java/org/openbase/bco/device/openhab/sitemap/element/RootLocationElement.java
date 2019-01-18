@@ -50,7 +50,42 @@ public class RootLocationElement extends LocationElement {
     public void serialize(final SitemapBuilder sitemap) throws CouldNotPerformException {
         super.serialize(sitemap);
 
-        sitemap.openFrameContext("Settings", SitemapIconType.SETTINGS);
+        sitemap.openTextContext("Settings", SitemapIconType.SETTINGS);
+
+        // open compositions
+        sitemap.openFrameContext("Ansichten", SitemapIconType.NONE);
+
+
+        // list location power consumption
+        sitemap.openTextContext("Energieverbrauch", SitemapIconType.ENERGY);
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
+            sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), getLabel() + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
+        }
+        sitemap.closeContext();
+
+        // list battery and tamper states
+        sitemap.openTextContext("Wartung", SitemapIconType.ENERGY);
+
+        sitemap.openTextContext("Battery Level", SitemapIconType.NONE);
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.BATTERY)) {
+            sitemap.append(new GenericUnitSitemapElement(unitConfig, true));
+        }
+        sitemap.closeContext();
+
+        sitemap.openTextContext("Manipulation", SitemapIconType.NONE);
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.TAMPER_DETECTOR)) {
+            sitemap.append(new GenericUnitSitemapElement(unitConfig, true));
+        }
+        sitemap.closeContext();
+
+
+        sitemap.closeContext();
+
+        // close compositions
+        sitemap.closeContext();
+
+
+        sitemap.openFrameContext("Debug", SitemapIconType.NONE);
 
         sitemap.openTextContext("Units", SitemapIconType.NONE);
         final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
@@ -84,7 +119,14 @@ public class RootLocationElement extends LocationElement {
             Collections.sort(unitConfigListValue, Comparator.comparing(o -> LabelProcessor.getBestMatch(o.getLabel(), "?")));
         }
 
+        boolean absoluteLabel;
         for (UnitType unitType : unitTypeUnitConfigMap.keySet()) {
+
+            if(unitType == UnitType.USER) {
+                absoluteLabel = false;
+            } else {
+                absoluteLabel = true;
+            }
 
             if (unitTypeUnitConfigMap.get(unitType).isEmpty()) {
                 continue;
@@ -92,7 +134,7 @@ public class RootLocationElement extends LocationElement {
 
             sitemap.openFrameContext(unitType.name());
             for (UnitConfig unitConfig : unitTypeUnitConfigMap.get(unitType)) {
-                sitemap.append(new GenericUnitSitemapElement(unitConfig, true));
+                sitemap.append(new GenericUnitSitemapElement(unitConfig, absoluteLabel));
             }
             sitemap.closeContext();
         }
@@ -128,6 +170,8 @@ public class RootLocationElement extends LocationElement {
             }
             sitemap.closeContext();
         }
+        sitemap.closeContext();
+        sitemap.closeContext();
         sitemap.closeContext();
         sitemap.closeContext();
     }

@@ -64,12 +64,6 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
     @Override
     public void serialize(SitemapBuilder sitemap) throws CouldNotPerformException {
 
-
-        if (serviceType != ServiceType.UNKNOWN) {
-            sitemap.addDefaultElement(getItem(serviceType), getLabel());
-            return;
-        }
-
         switch (unitConfig.getUnitType()) {
             case SCENE:
             case APP:

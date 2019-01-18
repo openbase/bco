@@ -66,7 +66,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
 
         sitemap.openFrameContext("Übersicht");
         sitemap.addTextElement(getItem(ServiceType.TEMPERATURE_STATE_SERVICE), "Raumtemperatur [%.1f °C]", SitemapIconType.TEMPERATURE);
-        sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), "Anwesenheit [%]", SitemapIconType.MOTION);
+        sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), "Anwesenheit [%s]", SitemapIconType.MOTION);
         sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), "Helligkeit [%.1f Lux]", SitemapIconType.SUN);
         sitemap.closeContext();
 
