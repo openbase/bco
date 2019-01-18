@@ -51,6 +51,7 @@ import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.MapFieldEntry;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -302,7 +303,22 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                 logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
                                 requiredActionPool.removeActionDescriptionObserver(this);
                                 stop();
-                                applyDataUpdate(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+
+                                try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+                                    final Builder internalBuilder = dataBuilder.getInternalBuilder();
+                                    // move current state to last
+                                    internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
+                                    // update current state to deactivate and set timestamp
+                                    final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
+                                    activationStateBuilder.setValue(ActivationState.State.DEACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
+                                    // update latest value occurrence map of current state
+                                    for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
+                                        if (builder.getKey() == activationStateBuilder.getValue()) {
+                                            builder.setValue(activationStateBuilder.getTimestamp());
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                         }
                     };
