@@ -268,7 +268,6 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
             try {
                 return InetAddress.getByName(hostName).isReachable(REACHABLE_TIMEOUT);
             } catch (IOException ex) {
-                ExceptionPrinter.printHistory(new NotAvailableException(hostName + " is not reachable!", ex), logger);
                 return false;
             }
         }
