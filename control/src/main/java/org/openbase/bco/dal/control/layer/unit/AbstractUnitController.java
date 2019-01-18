@@ -1071,14 +1071,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                                     } else {
                                         schedulableAction.reject();
                                     }
+
+                                    // trigger a reschedule which can trigger the action with a higher priority again
+                                    reschedule();
                                 } finally {
                                     actionListNotificationLock.writeLock().unlock();
                                 }
                             }
-
-
-                            // trigger a reschedule which can trigger the action with a higher priority again
-                            reschedule();
                         }
                     }
                 }
