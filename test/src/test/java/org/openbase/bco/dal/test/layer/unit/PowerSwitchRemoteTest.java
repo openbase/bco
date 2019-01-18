@@ -23,15 +23,20 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -81,10 +86,18 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerState state = TimestampProcessor.updateTimestampWithCurrentTime(PowerState.newBuilder().setValue(PowerState.State.OFF)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId()).applyDataUpdate(state, ServiceType.POWER_STATE_SERVICE);
+
+        final PowerState.Builder powerStateBuilder = PowerState.newBuilder().setValue(State.OFF).setTimestamp(TimestampProcessor.getCurrentTimestamp());
+        final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(powerStateBuilder.build(), ServiceType.POWER_STATE_SERVICE, powerSwitchRemote);
+        actionParameter.setInterruptible(false);
+        actionParameter.setSchedulable(false);
+        actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+        powerStateBuilder.setResponsibleAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
+        final PowerState powerState = powerStateBuilder.build();
+
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId()).applyDataUpdate(powerState, ServiceType.POWER_STATE_SERVICE);
         powerSwitchRemote.requestData().get();
-        assertEquals("The getter for the power state returns the wrong value!", state.getValue(), powerSwitchRemote.getPowerState().getValue());
+        assertEquals("The getter for the power state returns the wrong value!", powerState.getValue(), powerSwitchRemote.getPowerState().getValue());
     }
 
     /**

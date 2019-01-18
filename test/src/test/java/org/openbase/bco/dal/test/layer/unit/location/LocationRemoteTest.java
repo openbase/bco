@@ -40,6 +40,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -64,6 +65,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -166,14 +168,21 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         }
 
         double temperature = 18;
-        double targetTemperature = 21;
-        TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-        TemperatureState targetTemperatureState = TemperatureState.newBuilder().setTemperature(targetTemperature).build();
+        final TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).setTimestamp(TimestampProcessor.getCurrentTimestamp()).build();
         for (TemperatureSensorController temperatureSensor : temperatureSensorList) {
             temperatureSensor.applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
         }
+        double targetTemperature = 21;
+        final TemperatureState.Builder targetTemperatureStateBuilder = TemperatureState.newBuilder().setTemperature(targetTemperature).setTimestamp(TimestampProcessor.getCurrentTimestamp());
         for (TemperatureControllerController temperatureController : temperatureControllerList) {
             temperatureController.applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
+
+            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(targetTemperatureStateBuilder.build(), ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, temperatureController);
+            actionParameter.setInterruptible(false);
+            actionParameter.setSchedulable(false);
+            actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+            targetTemperatureStateBuilder.setResponsibleAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
+            final TemperatureState targetTemperatureState = targetTemperatureStateBuilder.build();
             temperatureController.applyDataUpdate(targetTemperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
         }
         locationRemote.ping().get();
@@ -189,7 +198,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals("TargetTemperature of the location has not been updated!", targetTemperature, locationRemote.getTargetTemperatureState().getTemperature(), 0.01);
 
         System.out.println("PowerConsumptionSensors: " + powerConsumptionSensorList.size());
-        PowerConsumptionState powerConsumptionState = PowerConsumptionState.newBuilder().setVoltage(240).setConsumption(10).setCurrent(1).build();
+        PowerConsumptionState powerConsumptionState = PowerConsumptionState.newBuilder().setVoltage(240).setConsumption(10).setCurrent(1).setTimestamp(TimestampProcessor.getCurrentTimestamp()).build();
         for (PowerConsumptionSensorController powerConsumptionSensor : powerConsumptionSensorList) {
             powerConsumptionSensor.applyDataUpdate(powerConsumptionState, ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
             System.out.println("Updated powerConsumptionState of [" + powerConsumptionSensor.toString() + "] to [" + powerConsumptionSensor.getPowerConsumptionState() + "]");

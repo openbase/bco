@@ -23,15 +23,20 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.RollerShutterRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.state.BlindStateType.BlindState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -81,10 +86,18 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
-        BlindState state = TimestampProcessor.updateTimestampWithCurrentTime(BlindState.newBuilder().setValue(BlindState.State.UP)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId()).applyDataUpdate(state, ServiceType.BLIND_STATE_SERVICE);
+
+        final BlindState.Builder blindStateBuilder = BlindState.newBuilder().setValue(State.UP).setTimestamp(TimestampProcessor.getCurrentTimestamp());
+        final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(blindStateBuilder.build(), ServiceType.BLIND_STATE_SERVICE, rollerShutterRemote);
+        actionParameter.setInterruptible(false);
+        actionParameter.setSchedulable(false);
+        actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+        blindStateBuilder.setResponsibleAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
+        final BlindState blindState = blindStateBuilder.build();
+
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId()).applyDataUpdate(blindState, ServiceType.BLIND_STATE_SERVICE);
         rollerShutterRemote.requestData().get();
-        assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getValue(), state.getValue());
+        assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getValue(), blindState.getValue());
     }
 
     /**

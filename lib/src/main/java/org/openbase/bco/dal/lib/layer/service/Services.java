@@ -838,6 +838,16 @@ public class Services extends ServiceStateProcessor {
      * @return if all fields except the fields mentioned above are equal.
      */
     public static boolean equalServiceStates(final Message serviceState1, final Message serviceState2) {
+        // both states are null so return true
+        if (serviceState1 == null && serviceState2 == null) {
+            return true;
+        }
+
+        // only one state is null so return false
+        if (serviceState1 == null || serviceState2 == null) {
+            return false;
+        }
+
         for (final Descriptors.FieldDescriptor field : serviceState1.getDescriptorForType().getFields()) {
             if (field.getName().equals(ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE)) {
                 continue;
@@ -857,7 +867,7 @@ public class Services extends ServiceStateProcessor {
                 continue;
             }
 
-            if (serviceState1.hasField(field) && serviceState2.hasField(field) && !(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
+            if ((field.isRepeated() || (serviceState1.hasField(field) && serviceState2.hasField(field))) && !(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
                 return false;
             }
         }
@@ -884,7 +894,7 @@ public class Services extends ServiceStateProcessor {
             // retrieve provider service class
             final String simpleClassName = StringProcessor.transformUpperCaseToPascalCase(serviceType.name()).replace(Service.class.getSimpleName(), ProviderService.class.getSimpleName());
             final String className = ProviderService.class.getPackage().getName() + "." + simpleClassName;
-            final Class providerClass = Services.class.getClassLoader().loadClass(className);
+            final Class<?> providerClass = Services.class.getClassLoader().loadClass(className);
 
             final String methodName = "to" + StringProcessor.transformToPascalCase(superServiceType.name()).replace(Service.class.getSimpleName(), "");
             final Method method = providerClass.getMethod(methodName, serviceState.getClass());

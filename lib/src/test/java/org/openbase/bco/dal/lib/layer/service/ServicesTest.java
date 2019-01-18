@@ -25,10 +25,19 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.Message;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.LocalPositionStateType.LocalPositionState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -46,5 +55,36 @@ public class ServicesTest {
         final Message expectedPowerState = BrightnessStateProviderService.toPowerState(brightnessState);
         final Message actualPowerState = Services.convertToSuperState(ServiceType.BRIGHTNESS_STATE_SERVICE, brightnessState, ServiceType.POWER_STATE_SERVICE);
         assertEquals("Conversion from brightness state to power state did not go as expected", expectedPowerState, actualPowerState);
+    }
+
+    /**
+     * Test if the equal service state method works as expected.
+     *
+     * @throws Exception if something fails.
+     */
+    @Test
+    public void testEqualServiceStates() throws Exception {
+        final String position1 = "Home";
+        final String position2 = "Living Room";
+        final String position3 = "Couch";
+
+        final ActionDescription mockActionDescription = ActionDescription.newBuilder().setId("MockUp").build();
+        final LocalPositionState localPositionState1 = LocalPositionState.newBuilder().addLocationId(position3).addLocationId(position2).addLocationId(position1).setTimestamp(TimestampProcessor.getCurrentTimestamp()).build();
+        final LocalPositionState localPositionState2 = LocalPositionState.newBuilder().addLocationId(position3).addLocationId(position2).addLocationId(position1).setResponsibleAction(mockActionDescription).build();
+        final LocalPositionState localPositionState3 = LocalPositionState.newBuilder().addLocationId(position3).addLocationId(position2).addLocationId(position1).build();
+        final LocalPositionState localPositionState4 = LocalPositionState.newBuilder().addLocationId(position3).addLocationId(position1).build();
+        final List<LocalPositionState> localPositionStateList = new ArrayList<>();
+        localPositionStateList.add(localPositionState1);
+        localPositionStateList.add(localPositionState2);
+        localPositionStateList.add(localPositionState3);
+        localPositionStateList.add(localPositionState4);
+        final PowerState powerState = PowerState.newBuilder().setValue(State.ON).build();
+
+        for (int i = 0; i < localPositionStateList.size(); i++) {
+            for (int j = 1; j < localPositionStateList.size(); j++) {
+                assertEquals("Comparision between position states " + i + " and " + j + " yields unexpected result", (i == j || (i != 3 && j != 3)), Services.equalServiceStates(localPositionStateList.get(i), localPositionStateList.get(j)));
+            }
+            assertFalse("PowerState should never match a local position state", Services.equalServiceStates(localPositionStateList.get(i), powerState));
+        }
     }
 }

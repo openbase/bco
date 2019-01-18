@@ -23,15 +23,19 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -88,8 +92,16 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
     @Test(timeout = 10000)
     public void testGetTargetTemperature() throws Exception {
         System.out.println("getTargetTemperature");
+
         double temperature = 3.141F;
-        TemperatureState temperatureState = TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(temperature)).build();
+        final TemperatureState.Builder temperatureStateBuilder = TemperatureState.newBuilder().setTemperature(temperature).setTimestamp(TimestampProcessor.getCurrentTimestamp());
+        final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(temperatureStateBuilder.build(), ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, temperatureControllerRemote);
+        actionParameter.setInterruptible(false);
+        actionParameter.setSchedulable(false);
+        actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+        temperatureStateBuilder.setResponsibleAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
+        final TemperatureState temperatureState = temperatureStateBuilder.build();
+
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId()).applyDataUpdate(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperatureState.getTemperature(), temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1);

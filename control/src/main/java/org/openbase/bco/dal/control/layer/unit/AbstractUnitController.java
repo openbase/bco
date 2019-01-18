@@ -1028,8 +1028,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                         if (schedulingRequired) {
                             for (final ServiceType superServiceType : Registries.getTemplateRegistry().getSuperServiceTypes(serviceType)) {
-                                Message superServiceState = Services.convertToSuperState(serviceType, newState, superServiceType);
-                                if (requestedStateCache.containsKey(superServiceType) && Services.equalServiceStates(superServiceState, requestedStateCache.get(superServiceType))) {
+                                if (!requestedStateCache.containsKey(superServiceType)) {
+                                    continue;
+                                }
+
+                                final Message superServiceState = Services.convertToSuperState(serviceType, newState, superServiceType);
+                                if (Services.equalServiceStates(superServiceState, requestedStateCache.get(superServiceType))) {
                                     schedulingRequired = false;
                                 }
                             }
