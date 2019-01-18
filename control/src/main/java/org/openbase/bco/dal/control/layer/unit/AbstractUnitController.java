@@ -1041,9 +1041,23 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     if (schedulingRequired) {
+
                         // retrieve the responsible action
-                        final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-                        final ActionDescription.Builder responsibleActionBuilder = ((ActionDescription) newState.getField(descriptor)).toBuilder();
+                        final Descriptors.FieldDescriptor responsibleActionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+                        final ActionDescription.Builder responsibleActionBuilder;
+
+                        // resolve required action
+                        if (newState.hasField(responsibleActionFieldDescriptor)) {
+                            // load required action from service state.
+                            responsibleActionBuilder = ((ActionDescription) newState.getField(responsibleActionFieldDescriptor)).toBuilder();
+                        } else {
+                            // recover required action out of service state.
+                            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(newState, serviceType, this);
+                            actionParameter.setInterruptible(false);
+                            actionParameter.setSchedulable(false);
+                            responsibleActionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
+                        }
+
                         responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
                         synchronized (scheduledActionListLock) {
                             // add the new action as executing to the front of the stack
