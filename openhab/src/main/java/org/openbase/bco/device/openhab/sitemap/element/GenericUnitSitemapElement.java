@@ -82,7 +82,7 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
                 sitemap.addDefaultElement(getItem(ServiceType.POWER_STATE_SERVICE), getLabel());
                 break;
             case MOTION_DETECTOR:
-                sitemap.addDefaultElement(getItem(ServiceType.MOTION_STATE_SERVICE), getLabel());
+                sitemap.addTextElement(getItem(ServiceType.MOTION_STATE_SERVICE), getLabel(), SitemapIconType.MOTION);
                 break;
             case TEMPERATURE_SENSOR:
                 sitemap.addTextElement(getItem(ServiceType.TEMPERATURE_STATE_SERVICE), getLabel() + " Temperatur [%.1f °C]");
