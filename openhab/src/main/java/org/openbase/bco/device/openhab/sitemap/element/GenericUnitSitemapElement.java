@@ -157,7 +157,40 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
                     }
                 }
             case LOCATION:
-                sitemap.addDefaultElement(getItem(ServiceType.POWER_STATE_SERVICE), getLabel());
+                switch (serviceType) {
+                    case POWER_CONSUMPTION_STATE_SERVICE:
+                        break;
+                    case POWER_STATE_SERVICE:
+                        sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), "Geräte", SitemapIconType.SWITCH);
+                        break;
+                    case TEMPERATURE_STATE_SERVICE:
+                        sitemap.addTextElement(getItem(ServiceType.TEMPERATURE_STATE_SERVICE), "Raumtemperatur [%.1f °C]", SitemapIconType.TEMPERATURE);
+                        break;
+                    case PRESENCE_STATE_SERVICE:
+                        sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), "Anwesenheit [%s]", SitemapIconType.MOTION);
+                        break;
+                    case ILLUMINANCE_STATE_SERVICE:
+                        sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), "Helligkeit [%.1f Lux]", SitemapIconType.SUN);
+                        break;
+                    case COLOR_STATE_SERVICE:
+                        sitemap.addColorpickerElement(getItem(ServiceType.COLOR_STATE_SERVICE), "Raumfarbe", SitemapIconType.COLORWHEEL);
+                        break;
+                    case STANDBY_STATE_SERVICE:
+                        sitemap.addSwitchElement(getItem(ServiceType.STANDBY_STATE_SERVICE), "Standby", SitemapIconType.SWITCH);
+                        break;
+                    case TARGET_TEMPERATURE_STATE_SERVICE:
+                        sitemap.addSliderElement(getItem(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE), "Wunschtemperatur [%.1f °C]", SitemapIconType.HEATING);
+                        break;
+                    case UNKNOWN:
+                        sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), "Geräte", SitemapIconType.SWITCH);
+                        sitemap.addColorpickerElement(getItem(ServiceType.COLOR_STATE_SERVICE), "Raumfarbe", SitemapIconType.COLORWHEEL);
+                        sitemap.addSliderElement(getItem(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE), "Wunschtemperatur [%.1f °C]", SitemapIconType.HEATING);
+                        sitemap.addTextElement(getItem(ServiceType.TEMPERATURE_STATE_SERVICE), "Raumtemperatur [%.1f °C]", SitemapIconType.TEMPERATURE);
+                        sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), "Anwesenheit [%s]", SitemapIconType.MOTION);
+                        sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), "Helligkeit [%.1f Lux]", SitemapIconType.SUN);
+                        sitemap.addSwitchElement(getItem(ServiceType.STANDBY_STATE_SERVICE), "Standby", SitemapIconType.SWITCH);
+                        break;
+                }
                 break;
             case DEVICE:
                 break;

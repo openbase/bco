@@ -65,16 +65,16 @@ public class LocationElement extends AbstractUnitSitemapElement {
         }
 
         sitemap.openFrameContext("Übersicht");
-        sitemap.addTextElement(getItem(ServiceType.TEMPERATURE_STATE_SERVICE), "Raumtemperatur [%.1f °C]", SitemapIconType.TEMPERATURE);
-        sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), "Anwesenheit [%s]", SitemapIconType.MOTION);
-        sitemap.addTextElement(getItem(ServiceType.ILLUMINANCE_STATE_SERVICE), "Helligkeit [%.1f Lux]", SitemapIconType.SUN);
+        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.TEMPERATURE_STATE_SERVICE, true));
+        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.PRESENCE_STATE_SERVICE, true));
+        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.ILLUMINANCE_STATE_SERVICE, true));
         sitemap.closeContext();
 
         sitemap.openFrameContext("Steuerung");
-        sitemap.addColorpickerElement(getItem(ServiceType.COLOR_STATE_SERVICE), "Raumfarbe", SitemapIconType.COLORWHEEL);
-        sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), "Geräte", SitemapIconType.SWITCH);
-        sitemap.addSwitchElement(getItem(ServiceType.STANDBY_STATE_SERVICE), "Standby", SitemapIconType.SWITCH);
-        sitemap.addSliderElement(getItem(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE), "Wunschtemperatur [%.1f °C]", SitemapIconType.HEATING);
+        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.COLOR_STATE_SERVICE, true));
+        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_STATE_SERVICE, true));
+        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.STANDBY_STATE_SERVICE, true));
+        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, true));
         sitemap.closeContext();
 
 //        sitemap.openFrameContext("Aktivitäten");
