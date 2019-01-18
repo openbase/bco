@@ -37,7 +37,6 @@ public class OpenHABApp {
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        JPService.registerProperty(JPVerbose.class, true);
         AbstractLauncher.main(args, OpenHABApp.class,
                 OpenHABConfigSynchronizerLauncher.class,
                 OpenHABDeviceManagerLauncher.class,
