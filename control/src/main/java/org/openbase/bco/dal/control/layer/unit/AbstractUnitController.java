@@ -147,7 +147,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private String classDescription = "";
     private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
-    private boolean actionNotificationSkipped = false;
     private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
     private final Map<ServiceType, Message> requestedStateCache;
     private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
@@ -809,10 +808,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not update transaction id", ex, logger);
                 }
+                actionListNotificationLock.writeLock().unlock();
+                notifyScheduledActionList();
                 // update action description list in unit builder
-                notifyScheduledActionListUnlocked();
+//                notifyScheduledActionListUnlocked();
                 // unlock notification lock so that notifications for action state changes are notified again
-//                actionListNotificationLock.writeLock().unlock();
             }
         }
     }
@@ -824,13 +824,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
             // get actions descriptions for all actions, repeat until no more notifications where skipped
-            do {
-                actionNotificationSkipped = false;
-                dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
-                for (final Action action : scheduledActionList) {
-                    dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, action.getActionDescription());
-                }
-            } while (actionNotificationSkipped);
+            dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
+            for (final Action action : scheduledActionList) {
+                dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, action.getActionDescription());
+            }
+
             if (actionListNotificationLock.isWriteLockedByCurrentThread()) {
                 actionListNotificationLock.writeLock().unlock();
             }
@@ -846,7 +844,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     public void notifyScheduledActionList() {
         if (actionListNotificationLock.isWriteLocked()) {
             // save if the notification was skipped
-            actionNotificationSkipped = true;
             return;
         }
 

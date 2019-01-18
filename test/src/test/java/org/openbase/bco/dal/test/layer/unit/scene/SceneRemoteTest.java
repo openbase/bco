@@ -408,7 +408,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      */
     @Test(timeout = 30000)
     public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
-        System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
+        System.out.println("testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification");
 
         LightRemote internalLight = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, Units.LIGHT);
         PowerSwitchRemote internalPowerSwitch = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, Units.POWER_SWITCH);
