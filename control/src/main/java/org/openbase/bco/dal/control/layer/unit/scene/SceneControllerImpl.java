@@ -48,6 +48,7 @@ import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -107,7 +108,10 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             }
 
             if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
-                setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+                final ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
+                ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this);
+                actionParameter.setCause(data.getButtonState().getResponsibleAction());
+                applyAction(actionParameter);
             }
         };
         this.activationStateOperationService = new ActivationStateOperationServiceImpl();
