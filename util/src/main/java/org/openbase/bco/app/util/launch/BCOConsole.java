@@ -27,12 +27,14 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.DALRemote;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,33 +46,56 @@ import java.util.concurrent.TimeoutException;
 public class BCOConsole {
 
     public static final String APP_NAME = DALRemote.class.getSimpleName();
-    private static final Logger LOGGER = LoggerFactory.getLogger(DALRemote.class);
-
 
     private BCOConsole() throws CouldNotPerformException, InterruptedException {
 
         Console console = System.console();
         if (console == null) {
-            System.out.println("Couldn't get Console instance");
-            System.exit(0);
+            System.out.println("Your terminal is not supported!");
+            System.exit(55);
         }
 
-        System.out.println();
-        System.out.println("Welcome to the bco console, connect to bco... ");
-        Registries.waitForData();
+        while(true) {
+            try {
+                System.out.print("\rEstablish connection to bco");
+                Registries.waitForData(200, TimeUnit.MILLISECONDS);
+            } catch (CouldNotPerformException ex) {
+                try {
+                    System.out.print("\rEstablish connection to bco.");
+                    Registries.waitForData(200, TimeUnit.MILLISECONDS);
+                } catch (CouldNotPerformException exx) {
+                    try {
+                        System.out.print("\rEstablish connection to bco..");
+                        Registries.waitForData(200, TimeUnit.MILLISECONDS);
+                    } catch (CouldNotPerformException exxx) {
+                        try {
+                            System.out.print("\rEstablish connection to bco...");
+                            Registries.waitForData(200, TimeUnit.MILLISECONDS);
+                        } catch (CouldNotPerformException exxxx) {
+                            continue;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
+        System.out.print("\rSynchronization initialized...");
         Registries.waitUntilReady();
-        System.out.println("connected");
+        System.out.println("\rBCO connection established. You are connected to "+ LabelProcessor.getBestMatch(Registries.getUnitRegistry().getRootLocationConfig().getLabel(), "an unknown instance")+ ".");
         System.out.println();
 
-        while (Thread.currentThread().isInterrupted()) {
+        while (true) {
             System.out.println("Login required");
             try {
                 SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: ")), new String(console.readPassword("password: ")));
+                break;
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Login not possible!", ex, LOGGER);
+                ExceptionPrinter.printHistory("Login not possible!", ex, System.err);
+                System.out.println("Please try again...");
+                System.out.println();
             }
-            System.out.println("Please try again...");
-            System.out.println();
+
         }
         System.out.println();
         System.out.println("available commands:");
@@ -86,9 +111,10 @@ public class BCOConsole {
 
         mainloop:
         while (!Thread.interrupted()) {
-            System.out.println("please type a command or its number and press enter...");
+            System.out.print("please type a command or its number and press enter: ");
             try {
                 final String command = console.readLine();
+                System.out.println();
                 switch (command) {
                     case "logout":
                     case "quit":
@@ -110,8 +136,17 @@ public class BCOConsole {
                         break;
                     case "passwd":
                     case "1":
-                        String user = console.readLine("user:");
-                        String oldPwd = new String(console.readPassword("old password: "));
+
+                        final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: "));
+
+                        final String oldPwd;
+                        // no old password verification needed for admins.
+                        if (SessionManager.getInstance().isAdmin()) {
+                            oldPwd = "";
+                        } else {
+                            oldPwd = new String(console.readPassword("old password: "));
+                        }
+
                         String newPwd = new String(console.readPassword("new password: "));
                         String newPwdConfirm = new String(console.readPassword("confirm new password:"));
                         System.out.println();
@@ -120,14 +155,16 @@ public class BCOConsole {
                             System.err.println("match failed!");
                             continue;
                         }
-                        SessionManager.getInstance().changeCredentials(Registries.getUnitRegistry().getUserUnitIdByUserName(user), oldPwd, newPwd);
+                        SessionManager.getInstance().changeCredentials(userId, oldPwd, newPwd);
                         break;
                     case "cloud connect":
                     case "2":
                         final CloudConnectorRemote cloudConnectorRemote = new CloudConnectorRemote();
-                        System.out.println("For connecting your accound with the bco cloud connector a new cloud user password is needed.");
+                        System.out.println("For connecting your account with the bco cloud connector a new cloud user password is needed.");
                         System.out.println("You need this password for example again to pair the google cloud with the bco cloud service.");
-                        System.out.println("Please choose a strong password to protect the remote access of your home!");
+                        System.out.println("Please choose a strong password for "+
+                                LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(SessionManager.getInstance().getUserId()).getLabel(), "?")
+                                +" to protect the remote access of your home!");
                         String cloudPwd = new String(console.readPassword("your new cloud password:"));
                         String cloudPwdConfirm = new String(console.readPassword("confirm your new cloud password:"));
                         System.out.println();
@@ -153,9 +190,11 @@ public class BCOConsole {
                 System.out.println("successful");
                 System.out.println();
             } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER);
+                ExceptionPrinter.printHistory(ex, System.err);
             }
         }
+
+        System.out.println();
         System.exit(0);
     }
 
@@ -181,9 +220,11 @@ public class BCOConsole {
         try {
             new BCOConsole();
         } catch (CouldNotPerformException ex) {
-            // just exit
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LoggerFactory.getLogger(BCOConsole.class), LogLevel.ERROR);
         } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+            // just exit
+            System.out.println();
+            System.out.println("killed");
         }
     }
 }
