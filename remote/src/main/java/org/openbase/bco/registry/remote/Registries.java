@@ -54,6 +54,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -248,6 +249,19 @@ public class Registries {
         CachedClassRegistryRemote.waitForData();
         CachedActivityRegistryRemote.waitForData();
         CachedUnitRegistryRemote.waitForData();
+    }
+
+    /**
+     * Method only returns if all available registries are synchronized or the timeout is reached.
+     *
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     * @throws CouldNotPerformException is thrown if the wait could not be performed.
+     */
+    public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        CachedTemplateRegistryRemote.waitForData(timeout, timeUnit);
+        CachedClassRegistryRemote.waitForData(timeout, timeUnit);
+        CachedActivityRegistryRemote.waitForData(timeout, timeUnit);
+        CachedUnitRegistryRemote.waitForData(timeout, timeUnit);
     }
 
     public static boolean isDataAvailable() {
