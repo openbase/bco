@@ -64,7 +64,7 @@ public class RootLocationElement extends LocationElement {
         sitemap.closeContext();
 
         // list battery and tamper states
-        sitemap.openTextContext("Wartung", SitemapIconType.ENERGY);
+        sitemap.openTextContext("Wartung", SitemapIconType.PRESSURE);
 
         sitemap.openTextContext("Battery Level", SitemapIconType.NONE);
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.BATTERY)) {
@@ -87,7 +87,7 @@ public class RootLocationElement extends LocationElement {
 
         sitemap.openFrameContext("Debug", SitemapIconType.NONE);
 
-        sitemap.openTextContext("Units", SitemapIconType.NONE);
+        sitemap.openTextContext("Units", SitemapIconType.STATUS);
         final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
 
         // load unit configs
@@ -140,7 +140,7 @@ public class RootLocationElement extends LocationElement {
         }
         sitemap.closeContext();
 
-        sitemap.openTextContext("Services", SitemapIconType.NONE);
+        sitemap.openTextContext("Services", SitemapIconType.STATUS);
         final Map<ServiceType, List<UnitConfig>> serviceTypeUnitConfigMap = new TreeMap<>();
 
         // load unit configs
