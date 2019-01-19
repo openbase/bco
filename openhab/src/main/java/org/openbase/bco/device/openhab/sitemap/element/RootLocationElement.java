@@ -32,7 +32,6 @@ import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import sun.net.www.content.text.Generic;
 
 import java.util.*;
 
@@ -60,20 +59,20 @@ public class RootLocationElement extends LocationElement {
         // list location power consumption
         sitemap.openTextContext("Energieverbrauch", SitemapIconType.ENERGY);
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
-//            sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE));
+            sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), getLabel() + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
         }
         sitemap.closeContext();
 
         // list battery and tamper states
-        sitemap.openTextContext("Wartung", SitemapIconType.PRESSURE);
+        sitemap.openTextContext("Wartung", SitemapIconType.ENERGY);
 
-        sitemap.openFrameContext("Battery Level");
+        sitemap.openTextContext("Battery Level", SitemapIconType.NONE);
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.BATTERY)) {
             sitemap.append(new GenericUnitSitemapElement(unitConfig, true));
         }
         sitemap.closeContext();
 
-        sitemap.openFrameContext("Manipulation");
+        sitemap.openTextContext("Manipulation", SitemapIconType.NONE);
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.TAMPER_DETECTOR)) {
             sitemap.append(new GenericUnitSitemapElement(unitConfig, true));
         }
@@ -86,9 +85,9 @@ public class RootLocationElement extends LocationElement {
         sitemap.closeContext();
 
 
-        sitemap.openFrameContext("Debug");
+        sitemap.openFrameContext("Debug", SitemapIconType.NONE);
 
-        sitemap.openTextContext("Units", SitemapIconType.STATUS);
+        sitemap.openTextContext("Units", SitemapIconType.NONE);
         final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
 
         // load unit configs
@@ -141,7 +140,7 @@ public class RootLocationElement extends LocationElement {
         }
         sitemap.closeContext();
 
-        sitemap.openTextContext("Services", SitemapIconType.STATUS);
+        sitemap.openTextContext("Services", SitemapIconType.NONE);
         final Map<ServiceType, List<UnitConfig>> serviceTypeUnitConfigMap = new TreeMap<>();
 
         // load unit configs
