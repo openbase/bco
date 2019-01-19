@@ -61,35 +61,43 @@ public class BCOConsole {
         Registries.waitUntilReady();
         System.out.println("connected");
         System.out.println();
-        System.out.println("Login required");
-        try {
-            SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: ")), new String(console.readPassword("password: ")));
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Login not possible!", ex, LOGGER);
+
+        while (Thread.currentThread().isInterrupted()) {
+            System.out.println("Login required");
+            try {
+                SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: ")), new String(console.readPassword("password: ")));
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Login not possible!", ex, LOGGER);
+            }
+            System.out.println("Please try again...");
+            System.out.println();
         }
         System.out.println();
         System.out.println("available commands:");
         System.out.println();
-        System.out.println("passwd - change the password of a given user");
-        System.out.println("cloud connect - connect a user with the bco cloud service");
-        System.out.println("cloud disconnect - disconnect a user from the bco cloud service");
-        System.out.println("exit, quit, logout - close this console");
-        System.out.println("register user - creates a new user account");
+        System.out.println("1: passwd - change the password of a given user");
+        System.out.println("2: cloud connect - connect a user with the bco cloud service");
+        System.out.println("3: cloud disconnect - disconnect a user from the bco cloud service");
+        System.out.println("4: exit, quit, logout - close this console");
+        System.out.println("5: register user - creates a new user account");
+        System.out.println("6: cloud update token - updates the cloud token");
         System.out.println();
         System.out.println();
 
         mainloop:
         while (!Thread.interrupted()) {
-            System.out.println("please type a command and press enter...");
+            System.out.println("please type a command or its number and press enter...");
             try {
                 final String command = console.readLine();
                 switch (command) {
                     case "logout":
                     case "quit":
                     case "exit":
+                    case "4":
                         SessionManager.getInstance().logout();
                         break mainloop;
                     case "register user":
+                    case "5":
                         String newUser = console.readLine("user: ");
                         String newUserPwd = new String(console.readPassword("new password: "));
                         String newUserPwdConfirm = new String(console.readPassword("confirm new password: "));
@@ -101,6 +109,7 @@ public class BCOConsole {
                         SessionManager.getInstance().registerUser(Registries.getUnitRegistry().getUserUnitIdByUserName(newUser), newUserPwd,false);
                         break;
                     case "passwd":
+                    case "1":
                         String user = console.readLine("user:");
                         String oldPwd = new String(console.readPassword("old password: "));
                         String newPwd = new String(console.readPassword("new password: "));
@@ -114,6 +123,7 @@ public class BCOConsole {
                         SessionManager.getInstance().changeCredentials(Registries.getUnitRegistry().getUserUnitIdByUserName(user), oldPwd, newPwd);
                         break;
                     case "cloud connect":
+                    case "2":
                         final CloudConnectorRemote cloudConnectorRemote = new CloudConnectorRemote();
                         System.out.println("For connecting your accound with the bco cloud connector a new cloud user password is needed.");
                         System.out.println("You need this password for example again to pair the google cloud with the bco cloud service.");
@@ -128,9 +138,11 @@ public class BCOConsole {
                         cloudConnectorRemote.register(cloudPwd).get(1, TimeUnit.MINUTES);
                         break;
                     case "cloud disconnect":
+                    case "3":
                         cloudDisconnect(console);
                         break;
                     case "cloud update token":
+                    case "6":
                         cloudUpdateToken(console);
                         break;
                     default:
@@ -139,6 +151,7 @@ public class BCOConsole {
                         continue;
                 }
                 System.out.println("successful");
+                System.out.println();
             } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);
             }
