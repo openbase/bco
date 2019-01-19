@@ -290,14 +290,19 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 String[] split = authenticator.getClientId().split("@", 2);
                 String authenticatorUserId = split[0];
 
-                // Allow users to change their own password and admins to change passwords for other users.
-                if (!userId.equals(authenticatorUserId) && !store.isAdmin(authenticatorUserId)) {
-                    throw new PermissionDeniedException("You are not permitted to perform this action.");
-                }
+                    // Allow users to change their own password and admins to change passwords for other users.
+                    if (!userId.equals(authenticatorUserId) && !store.isAdmin(authenticatorUserId)) {
+                        throw new PermissionDeniedException("You are not permitted to perform this action.");
+                    }
 
-                // Check if the given credentials correspond to the old one.
-                if (!Arrays.equals(oldCredentials, store.getCredentials(userId))) {
-                    throw new RejectedException("The old password is wrong.");
+                // Avoid permission check and old password verification for admins
+                // to allow admins to change passwords for other users. Still make sure
+                // the old admin password was confirmed in case the the admin password itself should be changed.
+                if (!store.isAdmin(authenticatorUserId) || userId.equals(authenticatorUserId)) {
+                    // Check if the given credentials correspond to the old one.
+                    if (!Arrays.equals(oldCredentials, store.getCredentials(userId))) {
+                        throw new RejectedException("The old password is wrong.");
+                    }
                 }
 
                 // Update credentials.
