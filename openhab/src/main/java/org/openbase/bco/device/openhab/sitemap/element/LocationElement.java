@@ -64,18 +64,18 @@ public class LocationElement extends AbstractUnitSitemapElement {
             sitemap.closeContext();
         }
 
-        sitemap.openFrameContext("Übersicht");
-        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.TEMPERATURE_STATE_SERVICE, true));
-        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.PRESENCE_STATE_SERVICE, true));
-        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.ILLUMINANCE_STATE_SERVICE, true));
-        sitemap.closeContext();
-
-        sitemap.openFrameContext("Steuerung");
-        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.COLOR_STATE_SERVICE, true));
-        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_STATE_SERVICE, true));
-        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.STANDBY_STATE_SERVICE, true));
-        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, true));
-        sitemap.closeContext();
+//        sitemap.openFrameContext("Übersicht");
+//        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.TEMPERATURE_STATE_SERVICE, true));
+//        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.PRESENCE_STATE_SERVICE, true));
+//        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.ILLUMINANCE_STATE_SERVICE, true));
+//        sitemap.closeContext();
+//
+//        sitemap.openFrameContext("Steuerung");
+//        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.COLOR_STATE_SERVICE, true));
+//        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_STATE_SERVICE, true));
+//        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.STANDBY_STATE_SERVICE, true));
+//        sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, true));
+//        sitemap.closeContext();
 
 //        sitemap.openFrameContext("Aktivitäten");
 //        for (UnitConfig unitConfig : Registries.getActivityRegistry().getActivityConfigByLocation(UnitType., unitConfig.getId())) {

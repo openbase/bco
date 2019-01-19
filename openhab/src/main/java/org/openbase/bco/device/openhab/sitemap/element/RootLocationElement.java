@@ -60,7 +60,7 @@ public class RootLocationElement extends LocationElement {
         // list location power consumption
         sitemap.openTextContext("Energieverbrauch", SitemapIconType.ENERGY);
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
-            sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE));
+//            sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE));
         }
         sitemap.closeContext();
 
