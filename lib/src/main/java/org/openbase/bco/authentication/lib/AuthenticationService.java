@@ -89,7 +89,7 @@ public interface AuthenticationService {
     Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, CouldNotPerformException;
 
     /**
-     * Validate a ClientServierTicket. If validation is successful the reply is
+     * Validate a ClientServerTicket. If validation is successful the reply is
      * a TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
