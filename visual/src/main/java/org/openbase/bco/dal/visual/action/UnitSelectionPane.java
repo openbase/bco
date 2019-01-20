@@ -31,7 +31,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.controlsfx.control.textfield.TextFields;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -197,7 +196,6 @@ public class UnitSelectionPane extends AbstractFXController {
             }
 
             try {
-                TextFields.bindAutoCompletion(serviceTemplateComboBox.getEditor(), serviceTemplateComboBox.getItems());
                 selectedServiceTemplateHolder = serviceTemplateComboBox.getSelectionModel().getSelectedItem();
                 if (selectedServiceTemplateHolder == null) {
                     selectedServiceTemplateHolder = ALL_SERVICE;
