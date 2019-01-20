@@ -102,11 +102,17 @@ public class RemoteAction implements Action {
         }
     }
 
+
+    public RemoteAction(final ActionDescription actionDescription) {
+        this(ActionDescriptionProcessor.generateActionReference(actionDescription));
+    }
+
     public RemoteAction(final ActionReference actionReference) {
         this.actionParameterBuilder = null;
         this.actionDescriptionObservable = new ObservableImpl<>();
         this.initFutureObservationTask(actionReference);
     }
+
 
     public Future<ActionDescription> execute(final ActionDescription causeActionDescription) {
         // check if action remote was instantiated via task future.
