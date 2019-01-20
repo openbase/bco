@@ -1,12 +1,21 @@
 language: java
 
-sudo: required
-dist: trusty
-
 branches:
   except:
       #- /^(?i:feature)-.*$/
       #- /^(?i:release)-.*$/
+
+jdk:
+  - oraclejdk8
+  - openjdk11
+  - openjdk-ea
+
+install:
+  - mvn --settings .travis/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -U -V -q
+
+before_install:
+  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
+  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
 notifications:
     email:
@@ -18,12 +27,6 @@ notifications:
         rooms:
             - openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#build
             #- openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#bco
-
-jdk:
-  - oraclejdk8
-  
-install:
-  - mvn --settings .travis/settings.xml clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -U -V -q
 
 deploy:
   - provider: script
