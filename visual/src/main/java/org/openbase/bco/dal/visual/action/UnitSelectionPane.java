@@ -31,6 +31,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.controlsfx.control.textfield.TextFields;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -53,21 +54,23 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class UnitSelectionPane extends AbstractFXController {
+
     public final static LocationUnitConfigHolder ALL_LOCATION = new LocationUnitConfigHolder(null);
-    public final static UnitConfigHolder ALL_UNIT = new UnitConfigHolder(null);
-    public final static ServiceTemplateHolder ALL_Service = new ServiceTemplateHolder(null);
+    public final static UnitTemplateHolder ALL_UNIT = new UnitTemplateHolder(null);
+    public final static ServiceTemplateHolder ALL_SERVICE = new ServiceTemplateHolder(null);
+
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitSelectionPane.class);
     private final ReentrantReadWriteLock updateComponentLock;
     private SimpleStringProperty unitIdProperty;
     private LocationUnitConfigHolder selectedLocationConfigHolder;
     private UnitConfigHolder selectedUnitConfigHolder;
+    private ServiceTemplateHolder selectedServiceTemplateHolder;
+    private UnitTemplateHolder selectedUnitTemplateHolder;
+
     @FXML
     private ComboBox<LocationUnitConfigHolder> locationComboBox;
     @FXML
@@ -172,6 +175,7 @@ public class UnitSelectionPane extends AbstractFXController {
         updateComponentLock.writeLock().lock();
         try {
             LOGGER.debug("Update selectorPanel!");
+            // store selection to recover state after update
             try {
                 selectedLocationConfigHolder = locationComboBox.getSelectionModel().getSelectedItem();
                 if (selectedLocationConfigHolder == null) {
@@ -182,7 +186,27 @@ public class UnitSelectionPane extends AbstractFXController {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             }
 
-            // store selection to recover state after update
+            try {
+                selectedUnitTemplateHolder = unitTemplateComboBox.getSelectionModel().getSelectedItem();
+                if (selectedUnitTemplateHolder == null) {
+                    selectedUnitTemplateHolder = ALL_UNIT;
+                }
+            } catch (Exception ex) {
+                selectedUnitTemplateHolder = ALL_UNIT;
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            }
+
+            try {
+                TextFields.bindAutoCompletion(serviceTemplateComboBox.getEditor(), serviceTemplateComboBox.getItems());
+                selectedServiceTemplateHolder = serviceTemplateComboBox.getSelectionModel().getSelectedItem();
+                if (selectedServiceTemplateHolder == null) {
+                    selectedServiceTemplateHolder = ALL_SERVICE;
+                }
+            } catch (Exception ex) {
+                selectedServiceTemplateHolder = ALL_SERVICE;
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            }
+
             try {
                 selectedUnitConfigHolder = unitComboBox.getSelectionModel().getSelectedItem();
             } catch (Exception ex) {
@@ -193,10 +217,10 @@ public class UnitSelectionPane extends AbstractFXController {
             // update unit types
             try {
                 ObservableList<UnitTemplateHolder> unitTemplateHolderList = FXCollections.observableArrayList();
+                unitTemplateHolderList.add(ALL_UNIT);
 
                 // apply service type filter if needed
                 if (serviceTemplateComboBox.getSelectionModel().getSelectedItem() != null && !serviceTemplateComboBox.getSelectionModel().getSelectedItem().isNotSpecified()) {
-                    unitTemplateHolderList.add(new UnitTemplateHolder(null));
                     final ServiceType serviceTypeFilter = serviceTemplateComboBox.getSelectionModel().getSelectedItem().getType();
                     for (final UnitTemplate unitTemplate : Registries.getTemplateRegistry().getUnitTemplates()) {
                         for (final ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
@@ -212,12 +236,10 @@ public class UnitSelectionPane extends AbstractFXController {
                     }
                 }
 
-                //Collections.sort(unitTemplateHolderList);
-
+                Collections.sort(unitTemplateHolderList);
                 unitTemplateComboBox.setDisable(!false);
-                UnitTemplateHolder selectedItem = unitTemplateComboBox.getSelectionModel().getSelectedItem();
                 unitTemplateComboBox.setItems(new SortedList<>(unitTemplateHolderList));
-                unitTemplateComboBox.getSelectionModel().select(selectedItem);
+                unitTemplateComboBox.getSelectionModel().select(selectedUnitTemplateHolder);
                 unitTemplateComboBox.setDisable(unitTemplateComboBox.getItems().size() <= 1);
             } catch (Exception ex) {
                 unitTemplateComboBox.setDisable(!false);
@@ -238,7 +260,7 @@ public class UnitSelectionPane extends AbstractFXController {
                 // precompute unit supported services
                 final Set<ServiceType> unitTypeSupportedServiceConfigList;
                 if (unitTemplateComboBox.getSelectionModel().getSelectedItem() != null && !unitTemplateComboBox.getSelectionModel().getSelectedItem().isNotSpecified()) {
-                    unitTypeSupportedServiceConfigList = new TreeSet();
+                    unitTypeSupportedServiceConfigList = new TreeSet<>();
                     for (final ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitTemplateComboBox.getSelectionModel().getSelectedItem().getType()).getServiceDescriptionList()) {
                         unitTypeSupportedServiceConfigList.add(serviceDescription.getServiceType());
                     }
@@ -247,7 +269,7 @@ public class UnitSelectionPane extends AbstractFXController {
                 }
 
                 ObservableList<ServiceTemplateHolder> serviceTemplateHolderList = FXCollections.observableArrayList();
-                serviceTemplateHolderList.add(new ServiceTemplateHolder(null));
+                serviceTemplateHolderList.add(ALL_SERVICE);
                 for (ServiceTemplate template : Registries.getTemplateRegistry().getServiceTemplates()) {
 
                     // apply location type filter if needed
@@ -263,10 +285,10 @@ public class UnitSelectionPane extends AbstractFXController {
                     serviceTemplateHolderList.add(new ServiceTemplateHolder(template));
                 }
 
+                Collections.sort(serviceTemplateHolderList);
                 serviceTemplateComboBox.setDisable(!false);
-                ServiceTemplateHolder selectedItem = serviceTemplateComboBox.getSelectionModel().getSelectedItem();
                 serviceTemplateComboBox.setItems(new SortedList<>(serviceTemplateHolderList));
-                serviceTemplateComboBox.getSelectionModel().select(selectedItem);
+                serviceTemplateComboBox.getSelectionModel().select(selectedServiceTemplateHolder);
                 serviceTemplateComboBox.setDisable(serviceTemplateComboBox.getItems().size() <= 1);
             } catch (Exception ex) {
                 locationComboBox.setDisable(!false);
@@ -281,6 +303,7 @@ public class UnitSelectionPane extends AbstractFXController {
                     locationConfigHolderList.add(new LocationUnitConfigHolder(locationUnitConfig));
                 }
 
+                Collections.sort(locationConfigHolderList);
                 locationComboBox.setDisable(!false);
                 locationComboBox.setItems(new SortedList<>(locationConfigHolderList));
                 locationComboBox.getSelectionModel().select(selectedLocationConfigHolder);
@@ -342,8 +365,8 @@ public class UnitSelectionPane extends AbstractFXController {
                     unitConfigHolderList.add(new UnitConfigHolder(unitConfig));
                 }
 
-                // sort units
-                // setup model
+                // sort units and setup model
+                Collections.sort(unitConfigHolderList);
                 unitComboBox.setItems(new SortedList<>(unitConfigHolderList));
                 if (selectedUnitConfigHolder != null) {
                     unitComboBox.getSelectionModel().select(selectedUnitConfigHolder);
@@ -372,13 +395,8 @@ public class UnitSelectionPane extends AbstractFXController {
                 unitComboBox.setDisable(!false);
                 throw ex;
             }
-//            updateRemotePanel();
             MultiException.checkAndThrow(() -> "Could not acquire all information!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
-
-//        } catch (InterruptedException ex) {
-//            ExceptionPrinter.printHistory(new CouldNotPerformException("Component update interrupted.", ex), LOGGER, LogLevel.WARN);
-//            Thread.currentThread().interrupt();
         } finally {
             updateComponentLock.writeLock().unlock();
         }

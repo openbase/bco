@@ -32,6 +32,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.util.Pair;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
@@ -41,14 +43,21 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
+import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.visual.javafx.control.AbstractFXController;
 import org.openbase.jul.visual.javafx.fxml.FXMLProcessor;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
+
+import java.text.DateFormat;
+import java.util.Date;
 
 public class UnitAllocationPane extends AbstractFXController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitAllocationPane.class);
@@ -71,6 +80,15 @@ public class UnitAllocationPane extends AbstractFXController {
 
     @FXML
     private TableColumn initiatorColumn;
+
+    @FXML
+    private TableColumn priorityColumn;
+
+    @FXML
+    private TableColumn categoryColumn;
+
+    @FXML
+    private TableColumn descriptionColumn;
 
     @FXML
     private TableColumn actionIdColumn;
@@ -102,11 +120,14 @@ public class UnitAllocationPane extends AbstractFXController {
             final Pair<Pane, UnitSelectionPane> UnitSelectionPaneControllerPair = FXMLProcessor.loadFxmlPaneAndControllerPair(UnitSelectionPane.class);
             topPane.getChildren().add(UnitSelectionPaneControllerPair.getKey());
             positionColumn.setCellValueFactory(new PropertyValueFactory<>("position"));
+            priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
+            categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
             actionStateColumn.setCellValueFactory(new PropertyValueFactory<>("actionState"));
             actionIdColumn.setCellValueFactory(new PropertyValueFactory<>("actionId"));
             timestampColumn.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
             serviceStateColumn.setCellValueFactory(new PropertyValueFactory<>("serviceState"));
             initiatorColumn.setCellValueFactory(new PropertyValueFactory<>("initiator"));
+            descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
 //            unitIdProperty.bind(UnitSelectionPaneControllerPair.getValue().unitIdProperty());
             UnitSelectionPaneControllerPair.getValue().unitIdProperty().addListener((a, b, c) -> {
                 System.out.println("prop:" + c);
@@ -161,20 +182,29 @@ public class UnitAllocationPane extends AbstractFXController {
 
     public static class UnitAllocationBean {
 
+        private final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM);
+
+
         private final int position;
         private final State actionState;
-        private final long timestamp;
+        private final String timestamp;
         private final String actionId;
         private final String serviceState;
         private final String initiator;
+        private final String priority;
+        private final String category;
+        private final String description;
 
-        public UnitAllocationBean(final int position, final ActionDescription actionDescriptions) throws NotAvailableException {
+        public UnitAllocationBean(final int position, final ActionDescription actionDescription) throws NotAvailableException {
             this.position = position;
-            this.actionState = actionDescriptions.getActionState().getValue();
-            this.timestamp = actionDescriptions.getTimestamp().getTime();
-            this.actionId = actionDescriptions.getId();
-            this.serviceState = actionDescriptions.getServiceStateDescription().getServiceAttribute();
-            final ActionInitiator actionInitiator = actionDescriptions.getActionInitiator();
+            this.actionState = actionDescription.getActionState().getValue();
+            this.timestamp = dateFormat.format(new Date(TimestampJavaTimeTransform.transform(actionDescription.getTimestamp())));
+            this.actionId = actionDescription.getId();
+            this.serviceState = actionDescription.getServiceStateDescription().getServiceAttribute();
+            this.description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(),"?");
+            this.priority = actionDescription.getPriority().name();
+            this.category = StringProcessor.transformCollectionToString(actionDescription.getCategoryList(), ", ");
+            final ActionInitiator actionInitiator = ActionDescriptionProcessor.getInitialInitiator(actionDescription);
 
             String initiatorLabel;
             try {
@@ -195,7 +225,7 @@ public class UnitAllocationPane extends AbstractFXController {
             return actionState;
         }
 
-        public long getTimestamp() {
+        public String getTimestamp() {
             return timestamp;
         }
 
@@ -209,6 +239,18 @@ public class UnitAllocationPane extends AbstractFXController {
 
         public String getInitiator() {
             return initiator;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getPriority() {
+            return priority;
         }
     }
 }
