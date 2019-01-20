@@ -1,14 +1,12 @@
 language: java
 
-dist: xenial
-
 branches:
   except:
       #- /^(?i:feature)-.*$/
       #- /^(?i:release)-.*$/
 
 jdk:
-  - openjdk8
+  - oraclejdk8
   - openjdk11
   - openjdk-ea
 
@@ -37,14 +35,14 @@ deploy:
     on:
         repo: openbase/bco.device
         branch: master
-        jdk: openjdk8
+        jdk: oraclejdk8
   - provider: script
     skip_cleanup: true
     script: .travis/deploy.sh
     on:
         repo: openbase/bco.device
         tags: true
-        jdk: openjdk8
+        jdk: oraclejdk8
 
 after_deploy:
    - |
