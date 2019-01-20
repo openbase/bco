@@ -22,7 +22,6 @@ package org.openbase.bco.device.openhab.sitemap;
  * #L%
  */
 
-import com.sun.org.apache.bcel.internal.generic.SWITCH;
 import org.openbase.bco.device.openhab.sitemap.element.SitemapElement;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;

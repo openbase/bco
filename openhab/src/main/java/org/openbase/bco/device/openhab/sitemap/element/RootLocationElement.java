@@ -24,11 +24,13 @@ package org.openbase.bco.device.openhab.sitemap.element;
 
 import org.openbase.bco.device.openhab.sitemap.SitemapBuilder;
 import org.openbase.bco.device.openhab.sitemap.SitemapBuilder.SitemapIconType;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -59,7 +61,8 @@ public class RootLocationElement extends LocationElement {
         // list location power consumption
         sitemap.openTextContext("Energieverbrauch", SitemapIconType.ENERGY);
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
-            sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), getLabel() + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
+            sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), LabelProcessor.getBestMatch(unitConfig.getLabel(), "?") + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
+            sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE, true));
         }
         sitemap.closeContext();
 
@@ -143,9 +146,21 @@ public class RootLocationElement extends LocationElement {
         sitemap.openTextContext("Services", SitemapIconType.STATUS);
         final Map<ServiceType, List<UnitConfig>> serviceTypeUnitConfigMap = new TreeMap<>();
 
-        // load unit configs
+        // load services
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
+
+            // filter base units
+            if (UnitConfigProcessor.isBaseUnit(unitConfig)) {
+                continue;
+            }
+
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+
+                // filter operation services to avoid duplicated entries.
+                if (serviceConfig.getServiceDescription().getPattern() != ServicePattern.PROVIDER) {
+                    continue;
+                }
+
                 if (!serviceTypeUnitConfigMap.containsKey(serviceConfig.getServiceDescription().getServiceType())) {
                     serviceTypeUnitConfigMap.put(serviceConfig.getServiceDescription().getServiceType(), new ArrayList<>());
                 }
