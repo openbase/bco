@@ -100,7 +100,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @return time in milliseconds.
      */
     default long getCreationTime() throws NotAvailableException {
-        return getActionDescription().getTimestamp().getTime();
+        return TimeUnit.MICROSECONDS.toMillis(getActionDescription().getTimestamp().getTime());
     }
 
     /**
