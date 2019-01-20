@@ -1,14 +1,12 @@
 language: java
 
-dist: xenial
-
 branches:
   except:
       #- /^(?i:feature)-.*$/
       #- /^(?i:release)-.*$/
 
 jdk:
-  - openjdk8
+  - oraclejdk8
   - openjdk11
   - openjdk-ea
 
@@ -36,13 +34,13 @@ deploy:
     on:
         repo: openbase/bco.authentication
         branch: master
-        jdk: openjdk8
+        jdk: oraclejdk8
   - provider: script
     script: .travis/deploy.sh
     on:
         repo: openbase/bco.authentication
         tags: true
-        jdk: openjdk8
+        jdk: oraclejdk8
 
 after_deploy:
    - |
