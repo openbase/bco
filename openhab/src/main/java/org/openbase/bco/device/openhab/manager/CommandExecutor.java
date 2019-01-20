@@ -102,7 +102,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceDataBuilder.build(), metaData.getServiceType(), unitController);
             actionParameter.setInterruptible(false);
             actionParameter.setSchedulable(false);
-            actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+            actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
             serviceDataBuilder.setField(descriptor, ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
 
             unitController.applyDataUpdate(serviceDataBuilder.build(), metaData.getServiceType());
