@@ -58,6 +58,17 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      */
     ActionDescription getActionDescription() throws NotAvailableException;
 
+    /**
+     * Method return the time period which this action should be executed.
+     * An action is automatically finished when its lifetime reaches its execution time period.
+     *
+     * @param timeUnit defines the time unit of the returned execution time period to use.
+     *
+     * @return the execution time period of this action.
+     *
+     * @throws NotAvailableException is thrown if the execution time period can not be accessed. This can for example happen,
+     *                               if a remote action is not yet fully synchronized and the related action description is not available.
+     */
     default long getExecutionTimePeriod(final TimeUnit timeUnit) throws NotAvailableException {
         return timeUnit.convert(getActionDescription().getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
     }
@@ -247,6 +258,13 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
         return emphasisValue;
     }
 
+    /**
+     * Method return a string representation of the given action instance.
+     *
+     * @param action the action to represent as string.
+     *
+     * @return a string representation of the given action.
+     */
     static String toString(final Action action) {
         try {
             return action.getClass().getSimpleName() + "[" + action.getId() + "|" + action.getActionDescription().getServiceStateDescription().getServiceType() + "|" + action.getActionDescription().getServiceStateDescription().getServiceAttribute() + "|" + action.getActionDescription().getServiceStateDescription().getUnitId() + "|" + ActionDescriptionProcessor.getInitialInitiator(action.getActionDescription()).getInitiatorId() + "]";
