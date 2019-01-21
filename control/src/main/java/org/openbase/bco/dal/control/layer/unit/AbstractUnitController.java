@@ -705,7 +705,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         }
                     }
                 } catch (NotAvailableException ex) {
-                    ExceptionPrinter.printHistory("Could detect initiator or creation time!", ex, logger);
+                    ExceptionPrinter.printHistory("Could not detect initiator or creation time!", ex, logger);
                 }
 
                 // add new action to the list
