@@ -541,7 +541,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
             builder.getServiceStateDescriptionBuilder().setUnitId(getId());
 
-            return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
+            // If this action was received from a remote instance, its authority can not be guaranteed.
+            // In this case we perform an unauthorized action.
+            for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
+                if (stackTraceElement.getClassName().equals(RPCHelper.class.getName())) {
+                    return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
+                }
+            }
+            return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
         }
