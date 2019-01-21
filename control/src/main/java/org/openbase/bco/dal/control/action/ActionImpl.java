@@ -33,10 +33,8 @@ import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -253,7 +251,7 @@ public class ActionImpl implements SchedulableAction {
             }
             updateActionState(State.CANCELED);
             unit.reschedule();
-            return null;
+            return actionDescriptionBuilder.build();
         });
     }
 
@@ -302,6 +300,10 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void updateActionState(ActionState.State state) {
+
+        if(isDone()) {
+            new FatalImplementationErrorException("Can not change the state of an already terminated action!", this);
+        }
 
         if(state == State.EXECUTING) {
             LOGGER.info(this + " State[" + state.name() + "]");
