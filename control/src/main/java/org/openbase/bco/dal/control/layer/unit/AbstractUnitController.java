@@ -727,7 +727,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // reject outdated and finish completed actions
                 for (final SchedulableAction action : scheduledActionList) {
-                    if (!action.isValid()) {
+                    // only terminate if not valid and still running
+                    if (!action.isValid() && !action.isDone()) {
                         if (action.getActionState() == State.EXECUTING) {
                             action.finish();
                         } else {
