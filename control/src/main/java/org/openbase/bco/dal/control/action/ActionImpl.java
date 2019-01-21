@@ -101,7 +101,7 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void init(final ActionDescription actionDescription, final boolean setInitialState) throws InitializationException {
-        LOGGER.info("================================================================================");
+        LOGGER.trace("================================================================================");
         try {
             actionDescriptionBuilder = actionDescription.toBuilder();
 
@@ -302,7 +302,12 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void updateActionState(ActionState.State state) {
-        LOGGER.info(this + " State[" + state.name() + "]");
+
+        if(state == State.EXECUTING) {
+            LOGGER.info(this + " State[" + state.name() + "]");
+        } else {
+            LOGGER.trace(this + " State[" + state.name() + "]");
+        }
 
         synchronized (executionSync) {
             actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));

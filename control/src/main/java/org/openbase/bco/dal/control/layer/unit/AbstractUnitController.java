@@ -644,11 +644,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         Action executingAction = reschedule(actionToSchedule);
 
         if (actionToSchedule != executingAction) {
-            logger.info("================================================================================");
+            logger.trace("================================================================================");
             if (executingAction == null) {
                 logger.error("{} seems not to be valid and was excluded from execution of {}.", actionToSchedule, this);
             }
-            logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+            logger.trace("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
         }
 
         return CompletableFuture.completedFuture(actionToSchedule.getActionDescription());
