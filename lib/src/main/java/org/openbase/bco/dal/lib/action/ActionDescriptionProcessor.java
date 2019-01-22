@@ -6,7 +6,6 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -118,7 +117,7 @@ public class ActionDescriptionProcessor {
         actionParameter.setServiceStateDescription(serviceStateDescription);
         actionParameter.setPriority(Priority.NORMAL);
         actionParameter.setExecutionTimePeriod(0);
-        actionParameter.setActionInitiator(detectActionInitiator(authenticated));
+        actionParameter.setActionInitiator(detectActionInitiatorId(authenticated));
         return actionParameter;
     }
 
@@ -222,7 +221,7 @@ public class ActionDescriptionProcessor {
 //     */
 //    public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceAttribute, final ServiceType serviceType, final boolean authorized) throws CouldNotPerformException {
 //        final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceAttribute, serviceType);
-//        actionDescriptionBuilder.setActionInitiator(detectActionInitiator(authorized));
+//        actionDescriptionBuilder.setActionInitiator(detectActionInitiatorId(authorized));
 //        return updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
 //    }
 //
@@ -337,9 +336,13 @@ public class ActionDescriptionProcessor {
      * @param actionParameter type which contains all needed parameters to generate an {@code ActionDescription}
      *
      * @return an {@code ActionDescription} that only misses unit and service information
+     * @throws CouldNotPerformException is thrown if the passed action parameter are invalid, e.g. if the service description is missing.
      */
-    public static ActionDescription.Builder generateActionDescriptionBuilder(final ActionParameterOrBuilder actionParameter) {
+    public static ActionDescription.Builder generateActionDescriptionBuilder(ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescription.newBuilder();
+
+        // validate
+        actionParameter = verifyActionParameter(actionParameter);
 
         // add values from ActionParameter
         actionDescription.addAllCategory(actionParameter.getCategoryList());
@@ -357,6 +360,37 @@ public class ActionDescriptionProcessor {
         }
 
         return actionDescription;
+    }
+
+    public static <AP extends ActionParameterOrBuilder> AP verifyActionParameter(final AP actionParameterOrBuilder) throws VerificationFailedException{
+        ActionParameter.Builder actionParameterBuilder;
+
+        if(actionParameterOrBuilder instanceof ActionParameter) {
+            actionParameterBuilder = ((ActionParameter) actionParameterOrBuilder).toBuilder();
+        } else {
+            actionParameterBuilder = (ActionParameter.Builder) actionParameterOrBuilder;
+        }
+
+        if(!actionParameterBuilder.hasServiceStateDescription()) {
+            throw new VerificationFailedException("Given action parameter do not provide a service state description!");
+        }
+
+        // priority and execution time period are valid by its default values so no checks necessary.
+
+        System.out.println("verify "+ actionParameterBuilder);
+        if(!actionParameterBuilder.hasActionInitiator()) {
+            actionParameterBuilder.setActionInitiator(detectActionInitiatorId(true));
+            System.out.println("change to "+ actionParameterBuilder);
+        } else if (!actionParameterBuilder.getActionInitiator().hasInitiatorId()) {
+            actionParameterBuilder.setActionInitiator(detectActionInitiatorId(actionParameterBuilder.getActionInitiatorBuilder(), true));
+            System.out.println("change to "+ actionParameterBuilder);
+        }
+
+        if(actionParameterOrBuilder instanceof ActionParameter) {
+            return (AP) actionParameterBuilder.build();
+        } else {
+            return (AP) actionParameterBuilder;
+        }
     }
 
     /**
@@ -397,13 +431,21 @@ public class ActionDescriptionProcessor {
     }
 
     /**
-     * Method detects if a human or the system is triggering this action.
-     *
-     * @return
+     * Method detects the initiator triggering this action.
+     * @param authorized if the flag is false the initiator is cleared otherwise the initiator is auto detected via the session manager.
+     * @return the updated actionInitiator.
      */
-    @Experimental
-    public static ActionInitiator detectActionInitiator(final boolean authorized) {
-        final ActionInitiator.Builder actionInitiatorBuilder = ActionInitiator.newBuilder();
+    public static ActionInitiator detectActionInitiatorId(final boolean authorized) {
+        return detectActionInitiatorId(ActionInitiator.newBuilder(), authorized).build();
+    }
+
+    /**
+     * Method detects the initiator triggering this action.
+     * @param actionInitiatorBuilder the builder to update.
+     * @param authorized if the flag is false the initiator is cleared otherwise the initiator is auto detected via the session manager.
+     * @return the given actionInitiatorBuilder.
+     */
+    public static ActionInitiator.Builder detectActionInitiatorId(final ActionInitiator.Builder actionInitiatorBuilder, final boolean authorized) {
         if (authorized && SessionManager.getInstance().isLoggedIn()) {
             if (SessionManager.getInstance().getUserId() != null) {
                 actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getUserId());
@@ -413,7 +455,7 @@ public class ActionDescriptionProcessor {
         } else {
             actionInitiatorBuilder.clearInitiatorId();
         }
-        return actionInitiatorBuilder.build();
+        return actionInitiatorBuilder;
     }
 
     /**
