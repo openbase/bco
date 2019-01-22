@@ -23,6 +23,7 @@ package org.openbase.bco.device.openhab.manager.transform;
  */
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
@@ -36,7 +37,11 @@ public class TemperatureStateDecimalTypeTransformer implements ServiceStateComma
     }
 
     @Override
-    public DecimalType transform(final TemperatureState temperatureState) {
-        return new DecimalType(temperatureState.getTemperature());
+    public DecimalType transform(final TemperatureState temperatureState) throws CouldNotTransformException {
+        try {
+            return new DecimalType(temperatureState.getTemperature());
+        } catch (NumberFormatException ex) {
+            throw new CouldNotTransformException(TemperatureState.class.getSimpleName(), DecimalType.class.getSimpleName(), ex);
+        }
     }
 }

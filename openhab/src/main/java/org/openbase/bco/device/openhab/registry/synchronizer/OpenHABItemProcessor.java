@@ -66,8 +66,6 @@ public class OpenHABItemProcessor {
                 return OPENHAB_COLOR_TYPE;
             case POWER_CONSUMPTION_STATE_SERVICE:
             case TEMPERATURE_STATE_SERVICE:
-            case MOTION_STATE_SERVICE:
-            case TAMPER_STATE_SERVICE:
             case BATTERY_STATE_SERVICE:
             case SMOKE_ALARM_STATE_SERVICE:
             case SMOKE_STATE_SERVICE:
@@ -77,6 +75,8 @@ public class OpenHABItemProcessor {
                 return OPENHAB_NUMBER_TYPE;
             case BLIND_STATE_SERVICE:
                 return OPENHAB_ROLLERSHUTTER_TYPE;
+            case TAMPER_STATE_SERVICE:
+            case MOTION_STATE_SERVICE:
             case POWER_STATE_SERVICE:
             case BUTTON_STATE_SERVICE:
             case ACTIVATION_STATE_SERVICE:
