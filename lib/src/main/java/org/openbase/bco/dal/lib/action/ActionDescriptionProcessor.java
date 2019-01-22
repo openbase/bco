@@ -377,13 +377,13 @@ public class ActionDescriptionProcessor {
 
         // priority and execution time period are valid by its default values so no checks necessary.
 
-        System.out.println("verify "+ actionParameterBuilder);
+        System.out.println("verify "+ actionParameterBuilder.build().toString());
         if(!actionParameterBuilder.hasActionInitiator()) {
             actionParameterBuilder.setActionInitiator(detectActionInitiatorId(true));
-            System.out.println("change to "+ actionParameterBuilder);
+            System.out.println("change to "+ actionParameterBuilder.build().toString());
         } else if (!actionParameterBuilder.getActionInitiator().hasInitiatorId()) {
             actionParameterBuilder.setActionInitiator(detectActionInitiatorId(actionParameterBuilder.getActionInitiatorBuilder(), true));
-            System.out.println("change to "+ actionParameterBuilder);
+            System.out.println("change to "+ actionParameterBuilder.build().toString());
         }
 
         if(actionParameterOrBuilder instanceof ActionParameter) {
