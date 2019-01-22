@@ -6,6 +6,7 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -69,6 +70,7 @@ public class ActionDescriptionProcessor {
     public static final String GENERIC_ACTION_LABEL = UNIT_LABEL_KEY + "[" + SERVICE_ATTRIBUTE_KEY + "]";
 
     public static final Map<String, String> GENERIC_ACTION_DESCRIPTION_MAP = new HashMap<>();
+    public static final ActionIdGenerator ACTION_ID_GENERATOR = new ActionIdGenerator();
 
     static {
         GENERIC_ACTION_DESCRIPTION_MAP.put("en", INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of " + UNIT_LABEL_KEY + " to " + SERVICE_ATTRIBUTE_KEY + ".");
@@ -377,13 +379,10 @@ public class ActionDescriptionProcessor {
 
         // priority and execution time period are valid by its default values so no checks necessary.
 
-        System.out.println("verify "+ actionParameterBuilder.build().toString());
         if(!actionParameterBuilder.hasActionInitiator()) {
             actionParameterBuilder.setActionInitiator(detectActionInitiatorId(true));
-            System.out.println("change to "+ actionParameterBuilder.build().toString());
         } else if (!actionParameterBuilder.getActionInitiator().hasInitiatorId()) {
             actionParameterBuilder.setActionInitiator(detectActionInitiatorId(actionParameterBuilder.getActionInitiatorBuilder(), true));
-            System.out.println("change to "+ actionParameterBuilder.build().toString());
         }
 
         if(actionParameterOrBuilder instanceof ActionParameter) {
@@ -435,7 +434,9 @@ public class ActionDescriptionProcessor {
      * @param authorized if the flag is false the initiator is cleared otherwise the initiator is auto detected via the session manager.
      * @return the updated actionInitiator.
      */
+    @Experimental
     public static ActionInitiator detectActionInitiatorId(final boolean authorized) {
+        // todo pleminoq: can this be performed at the controller via the discovered authentication data?
         return detectActionInitiatorId(ActionInitiator.newBuilder(), authorized).build();
     }
 
@@ -445,7 +446,9 @@ public class ActionDescriptionProcessor {
      * @param authorized if the flag is false the initiator is cleared otherwise the initiator is auto detected via the session manager.
      * @return the given actionInitiatorBuilder.
      */
+    @Experimental
     public static ActionInitiator.Builder detectActionInitiatorId(final ActionInitiator.Builder actionInitiatorBuilder, final boolean authorized) {
+        // todo pleminoq: can this be performed at the controller via the discovered authentication data?
         if (authorized && SessionManager.getInstance().isLoggedIn()) {
             if (SessionManager.getInstance().getUserId() != null) {
                 actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getUserId());
@@ -515,7 +518,7 @@ public class ActionDescriptionProcessor {
         }
 
         // prepare
-        actionDescriptionBuilder.setId(UUID.randomUUID().toString());
+        actionDescriptionBuilder.setId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
         LabelProcessor.addLabel(actionDescriptionBuilder.getLabelBuilder(), Locale.ENGLISH, GENERIC_ACTION_LABEL);
 
         // generate or update action description

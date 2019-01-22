@@ -306,7 +306,7 @@ public class ActionImpl implements SchedulableAction {
         if(state == State.EXECUTING) {
             LOGGER.info(MultiLanguageTextProcessor.getBestMatch(actionDescriptionBuilder.getDescription(), this + " State[" + state.name() + "]"));
         }
-//        StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
+        // StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
         LOGGER.trace(this + " State[" + state.name() + "]");
 
         synchronized (executionSync) {
