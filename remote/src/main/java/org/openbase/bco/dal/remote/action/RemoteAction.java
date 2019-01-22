@@ -115,27 +115,36 @@ public class RemoteAction implements Action {
 
 
     public Future<ActionDescription> execute(final ActionDescription causeActionDescription) {
-        // check if action remote was instantiated via task future.
-        if (actionParameterBuilder == null) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("ActionParameter"));
-        }
-
-        if (isRunning()) {
-            return FutureProcessor.canceledFuture(new InvalidStateException("Action is still running and can not be executed twice!"));
-        }
-
-        synchronized (executionSync) {
-            if (causeActionDescription == null) {
-                actionParameterBuilder.clearCause();
-            } else {
-                actionParameterBuilder.setCause(causeActionDescription);
+        try {
+            // check if action remote was instantiated via task future.
+            if (actionParameterBuilder == null) {
+                throw new NotAvailableException("ActionParameter");
             }
+
+            if (isRunning()) {
+                throw new InvalidStateException("Action is still running and can not be executed twice!");
+            }
+
             synchronized (executionSync) {
-                return initFutureObservationTask(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
+                if (causeActionDescription == null) {
+                    actionParameterBuilder.clearCause();
+                } else {
+                    actionParameterBuilder.setCause(causeActionDescription);
+                }
+                synchronized (executionSync) {
+                    return initFutureObservationTask(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
+                }
             }
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not execute " + this + "!", ex));
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public Future<ActionDescription> execute() {
         return execute(null);
@@ -226,9 +235,9 @@ public class RemoteAction implements Action {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      *
-     * @return {@inheritDoc }
+     * @return {@inheritDoc}
      */
     @Override
     public ActionDescription getActionDescription() throws NotAvailableException {
@@ -238,11 +247,21 @@ public class RemoteAction implements Action {
         return actionDescription;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean isValid() {
         return (actionParameterBuilder != null || futureObservationTask != null) && Action.super.isValid();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean isRunning() {
         if (isValid() && futureObservationTask != null) {
@@ -265,6 +284,11 @@ public class RemoteAction implements Action {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public Future<ActionDescription> cancel() {
         return cancel(null, null);
@@ -327,6 +351,12 @@ public class RemoteAction implements Action {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
+     */
     @Override
     public void waitUntilDone() throws CouldNotPerformException, InterruptedException {
         waitForSubmission();
@@ -372,20 +402,9 @@ public class RemoteAction implements Action {
         synchronized (executionSync) {
             // wait until state is reached
             while (actionDescription == null || actionDescription.getActionState().getValue() != actionState) {
-                // test if the state can still be reached
-                if (actionDescription != null) {
-                    switch (actionState) {
-                        case FINISHED:
-                        case CANCELED:
-                        case REJECTED:
-                            // finishing states differs so it cannot be reached anymore
-                            throw new CouldNotPerformException("Stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
-                        case SCHEDULED:
-                        case EXECUTING:
-                            if (isDone()) {
-                                throw new CouldNotPerformException("Stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
-                            }
-                    }
+                // Waiting makes no sense if the action is done but the state is still not reached.
+                if (actionDescription != null && isDone()) {
+                    throw new CouldNotPerformException("Stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
                 }
                 executionSync.wait();
             }
