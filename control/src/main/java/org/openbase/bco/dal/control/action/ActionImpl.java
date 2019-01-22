@@ -35,10 +35,12 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
@@ -236,7 +238,7 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public Future<ActionDescription> cancel() {
-        // if action not executing, set to canceled and finish
+        // if action not executing, set to canceled if not already done and finish
         if (!isExecuting()) {
             updateActionState(State.CANCELED);
             return CompletableFuture.completedFuture(getActionDescription());
@@ -301,17 +303,21 @@ public class ActionImpl implements SchedulableAction {
 
     private void updateActionState(ActionState.State state) {
 
-        if(isDone()) {
-            new FatalImplementationErrorException("Can not change the state of an already terminated action!", this);
-        }
-
         if(state == State.EXECUTING) {
-            LOGGER.info(this + " State[" + state.name() + "]");
-        } else {
-            LOGGER.trace(this + " State[" + state.name() + "]");
+            LOGGER.info(MultiLanguageTextProcessor.getBestMatch(actionDescriptionBuilder.getDescription(), this + " State[" + state.name() + "]"));
         }
+//        StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
+        LOGGER.trace(this + " State[" + state.name() + "]");
 
         synchronized (executionSync) {
+
+            if(isDone()) {
+                if(JPService.verboseMode()) {
+                    LOGGER.warn("Can not change the state to {} of an already {} action!", state.name(), actionDescriptionBuilder.getActionState().getValue().name().toLowerCase());
+                }
+                return;
+            }
+
             actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
             try {
                 ServiceStateProcessor.updateLatestValueOccurrence(state.getValueDescriptor(), TimestampProcessor.getCurrentTimestamp(), actionDescriptionBuilder.getActionStateBuilder());
