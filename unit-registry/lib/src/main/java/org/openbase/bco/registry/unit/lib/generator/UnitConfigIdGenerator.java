@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.lib.generator;
 
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -33,10 +34,19 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 public class UnitConfigIdGenerator extends UUIDGenerator<UnitConfig> {
 
     @Override
-    public String generateId(UnitConfig message) {
+    public String generateId(final UnitConfig unitConfig) {
         if (JPService.testMode()) {
-            return StringProcessor.transformUpperCaseToPascalCase(message.getUnitType().name()) + ":" + super.generateId(message);
+            final String customTestId;
+            switch (unitConfig.getUnitType()) {
+                case USER:
+                    customTestId = StringProcessor.transformToIdString(unitConfig.getUserConfig().getUserName());
+                    break;
+                default:
+                    customTestId = (unitConfig.hasLabel() ? StringProcessor.transformToIdString(LabelProcessor.getBestMatch(unitConfig.getLabel(), "")) : "");
+                    break;
+            }
+            return StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()).toLowerCase() + (!customTestId.isEmpty() ? "-" + customTestId.toLowerCase() + "-" : "-") + super.generateId(unitConfig);
         }
-        return super.generateId(message);
+        return super.generateId(unitConfig);
     }
 }
