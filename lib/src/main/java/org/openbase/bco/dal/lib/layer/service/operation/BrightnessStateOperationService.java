@@ -46,4 +46,12 @@ public interface BrightnessStateOperationService extends OperationService, Brigh
     default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState, final ActionParameter actionParameter) throws CouldNotPerformException {
         return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE)));
     }
+
+    default Future<ActionDescription> setBrightness(final double brightness) throws CouldNotPerformException {
+        return setBrightnessState(BrightnessState.newBuilder().setBrightness(brightness).build());
+    }
+
+    default Future<ActionDescription> setBrightness(final double brightness, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return setBrightnessState(BrightnessState.newBuilder().setBrightness(brightness).build(), actionParameter);
+    }
 }
