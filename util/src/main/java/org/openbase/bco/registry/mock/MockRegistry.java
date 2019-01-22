@@ -247,7 +247,7 @@ public class MockRegistry {
                     break;
                 } catch (TimeoutException e) {
                 }}
-                System.out.println("still waiting for registry tasks.");
+                LOGGER.info("Still waiting until mockup registry is ready...");
             }
             registryStartupTasks.clear();
             LOGGER.debug("Registries started!");

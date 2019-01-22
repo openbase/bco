@@ -27,6 +27,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.language.LabelType;
 
 import java.util.UUID;
@@ -35,6 +36,7 @@ import static org.openbase.jul.iface.provider.LabelProvider.TYPE_FIELD_LABEL;
 
 /**
  * @param <M>
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UUIDGenerator<M extends Message> implements IdGenerator<String, M> {
@@ -42,18 +44,22 @@ public class UUIDGenerator<M extends Message> implements IdGenerator<String, M> 
     @Override
     public String generateId(final M message) {
         // in case we are performing a unit test let's generate a human readable uuid.
-        try {
-            if (JPService.testMode()) {
-                if (message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL) != null) {
-                    if (message.hasField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL))) {
-                        LabelType.Label label = (LabelType.Label) message.getField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL));
-                        return LabelProcessor.getBestMatch(label) + ":" + UUID.randomUUID().toString();
-                    }
-                }
+        if (JPService.testMode()) {
+            final String customTestId = getCustomTestId(message);
+            if (customTestId != null && !customTestId.isEmpty()) {
+                return customTestId.toLowerCase() + "-" + UUID.randomUUID().toString().substring(0, 8);
             }
-        } catch (NotAvailableException ex) {
-            // label not available so just use normal uuid
         }
         return UUID.randomUUID().toString();
+    }
+
+    protected String getCustomTestId(final M message) {
+        if (message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL) != null) {
+            if (message.hasField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL))) {
+                LabelType.Label label = (LabelType.Label) message.getField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL));
+                return StringProcessor.transformToIdString(LabelProcessor.getBestMatch(label, null));
+            }
+        }
+        return null;
     }
 }

@@ -34,19 +34,17 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 public class UnitConfigIdGenerator extends UUIDGenerator<UnitConfig> {
 
     @Override
-    public String generateId(final UnitConfig unitConfig) {
-        if (JPService.testMode()) {
-            final String customTestId;
-            switch (unitConfig.getUnitType()) {
-                case USER:
-                    customTestId = StringProcessor.transformToIdString(unitConfig.getUserConfig().getUserName());
-                    break;
-                default:
-                    customTestId = (unitConfig.hasLabel() ? StringProcessor.transformToIdString(LabelProcessor.getBestMatch(unitConfig.getLabel(), "")) : "");
-                    break;
-            }
-            return StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()).toLowerCase() + (!customTestId.isEmpty() ? "-" + customTestId.toLowerCase() + "-" : "-") + super.generateId(unitConfig);
+    protected String getCustomTestId(final UnitConfig unitConfig) {
+        final String customTestId;
+        switch (unitConfig.getUnitType()) {
+            case USER:
+                customTestId = StringProcessor.transformToIdString(unitConfig.getUserConfig().getUserName());
+                break;
+            default:
+                customTestId = super.getCustomTestId(unitConfig);
+                break;
         }
-        return super.generateId(unitConfig);
+        return StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()).toLowerCase() + (customTestId != null && !customTestId.isEmpty() ? "-" + customTestId.toLowerCase() : "");
+
     }
 }
