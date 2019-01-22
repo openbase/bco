@@ -79,7 +79,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @return time in milliseconds.
      */
     default long getLifetime() throws NotAvailableException {
-        return System.currentTimeMillis() - getCreationTime();
+        return Math.min(System.currentTimeMillis() - getCreationTime(), getExecutionTimePeriod(TimeUnit.MILLISECONDS));
     }
 
     /**
@@ -220,7 +220,6 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
             default:
                 return false;
         }
-
     }
 
     /**
