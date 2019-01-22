@@ -38,12 +38,16 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -51,6 +55,8 @@ import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightD
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -208,6 +214,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // cancel running actions for next test
         secondAction.cancel().get();
+        secondAction.waitForActionState(ActionState.State.CANCELED);
     }
 
     /**
@@ -261,5 +268,71 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // cancel remaining action for the next test
         firstAction.cancel().get();
+        firstAction.waitForActionState(ActionState.State.CANCELED);
+    }
+
+    /**
+     * Test finalization after execution time period has passed.
+     *
+     * @throws Exception if an error occurs.
+     */
+    @Test(timeout = 5000)
+    public void testFinalizationAfterExecutionTimePeriodPassed() throws Exception {
+        LOGGER.info("testFinalizationAfterExecutionTimePeriodPassed");
+
+        // set the brightness of the colorable light to 90
+        final ActionParameter.Builder secondaryActionParameter = ActionParameter.newBuilder();
+        secondaryActionParameter.setExecutionTimePeriod(TimeUnit.HOURS.toMicros(1));
+        secondaryActionParameter.setPriority(Priority.LOW);
+        secondaryActionParameter.setSchedulable(true);
+        secondaryActionParameter.setInterruptible(true);
+        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(90, secondaryActionParameter.build()));
+        secondaryAction.waitForExecution();
+
+        assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
+        assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
+        // validate that brightness value was set
+        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+//        System.out.println("prev login: " + SessionManager.getInstance().getUserId());
+        // set the brightness state with the admin user to 50 for 500 ms
+        final SessionManager sessionManager = new SessionManager();
+        sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
+//        System.out.println("admin login: " + sessionManager.getUserId());
+        final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
+        primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(500));
+        primaryActionParameter.setPriority(Priority.HIGH);
+        primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null, null);
+        AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
+
+        final RemoteAction primaryAction = new RemoteAction(authenticatedValueFuture);
+        primaryAction.waitForExecution();
+        secondaryAction.waitForActionState(ActionState.State.SCHEDULED);
+
+        assertEquals(primaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
+        assertEquals(ActionState.State.EXECUTING, primaryAction.getActionState());
+        // validate that light brightness was adjusted to 50 percent
+        assertEquals(50, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        // validate that previous action became scheduled
+        assertEquals(ActionState.State.SCHEDULED, secondaryAction.getActionState());
+
+        // make sure primary action is finalised.
+        primaryAction.waitForActionState(ActionState.State.FINISHED);
+        assertEquals(0, primaryAction.getExecutionTime());
+        assertEquals(500, primaryAction.getLifetime());
+
+        // wait until old action is rescheduled to executing
+        secondaryAction.waitForExecution();
+
+        assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
+        assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
+        assertEquals(ActionState.State.FINISHED, primaryAction.getActionState());
+        // validate that color value was set
+        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+
+        // cancel remaining action for the next test
+//        System.out.println("end login: " + SessionManager.getInstance().getUserId());
+        secondaryAction.cancel().get();
+        secondaryAction.waitForActionState(ActionState.State.CANCELED);
     }
 }
