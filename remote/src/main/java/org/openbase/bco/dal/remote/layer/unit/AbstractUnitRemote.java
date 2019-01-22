@@ -52,6 +52,7 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.rct.Transform;
 import org.openbase.type.com.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -668,13 +669,15 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     @Override
     public Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticationToken, final String authorizationToken) {
         try {
-            ActionDescription build = actionDescription.toBuilder().setCancel(true).build();
+            final Builder builder = actionDescription.toBuilder().setCancel(true);
+            ActionDescriptionProcessor.detectActionInitiatorId(builder.getActionInitiatorBuilder(), true);
+
             if (SessionManager.getInstance().isLoggedIn() && (authenticationToken != null || authorizationToken != null)) {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(build, authenticationToken, authorizationToken);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(builder.build(), authenticationToken, authorizationToken);
                 final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
                 return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
             } else {
-                return applyAction(build);
+                return applyAction(builder.build());
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
