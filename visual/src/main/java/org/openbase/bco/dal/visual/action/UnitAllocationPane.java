@@ -140,7 +140,7 @@ public class UnitAllocationPane extends AbstractFXController {
             actionStateColumn.setCellValueFactory(new PropertyValueFactory<>("actionState"));
             actionIdColumn.setCellValueFactory(new PropertyValueFactory<>("actionId"));
             timestampColumn.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
-            livetimeColumn.setCellValueFactory(new PropertyValueFactory<>("livetime"));
+            livetimeColumn.setCellValueFactory(new PropertyValueFactory<>("lifetime"));
             serviceStateColumn.setCellValueFactory(new PropertyValueFactory<>("serviceState"));
             initiatorColumn.setCellValueFactory(new PropertyValueFactory<>("initiator"));
             descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
@@ -178,6 +178,7 @@ public class UnitAllocationPane extends AbstractFXController {
             ExceptionPrinter.printHistory("Could updated dynamic content!", ex, LOGGER);
         }
         actionTable.setItems(data);
+        actionTable.refresh();
 
     }
 
@@ -311,13 +312,13 @@ public class UnitAllocationPane extends AbstractFXController {
             }
         }
 
-        public String getLivetime() {
+        public String getLifetime() {
             try {
-                final long livetime = remoteAction.getLifetime();
-                final long days = TimeUnit.MILLISECONDS.toDays(livetime);
-                final long hours = TimeUnit.MILLISECONDS.toHours(livetime);
-                final long minutes = TimeUnit.MILLISECONDS.toMinutes(livetime);
-                final long seconds = TimeUnit.MILLISECONDS.toSeconds(livetime);
+                final long lifetime = remoteAction.getLifetime();
+                final long days = TimeUnit.MILLISECONDS.toDays(lifetime);
+                final long hours = TimeUnit.MILLISECONDS.toHours(lifetime);
+                final long minutes = TimeUnit.MILLISECONDS.toMinutes(lifetime);
+                final long seconds = TimeUnit.MILLISECONDS.toSeconds(lifetime);
 
                 if(days > 365) {
                     return "∞";
