@@ -76,18 +76,22 @@ public interface ServiceProvider<ST extends Message> {
      * @return a future which gives feedback about the action execution state.
      */
     default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
-        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build();
-        if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthenticationToken() || actionParameter.hasAuthorizationToken())) {
-            final AuthenticatedValue authenticatedValue;
-            try {
-                authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
-            } catch (CouldNotPerformException ex) {
-                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        try {
+            final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build();
+            if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthenticationToken() || actionParameter.hasAuthorizationToken())) {
+                final AuthenticatedValue authenticatedValue;
+                try {
+                    authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
+                } catch (CouldNotPerformException ex) {
+                    return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+                }
+                final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
+                return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+            } else {
+                return applyAction(actionDescription);
             }
-            final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
-            return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
-        } else {
-            return applyAction(actionDescription);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
