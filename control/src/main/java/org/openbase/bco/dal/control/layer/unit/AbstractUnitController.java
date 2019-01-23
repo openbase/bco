@@ -67,8 +67,10 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.iface.ScopeProvider;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.jul.iface.Transformer;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
@@ -96,6 +98,7 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.timing.TimestampType.Timestamp;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
@@ -627,8 +630,25 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             }
                         }
 
+                        // if not authenticated generate an error message and throw
                         if (!isAuthenticated) {
-                            throw new PermissionDeniedException("User [" + authenticatedId + "] is not allowed to cancel action [" + actionDescription.getId() + "]");
+                            String cancelingInstance = authenticatedId;
+                            String ownerInstanceList = actionToCancel.getActionDescription().getActionInitiator().getInitiatorId();
+                            String description = actionDescription.getId();
+                            try {
+                                cancelingInstance = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(authenticatedId).getLabel(), authenticatedId);
+                                ownerInstanceList = StringProcessor.transformCollectionToString(actionToCancel.getActionDescription().getActionCauseList(), actionReference -> {
+                                    try {
+                                        return LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionReference.getActionInitiator().getInitiatorId()).getLabel());
+                                    } catch (NotAvailableException e) {
+                                        return actionReference.getActionInitiator().getInitiatorId();
+                                    }
+                                }, ", ");
+                                description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(), actionDescription.getId());
+                            } catch (CouldNotPerformException ex) {
+                                // no not care if error description is not that detailed.
+                            }
+                            throw new PermissionDeniedException("User [" + cancelingInstance + "] is not allowed to cancel action [" + description + "] owned by " + ownerInstanceList);
                         }
                     }
                 }
@@ -685,6 +705,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
             actionListNotificationLock.writeLock().lock();
 
+            // cancel timer if still running because it will be restarted at the end of the schedule anyway.
+            if (!scheduleTimeout.isExpired()) {
+                scheduleTimeout.cancel();
+            }
+
             if (actionToSchedule != null) {
                 // test if there is another action already in the list by the same initiator
                 try {
@@ -721,7 +746,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             try {
                 // save if there is at least one action still awaiting execution
-                boolean atLeastOneActionNoteDone = false;
+                boolean atLeastOneActionToSchedule = false;
                 // save if there is at least one action which is done but remains on the list
                 boolean atLeastOneDoneActionOnList = false;
 
@@ -753,12 +778,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             scheduledActionList.remove(action);
                         }
                     } else {
-                        atLeastOneActionNoteDone = true;
+                        atLeastOneActionToSchedule = true;
                     }
                 }
 
-                // skip if no actions are available
-                if (!atLeastOneActionNoteDone) {
+                // skip further steps if no actions are scheduled
+                if (!atLeastOneActionToSchedule) {
                     return null;
                 }
 
@@ -783,36 +808,36 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         actionToSchedule.schedule();
                     } else {
                         actionToSchedule.reject();
+                        atLeastOneDoneActionOnList = true;
                     }
                 }
 
-                // handle current action
-                if (currentAction != null) {
-                    // if the next action is still the same than we are finished
-                    if (nextAction == currentAction) {
-                        return currentAction;
-                    }
+                // execute action with highest ranking if it is not already the currently executing one.
+                if (nextAction != currentAction) {
 
-                    // if action is interruptible it can be scheduled an thus is only aborted, else it is rejected
-                    if (currentAction.getActionDescription().getInterruptible()) {
+                    // abort current action before executing the next one.
+                    if (currentAction != null) {
                         currentAction.abort();
-                    } else {
-                        currentAction.reject();
                     }
+                    nextAction.execute();
+                    currentAction = nextAction;
                 }
 
-                // execute action with highest ranking
-                nextAction.execute();
-
-                // setup next schedule trigger
+                // setup timed rescheduling.
                 try {
-                    final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : nextAction.getExecutionTime();
-                    scheduleTimeout.restart(rescheduleTimeout);
+                    // setup timer only if action needs to be removed or the current action provides a limited execution time.
+                    if (atLeastOneDoneActionOnList || currentAction.getExecutionTimePeriod(TimeUnit.MICROSECONDS) != 0) {
+                        final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : nextAction.getExecutionTime();
+                        logger.debug("Reschedule scheduled in:" + rescheduleTimeout);
+                        // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
+                        // this should not cause any latency because new incoming actions are scheduled anyway.
+                        scheduleTimeout.restart(Math.max(rescheduleTimeout, 50));
+                    }
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
                 }
 
-                return nextAction;
+                return currentAction;
             } finally {
                 try {
                     updateTransactionId();

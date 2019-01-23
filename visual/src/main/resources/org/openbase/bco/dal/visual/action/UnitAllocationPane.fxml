@@ -35,6 +35,10 @@
                               <TableColumn fx:id="categoryColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Category" />
                               <TableColumn fx:id="initiatorColumn" maxWidth="1000.0" prefWidth="200.0" text="Initiator" />
                               <TableColumn fx:id="interruptibleColumn" maxWidth="1000.0" text="Interruptible" visible="false" />
+                              <TableColumn fx:id="validColumn" maxWidth="75.0" text="Valid" visible="true" />
+                              <TableColumn fx:id="runningColumn" maxWidth="75.0" text="Running" visible="true" />
+                              <TableColumn fx:id="expiredColumn" maxWidth="75.0" text="Expired" visible="true" />
+                              <TableColumn fx:id="doneColumn" maxWidth="75.0" text="Done" visible="true" />
                               <TableColumn fx:id="schedulableColumn" maxWidth="1000.0" text="Schedulable" visible="false" />
                                   <TableColumn fx:id="serviceStateColumn" maxWidth="1.7976931348623157E308" prefWidth="500.0" text="Servicestate" />
                               <TableColumn fx:id="descriptionColumn" prefWidth="300.0" text="Description" visible="false" />

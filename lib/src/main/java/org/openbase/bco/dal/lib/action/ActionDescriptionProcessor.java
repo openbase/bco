@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 /*-
  * #%L
@@ -338,6 +339,7 @@ public class ActionDescriptionProcessor {
      * @param actionParameter type which contains all needed parameters to generate an {@code ActionDescription}
      *
      * @return an {@code ActionDescription} that only misses unit and service information
+     *
      * @throws CouldNotPerformException is thrown if the passed action parameter are invalid, e.g. if the service description is missing.
      */
     public static ActionDescription.Builder generateActionDescriptionBuilder(ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
@@ -364,28 +366,28 @@ public class ActionDescriptionProcessor {
         return actionDescription;
     }
 
-    public static <AP extends ActionParameterOrBuilder> AP verifyActionParameter(final AP actionParameterOrBuilder) throws VerificationFailedException{
+    public static <AP extends ActionParameterOrBuilder> AP verifyActionParameter(final AP actionParameterOrBuilder) throws VerificationFailedException {
         ActionParameter.Builder actionParameterBuilder;
 
-        if(actionParameterOrBuilder instanceof ActionParameter) {
+        if (actionParameterOrBuilder instanceof ActionParameter) {
             actionParameterBuilder = ((ActionParameter) actionParameterOrBuilder).toBuilder();
         } else {
             actionParameterBuilder = (ActionParameter.Builder) actionParameterOrBuilder;
         }
 
-        if(!actionParameterBuilder.hasServiceStateDescription()) {
+        if (!actionParameterBuilder.hasServiceStateDescription()) {
             throw new VerificationFailedException("Given action parameter do not provide a service state description!");
         }
 
         // priority and execution time period are valid by its default values so no checks necessary.
 
-        if(!actionParameterBuilder.hasActionInitiator()) {
+        if (!actionParameterBuilder.hasActionInitiator()) {
             actionParameterBuilder.setActionInitiator(detectActionInitiatorId(true));
         } else if (!actionParameterBuilder.getActionInitiator().hasInitiatorId()) {
             actionParameterBuilder.setActionInitiator(detectActionInitiatorId(actionParameterBuilder.getActionInitiatorBuilder(), true));
         }
 
-        if(actionParameterOrBuilder instanceof ActionParameter) {
+        if (actionParameterOrBuilder instanceof ActionParameter) {
             return (AP) actionParameterBuilder.build();
         } else {
             return (AP) actionParameterBuilder;
@@ -431,7 +433,9 @@ public class ActionDescriptionProcessor {
 
     /**
      * Method detects the initiator triggering this action.
+     *
      * @param authorized if the flag is false the initiator is cleared otherwise the initiator is auto detected via the session manager.
+     *
      * @return the updated actionInitiator.
      */
     @Experimental
@@ -442,8 +446,10 @@ public class ActionDescriptionProcessor {
 
     /**
      * Method detects the initiator triggering this action.
+     *
      * @param actionInitiatorBuilder the builder to update.
-     * @param authorized if the flag is false the initiator is cleared otherwise the initiator is auto detected via the session manager.
+     * @param authorized             if the flag is false the initiator is cleared otherwise the initiator is auto detected via the session manager.
+     *
      * @return the given actionInitiatorBuilder.
      */
     @Experimental
@@ -515,6 +521,22 @@ public class ActionDescriptionProcessor {
         } else if (!actionDescriptionBuilder.getActionInitiator().hasInitiatorType()) {
             // if no initiator is defined than use the system as initiator.
             actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
+        }
+
+        // An action without offered execution time is at most executed directly and once.
+        // There is no need for scheduling.
+        if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
+            actionDescriptionBuilder.setSchedulable(false);
+        }
+
+        // if the action is not schedulable it is also not interruptible
+        if (!actionDescriptionBuilder.getSchedulable()) {
+            actionDescriptionBuilder.setInterruptible(false);
+        }
+
+        // humans action should be executed some time before they get rejected by automation routines.
+        if (actionDescriptionBuilder.getActionInitiator().getInitiatorType() == InitiatorType.HUMAN && actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
+            actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(1));
         }
 
         // prepare
@@ -590,11 +612,17 @@ public class ActionDescriptionProcessor {
                 }
             }
 
-            // if the action is not schedulable it is also not interruptible
-            if(!actionDescriptionBuilder.getSchedulable()) {
-                actionDescriptionBuilder.setInterruptible(false);
+            // validate initiator field
+            if (!actionDescriptionBuilder.hasActionInitiator()) {
+                throw new InvalidStateException("Action initiator missing!");
             }
 
+            // validate initiator id
+            if (!actionDescriptionBuilder.getActionInitiator().hasInitiatorId() || actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
+                throw new InvalidStateException("Action initiator id missing!");
+            }
+
+            // validate if service state can be deserialized
             Message serviceState = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute(), actionDescriptionBuilder.getServiceStateDescription().getServiceAttributeType());
             serviceState = Services.verifyAndRevalidateServiceState(serviceState);
             if (prepare) {

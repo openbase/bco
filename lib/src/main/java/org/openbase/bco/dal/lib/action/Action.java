@@ -31,6 +31,7 @@ import org.openbase.jul.iface.Identifiable;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
+import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +84,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
     }
 
     /**
-     * Time left until the execution time has passed.
+     * Time left until the execution time has passed and the action expires.
      *
      * @return time in milliseconds.
      */
@@ -92,15 +93,30 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
     }
 
     /**
-     * Returns true if there is still some execution time left.
+     * Returns false if there is still some execution time left.
+     * <p>
+     * Note: An action without zero execution time period will at least executed once. Such an action has no execution time but is still not expired as long as it has been executed.
      *
-     * @return true execution time is not zero.
+     * @return true if the execution time is already expired.
      */
-    default boolean hasExecutionTimeLeft() {
+    default boolean isExpired() {
         try {
-            return getExecutionTime() > 0;
+            // make sure action is at least executed once if no execution time is offered.
+            if (getExecutionTimePeriod(TimeUnit.MILLISECONDS) == 0) {
+                switch (getActionState()) {
+                    case UNKNOWN:
+                    case INITIALIZED:
+                    case INITIATING:
+                    case EXECUTING:
+                    case EXECUTION_FAILED:
+                        return false;
+                    default:
+                        return true;
+                }
+
+            }
+            return getExecutionTime() == 0;
         } catch (NotAvailableException ex) {
-            ExceptionPrinter.printHistory("Could not check execution time!", ex, LoggerFactory.getLogger(Action.class), LogLevel.WARN);
             return false;
         }
     }
@@ -121,18 +137,13 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      */
     default boolean isValid() {
 
-        // is valid if never executed and no valid
-        try {
-            if (getExecutionTimePeriod(TimeUnit.MILLISECONDS) == 0 && !isDone()) {
-                return true;
-            }
-        } catch (NotAvailableException e) {
-            // not valid because of missing information.
+        // if done we are not valid to execute anymore.
+        if (isDone()) {
             return false;
         }
 
-        // is valid if some execution time is still left.
-        return hasExecutionTimeLeft();
+        // is valid if not expired yet.
+        return !isExpired();
     }
 
     /**
@@ -141,15 +152,11 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @return true if executed and terminated.
      */
     default boolean isDone() {
-        try {
-            switch (getActionState()) {
-                case CANCELED:
-                case REJECTED:
-                case FINISHED:
-                    return true;
-            }
-        } catch (NotAvailableException ex) {
-            // not done if available
+        switch (getActionState()) {
+            case CANCELED:
+            case REJECTED:
+            case FINISHED:
+                return true;
         }
         return false;
     }
@@ -160,13 +167,9 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @return true if running and false if never started, currently executing or already terminated.
      */
     default boolean isScheduled() {
-        try {
-            switch (getActionState()) {
-                case SCHEDULED:
-                    return true;
-            }
-        } catch (NotAvailableException ex) {
-            // not done if available
+        switch (getActionState()) {
+            case SCHEDULED:
+                return true;
         }
         return false;
     }
@@ -177,25 +180,21 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @return true if running and false if never started or already terminated.
      */
     default boolean isRunning() {
-        try {
-            switch (getActionState()) {
-                case UNKNOWN:
-                case INITIALIZED:
-                case ABORTED:
-                case EXECUTION_FAILED:
-                case REJECTED:
-                case FINISHED:
-                    return false;
-                case ABORTING:
-                case INITIATING:
-                case EXECUTING:
-                case SCHEDULED:
-                case ABORTING_FAILED:
-                case FINISHING:
-                    return true;
-            }
-        } catch (NotAvailableException ex) {
-            // not done if available
+        switch (getActionState()) {
+            case UNKNOWN:
+            case INITIALIZED:
+            case ABORTED:
+            case EXECUTION_FAILED:
+            case REJECTED:
+            case FINISHED:
+                return false;
+            case ABORTING:
+            case INITIATING:
+            case EXECUTING:
+            case SCHEDULED:
+            case ABORTING_FAILED:
+            case FINISHING:
+                return true;
         }
         return false;
     }
@@ -227,8 +226,12 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      *
      * @return the action state
      */
-    default ActionState.State getActionState() throws NotAvailableException {
-        return getActionDescription().getActionState().getValue();
+    default ActionState.State getActionState() {
+        try {
+            return getActionDescription().getActionState().getValue();
+        } catch (NotAvailableException e) {
+            return State.UNKNOWN;
+        }
     }
 
     Future<ActionDescription> cancel();

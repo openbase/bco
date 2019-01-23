@@ -22,25 +22,60 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public interface SchedulableAction extends Action, Executable<ActionDescription>, Initializable<ActionDescription> {
+
+    /**
+     * Mark this action as currently scheduled.
+     */
     void schedule();
 
+    /**
+     * Reject this action.
+     */
     void reject();
 
+    /**
+     * Finish this action.
+     */
     void finish();
 
+    /**
+     * Abort this action.
+     */
     Future<ActionDescription> abort();
 
+    /**
+     * {@inheritDoc}
+     * @param timeUnit {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    default long getExecutionTimePeriod(final TimeUnit timeUnit) {
+        // overwritten to remove the could not perform exception.
+        return timeUnit.convert(getActionDescription().getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     ActionDescription getActionDescription();
 
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     default State getActionState() {
         return getActionDescription().getActionState().getValue();

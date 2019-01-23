@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.action;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -177,6 +177,11 @@ public class ActionImpl implements SchedulableAction {
                                 LOGGER.debug("Wait for execution...");
                                 unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.SECONDS);
                                 LOGGER.debug("Execution finished!");
+
+                                // action can be finished if not done yet and time has expired or execution time was never required.
+                                if (!isDone() && (isExpired() || getExecutionTimePeriod(TimeUnit.MICROSECONDS) == 0)) {
+                                    updateActionState(State.FINISHED);
+                                }
                                 break;
                             } catch (CouldNotPerformException | ExecutionException ex) {
                                 updateActionState(ActionState.State.EXECUTION_FAILED);
@@ -271,9 +276,16 @@ public class ActionImpl implements SchedulableAction {
                 actionTask.cancel(true);
                 waitUntilExecuted();
             }
-            updateActionState(State.SCHEDULED);
+
+            // if action is interruptible it can be scheduled otherwise it is rejected
+            if (getActionDescription().getInterruptible() && getActionDescription().getSchedulable()) {
+                updateActionState(State.SCHEDULED);
+            } else {
+                updateActionState(State.REJECTED);
+            }
+
             // rescheduling is not necessary because aborting is only done when rescheduling
-            return null;
+            return actionDescriptionBuilder.build();
         });
     }
 
@@ -303,7 +315,7 @@ public class ActionImpl implements SchedulableAction {
 
     private void updateActionState(ActionState.State state) {
 
-        if(state == State.EXECUTING) {
+        if (state == State.EXECUTING) {
             LOGGER.info(MultiLanguageTextProcessor.getBestMatch(actionDescriptionBuilder.getDescription(), this + " State[" + state.name() + "]"));
         }
         // StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
@@ -311,8 +323,8 @@ public class ActionImpl implements SchedulableAction {
 
         synchronized (executionSync) {
 
-            if(isDone()) {
-                if(JPService.verboseMode()) {
+            if (isDone()) {
+                if (JPService.verboseMode()) {
                     LOGGER.warn("Can not change the state to {} of an already {} action!", state.name(), actionDescriptionBuilder.getActionState().getValue().name().toLowerCase());
                 }
                 return;
@@ -333,25 +345,6 @@ public class ActionImpl implements SchedulableAction {
             unit.notifyScheduledActionList();
         }
     }
-
-//    private void waitForExecution(final Future result) throws CouldNotPerformException, InterruptedException {
-//        //TODO this is a problem if the internal task is not returned as a completable future such as for the multi activity in users
-//        if (getActionDescription().getExecutionTimePeriod() == 0) {
-//            return;
-//        }
-//        try {
-//            result.get(getExecutionTime(), TimeUnit.MILLISECONDS);
-//            if (isValid()) {
-//                Thread.sleep(getExecutionTime());
-//            }
-//        } catch (CancellationException | ExecutionException | TimeoutException ex) {
-//            throw new CouldNotPerformException("Action execution aborted!", ex);
-//        } finally {
-//            if (!result.isDone()) {
-//                result.cancel(true);
-//            }
-//        }
-//    }
 
     @Override
     public String toString() {

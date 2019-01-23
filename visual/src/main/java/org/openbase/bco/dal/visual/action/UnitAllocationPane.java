@@ -23,6 +23,7 @@ package org.openbase.bco.dal.visual.action;
  */
 
 import com.google.protobuf.Message;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -103,7 +104,7 @@ public class UnitAllocationPane extends AbstractFXController {
     private TableColumn schedulableColumn;
 
     @FXML
-    private TableColumn livetimeColumn;
+    private TableColumn lifetimeColumn;
 
     @FXML
     private TableColumn executionTimeColumn;
@@ -111,11 +112,27 @@ public class UnitAllocationPane extends AbstractFXController {
     @FXML
     private TableColumn timestampColumn;
 
+    @FXML
+    private TableColumn validColumn;
+
+    @FXML
+    private TableColumn runningColumn;
+
+    @FXML
+    private TableColumn doneColumn;
+
+    @FXML
+    private TableColumn expiredColumn;
+
+
+
     private Observer unitObserver;
     private Unit<?> unit;
+    private final ObservableList<UnitAllocationBean> data;
 
     public UnitAllocationPane() {
         this.unitIdProperty = new SimpleStringProperty();
+        this.data = FXCollections.observableArrayList();
         this.unitIdProperty.addListener((observable, oldValue, newValue) -> {
             System.out.println("update unit to: " + newValue);
             try {
@@ -136,11 +153,15 @@ public class UnitAllocationPane extends AbstractFXController {
             topPane.getChildren().add(UnitSelectionPaneControllerPair.getKey());
             positionColumn.setCellValueFactory(new PropertyValueFactory<>("position"));
             priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
+            validColumn.setCellValueFactory(new PropertyValueFactory<>("valid"));
+            runningColumn.setCellValueFactory(new PropertyValueFactory<>("running"));
+            doneColumn.setCellValueFactory(new PropertyValueFactory<>("done"));
+            expiredColumn.setCellValueFactory(new PropertyValueFactory<>("expired"));
             categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
             actionStateColumn.setCellValueFactory(new PropertyValueFactory<>("actionState"));
             actionIdColumn.setCellValueFactory(new PropertyValueFactory<>("actionId"));
             timestampColumn.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
-            livetimeColumn.setCellValueFactory(new PropertyValueFactory<>("lifetime"));
+            lifetimeColumn.setCellValueFactory(new PropertyValueFactory<>("lifetime"));
             serviceStateColumn.setCellValueFactory(new PropertyValueFactory<>("serviceState"));
             initiatorColumn.setCellValueFactory(new PropertyValueFactory<>("initiator"));
             descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
@@ -152,8 +173,11 @@ public class UnitAllocationPane extends AbstractFXController {
                 unitIdProperty.set(c);
             });
 
-            GlobalScheduledExecutorService.scheduleAtFixedRate(() -> update(),
-                    1, 1, TimeUnit.SECONDS);
+            actionTable.setItems(data);
+
+            GlobalScheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() -> {
+                actionTable.refresh();
+            }),1, 1, TimeUnit.SECONDS);
 
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -168,7 +192,8 @@ public class UnitAllocationPane extends AbstractFXController {
             return;
         }
 
-        ObservableList<UnitAllocationBean> data = FXCollections.observableArrayList();
+        data.clear();
+
         try {
             int i = 1;
             for (ActionDescription actionDescription : unit.getActionList()) {
@@ -177,9 +202,6 @@ public class UnitAllocationPane extends AbstractFXController {
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory("Could updated dynamic content!", ex, LOGGER);
         }
-        actionTable.setItems(data);
-        actionTable.refresh();
-
     }
 
     private void setUnitId(final String unitId) throws CouldNotPerformException {
@@ -195,7 +217,7 @@ public class UnitAllocationPane extends AbstractFXController {
         } catch (NotAvailableException e) {
             throw new CouldNotPerformException("Could not setup Unit[" + unitId + "]");
         } catch (InterruptedException e) {
-            new FatalImplementationErrorException(this, e);
+            // just do nothing to speed up the shutdown.
         }
     }
 
@@ -205,7 +227,6 @@ public class UnitAllocationPane extends AbstractFXController {
 
 
         private final int position;
-        private final State actionState;
         private final String timestamp;
         private final String actionId;
         private final String serviceState;
@@ -223,7 +244,6 @@ public class UnitAllocationPane extends AbstractFXController {
         public UnitAllocationBean(final int position, final ActionDescription actionDescription) throws NotAvailableException {
             this.remoteAction = new RemoteAction(actionDescription);
             this.position = position;
-            this.actionState = actionDescription.getActionState().getValue();
             this.timestamp = dateFormat.format(new Date(TimestampJavaTimeTransform.transform(actionDescription.getTimestamp())));
             this.actionId = actionDescription.getId();
             this.description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(),"?");
@@ -258,8 +278,8 @@ public class UnitAllocationPane extends AbstractFXController {
             return position;
         }
 
-        public State getActionState() {
-            return actionState;
+        public String getActionState() {
+            return remoteAction.getActionState().name();
         }
 
         public String getTimestamp() {
@@ -288,6 +308,22 @@ public class UnitAllocationPane extends AbstractFXController {
 
         public String getPriority() {
             return priority;
+        }
+
+        public boolean isValid() {
+            return remoteAction.isValid();
+        }
+
+        public boolean isRunning() {
+            return remoteAction.isRunning();
+        }
+
+        public boolean isDone() {
+            return remoteAction.isDone();
+        }
+
+        public boolean isExpired() {
+            return remoteAction.isExpired();
         }
 
         public String getExecutionTime() {
