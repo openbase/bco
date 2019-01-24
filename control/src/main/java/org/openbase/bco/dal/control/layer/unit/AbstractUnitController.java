@@ -58,6 +58,7 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.BuilderSyncSetup;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -134,6 +135,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     private static final long REQUESTED_STATE_CACHE_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
+    private static final String LOCK_CONSUMER_SCHEDULEING = AbstractUnitController.class.getSimpleName() + ".reschedule(..)";
+    private static final String LOCK_CONSUMER_INDEX_LOOKUP = AbstractUnitController.class.getSimpleName() + ".getSchedulingIndex()";
+    private static final String LOCK_CONSUMER_CANCEL_ACTION = AbstractUnitController.class.getSimpleName() + ".cancelAction(..";
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
@@ -144,7 +149,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
-    private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
+    //private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
     private final ReentrantReadWriteLock actionListNotificationLock = new ReentrantReadWriteLock();
     private final ActionComparator actionComparator;
     private Map<ServiceType, OperationService> operationServiceMap;
@@ -156,6 +161,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
     private final Map<ServiceType, Message> requestedStateCache;
     private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
+    final BuilderSyncSetup<DB> builderSetup;
+
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
         super(builder);
@@ -163,6 +170,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         this.operationServiceMap = new TreeMap<>();
         this.scheduledActionList = new ArrayList<>();
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
+        this.builderSetup = getBuilderSetup();
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             unitDataObservableMap.put(serviceTempus, new UnitDataFilteredObservable<>(this, serviceTempus));
             super.addDataObserver((DataProvider<D> source, D data) -> {
@@ -592,8 +600,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
         try {
             Action actionToCancel = null;
-            synchronized (scheduledActionListLock) {
-
+            builderSetup.lockWrite(LOCK_CONSUMER_CANCEL_ACTION);
+            try {
                 // lookup action to cancel
                 for (Action action : scheduledActionList) {
                     // provided action id is a direct match
@@ -654,6 +662,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
                 // cancel the action which automatically triggers a reschedule.
                 return actionToCancel.cancel();
+            } finally {
+                // unlock but do not notify because it has already performed.
+                builderSetup.unlockWrite(false);
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex));
@@ -675,8 +686,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     private int getSchedulingIndex(Action action) {
-        synchronized (scheduledActionListLock) {
+
+        builderSetup.lockRead(LOCK_CONSUMER_INDEX_LOOKUP);
+        try {
             return scheduledActionList.indexOf(action);
+        } finally {
+            builderSetup.unlockRead(LOCK_CONSUMER_INDEX_LOOKUP);
         }
     }
 
@@ -701,7 +716,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If there is no action left to schedule null is returned.
      */
     public Action reschedule(final SchedulableAction actionToSchedule) {
-        synchronized (scheduledActionListLock) {
+        builderSetup.lockWrite(LOCK_CONSUMER_SCHEDULEING);
+        try {
             // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
             actionListNotificationLock.writeLock().lock();
 
@@ -850,6 +866,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 //                notifyScheduledActionListUnlocked();
                 // unlock notification lock so that notifications for action state changes are notified again
             }
+        } finally {
+            // unlock but do not notify because it has already performed.
+            builderSetup.unlockWrite(false);
         }
     }
 
@@ -1089,38 +1108,37 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         }
 
                         responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
-                        synchronized (scheduledActionListLock) {
-                            // add the new action as executing to the front of the stack
-                            final ActionImpl action = new ActionImpl(responsibleActionBuilder.build(), this, false);
-                            scheduledActionList.add(0, action);
 
-                            // if there was another action executing before, abort it
-                            if (scheduledActionList.size() > 1) {
-                                // locking this lock skips the notification by calling reject or abort below
-                                // else the builderSyncSetup is retrieved twice by the same thread which can cause a deadlock because the lock is held during the notification
-                                // if the applyDataUpdate method finished these new states are notified anyway
-                                actionListNotificationLock.writeLock().lock();
-                                try {
-                                    final SchedulableAction schedulableAction = scheduledActionList.get(1);
-                                    if (schedulableAction.getActionDescription().getInterruptible()) {
-                                        schedulableAction.abort();
-                                    } else {
-                                        schedulableAction.reject();
-                                    }
+                        // add the new action as executing to the front of the stack
+                        final ActionImpl action = new ActionImpl(responsibleActionBuilder.build(), this, false);
+                        scheduledActionList.add(0, action);
 
-                                    // trigger a reschedule which can trigger the action with a higher priority again
-                                    reschedule();
-
-                                    // update action list in builder
-                                    final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
-                                    dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
-                                    for (final SchedulableAction scheduledAction : scheduledActionList) {
-                                        dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, scheduledAction.getActionDescription());
-
-                                    }
-                                } finally {
-                                    actionListNotificationLock.writeLock().unlock();
+                        // if there was another action executing before, abort it
+                        if (scheduledActionList.size() > 1) {
+                            // locking this lock skips the notification by calling reject or abort below
+                            // else the builderSyncSetup is retrieved twice by the same thread which can cause a deadlock because the lock is held during the notification
+                            // if the applyDataUpdate method finished these new states are notified anyway
+                            actionListNotificationLock.writeLock().lock();
+                            try {
+                                final SchedulableAction schedulableAction = scheduledActionList.get(1);
+                                if (schedulableAction.getActionDescription().getInterruptible()) {
+                                    schedulableAction.abort();
+                                } else {
+                                    schedulableAction.reject();
                                 }
+
+                                // trigger a reschedule which can trigger the action with a higher priority again
+                                reschedule();
+
+                                // update action list in builder
+                                final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
+                                dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
+                                for (final SchedulableAction scheduledAction : scheduledActionList) {
+                                    dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, scheduledAction.getActionDescription());
+
+                                }
+                            } finally {
+                                actionListNotificationLock.writeLock().unlock();
                             }
                         }
                     }
