@@ -536,7 +536,7 @@ public class ActionDescriptionProcessor {
 
         // humans action should be executed some time before they get rejected by automation routines.
         if (actionDescriptionBuilder.getActionInitiator().getInitiatorType() == InitiatorType.HUMAN && actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
-            actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(1));
+            actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
         }
 
         // prepare
