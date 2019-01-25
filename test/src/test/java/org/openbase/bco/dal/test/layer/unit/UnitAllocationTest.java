@@ -122,7 +122,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         colorableLightRemote.addDataObserver(actionStateObserver);
 
         // set the power state of the colorable light
-        final RemoteAction remoteAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON));
+        final RemoteAction remoteAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         remoteAction.addActionDescriptionObserver((source, data) -> LOGGER.warn("Remote action received state {}", data.getActionState().getValue()));
 
         // wait for executing because it is likely to be initiating before
@@ -197,7 +197,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     public void testMultiActionsBySameInitiator() throws Exception {
         LOGGER.info("testMultiActionsBySameInitiator");
         // set the power state of the colorable light
-        final RemoteAction firstAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON));
+        final RemoteAction firstAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         firstAction.waitForExecution();
 
         assertEquals(firstAction.getId(), colorableLightRemote.getActionList().get(0).getId());
@@ -207,7 +207,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // set the color of the light
         final HSBColor hsb = HSBColor.newBuilder().setBrightness(100).setHue(12).setSaturation(100).build();
-        final RemoteAction secondAction = new RemoteAction(colorableLightRemote.setColor(hsb));
+        final RemoteAction secondAction = new RemoteAction(colorableLightRemote.setColor(hsb, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         secondAction.waitForExecution();
 
         assertEquals(secondAction.getId(), colorableLightRemote.getActionList().get(0).getId());
