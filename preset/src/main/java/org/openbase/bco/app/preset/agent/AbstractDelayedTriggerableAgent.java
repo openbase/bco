@@ -105,8 +105,8 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
             case DELAY_ACTIVATION:
                 switch (activationState.getValue()) {
                     case ACTIVE:
-                        timeout.start(computeDelay());
                         this.lastActivationState = activationState;
+                        timeout.start(computeDelay());
                         break;
                     case DEACTIVE:
                         timeout.cancel();
@@ -121,8 +121,8 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
                         delayedTrigger(activationState);
                         break;
                     case DEACTIVE:
-                        timeout.start(computeDelay());
                         this.lastActivationState = activationState;
+                        timeout.start(computeDelay());
                         break;
                 }
                 break;

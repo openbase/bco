@@ -81,12 +81,12 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
 
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
+        logger.debug("Activating [{}]", LabelProcessor.getBestMatch(getConfig().getLabel()));
         
         // do not activate agents that need the resource allocation to work properly if the resource allocation is turned off
         try {
             if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
-                logger.info("Skip activation of agent [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "] because unit allocation is disabled.");
+                logger.warn("Skip activation of agent [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "] because unit allocation is disabled.");
                 return activationState.getResponsibleAction();
             }
         } catch (JPNotAvailableException ex) {
@@ -99,7 +99,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
 
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
+        logger.debug("Deactivating [{}]", LabelProcessor.getBestMatch(getConfig().getLabel()));
         triggerPool.deactivate();
     }
 

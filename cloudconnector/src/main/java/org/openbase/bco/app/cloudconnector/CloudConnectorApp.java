@@ -142,7 +142,6 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      */
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        logger.info("Execute Cloud Connector");
         //TODO activate check again if service server key is static
 //        if (!tokenStore.hasCloudConnectorToken()) {
         createAuthenticationToken();
@@ -166,7 +165,6 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      */
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException {
-        logger.info("Stop Cloud Connector");
         for (SocketWrapper socketWrapper : userIdSocketMap.values()) {
             socketWrapper.deactivate();
         }
