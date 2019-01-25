@@ -26,6 +26,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.ShutdownInProgressException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,7 @@ public class CachedAuthenticationRemote {
     public synchronized static AuthenticationRemote getRemote() throws NotAvailableException {
         try {
             if (shutdown) {
-                throw new InvalidStateException("Remote service is shutting down!");
+                throw new ShutdownInProgressException("AuthenticationRemote");
             }
 
             if (authenticationRemote == null) {
