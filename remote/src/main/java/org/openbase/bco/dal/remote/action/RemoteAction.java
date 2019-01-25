@@ -269,15 +269,19 @@ public class RemoteAction implements Action {
                 return true;
             }
 
-            if (actionDescription.getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                    if (!impactedRemoteAction.isRunning()) {
-                        return false;
+            try {
+                if (getActionDescription().getIntermediary()) {
+                    for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                        if (!impactedRemoteAction.isRunning()) {
+                            return false;
+                        }
                     }
+                    return true;
+                } else {
+                    return Action.super.isRunning();
                 }
-                return true;
-            } else {
-                return Action.super.isRunning();
+            } catch (NotAvailableException ex) {
+                return false;
             }
         }
 
@@ -306,9 +310,9 @@ public class RemoteAction implements Action {
                     futureObservationTask.cancel(true);
                     return targetUnit.cancelAction(getActionDescription(), authenticationToken, authorizationToken);
                 } else {
-                    if (actionDescription.getIntermediary()) {
+                    if (getActionDescription().getIntermediary()) {
                         // cancel all impacts of this actions and return the current action description
-                        return FutureProcessor.allOf(impactedRemoteActions, input -> actionDescription, RemoteAction::cancel);
+                        return FutureProcessor.allOf(impactedRemoteActions, input -> getActionDescription(), RemoteAction::cancel);
                     } else {
                         // cancel the action on the controller
                         return targetUnit.cancelAction(getActionDescription(), authenticationToken, authorizationToken);
@@ -361,11 +365,15 @@ public class RemoteAction implements Action {
     public void waitUntilDone() throws CouldNotPerformException, InterruptedException {
         waitForSubmission();
 
-        if (actionDescription.getIntermediary()) {
-            for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                impactedRemoteAction.waitUntilDone();
+        try {
+            if (getActionDescription().getIntermediary()) {
+                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                    impactedRemoteAction.waitUntilDone();
+                }
+                return;
             }
-            return;
+        } catch (NotAvailableException ex) {
+            // if the action description is not available, than we just continue and wait for it.
         }
 
         synchronized (executionSync) {
@@ -392,11 +400,16 @@ public class RemoteAction implements Action {
         }
         waitForSubmission();
 
-        if (actionDescription.getIntermediary()) {
-            for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                impactedRemoteAction.waitForActionState(actionState);
+        try {
+            if (actionDescription.getIntermediary()) {
+                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                    impactedRemoteAction.waitForActionState(actionState);
+                }
+                return;
             }
-            return;
+
+        } catch (NotAvailableException ex) {
+            // if the action description is not available, than we just continue and wait for it.
         }
 
         synchronized (executionSync) {
@@ -413,12 +426,15 @@ public class RemoteAction implements Action {
 
     public void waitForExecution() throws CouldNotPerformException, InterruptedException {
         waitForSubmission();
-
-        if (actionDescription.getIntermediary()) {
-            for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                impactedRemoteAction.waitForExecution();
+        try {
+            if (actionDescription.getIntermediary()) {
+                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                    impactedRemoteAction.waitForExecution();
+                }
+                return;
             }
-            return;
+        } catch (NotAvailableException ex) {
+            // if the action description is not available, than we just continue and wait for it.
         }
 
         // wait on this action
