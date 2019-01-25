@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.action;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -35,7 +35,6 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -124,13 +123,24 @@ public class ActionImpl implements SchedulableAction {
     }
 
     /**
-     * returns if there is still an task operating this action.
+     * checks if the execution task is finished.
      *
-     * @return true if action is still in progress.
+     * @return true if the execution task is finish otherwise true.
+     */
+    private boolean isExecutionTaskFinish() {
+        synchronized (executionSync) {
+            return actionTask == null ||  actionTask.isDone();
+        }
+    }
+
+    /**
+     * checks if this action is currently executing or the execution task is not done yet.
+     *
+     * @return true if execution is still in progress.
      */
     private boolean isExecuting() {
         synchronized (executionSync) {
-            return actionTask != null && !actionTask.isDone() || getActionState() == State.EXECUTING;
+            return !isExecutionTaskFinish() || getActionState() == State.EXECUTING;
         }
     }
 
@@ -152,7 +162,7 @@ public class ActionImpl implements SchedulableAction {
                     updateActionState(ActionState.State.INITIATING);
 
                     try {
-                        while (!Thread.interrupted()) {
+                        while (!Thread.interrupted() && !actionTask.isCancelled()) {
                             try {
                                 boolean hasOperationService = false;
                                 for (ServiceDescription description : unit.getUnitTemplate().getServiceDescriptionList()) {
@@ -160,6 +170,11 @@ public class ActionImpl implements SchedulableAction {
                                         hasOperationService = true;
                                         break;
                                     }
+                                }
+
+                                if (isDone()) {
+                                    LOGGER.error(ActionImpl.this + " was done before executed!");
+                                    return getActionDescription();
                                 }
 
                                 // Execute
@@ -205,6 +220,10 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
+    /**
+     * Method blocks until the action reaches a terminated state.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
     public void waitUntilDone() throws InterruptedException {
         synchronized (executionSync) {
             while (!isDone()) {
@@ -213,9 +232,29 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
-    public void waitUntilExecuted() throws InterruptedException {
+    /**
+     * Method blocks until the action reaches a terminated state or the timeout is reached.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public void waitUntilDone(final long timeout) throws InterruptedException {
         synchronized (executionSync) {
-            while (isExecuting()) {
+            while (!isDone()) {
+                executionSync.wait(timeout);
+            }
+        }
+    }
+
+    private void waitForExecutionTaskFinalization(final long timeout) throws InterruptedException {
+        synchronized (executionSync) {
+            while (!isExecutionTaskFinish()) {
+                executionSync.wait(timeout);
+            }
+        }
+    }
+
+    private void waitForExecutionTaskFinalization() throws InterruptedException {
+        synchronized (executionSync) {
+            while (!isExecutionTaskFinish()) {
                 executionSync.wait();
             }
         }
@@ -252,9 +291,9 @@ public class ActionImpl implements SchedulableAction {
         // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
         updateActionState(State.CANCELING);
         return GlobalCachedExecutorService.submit(() -> {
-            if (actionTask != null && !actionTask.isDone()) {
+            if (!isExecutionTaskFinish()) {
                 actionTask.cancel(true);
-                waitUntilExecuted();
+                waitForExecutionTaskFinalization();
             }
             updateActionState(State.CANCELED);
             unit.reschedule();
@@ -263,7 +302,7 @@ public class ActionImpl implements SchedulableAction {
     }
 
     @Override
-    public Future<ActionDescription> abort() {
+    public Future<ActionDescription> abort(boolean forceReject) {
         if (!isExecuting()) {
             // this should never happen since a task should be executing before it is aborted
             LOGGER.error("Aborted action was not executing before");
@@ -272,13 +311,13 @@ public class ActionImpl implements SchedulableAction {
 
         updateActionState(State.ABORTING);
         return GlobalCachedExecutorService.submit(() -> {
-            if (actionTask != null && !actionTask.isDone()) {
+            if (!isExecutionTaskFinish()) {
                 actionTask.cancel(true);
-                waitUntilExecuted();
+                waitForExecutionTaskFinalization();
             }
 
             // if action is interruptible it can be scheduled otherwise it is rejected
-            if (getActionDescription().getInterruptible() && getActionDescription().getSchedulable()) {
+            if (!forceReject && getActionDescription().getInterruptible() && getActionDescription().getSchedulable()) {
                 updateActionState(State.SCHEDULED);
             } else {
                 updateActionState(State.REJECTED);
@@ -302,6 +341,9 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public void reject() {
+        if (actionTask != null && !actionTask.isDone()) {
+            actionTask.cancel(true);
+        }
         updateActionState(State.REJECTED);
     }
 
@@ -310,33 +352,75 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public void finish() {
-        updateActionState(State.FINISHED);
+
+        // finalize if still running
+        if (!isExecutionTaskFinish()) {
+            // try a smooth finishing if not already failed.
+            actionTask.cancel(getActionState() == State.EXECUTION_FAILED);
+
+            try {
+                waitForExecutionTaskFinalization(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // check if finished yet
+            if (!isExecutionTaskFinish()) {
+                LOGGER.warn("Execution of " + this + " can not be finished smoothly! Force finalization...");
+                actionTask.cancel(true);
+            }
+
+            try {
+                waitForExecutionTaskFinalization(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // check if finished after force
+            if (!isExecutionTaskFinish()) {
+                LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
+            }
+        }
+
+        // if not already finished than we force the state.
+        if (!isDone()) {
+            updateActionState(State.FINISHED);
+        }
     }
 
     private void updateActionState(ActionState.State state) {
-
-        if (state == State.EXECUTING) {
-            LOGGER.info(MultiLanguageTextProcessor.getBestMatch(actionDescriptionBuilder.getDescription(), this + " State[" + state.name() + "]"));
-        }
-        // StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
-        LOGGER.trace(this + " State[" + state.name() + "]");
-
         synchronized (executionSync) {
 
-            if (isDone()) {
-                if (JPService.verboseMode()) {
-                    LOGGER.warn("Can not change the state to {} of an already {} action!", state.name(), actionDescriptionBuilder.getActionState().getValue().name().toLowerCase());
-                }
+            // duplicated termination in some state should be ok, but than skip the update.
+            if(getActionDescription().getActionState().getValue() == state && isDone()) {
                 return;
             }
 
+            // check duplicated termination
+            if (isDone()) {
+                LOGGER.warn("Can not change the state to {} of an already {} action!", state.name(), actionDescriptionBuilder.getActionState().getValue().name().toLowerCase());
+                StackTracePrinter.printStackTrace(LOGGER, LogLevel.WARN);
+                return;
+            }
+
+            // inform about execution
+            if (state == State.EXECUTING) {
+                LOGGER.info(MultiLanguageTextProcessor.getBestMatch(actionDescriptionBuilder.getDescription(), this + " State[" + state.name() + "]"));
+            }
+
+            // print update in debug mode
+            if(JPService.debugMode()) {
+                LOGGER.info(this + " State[" + state.name() + "]" + MultiLanguageTextProcessor.getBestMatch(getActionDescription().getDescription(), "?"));
+                //StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
+            }
+
+            // perform the update
             actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
             try {
                 ServiceStateProcessor.updateLatestValueOccurrence(state.getValueDescriptor(), TimestampProcessor.getCurrentTimestamp(), actionDescriptionBuilder.getActionStateBuilder());
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);
             }
-
             executionSync.notifyAll();
         }
 

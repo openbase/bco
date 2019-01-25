@@ -550,7 +550,19 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             } else {
                 builder = ((ActionParameter) actionParameter).toBuilder();
             }
-            builder.getServiceStateDescriptionBuilder().setUnitId(getId());
+
+            // validate and setup target unit
+            if(!builder.getServiceStateDescriptionBuilder().hasUnitId()) {
+                builder.getServiceStateDescriptionBuilder().setUnitId(getId());
+            } else if (!builder.getServiceStateDescriptionBuilder().getUnitId().equals(getId())) {
+                logger.warn("Action is not applied to its correct target unit but will be forwarded...");
+                try {
+                    Units.getUnit(builder.getServiceStateDescriptionBuilder().getUnitId(), false).applyAction(actionParameter);
+                } catch (InterruptedException e) {
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Action forwarding failed!", ex);
+                }
+            }
 
             // If this action was received from a remote instance, its authority can not be guaranteed.
             // In this case we perform an unauthorized action.
@@ -749,7 +761,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             logger.warn("New Action {} from initiator {} is older than a currently scheduled one", actionToSchedule, newInitiator.getInitiatorId());
                         } else {
                             // actionToSchedule is newer, so reject old one
-                            schedulableAction.reject();
+                            if(schedulableAction.getActionState() == State.EXECUTING) {
+                                schedulableAction.abort(true);
+                            }
                         }
                     }
                 } catch (NotAvailableException ex) {

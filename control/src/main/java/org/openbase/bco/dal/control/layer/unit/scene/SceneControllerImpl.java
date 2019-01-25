@@ -25,6 +25,7 @@ package org.openbase.bco.dal.control.layer.unit.scene;
 import org.openbase.bco.authentication.lib.AuthPair;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
@@ -36,6 +37,7 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -97,24 +99,38 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneData.newBuilder());
-        this.buttonRemoteSet = new HashSet<>();
-        this.requiredActionPool = new RemoteActionPool(this);
-        this.optionalActionPool = new RemoteActionPool(this);
-        this.buttonObserver = (final DataProvider<ButtonData> source, ButtonData data) -> {
+        try {
+            this.buttonRemoteSet = new HashSet<>();
+            this.requiredActionPool = new RemoteActionPool(this);
+            this.optionalActionPool = new RemoteActionPool(this);
+            this.buttonObserver = (final DataProvider<ButtonData> source, ButtonData data) -> {
 
-            // skip initial button state synchronization during system startup
-            if (data.getButtonStateLast().getValue().equals(State.UNKNOWN)) {
-                return;
-            }
+                // skip initial button state synchronization during system startup
+                if (data.getButtonStateLast().getValue().equals(State.UNKNOWN)) {
+                    return;
+                }
 
-            if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
-                final ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
-                ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this);
-                actionParameter.setCause(data.getButtonState().getResponsibleAction());
-                applyAction(actionParameter);
-            }
-        };
-        this.activationStateOperationService = new ActivationStateOperationServiceImpl();
+                if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
+                    ActivationState.Builder activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE);
+                    activationState = TimestampProcessor.updateTimestampWithCurrentTime(activationState, logger);
+                    ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(activationState.build(), ServiceType.ACTIVATION_STATE_SERVICE, this);
+                    actionParameter.setCause(data.getButtonState().getResponsibleAction());
+                    applyAction(actionParameter);
+                }
+
+                if (data.getButtonState().getValue().equals(State.RELEASED)) {
+                    ActivationState.Builder activationState = ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE);
+                    activationState = TimestampProcessor.updateTimestampWithCurrentTime(activationState, logger);
+                    ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(activationState.build(), ServiceType.ACTIVATION_STATE_SERVICE, this);
+                    actionParameter.setCause(data.getButtonState().getResponsibleAction());
+                    applyAction(actionParameter);
+                }
+            };
+            this.activationStateOperationService = new ActivationStateOperationServiceImpl();
+            registerOperationService(ServiceType.ACTIVATION_STATE_SERVICE, activationStateOperationService);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
@@ -221,10 +237,11 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         optionalActionPool.stop();
     }
 
-    private class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
+    public class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
 
         @Override
         public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+            System.out.println("incomming activation: "+ activationState.getValue().name());
             final ActionDescription.Builder actionDescriptionBuilder = activationState.getResponsibleAction().toBuilder();
             actionDescriptionBuilder.setIntermediary(true);
             switch (activationState.getValue()) {

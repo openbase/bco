@@ -50,8 +50,16 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
 
     /**
      * Abort this action.
+     * @param forceReject forces an rejection after abortion.
      */
-    Future<ActionDescription> abort();
+    Future<ActionDescription> abort(boolean forceReject);
+
+    /**
+     * Abort this action.
+     */
+    default Future<ActionDescription> abort() {
+        return abort(false);
+    }
 
     /**
      * {@inheritDoc}
