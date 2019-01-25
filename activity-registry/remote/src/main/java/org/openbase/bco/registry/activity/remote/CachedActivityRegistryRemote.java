@@ -22,11 +22,9 @@ package org.openbase.bco.registry.activity.remote;
  * #L%
  */
 
+import org.openbase.bco.registry.activity.lib.ActivityRegistry;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -64,9 +62,6 @@ public class CachedActivityRegistryRemote {
      */
     public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
-            if (shutdown) {
-                throw new InvalidStateException("Remote service is shutting down!");
-            }
             // only call re-init if the registry was activated and initialized in the first place
             if (registryRemote != null) {
                 getRegistry().reinit(REMOTE_LOCK);
@@ -86,7 +81,7 @@ public class CachedActivityRegistryRemote {
     public synchronized static ActivityRegistryRemote getRegistry() throws NotAvailableException {
         try {
             if (shutdown) {
-                throw new InvalidStateException("Remote service is shutting down!");
+                throw new ShutdownInProgressException(ActivityRegistry.class);
             }
 
             if (registryRemote == null) {

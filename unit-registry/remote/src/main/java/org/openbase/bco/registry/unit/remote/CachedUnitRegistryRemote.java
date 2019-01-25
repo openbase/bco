@@ -22,11 +22,9 @@ package org.openbase.bco.registry.unit.remote;
  * #L%
  */
 
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -88,7 +86,7 @@ public class CachedUnitRegistryRemote {
     public synchronized static UnitRegistryRemote getRegistry() throws NotAvailableException {
         try {
             if (shutdown) {
-                throw new InvalidStateException("Remote service is shutting down!");
+                throw new ShutdownInProgressException(UnitRegistry.class);
             }
 
             if (registryRemote == null) {
@@ -108,7 +106,7 @@ public class CachedUnitRegistryRemote {
             }
             return registryRemote;
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("cached unit registry", ex);
+            throw new NotAvailableException("Cached unit registry is not available!", ex);
         }
     }
 

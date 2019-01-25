@@ -22,11 +22,9 @@ package org.openbase.bco.registry.template.remote;
  * #L%
  */
 
+import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -83,7 +81,7 @@ public class CachedTemplateRegistryRemote {
     public synchronized static TemplateRegistryRemote getRegistry() throws NotAvailableException {
         try {
             if (shutdown) {
-                throw new InvalidStateException("Remote service is shutting down!");
+                throw new ShutdownInProgressException(TemplateRegistry.class);
             }
 
             if (registryRemote == null) {
