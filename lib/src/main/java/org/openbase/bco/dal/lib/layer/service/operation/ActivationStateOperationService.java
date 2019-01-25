@@ -47,6 +47,10 @@ public interface ActivationStateOperationService extends OperationService, Activ
         return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(activationState, ServiceType.ACTIVATION_STATE_SERVICE));
     }
 
+    default Future<ActionDescription> setActivationState(final ActivationState.State activation, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(ActivationState.newBuilder().setValue(activation).build(), ServiceType.ACTIVATION_STATE_SERVICE)));
+    }
+
     default Future<ActionDescription> setActivationState(final ActivationState activationState, final ActionParameter actionParameter) throws CouldNotPerformException {
         return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(activationState, ServiceType.ACTIVATION_STATE_SERVICE)));
     }

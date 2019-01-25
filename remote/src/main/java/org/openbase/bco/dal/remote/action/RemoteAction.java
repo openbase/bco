@@ -254,7 +254,7 @@ public class RemoteAction implements Action {
      */
     @Override
     public boolean isValid() {
-        return (actionParameterBuilder != null || futureObservationTask != null) && Action.super.isValid();
+        return (actionParameterBuilder != null || futureObservationTask != null) && actionDescription != null && Action.super.isValid();
     }
 
     /**

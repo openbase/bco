@@ -284,7 +284,9 @@ public class ActionImpl implements SchedulableAction {
     public Future<ActionDescription> cancel() {
         // if action not executing, set to canceled if not already done and finish
         if (!isExecuting()) {
-            updateActionState(State.CANCELED);
+            if(!isDone()) {
+                updateActionState(State.CANCELED);
+            }
             return CompletableFuture.completedFuture(getActionDescription());
         }
 

@@ -44,6 +44,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
@@ -185,6 +186,10 @@ public class RemoteActionPool {
         }
 
         return new MultiFuture<>(submissionFutureList);
+    }
+
+    public List<RemoteAction> getRemoteActionList() {
+        return Collections.unmodifiableList(remoteActionList);
     }
 
     public void stop() {

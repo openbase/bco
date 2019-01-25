@@ -96,6 +96,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     private final RemoteActionPool requiredActionPool;
     private final RemoteActionPool optionalActionPool;
     private final ActivationStateOperationServiceImpl activationStateOperationService;
+    private final Observer<RemoteAction, ActionDescription> requiredActionPoolObserver;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneData.newBuilder());
@@ -124,6 +125,36 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(activationState.build(), ServiceType.ACTIVATION_STATE_SERVICE, this);
                     actionParameter.setCause(data.getButtonState().getResponsibleAction());
                     applyAction(actionParameter);
+                }
+            };
+
+            this.requiredActionPoolObserver = new Observer<RemoteAction, ActionDescription>() {
+                @Override
+                public void update(RemoteAction source, ActionDescription data) throws Exception {
+                    if (source.isDone() || source.isScheduled()) {
+                        logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
+                        requiredActionPool.removeActionDescriptionObserver(requiredActionPoolObserver);
+                        stop();
+
+                        try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+
+
+
+                            final Builder internalBuilder = dataBuilder.getInternalBuilder();
+                            // move current state to last
+                            internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
+                            // update current state to deactivate and set timestamp
+                            final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
+                            activationStateBuilder.setValue(ActivationState.State.DEACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
+                            // update latest value occurrence map of current state
+                            for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
+                                if (builder.getKey() == activationStateBuilder.getValue()) {
+                                    builder.setValue(activationStateBuilder.getTimestamp());
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             };
             this.activationStateOperationService = new ActivationStateOperationServiceImpl();
@@ -317,33 +348,18 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     }
 
                     // register an observer which will deactivate the scene if one required action is now longer running
-                    final Observer<RemoteAction, ActionDescription> requiredActionPoolObserver = new Observer<RemoteAction, ActionDescription>() {
-                        @Override
-                        public void update(RemoteAction source, ActionDescription data) throws Exception {
-                            if (source.isDone() || source.isScheduled()) {
-                                logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
-                                requiredActionPool.removeActionDescriptionObserver(this);
-                                stop();
+                    requiredActionPool.addActionDescriptionObserver(requiredActionPoolObserver);
 
-                                try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-                                    final Builder internalBuilder = dataBuilder.getInternalBuilder();
-                                    // move current state to last
-                                    internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
-                                    // update current state to deactivate and set timestamp
-                                    final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
-                                    activationStateBuilder.setValue(ActivationState.State.DEACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
-                                    // update latest value occurrence map of current state
-                                    for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
-                                        if (builder.getKey() == activationStateBuilder.getValue()) {
-                                            builder.setValue(activationStateBuilder.getTimestamp());
-                                            break;
-                                        }
-                                    }
-                                }
+                    // trigger initial validation
+                    for (RemoteAction remoteAction : requiredActionPool.getRemoteActionList()) {
+                        if(remoteAction.isValid()) {
+                            try {
+                                requiredActionPoolObserver.update(remoteAction, remoteAction.getActionDescription());
+                            } catch (Exception ex) {
+                                ExceptionPrinter.printHistory("Could not validate scene state!", ex, logger);
                             }
                         }
-                    };
-                    requiredActionPool.addActionDescriptionObserver(requiredActionPoolObserver);
+                    }
             }
 
             applyDataUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE);

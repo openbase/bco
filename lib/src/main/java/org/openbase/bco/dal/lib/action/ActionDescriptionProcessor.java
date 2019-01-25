@@ -523,6 +523,18 @@ public class ActionDescriptionProcessor {
             actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
         }
 
+        // validate execution time and lookup by cause action if needed.
+        if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
+//            for (ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {
+//                if(actionReference.get)
+//            }
+            // todo: as long as the action reference does not provide more parameters like the getExecutionTimePeriod, priority, category etc. we do not support zero ExecutionTimePeriod.
+            if (actionDescriptionBuilder.getActionInitiator().getInitiatorType() != InitiatorType.HUMAN) {
+                // remove me later!
+                actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+            }
+        }
+
         // An action without offered execution time is at most executed directly and once.
         // There is no need for scheduling.
         if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
