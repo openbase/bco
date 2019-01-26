@@ -595,7 +595,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 throw new CouldNotPerformException("Could not check unit allocation flag.", ex);
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
+            return FutureProcessor.canceledFuture(ActionDescription.class, ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not apply action!", ex), logger));
         }
     }
 
