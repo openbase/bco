@@ -28,6 +28,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -87,7 +88,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
         List<UnitConfig> unitConfigList;
 
         // add scenes
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.SCENE, unitConfig.getId());
+        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.SCENE, unitConfig.getId(), false);
         if (!unitConfigList.isEmpty()) {
             sitemap.openFrameContext("Scenen");
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.SCENE, unitConfig.getId())) {
@@ -97,7 +98,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
         }
 
         // add apps
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.APP, unitConfig.getId());
+        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.APP, unitConfig.getId(), false);
         if (!unitConfigList.isEmpty()) {
             sitemap.openFrameContext("Apps");
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.APP, unitConfig.getId())) {
@@ -106,7 +107,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
             sitemap.closeContext();
         }
 
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.AGENT, unitConfig.getId());
+        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.AGENT, unitConfig.getId(), false);
         if (!unitConfigList.isEmpty() || !unitConfig.getLocationConfig().getUnitIdList().isEmpty()) {
             sitemap.openFrameContext("Sonstiges");
             // add agents
@@ -164,7 +165,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
                         continue;
                     }
 
-                    sitemap.openFrameContext(unitType.name());
+                    sitemap.openFrameContext(StringProcessor.formatHumanReadable(StringProcessor.transformUpperCaseToPascalCase(unitType.name())));
                     for (UnitConfig unitConfig : unitTypeUnitConfigMap.get(unitType)) {
                         sitemap.append(new GenericUnitSitemapElement(unitConfig));
                     }

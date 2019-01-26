@@ -113,6 +113,7 @@ public interface SitemapBuilder {
         SWITCH,
         TEMPERATURE,
         VIDEO,
+        SHIELD,
         WALLSWITCH;
     }
 

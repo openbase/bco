@@ -29,6 +29,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -90,7 +91,7 @@ public class RootLocationElement extends LocationElement {
 
         sitemap.openFrameContext("Debug", SitemapIconType.NONE);
 
-        sitemap.openTextContext("Units", SitemapIconType.STATUS);
+        sitemap.openTextContext("Units", SitemapIconType.SHIELD);
         final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
 
         // load unit configs
@@ -135,7 +136,7 @@ public class RootLocationElement extends LocationElement {
                 continue;
             }
 
-            sitemap.openFrameContext(unitType.name());
+            sitemap.openFrameContext(StringProcessor.formatHumanReadable(StringProcessor.transformUpperCaseToPascalCase(unitType.name())));
             for (UnitConfig unitConfig : unitTypeUnitConfigMap.get(unitType)) {
                 sitemap.append(new GenericUnitSitemapElement(unitConfig, absoluteLabel));
             }
@@ -143,7 +144,7 @@ public class RootLocationElement extends LocationElement {
         }
         sitemap.closeContext();
 
-        sitemap.openTextContext("Services", SitemapIconType.STATUS);
+        sitemap.openTextContext("Services", SitemapIconType.SHIELD);
         final Map<ServiceType, List<UnitConfig>> serviceTypeUnitConfigMap = new TreeMap<>();
 
         // load services
@@ -179,7 +180,7 @@ public class RootLocationElement extends LocationElement {
                 continue;
             }
 
-            sitemap.openFrameContext(serviceType.name());
+            sitemap.openFrameContext(StringProcessor.formatHumanReadable(StringProcessor.transformUpperCaseToPascalCase(serviceType.name())));
             for (UnitConfig unitConfig : serviceTypeUnitConfigMap.get(serviceType)) {
                 sitemap.append(new GenericUnitSitemapElement(unitConfig, serviceType, true));
             }
