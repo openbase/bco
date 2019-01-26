@@ -109,7 +109,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             // todo release: where should the id really set and which parts of the ActionDescriptionProcessor prepare method needs to be set as well?
             final Builder builder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
             builder.setId(ActionDescriptionProcessor.ACTION_ID_GENERATOR.generateId(builder.build()));
-            serviceDataBuilder.setField(descriptor, builder);
+            serviceDataBuilder.setField(descriptor, builder.build());
 
             unitController.applyDataUpdate(serviceDataBuilder.build(), metaData.getServiceType());
         } catch (NotAvailableException ex) {
