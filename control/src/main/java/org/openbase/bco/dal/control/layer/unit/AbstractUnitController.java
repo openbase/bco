@@ -761,9 +761,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             logger.warn("New Action {} from initiator {} is older than a currently scheduled one", actionToSchedule, newInitiator.getInitiatorId());
                         } else {
                             // actionToSchedule is newer, so reject old one
-                            if(schedulableAction.getActionState() == State.EXECUTING) {
-                                schedulableAction.abort(true);
-                            }
+                            schedulableAction.reject();
                         }
                     }
                 } catch (NotAvailableException ex) {

@@ -346,6 +346,9 @@ public class ActionImpl implements SchedulableAction {
         if (actionTask != null && !actionTask.isDone()) {
             actionTask.cancel(true);
         }
+        if(isExecuting()) {
+            abort(true);
+        }
         updateActionState(State.REJECTED);
     }
 
