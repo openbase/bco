@@ -45,6 +45,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.slf4j.Logger;
@@ -103,7 +104,12 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             actionParameter.setInterruptible(false);
             actionParameter.setSchedulable(false);
             actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
-            serviceDataBuilder.setField(descriptor, ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
+
+
+            // todo release: where should the id really set and which parts of the ActionDescriptionProcessor prepare method needs to be set as well?
+            final Builder builder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
+            builder.setId(ActionDescriptionProcessor.ACTION_ID_GENERATOR.generateId(builder.build()));
+            serviceDataBuilder.setField(descriptor, builder);
 
             unitController.applyDataUpdate(serviceDataBuilder.build(), metaData.getServiceType());
         } catch (NotAvailableException ex) {
