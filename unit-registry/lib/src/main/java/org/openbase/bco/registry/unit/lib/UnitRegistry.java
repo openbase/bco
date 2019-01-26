@@ -1045,18 +1045,42 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLocation(final UnitType unitType, final String locationId) throws CouldNotPerformException {
+        return getUnitConfigsByLocation(unitType, locationId, true);
+    }
+
+    /**
+     *
+     * Method returns all unit configurations which are direct related to the given location id and an
+     * instance of the given unit type. If the unit type is unknown or location, all child locations of the provided
+     * locations are resolved. In case the {@code recursive} flag is set to true than recursive related units are included as well.
+     *
+     * @param unitType   the unit type after which unit configs are filtered.
+     * @param locationId the location inside which unit configs are resolved.
+     * @param recursive  defines if recursive related unit should be included as well.
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigsByLocation(final UnitType unitType, final String locationId, final boolean recursive) throws CouldNotPerformException {
         final List<UnitConfig> unitConfigList = new ArrayList<>();
         final UnitConfig location = getUnitConfigById(locationId);
 
         // if unit type is unknown or location resolve all child locations
         if (unitType == UnitType.UNKNOWN || unitType == UnitType.LOCATION) {
             for (final String childId : location.getLocationConfig().getChildIdList()) {
-                unitConfigList.add(getUnitConfigById(childId));
+                final UnitConfig unitConfig = getUnitConfigById(childId);
+                if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(locationId)) {
+                    unitConfigList.add(unitConfig);
+                }
             }
 
             for (int i = 0; i < unitConfigList.size(); i++) {
                 for (final String childId : unitConfigList.get(i).getLocationConfig().getChildIdList()) {
-                    unitConfigList.add(getUnitConfigById(childId));
+                    final UnitConfig unitConfig = getUnitConfigById(childId);
+                    if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(locationId)) {
+                        unitConfigList.add(unitConfig);
+                    }
                 }
             }
         }
@@ -1067,7 +1091,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
             for (final String unitConfigId : getUnitConfigById(locationId).getLocationConfig().getUnitIdList()) {
                 unitConfig = getUnitConfigById(unitConfigId);
                 if (unitType == UnitType.UNKNOWN || unitConfig.getUnitType().equals(unitType) || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(unitType).contains(unitConfig.getUnitType())) {
-                    unitConfigList.add(unitConfig);
+                    if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(locationId)) {
+                        unitConfigList.add(unitConfig);
+                    }
                 }
             }
         }
