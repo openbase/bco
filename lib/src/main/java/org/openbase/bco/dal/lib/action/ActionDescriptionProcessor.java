@@ -508,6 +508,8 @@ public class ActionDescriptionProcessor {
      * @throws CouldNotPerformException if preparing fails.
      */
     private static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final Unit unit, final Message serviceState) throws CouldNotPerformException {
+
+        // setup creation time
         TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
 
         // update initiator type
