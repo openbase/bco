@@ -25,7 +25,6 @@ package org.openbase.bco.dal.control.layer.unit.scene;
 import org.openbase.bco.authentication.lib.AuthPair;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
-import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
@@ -91,6 +90,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     }
 
     private final Object buttonObserverLock = new SyncObject("ButtonObserverLock");
+    private final Object requiredActionPoolObserverLock = new SyncObject("RequiredActionPoolObserverLock");
     private final Set<ButtonRemote> buttonRemoteSet;
     private final Observer<DataProvider<ButtonData>, ButtonData> buttonObserver;
     private final RemoteActionPool requiredActionPool;
@@ -131,26 +131,25 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             this.requiredActionPoolObserver = new Observer<RemoteAction, ActionDescription>() {
                 @Override
                 public void update(RemoteAction source, ActionDescription data) throws Exception {
-                    if (source.isDone() || source.isScheduled()) {
-                        logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
-                        requiredActionPool.removeActionDescriptionObserver(requiredActionPoolObserver);
-                        stop();
+                    synchronized (requiredActionPoolObserverLock) {
+                        if (getActivationState().getValue() == ActivationState.State.ACTIVE && (source.isDone() || source.isScheduled())) {
+                            logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
+                            requiredActionPool.removeActionDescriptionObserver(requiredActionPoolObserver);
+                            stop();
 
-                        try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-
-
-
-                            final Builder internalBuilder = dataBuilder.getInternalBuilder();
-                            // move current state to last
-                            internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
-                            // update current state to deactivate and set timestamp
-                            final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
-                            activationStateBuilder.setValue(ActivationState.State.DEACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
-                            // update latest value occurrence map of current state
-                            for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
-                                if (builder.getKey() == activationStateBuilder.getValue()) {
-                                    builder.setValue(activationStateBuilder.getTimestamp());
-                                    break;
+                            try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+                                final Builder internalBuilder = dataBuilder.getInternalBuilder();
+                                // move current state to last
+                                internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
+                                // update current state to deactivate and set timestamp
+                                final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
+                                activationStateBuilder.setValue(ActivationState.State.INACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
+                                // update latest value occurrence map of current state
+                                for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
+                                    if (builder.getKey() == activationStateBuilder.getValue()) {
+                                        builder.setValue(activationStateBuilder.getTimestamp());
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -272,7 +271,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         @Override
         public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-            System.out.println("incomming activation: "+ activationState.getValue().name());
+            System.out.println("incomming activation: " + activationState.getValue().name());
             final ActionDescription.Builder actionDescriptionBuilder = activationState.getResponsibleAction().toBuilder();
             actionDescriptionBuilder.setIntermediary(true);
             switch (activationState.getValue()) {
@@ -352,7 +351,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
                     // trigger initial validation
                     for (RemoteAction remoteAction : requiredActionPool.getRemoteActionList()) {
-                        if(remoteAction.isValid()) {
+                        if (remoteAction.isValid()) {
                             try {
                                 requiredActionPoolObserver.update(remoteAction, remoteAction.getActionDescription());
                             } catch (Exception ex) {

@@ -342,14 +342,16 @@ public class RemoteAction implements Action {
                         targetUnit.removeDataObserver(unitObserver);
                     }
 
-                    try {
-                        actionDescriptionObservable.notifyObservers(this, actionDescription);
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory("Could not notify all observers!", ex, LOGGER);
-                        return;
-                    }
                     executionSync.notifyAll();
                 }
+
+                try {
+                    actionDescriptionObservable.notifyObservers(this, actionDescription);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not notify all observers!", ex, LOGGER);
+                    return;
+                }
+
                 return;
             }
         }
