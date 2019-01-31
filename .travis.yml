@@ -8,7 +8,7 @@ branches:
       #- /^(?i:release)-.*$/
 
 jdk:
-  - oraclejdk8
+  - openjdk8
   - openjdk11
   - openjdk-ea
 
@@ -37,14 +37,14 @@ deploy:
     on:
         repo: openbase/bco.device
         branch: master
-        jdk: oraclejdk8
+        jdk: openjdk11
   - provider: script
     skip_cleanup: true
     script: .travis/deploy.sh
     on:
         repo: openbase/bco.device
         tags: true
-        jdk: oraclejdk8
+        jdk: openjdk11
 
 after_deploy:
    - |
