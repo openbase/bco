@@ -36,7 +36,7 @@ public class ActivationStateOnOffTypeTransformer implements ServiceStateCommandT
     public ActivationState transform(final OnOffType onOffType) throws CouldNotTransformException {
         switch (onOffType) {
             case OFF:
-                return ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
+                return ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build();
             case ON:
                 return ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
             default:
