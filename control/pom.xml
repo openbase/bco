@@ -95,12 +95,6 @@
             <groupId>org.openbase</groupId>
             <artifactId>bco.dal.lib</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.jgit</groupId>
-                    <artifactId>org.eclipse.jgit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
