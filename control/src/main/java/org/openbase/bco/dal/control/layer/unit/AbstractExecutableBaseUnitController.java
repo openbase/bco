@@ -92,7 +92,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                 if (detectAutostart()) {
                     activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
                 } else {
-                    activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
+                    activationStateOperationService.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build()).get();
                 }
             }
         } catch (ExecutionException ex) {
@@ -103,7 +103,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         synchronized (activationLock) {
-            stop(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+            stop(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build());
             cancelExecution();
             super.deactivate();
         }

@@ -85,7 +85,7 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Mes
             if (method.invoke(serviceState).equals(targetState)) {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
             } else {
-                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build()));
             }
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("Could not verify condition " + this, ex, LOGGER);

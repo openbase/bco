@@ -60,7 +60,7 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
     @Override
     public ActivationState getActivationState(final UnitType unitType) throws NotAvailableException {
         try {
-            return (ActivationState) generateAggregatedState(unitType, State.DEACTIVE, State.ACTIVE).build();
+            return (ActivationState) generateAggregatedState(unitType, State.INACTIVE, State.ACTIVE).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }

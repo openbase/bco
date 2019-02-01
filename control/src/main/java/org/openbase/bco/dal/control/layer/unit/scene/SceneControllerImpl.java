@@ -120,7 +120,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                 }
 
                 if (data.getButtonState().getValue().equals(State.RELEASED)) {
-                    ActivationState.Builder activationState = ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE);
+                    ActivationState.Builder activationState = ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE);
                     activationState = TimestampProcessor.updateTimestampWithCurrentTime(activationState, logger);
                     ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(activationState.build(), ServiceType.ACTIVATION_STATE_SERVICE, this);
                     actionParameter.setCause(data.getButtonState().getResponsibleAction());
@@ -283,7 +283,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(activationState.getResponsibleAction());
 
                     // legacy handling
-//                    final ActivationState deactivated = ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
+//                    final ActivationState deactivated = ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build();
 //                    try {
 //                        if (!JPService.getValue(JPUnitAllocation.class, true)) {
 //                            requiredActionsFuture.get();

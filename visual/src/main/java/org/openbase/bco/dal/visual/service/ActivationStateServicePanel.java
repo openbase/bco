@@ -38,7 +38,7 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 public class ActivationStateServicePanel extends AbstractServicePanel<ActivationStateProviderService, ConsumerService, ActivationStateOperationService> {
 
     private static final ActivationState ACTIVE = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
-    private static final ActivationState DEACTIVE = ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
+    private static final ActivationState DEACTIVE = ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build();
 
     /**
      * Creates new form BrightnessService

@@ -112,7 +112,7 @@ public class NeighborConnectionPresenceTrigger extends AbstractTrigger {
                     || connectionRemote.getWindowState().getValue().equals(WindowState.State.OPEN))) {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
             } else {
-                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build()));
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not verify trigger state " + this, ex, LoggerFactory.getLogger(getClass()));
