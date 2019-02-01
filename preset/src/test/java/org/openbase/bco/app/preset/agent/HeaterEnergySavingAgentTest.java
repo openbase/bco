@@ -63,9 +63,6 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
     private static final ContactState CLOSED = ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
     private static final ContactState OPEN = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
 
-    public HeaterEnergySavingAgentTest() throws Exception {
-    }
-
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
      *

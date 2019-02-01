@@ -56,7 +56,7 @@ public class SoundScapeApp extends AbstractAppController {
     private final WatchDog listenerWatchDog;
     private final Scope themeScope = new Scope("/app/soundscape/theme/");
     private final ActivationStateType.ActivationState activate = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build();
-    private final ActivationStateType.ActivationState deactive = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.DEACTIVE).build();
+    private final ActivationStateType.ActivationState deactive = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.INACTIVE).build();
 
     private AgentRemote agentBathAmbientColorBeachCeiling;
     private AgentRemote agentBathAmbientColorForest;

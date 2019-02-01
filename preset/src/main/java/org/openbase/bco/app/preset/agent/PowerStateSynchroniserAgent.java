@@ -158,7 +158,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
         // deactivate before applying update if active
         if (previousActivationState.getValue() == State.ACTIVE) {
-            stop(ActivationState.newBuilder().setValue(State.DEACTIVE).build());
+            stop(ActivationState.newBuilder().setValue(State.INACTIVE).build());
         }
 
         try {
