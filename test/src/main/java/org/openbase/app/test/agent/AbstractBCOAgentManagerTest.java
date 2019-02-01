@@ -61,26 +61,33 @@ public abstract class AbstractBCOAgentManagerTest extends AbstractBCOTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         try {
+            LOGGER.info("Start Agent test setup...");
             AbstractBCOTest.setUpClass();
 
+            LOGGER.trace("Start device manager...");
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
 
+            LOGGER.trace("Start agent manager...");
             agentManagerLauncher = new AgentManagerLauncher();
             agentManagerLauncher.launch();
 
+            LOGGER.trace("Start location manager...");
             locationManagerLauncher = new LocationManagerLauncher();
             locationManagerLauncher.launch();
 
+            LOGGER.trace("Finally wait for registry...");
             Registries.waitForData();
+            LOGGER.info("Ready to test...");
 
-        } catch (CouldNotPerformException | InterruptedException ex) {
+        } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 
     @AfterClass
     public static void tearDownClass() throws Throwable {
+        LOGGER.info("Tear down agent tests...");
         try {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
@@ -92,6 +99,7 @@ public abstract class AbstractBCOAgentManagerTest extends AbstractBCOTest {
                 locationManagerLauncher.shutdown();
             }
             AbstractBCOTest.tearDownClass();
+            LOGGER.info("Agent tests finished.");
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
