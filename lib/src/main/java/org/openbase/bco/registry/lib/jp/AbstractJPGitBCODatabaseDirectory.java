@@ -22,7 +22,6 @@ package org.openbase.bco.registry.lib.jp;
  * #L%
  */
 
-import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.tools.FileHandler.AutoMode;
