@@ -23,11 +23,13 @@ package org.openbase.bco.app.preset.agent;
  */
 import static org.junit.Assert.assertEquals;
 
+import org.junit.BeforeClass;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.HandleRemote;
 import org.openbase.bco.dal.remote.layer.unit.MotionDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
@@ -55,8 +57,7 @@ import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
 /**
  *
- * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
- * Michalski</a>
+ * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
@@ -69,9 +70,6 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
     private static final MotionState MOTION = MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
     private static final MotionState NO_MOTION = MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build();
 
-    public AbsenceEnergySavingAgentTest() throws Exception {
-    }
-
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
      *
@@ -79,15 +77,6 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
      */
     @Test(timeout = 10000)
     public void testAbsenceEnergySavingAgent() throws Exception {
-        // TODO: turn back on when resource allocation is integrated for unit tests
-        try {
-            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
-                return;
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
-        }
-
         System.out.println("testAbsenceEnergySavingAgent");
 
         UnitStateAwaiter<AgentData, AgentRemote> UnitStateAwaiter = new UnitStateAwaiter<>(agentRemote);
