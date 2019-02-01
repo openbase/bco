@@ -74,15 +74,6 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
      */
     @Test(timeout = 20000)
     public void testPreseceLightAgent() throws Exception {
-        // TODO: turn back on when resource allocation is integrated for unit tests
-        try {
-            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
-                return;
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
-        }
-
         System.out.println("testPreseceLightAgent");
 
         // It can take some time until the execute() method of the agent has finished

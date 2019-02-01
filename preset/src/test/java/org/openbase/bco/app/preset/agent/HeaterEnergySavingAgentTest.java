@@ -24,7 +24,6 @@ package org.openbase.bco.app.preset.agent;
 
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.control.layer.unit.ReedContactController;
 import org.openbase.bco.dal.remote.layer.unit.ReedContactRemote;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
@@ -34,8 +33,6 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
@@ -76,14 +73,6 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
      */
     @Test(timeout = 10000)
     public void testHeaterEnergySavingAgent() throws Exception {
-        // TODO: turn back on when resource allocation is integrated for unit tests
-        try {
-            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
-                return;
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
-        }
         System.out.println("testHeaterEnergySavingAgent");
 
         // It can take some time until the execute() method of the agent has finished
@@ -92,9 +81,13 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
         TemperatureControllerRemote temperatureControllerRemote = locationRemote.getUnits(UnitType.TEMPERATURE_CONTROLLER, true, Units.TEMPERATURE_CONTROLLER).get(0);
-        ConnectionRemote connectionRemote = Units.getUnitByAlias(MockRegistry.ALIAS_WINDOW_STAIRS_HELL_LOOKOUT, true, Units.CONNECTION);
-        ReedContactRemote reedContactRemote = locationRemote.getUnits(UnitType.REED_CONTACT, true, Units.REED_CONTACT).get(0);
+        ConnectionRemote connectionRemote = Units.getUnitByAlias(MockRegistry.ALIAS_WINDOW_STAIRWAY_HELL_LOOKOUT, true, Units.CONNECTION);
+        ReedContactRemote reedContactRemote = Units.getUnitByAlias(MockRegistry.ALIAS_REED_SWITCH_STAIRWAY_HELL_WINDOW, true, Units.REED_CONTACT);
         ReedContactController reedContactController = (ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId());
+
+        // validate remote controller match
+        assertEquals("Controller and remote are not compatible to each other!", reedContactController.getId(), reedContactRemote.getId());
+        assertEquals("Reed contact is not connected to window.", connectionRemote.getConfig().getConnectionConfig().getUnitIdList().contains(reedContactRemote.getId()), true);
 
         UnitStateAwaiter<ReedContactData, ReedContactRemote> reedContactStateAwaiter = new UnitStateAwaiter<>(reedContactRemote);
         UnitStateAwaiter<ConnectionData, ConnectionRemote> connectionStateAwaiter = new UnitStateAwaiter<>(connectionRemote);

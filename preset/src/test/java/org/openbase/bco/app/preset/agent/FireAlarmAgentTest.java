@@ -63,9 +63,6 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
     private static final AlarmState NO_ALARM = AlarmState.newBuilder().setValue(AlarmState.State.NO_ALARM).build();
     private static final BlindState CLOSED = BlindState.newBuilder().setOpeningRatio(0).build();
 
-    public FireAlarmAgentTest() {
-    }
-
     /**
      * Test of activate method, of class FireAlarmAgent.
      *
