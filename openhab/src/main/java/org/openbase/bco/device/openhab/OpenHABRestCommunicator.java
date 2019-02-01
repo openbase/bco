@@ -167,9 +167,9 @@ public class OpenHABRestCommunicator implements Shutdownable {
                 sseEventSource = SseEventSource.target(webTarget).build();
 
                 try {
-                    LOGGER.warn("Wait for openHAB");
+                    LOGGER.info("Wait for openHAB...");
                     waitForOpenHAB();
-                    LOGGER.warn("OpenHAB is online");
+                    LOGGER.info("OpenHAB is online");
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
