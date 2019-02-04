@@ -111,12 +111,14 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
         // turn target off which should make the agent turn off the source
+        LOGGER.info("Turn all targets off");
         Actions.waitForExecution(powerSwitchRemote.setPowerState(State.OFF));
         assertEquals("Target 1 did not stay off", State.OFF, colorableLightRemote.getPowerState().getValue());
         assertEquals("Target 2 has not turned off", State.OFF, powerSwitchRemote.getPowerState().getValue());
         dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
         // change color of the target which should also make the agent turn on the source
+        LOGGER.info("Set color of target");
         final HSBColor hsbColor = HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build();
         Actions.waitForExecution(colorableLightRemote.setColor(hsbColor));
         assertEquals("Target 1 has not turned on", State.ON, colorableLightRemote.getPowerState().getValue());
