@@ -106,15 +106,18 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
     private void handleRequestedPowerStateUpdate(final PowerState powerState) {
         try {
+            logger.trace("handle requested state: {}", powerState.getValue().name());
             synchronized (AGENT_LOCK) {
                 if (powerState.getValue() != PowerState.State.ON) {
                     // do nothing because target was not turned on
+                    logger.trace("do nothing because target was not turned on");
                     return;
                 }
 
                 // create action, copy priority and execute with responsible action as cause
                 final ActionParameter.Builder actionParameter = generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(PowerState.State.ON)).setPriority(powerState.getResponsibleAction().getPriority());
                 actionParameter.getServiceStateDescriptionBuilder().setUnitId(sourceId);
+                logger.trace("switch on by handleRequestedPowerStateUpdate");
                 executeAction(actionParameter.build(), powerState.getResponsibleAction());
             }
         } catch (Exception ex) {
@@ -124,15 +127,18 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
     private void handleCurrentPowerStateUpdate(final PowerState powerState) {
         try {
+            logger.trace("handle current state: {}", powerState.getValue().name());
             synchronized (AGENT_LOCK) {
                 if (powerState.getValue() != PowerState.State.OFF) {
                     // do nothing because target was not turned off
+                    logger.trace("do nothing because target was not turned off");
                     return;
                 }
 
                 // create action, set priority to low and execute with responsible action as cause
                 final ActionParameter.Builder actionParameter = generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(PowerState.State.OFF)).setPriority(Priority.LOW);
                 actionParameter.getServiceStateDescriptionBuilder().setUnitId(sourceId);
+                logger.trace("switch off by handleCurrentPowerStateUpdate");
                 executeAction(actionParameter.build(), powerState.getResponsibleAction());
             }
         } catch (Exception ex) {
@@ -162,7 +168,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         }
 
         try {
-            logger.info("ApplyConfigUpdate for PowerStateSynchroniserAgent[" + LabelProcessor.getBestMatch(config.getLabel()) + "]");
+            logger.trace("ApplyConfigUpdate for PowerStateSynchroniserAgent[{}]", LabelProcessor.getBestMatch(config.getLabel()));
             Registries.waitForData();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
@@ -181,7 +187,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             try {
                 while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
                     i++;
-                    logger.debug("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
+                    logger.trace("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
                     UnitConfig targetUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId);
                     if (targetUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                         logger.warn("TargetUnit[" + ScopeGenerator.generateStringRep(targetUnitConfig.getScope()) + "] "
@@ -192,7 +198,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                 }
             } catch (NotAvailableException ex) {
                 i--;
-                logger.debug("Found [" + i + "] target/s");
+                logger.trace("Found [" + i + "] target/s");
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply config update for PowerStateSynchroniser[" + LabelProcessor.getBestMatch(config.getLabel()) + "]", ex);
@@ -209,7 +215,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        logger.debug("Executing PowerStateSynchroniser agent");
+        logger.trace("Executing PowerStateSynchroniser agent");
 
         PowerState powerState = null;
         for (final UnitRemote targetRemote : targetRemotes) {
@@ -218,7 +224,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                     if (!targetRemote.getAvailableServiceTypes().contains(entry.getKey())) {
                         continue;
                     }
+                    // register observer
                     targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, entry.getKey(), entry.getValue());
+                    targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, entry.getKey(), entry.getValue());
                     targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, entry.getKey(), serviceTypeCurrentObserverMap.get(entry.getKey()));
                 }
             } catch (NotAvailableException ex) {
@@ -247,9 +255,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     @Override
     protected void stop(final ActivationState activationState) {
         try {
-            logger.debug("Stopping PowerStateSynchroniserAgent[" + getLabel() + "]");
+            logger.trace("Stopping PowerStateSynchroniserAgent[" + getLabel() + "]");
         } catch (NotAvailableException ex) {
-            logger.debug("Stopping PowerStateSynchroniserAgent");
+            logger.trace("Stopping PowerStateSynchroniserAgent");
         }
 
 
@@ -260,6 +268,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                         continue;
                     }
                     targetRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, entry.getKey(), entry.getValue());
+                    targetRemote.removeServiceStateObserver(ServiceTempus.CURRENT, entry.getKey(), entry.getValue());
                     targetRemote.removeServiceStateObserver(ServiceTempus.CURRENT, entry.getKey(), serviceTypeCurrentObserverMap.get(entry.getKey()));
                 }
             } catch (NotAvailableException ex) {
