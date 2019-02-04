@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,6 +37,8 @@ import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescripti
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -43,6 +46,8 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
  * @param <M>
  */
 public class UnitDataFilteredObservable<M extends Message> extends AbstractObservable<DataProvider<M>, M> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnitDataFilteredObservable.class);
 
     private final DataProvider<M> unit;
     private final ServiceTempus serviceTempus;
@@ -58,7 +63,7 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
 
         this.unit = dataProvider;
         this.serviceTempus = serviceTempus;
-        this.setHashGenerator((M value) -> removeUnwantedServiceTempus(value.toBuilder()).build().hashCode());
+        this.setHashGenerator((M value) -> removeUnwantedServiceTempusAndIdFields(value.toBuilder()).build().hashCode());
 
         this.fieldsToKeep = new HashSet<>();
         this.unitTemplate = unitTemplate;
@@ -108,16 +113,19 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
         updateFieldsToKeep();
     }
 
-    private synchronized Message.Builder removeUnwantedServiceTempus(final Message.Builder builder) {
+    private synchronized Message.Builder removeUnwantedServiceTempusAndIdFields(final Message.Builder builder) {
         // if unknown keep everything
         if(serviceTempus == ServiceTempus.UNKNOWN) {
             return builder;
         }
-        
+
+        // filter tempus
         Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
-        descriptorForType.getFields().stream().filter((field) -> (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE)).filter((field) -> (!fieldsToKeep.contains(field.getName()))).forEachOrdered((field) -> {
+        descriptorForType.getFields().stream()
+                .filter((field) -> (!fieldsToKeep.contains(field.getName()))).forEachOrdered((field) -> {
             builder.clearField(field);
         });
+        LOGGER.trace("For {} let pass Fields[{}]: {}", serviceTempus.name(), fieldsToKeep.toString(), builder.build());
         return builder;
     }
 }
