@@ -79,7 +79,7 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Mes
 
     private void verifyCondition(DT data) {
         try {
-            Object serviceState = Services.invokeProviderServiceMethod(serviceType, data);
+            Message serviceState = Services.invokeProviderServiceMethod(serviceType, data);
 
             Method method = serviceState.getClass().getMethod("getValue");
             if (method.invoke(serviceState).equals(targetState)) {
