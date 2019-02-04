@@ -48,9 +48,8 @@ import java.util.concurrent.ExecutionException;
 public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
 
     private LocationRemote locationRemote;
-    private final WindowState.State triggerState = WindowState.State.OPEN;
     private ActionDescription taskActionDescription;
-    // TODO: read desired energySavingTemperature from config ?
+
     private final double energySavingTemperature = 13.0;
 
 
@@ -70,7 +69,7 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
             for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(false)) {
                 if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionType.WINDOW)) {
                     try {
-                        registerTrigger(new GenericBCOTrigger(connectionRemote, triggerState, ServiceType.WINDOW_STATE_SERVICE), TriggerAggregation.OR);
+                        registerTrigger(new GenericBCOTrigger(connectionRemote, WindowState.State.OPEN, ServiceType.WINDOW_STATE_SERVICE), TriggerAggregation.OR);
                     } catch (CouldNotPerformException ex) {
                         throw new InitializationException("Could not add agent to agentpool", ex);
                     }
@@ -85,13 +84,11 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
     protected void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.TEMPERATURE_CONTROLLER,
-                        ServiceType.TEMPERATURE_STATE_SERVICE,
-                        TemperatureState.newBuilder().setTemperature(energySavingTemperature)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+                taskActionDescription = locationRemote.setTargetTemperatureState(energySavingTemperature, getDefaultActionParameter()).get();
                 break;
             case DEACTIVE:
                 if(taskActionDescription != null) {
-                    taskActionDescription = locationRemote.cancelAction(taskActionDescription).get();
+                    taskActionDescription = locationRemote.cancelAction(taskActionDescription, getDefaultActionParameter().getAuthenticationToken(), null).get();
                 }
                 break;
         }
