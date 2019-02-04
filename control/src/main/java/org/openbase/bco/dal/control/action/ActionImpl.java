@@ -198,7 +198,7 @@ public class ActionImpl implements SchedulableAction {
                                     updateActionState(State.FINISHED);
                                 }
                                 break;
-                            } catch (CouldNotPerformException | ExecutionException ex) {
+                            } catch (CouldNotPerformException | ExecutionException | RuntimeException ex) {
                                 updateActionState(ActionState.State.EXECUTION_FAILED);
                                 ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
                                 Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
