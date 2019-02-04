@@ -42,6 +42,10 @@ public interface TargetTemperatureStateOperationServiceCollection extends Target
         return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, unitType));
     }
 
+    default Future<ActionDescription> setTargetTemperatureState(final double temperature, final UnitType unitType) throws CouldNotPerformException {
+        return setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(temperature).build(), unitType);
+    }
+
     /**
      * Returns the average target temperature value for a collection of target
      * temperature services.

@@ -46,4 +46,12 @@ public interface TargetTemperatureStateOperationService extends OperationService
     default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final ActionParameter actionParameter) throws CouldNotPerformException {
         return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)));
     }
+
+    default Future<ActionDescription> setTargetTemperatureState(final double temperature) throws CouldNotPerformException {
+        return setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(temperature).build());
+        }
+
+    default Future<ActionDescription> setTargetTemperatureState(final double temperature, final ActionParameter actionParameter) throws CouldNotPerformException {
+        return setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(temperature).build(), actionParameter);
+    }
 }
