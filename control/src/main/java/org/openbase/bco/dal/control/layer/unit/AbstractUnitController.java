@@ -1055,10 +1055,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         } else {
                             newState = requestedState;
                         }
-
-                        // clear requested state
-                        final Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
-                        internalBuilder.clearField(requestedStateField);
                     } else {
                         // requested state does not match the current state
                         requestedStateDoesNotMatch = true;
@@ -1072,6 +1068,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // operation service but action was triggered outside BCO e.g. via openHAB
                     // as a result the responsible action is set and it has to be rescheduled to maintain priorities from BCO
                     newState = serviceState;
+
+                    // clear requested state because its not compatible any more to current state.
+                    final Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
+                    internalBuilder.clearField(requestedStateField);
 
                     // however, the problem remains that openHAB notifies all service states as new updates
                     // e.g. if the power of a colorable light is set a brightness state and a color state are also updated
@@ -1156,7 +1156,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
                 }
             } else {
-                // no operation service or no requested state, so just update the current state
+                // no operation service so just update the current state
                 newState = serviceState;
             }
 
