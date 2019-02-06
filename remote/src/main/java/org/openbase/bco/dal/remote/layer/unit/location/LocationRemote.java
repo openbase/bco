@@ -13,6 +13,7 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -293,9 +294,13 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
     }
 
     @Override
-    public Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
-                .addCategory(Category.ECONOMY));
+    public Future<ActionDescription> setStandbyState(final StandbyState standbyState) {
+        try {
+            return applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE, this)
+                    .addCategory(Category.ECONOMY));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
     @Override

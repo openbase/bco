@@ -153,7 +153,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
+    public Future<ActionDescription> setNeutralWhite() {
         return setColor(neutralWhite);
     }
 }

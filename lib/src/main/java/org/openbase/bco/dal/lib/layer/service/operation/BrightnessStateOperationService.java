@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -39,19 +40,27 @@ import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 public interface BrightnessStateOperationService extends OperationService, BrightnessStateProviderService {
 
     @RPCMethod(legacy = true)
-    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE));
+    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState) {
+        try {
+            return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState, final ActionParameter actionParameter) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE)));
+    default Future<ActionDescription> setBrightnessState(final BrightnessState brightnessState, final ActionParameter actionParameter) {
+        try {
+            return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE)));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setBrightness(final double brightness) throws CouldNotPerformException {
+    default Future<ActionDescription> setBrightness(final double brightness) {
         return setBrightnessState(BrightnessState.newBuilder().setBrightness(brightness).build());
     }
 
-    default Future<ActionDescription> setBrightness(final double brightness, final ActionParameter actionParameter) throws CouldNotPerformException {
+    default Future<ActionDescription> setBrightness(final double brightness, final ActionParameter actionParameter) {
         return setBrightnessState(BrightnessState.newBuilder().setBrightness(brightness).build(), actionParameter);
     }
 }

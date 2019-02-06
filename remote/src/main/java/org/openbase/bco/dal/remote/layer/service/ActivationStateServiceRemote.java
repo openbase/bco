@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.ActivationStateOperatio
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -67,7 +68,11 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
     }
 
     @Override
-    public Future<ActionDescription> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(activationState, getServiceType(), unitType));
+    public Future<ActionDescription> setActivationState(final ActivationState activationState, final UnitType unitType) {
+        try {
+            return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(activationState, getServiceType(), unitType));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 }

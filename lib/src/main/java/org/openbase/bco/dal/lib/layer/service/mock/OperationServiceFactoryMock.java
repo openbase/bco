@@ -35,6 +35,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -102,8 +103,12 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
 
         @Override
-        public Future<ActionDescription> setBrightnessState(BrightnessState state) throws CouldNotPerformException {
-            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BRIGHTNESS_STATE_SERVICE);
+        public Future<ActionDescription> setBrightnessState(BrightnessState state) {
+            try {
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BRIGHTNESS_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
         }
     }
 
@@ -126,8 +131,12 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
 
         @Override
-        public Future<ActionDescription> setColorState(ColorState state) throws CouldNotPerformException {
-            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.COLOR_STATE_SERVICE);
+        public Future<ActionDescription> setColorState(ColorState state) {
+            try {
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.COLOR_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
         }
     }
 
@@ -150,8 +159,12 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
 
         @Override
-        public Future<ActionDescription> setPowerState(PowerState state) throws CouldNotPerformException {
-            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.POWER_STATE_SERVICE);
+        public Future<ActionDescription> setPowerState(PowerState state) {
+            try {
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.POWER_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
         }
     }
 
@@ -174,8 +187,12 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
 
         @Override
-        public Future<ActionDescription> setBlindState(BlindState state) throws CouldNotPerformException {
-            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BLIND_STATE_SERVICE);
+        public Future<ActionDescription> setBlindState(BlindState state) {
+            try {
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BLIND_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
         }
     }
 
@@ -198,8 +215,12 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
 
         @Override
-        public Future<ActionDescription> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
-            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.STANDBY_STATE_SERVICE);
+        public Future<ActionDescription> setStandbyState(StandbyStateType.StandbyState state) {
+            try {
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.STANDBY_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
         }
     }
 
@@ -222,12 +243,16 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
 
         @Override
-        public Future<ActionDescription> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
-            return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
+        public Future<ActionDescription> setTargetTemperatureState(TemperatureState state) {
+            try {
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
         }
     }
 
-    private static Future<ActionDescription> update(final Message argument, final Unit unit, final ServiceType serviceType) throws CouldNotPerformException {
+    private static Future<ActionDescription> update(final Message argument, final Unit unit, final ServiceType serviceType) {
         try {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             if (stackTrace == null) {
@@ -239,7 +264,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
             unit.getClass().getMethod(methodName, Message.class, ServiceType.class).invoke(unit, argument, serviceType);
             return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw new CouldNotPerformException("Could not call remote Message[]", ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not call remote Message[]", ex));
         }
     }
 }

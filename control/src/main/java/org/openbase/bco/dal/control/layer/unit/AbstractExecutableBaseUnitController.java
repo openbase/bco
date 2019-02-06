@@ -142,79 +142,83 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
         }
 
         @Override
-        public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-            logger.trace("setActivationState: {}", activationState.getValue().name());
-            synchronized (executionLock) {
+        public Future<ActionDescription> setActivationState(final ActivationState activationState) {
+            try {
+                logger.trace("setActivationState: {}", activationState.getValue().name());
+                synchronized (executionLock) {
 
-                // filter events that do not change anything
-                if (activationState.getValue() == getActivationState().getValue()) {
-                    logger.trace("skip already applied state: {}", activationState.getValue().name());
-                    return CompletableFuture.completedFuture(null);
-                }
-
-                final ActivationState fallbackActivationState = getActivationState();
-
-                if (activationState.getValue() == ActivationState.State.ACTIVE) {
-
-                    // make sure timestamp is updated.
-                    try {
-                        logger.trace("inform about " + activationState.getValue().name());
-                        applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
-                    } catch (CouldNotPerformException ex) {
-                        throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
-                    }
-
-                    // filter duplicated execution
-                    if (isExecuting()) {
+                    // filter events that do not change anything
+                    if (activationState.getValue() == getActivationState().getValue()) {
+                        logger.trace("skip already applied state: {}", activationState.getValue().name());
                         return CompletableFuture.completedFuture(null);
                     }
 
-                    //TODO: making this a separate thread makes it really difficult to wait for states from scenes in unit tests
-                    executionFuture = GlobalCachedExecutorService.submit(() -> {
-                        try {
-                            return execute(activationState);
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
+                    final ActivationState fallbackActivationState = getActivationState();
 
-                            // rollback previous activation state
-                            synchronized (executionLock) {
-                                try {
-                                    stop(fallbackActivationState);
-                                } catch (InterruptedException exx) {
-                                    Thread.currentThread().interrupt();
-                                } catch (Exception exx) {
-                                    ExceptionPrinter.printHistory("rollback failed", exx, logger);
-                                }
-                                applyDataUpdate(fallbackActivationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
-                            }
-                            return activationState.getResponsibleAction();
+                    if (activationState.getValue() == ActivationState.State.ACTIVE) {
+
+                        // make sure timestamp is updated.
+                        try {
+                            logger.trace("inform about " + activationState.getValue().name());
+                            applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                        } catch (CouldNotPerformException ex) {
+                            throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
                         }
-                    });
-                    return executionFuture;
-                } else {
-                    if (isExecuting()) {
-                        cancelExecution();
-                    }
-                    // call stop even if execution has already finished
-                    // many components just register observer etc. in execute and this it is done quickly
-                    try {
-                        stop(activationState);
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                        return FutureProcessor.canceledFuture(ex);
-                    } catch (Exception ex) {
-                        ExceptionPrinter.printHistory("stop failed", ex, logger);
-                        return FutureProcessor.canceledFuture(ex);
-                    }
-                    try {
-                        logger.trace("inform about " + activationState.getValue().name());
-                        applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
-                    } catch (CouldNotPerformException ex) {
-                        throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
+
+                        // filter duplicated execution
+                        if (isExecuting()) {
+                            return CompletableFuture.completedFuture(null);
+                        }
+
+                        //TODO: making this a separate thread makes it really difficult to wait for states from scenes in unit tests
+                        executionFuture = GlobalCachedExecutorService.submit(() -> {
+                            try {
+                                return execute(activationState);
+                            } catch (CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
+
+                                // rollback previous activation state
+                                synchronized (executionLock) {
+                                    try {
+                                        stop(fallbackActivationState);
+                                    } catch (InterruptedException exx) {
+                                        Thread.currentThread().interrupt();
+                                    } catch (Exception exx) {
+                                        ExceptionPrinter.printHistory("rollback failed", exx, logger);
+                                    }
+                                    applyDataUpdate(fallbackActivationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                                }
+                                return activationState.getResponsibleAction();
+                            }
+                        });
+                        return executionFuture;
+                    } else {
+                        if (isExecuting()) {
+                            cancelExecution();
+                        }
+                        // call stop even if execution has already finished
+                        // many components just register observer etc. in execute and this it is done quickly
+                        try {
+                            stop(activationState);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                            return FutureProcessor.canceledFuture(ex);
+                        } catch (Exception ex) {
+                            ExceptionPrinter.printHistory("stop failed", ex, logger);
+                            return FutureProcessor.canceledFuture(ex);
+                        }
+                        try {
+                            logger.trace("inform about " + activationState.getValue().name());
+                            applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                        } catch (CouldNotPerformException ex) {
+                            throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
+                        }
                     }
                 }
+                return CompletableFuture.completedFuture(activationState.getResponsibleAction());
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
             }
-            return CompletableFuture.completedFuture(activationState.getResponsibleAction());
         }
 
         @Override

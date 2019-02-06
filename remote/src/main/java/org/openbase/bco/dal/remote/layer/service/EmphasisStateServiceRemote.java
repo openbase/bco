@@ -29,7 +29,9 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -54,8 +56,12 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
     }
 
     @Override
-    public Future<ActionDescriptionType.ActionDescription> setEmphasisState(final EmphasisState emphasisState, UnitType unitType) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(emphasisState, getServiceType(), unitType));
+    public Future<ActionDescriptionType.ActionDescription> setEmphasisState(final EmphasisState emphasisState, UnitType unitType) {
+        try {
+            return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(emphasisState, getServiceType(), unitType));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
     @Override

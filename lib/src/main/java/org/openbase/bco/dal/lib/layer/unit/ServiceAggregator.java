@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.*;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -132,8 +133,12 @@ public interface ServiceAggregator extends
     }
 
     @Override
-    default Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
-        return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setNeutralWhite();
+    default Future<ActionDescription> setNeutralWhite() {
+        try {
+            return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setNeutralWhite();
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
     @Override

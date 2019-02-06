@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.LocalPositionStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -39,11 +40,19 @@ import java.util.concurrent.Future;
 public interface LocalPositionStateOperationService extends OperationService, LocalPositionStateProviderService {
 
     @RPCMethod(legacy = true)
-    default Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE));
+    default Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState) {
+        try {
+            return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState, final ActionParameter actionParameter) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE)));
+    default Future<ActionDescription> setLocalPositionState(final LocalPositionState localPositionState, final ActionParameter actionParameter) {
+        try {
+            return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE)));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 }

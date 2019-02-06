@@ -50,6 +50,8 @@ import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutionException;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -165,9 +167,9 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("setColor");
         HSBColor color = HSBColor.newBuilder().setHue(370).setSaturation(111).setBrightness(122).build();
         try {
-            colorableLightRemote.setColor(color);
+            colorableLightRemote.setColor(color).get();
             Assert.assertTrue("Exception does not occur if invalid service state is set!", false);
-        } catch (VerificationFailedException ex) {
+        } catch (ExecutionException ex) {
             // should occur!
         }
         Assert.assertNotEquals("Invalid color has been applied!", color, colorableLightRemote.getHSBColor());

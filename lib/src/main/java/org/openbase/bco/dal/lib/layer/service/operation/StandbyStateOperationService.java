@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.StandbyStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -39,15 +40,23 @@ import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 public interface StandbyStateOperationService extends OperationService, StandbyStateProviderService {
 
     @RPCMethod(legacy = true)
-    default Future<ActionDescription> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE));
+    default Future<ActionDescription> setStandbyState(final StandbyState standbyState) {
+        try {
+            return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(standbyState, ServiceType.STANDBY_STATE_SERVICE));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setStandbyState(final StandbyState standbyState, final ActionParameter actionParameter) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(standbyState, ServiceType.STANDBY_STATE_SERVICE)));
+    default Future<ActionDescription> setStandbyState(final StandbyState standbyState, final ActionParameter actionParameter) {
+        try {
+            return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(standbyState, ServiceType.STANDBY_STATE_SERVICE)));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setStandbyState(final StandbyState.State standbyState) throws CouldNotPerformException {
+    default Future<ActionDescription> setStandbyState(final StandbyState.State standbyState) {
         return setStandbyState(StandbyState.newBuilder().setValue(standbyState).build());
     }
 }

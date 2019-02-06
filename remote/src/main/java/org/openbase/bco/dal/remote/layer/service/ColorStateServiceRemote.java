@@ -69,8 +69,12 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     }
 
     @Override
-    public Future<ActionDescription> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(colorState, getServiceType(), unitType));
+    public Future<ActionDescription> setColorState(final ColorState colorState, final UnitType unitType) {
+        try {
+            return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(colorState, getServiceType(), unitType));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
     @Override
@@ -111,7 +115,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     }
 
     @Override
-    public Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
+    public Future<ActionDescription> setNeutralWhite() {
         List<Future> futureList = new ArrayList<>();
         for(ColorStateOperationService colorStateOperationService : getServices()) {
             futureList.add(colorStateOperationService.setNeutralWhite());

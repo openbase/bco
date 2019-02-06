@@ -270,7 +270,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     public class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
 
         @Override
-        public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+        public Future<ActionDescription> setActivationState(final ActivationState activationState) {
             System.out.println("incomming activation: " + activationState.getValue().name());
             final ActionDescription.Builder actionDescriptionBuilder = activationState.getResponsibleAction().toBuilder();
             actionDescriptionBuilder.setIntermediary(true);
@@ -313,7 +313,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                             }
                         } catch (TimeoutException | ExecutionException | CouldNotPerformException ex) {
                             stop();
-                            throw new CouldNotPerformException("At least one required action could not be executed", ex);
+                            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("At least one required action could not be executed", ex));
                         }
 
                         // wait for all optional actions with a timeout, if one fails ignore its result and cancel the according action
@@ -338,7 +338,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     } catch (InterruptedException ex) {
                         stop();
                         Thread.currentThread().interrupt();
-                        throw new CouldNotPerformException("Scene execution interrupted", ex);
+                        return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Scene execution interrupted", ex));
                     }
 
                     // add all action impacts
@@ -361,7 +361,11 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     }
             }
 
-            applyDataUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE);
+            try {
+                applyDataUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
             return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
         }
 

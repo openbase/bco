@@ -181,7 +181,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
         }
 
         @Override
-        public Future<ActionDescription> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
+        public Future<ActionDescription> setStandbyState(StandbyState standbyState) {
             logger.info("Standby[" + standbyState + "]" + this);
             return GlobalScheduledExecutorService.submit(() -> {
                 switch (getStandbyState().getValue()) {

@@ -149,7 +149,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public Future<ActionDescription> setNeutralWhite() throws CouldNotPerformException {
+    public Future<ActionDescription> setNeutralWhite() {
         return setColor(neutralWhite);
     }
 

@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.TargetTemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -39,19 +40,27 @@ import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 public interface TargetTemperatureStateOperationService extends OperationService, TargetTemperatureStateProviderService {
 
     @RPCMethod(legacy = true)
-    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE));
+    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState) {
+        try {
+            return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final ActionParameter actionParameter) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)));
+    default Future<ActionDescription> setTargetTemperatureState(final TemperatureState temperatureState, final ActionParameter actionParameter) {
+        try {
+            return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setTargetTemperatureState(final double temperature) throws CouldNotPerformException {
+    default Future<ActionDescription> setTargetTemperatureState(final double temperature) {
         return setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(temperature).build());
         }
 
-    default Future<ActionDescription> setTargetTemperatureState(final double temperature, final ActionParameter actionParameter) throws CouldNotPerformException {
+    default Future<ActionDescription> setTargetTemperatureState(final double temperature, final ActionParameter actionParameter) {
         return setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(temperature).build(), actionParameter);
     }
 }

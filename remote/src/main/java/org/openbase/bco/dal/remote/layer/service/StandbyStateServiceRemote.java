@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationSe
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
@@ -46,8 +47,12 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     }
 
     @Override
-    public Future<ActionDescription> setStandbyState(final StandbyState standbyState, final UnitType unitType) throws CouldNotPerformException {
-        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(standbyState, getServiceType(), unitType));
+    public Future<ActionDescription> setStandbyState(final StandbyState standbyState, final UnitType unitType) {
+        try {
+            return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(standbyState, getServiceType(), unitType));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
     /**

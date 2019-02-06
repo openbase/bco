@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -39,19 +40,27 @@ import java.util.concurrent.Future;
  */
 public interface PowerStateOperationServiceCollection extends PowerStateOperationService {
 
-    default Future<ActionDescription> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, unitType));
+    default Future<ActionDescription> setPowerState(final PowerState powerState, final UnitType unitType) {
+        try {
+            return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceType.POWER_STATE_SERVICE, unitType));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setPowerState(final PowerState.State powerState, final UnitType unitType) throws CouldNotPerformException {
+    default Future<ActionDescription> setPowerState(final PowerState.State powerState, final UnitType unitType) {
         return setPowerState(PowerState.newBuilder().setValue(powerState).build(), unitType);
     }
 
-    default Future<ActionDescription> setPowerState(final PowerState powerState, final UnitType unitType, final ActionParameter actionParameter) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(powerState, ServiceType.POWER_STATE_SERVICE).setUnitType(unitType)));
+    default Future<ActionDescription> setPowerState(final PowerState powerState, final UnitType unitType, final ActionParameter actionParameter) {
+        try {
+            return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(powerState, ServiceType.POWER_STATE_SERVICE).setUnitType(unitType)));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setPowerState(final PowerState.State powerState, final UnitType unitType, final ActionParameter actionParameter) throws CouldNotPerformException {
+    default Future<ActionDescription> setPowerState(final PowerState.State powerState, final UnitType unitType, final ActionParameter actionParameter) {
         return setPowerState(PowerState.newBuilder().setValue(powerState).build(), unitType, actionParameter);
     }
 

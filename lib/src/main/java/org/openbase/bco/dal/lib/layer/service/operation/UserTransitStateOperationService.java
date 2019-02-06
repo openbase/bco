@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.provider.UserTransitStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -40,15 +41,23 @@ import org.openbase.type.domotic.state.UserTransitStateType.UserTransitState;
 public interface UserTransitStateOperationService extends OperationService, UserTransitStateProviderService {
 
     @RPCMethod(legacy = true)
-    default Future<ActionDescription> setUserTransitState(final UserTransitState userTransitState) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE));
+    default Future<ActionDescription> setUserTransitState(final UserTransitState userTransitState) {
+        try {
+            return getServiceProvider().applyAction(ActionDescriptionProcessor.generateDefaultActionParameter(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setUserTransitState(final UserTransitState userTransitState, final ActionParameter actionParameter) throws CouldNotPerformException {
-        return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE)));
+    default Future<ActionDescription> setUserTransitState(final UserTransitState userTransitState, final ActionParameter actionParameter) {
+        try {
+            return getServiceProvider().applyAction(actionParameter.toBuilder().setServiceStateDescription(ActionDescriptionProcessor.generateServiceStateDescription(userTransitState, ServiceType.USER_TRANSIT_STATE_SERVICE)));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
-    default Future<ActionDescription> setUserTransitState(UserTransitState.State userTransitState) throws CouldNotPerformException {
+    default Future<ActionDescription> setUserTransitState(UserTransitState.State userTransitState) {
         return setUserTransitState(UserTransitState.newBuilder().setValue(userTransitState).build());
     }
 }

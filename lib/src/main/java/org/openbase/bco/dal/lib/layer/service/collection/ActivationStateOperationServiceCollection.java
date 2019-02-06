@@ -35,7 +35,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface ActivationStateOperationServiceCollection extends ActivationStateOperationService {
 
-    Future<ActionDescription> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException;
+    Future<ActionDescription> setActivationState(final ActivationState activationState, final UnitType unitType);
 
     /**
      * Returns on if at least one of the power services is on and else off.
