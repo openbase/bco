@@ -66,7 +66,7 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public Future<ActionDescription> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+    public Future<ActionDescription> setActivationState(final ActivationState activationState) {
         return appRemote.setActivationState(activationState);
     }
 

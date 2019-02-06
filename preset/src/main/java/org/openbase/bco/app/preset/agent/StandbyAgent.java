@@ -38,6 +38,8 @@ import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
 import org.openbase.type.domotic.unit.location.LocationDataType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
@@ -60,8 +62,10 @@ public class StandbyAgent extends AbstractAgentController {
             @Override
             public void expired() {
                 try {
-                    locationRemote.setStandbyState(State.STANDBY);
-                } catch (CouldNotPerformException ex) {
+                    locationRemote.setStandbyState(State.STANDBY).get();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException ex) {
                     ExceptionPrinter.printHistory(ex, logger);
                 }
             }
@@ -94,8 +98,8 @@ public class StandbyAgent extends AbstractAgentController {
             if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && timeout.isActive()) {
                 timeout.cancel();
                 try {
-                    locationRemote.setStandbyState(State.RUNNING);
-                } catch (CouldNotPerformException ex) {
+                    locationRemote.setStandbyState(State.RUNNING).get();
+                } catch (ExecutionException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
                 }
             } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT) && !timeout.isActive()) {

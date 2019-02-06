@@ -96,7 +96,7 @@ public class SoundScapeApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+    protected void stop(final ActivationState activationState) {
         try {
             if (agentBathAmbientColorBeachCeiling != null) {
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
@@ -113,8 +113,8 @@ public class SoundScapeApp extends AbstractAppController {
             if (listenerWatchDog != null) {
                 listenerWatchDog.deactivate();
             }
-        } catch (InterruptedException | CouldNotPerformException ex) {
-            logger.error("Could not deactivate SoundScopeAgent");
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 
