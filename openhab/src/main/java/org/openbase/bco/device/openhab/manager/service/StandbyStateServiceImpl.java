@@ -39,7 +39,7 @@ public class StandbyStateServiceImpl<ST extends StandbyStateOperationService & U
     }
 
     @Override
-    public Future<ActionDescription> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
+    public Future<ActionDescription> setStandbyState(StandbyState standbyState) {
         return setState(standbyState);
     }
 

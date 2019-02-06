@@ -48,7 +48,7 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
     }
 
     @Override
-    public Future<ActionDescription> setColorState(final ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionDescription> setColorState(final ColorState colorState) {
         return setState(colorState);
     }
 }

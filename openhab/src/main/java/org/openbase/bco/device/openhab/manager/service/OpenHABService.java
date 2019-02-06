@@ -36,6 +36,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,20 +107,25 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         return itemName;
     }
 
-    public Future<ActionDescription> setState(final Message state) throws CouldNotPerformException {
-        for (final Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
-            Command command = ServiceStateCommandTransformerPool.getInstance().getTransformer(state.getClass(), commandClass).transform(state);
-            try {
-                OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
-            } catch (CouldNotPerformException ex) {
-                if (ex.getCause() instanceof NotAvailableException) {
-                    throw new CouldNotPerformException("Thing may not be configured or openHAB not reachable", ex);
+    public Future<ActionDescription> setState(final Message state) {
+        try {
+            for (final Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
+                Command command = ServiceStateCommandTransformerPool.getInstance().getTransformer(state.getClass(), commandClass).transform(state);
+                try {
+                    OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
+                } catch (CouldNotPerformException ex) {
+                    if (ex.getCause() instanceof NotAvailableException) {
+                        throw new CouldNotPerformException("Thing may not be configured or openHAB not reachable", ex);
+                    }
+                    throw ex;
                 }
-                throw ex;
             }
-        }
 
-        return CompletableFuture.completedFuture(null);
+            // todo build proper action description instead returning null.
+            return CompletableFuture.completedFuture(null);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
 //    public Future<ActionDescription> executeCommand(final Command... commands) throws CouldNotPerformException {

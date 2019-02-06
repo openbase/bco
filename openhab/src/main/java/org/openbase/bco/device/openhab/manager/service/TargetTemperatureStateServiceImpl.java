@@ -39,7 +39,7 @@ public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureState
     }
 
     @Override
-    public Future<ActionDescription> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
+    public Future<ActionDescription> setTargetTemperatureState(TemperatureState temperatureState) {
         return setState(temperatureState);
     }
 

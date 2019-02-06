@@ -39,7 +39,7 @@ public class BrightnessStateServiceImpl<ST extends BrightnessStateOperationServi
     }
 
     @Override
-    public Future<ActionDescription> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionDescription> setBrightnessState(BrightnessState brightnessState) {
         return setState(brightnessState);
     }
 

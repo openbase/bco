@@ -39,7 +39,7 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
     }
 
     @Override
-    public Future<ActionDescription> setBlindState(BlindState blindState) throws CouldNotPerformException {
+    public Future<ActionDescription> setBlindState(BlindState blindState) {
         return setState(blindState);
     }
 

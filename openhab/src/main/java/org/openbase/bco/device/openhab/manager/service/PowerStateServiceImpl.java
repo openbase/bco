@@ -39,7 +39,7 @@ public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<
     }
 
     @Override
-    public Future<ActionDescription> setPowerState(PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionDescription> setPowerState(PowerState powerState) {
         return setState(powerState);
     }
 
