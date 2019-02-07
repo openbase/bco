@@ -1,7 +1,9 @@
 package org.openbase.bco.dal.lib.action;
 
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -12,6 +14,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
@@ -687,6 +690,38 @@ public class ActionDescriptionProcessor {
                 ExceptionPrinter.printHistory("Could not generate action description!", ex, LOGGER);
             }
             actionDescriptionBuilder.setDescription(multiLanguageTextBuilder);
+        }
+    }
+
+    /**
+     * Method generates and set a new responsible action of a service state.
+     *
+     * @param serviceStateBuilder the builder where the responsible action should be set for.
+     * @param serviceType         the type of service which is controlled.
+     * @param targetUnit          the unit where this action takes place.
+     * @param executionTimePeriod defines how long this action is valid in time.
+     * @param timeUnit            the time unit of the @{executionTimePeriod} argument.
+     *
+     * @return the builder instance in just returned.
+     *
+     * @throws CouldNotPerformException is thrown if the setup failed.
+     */
+    public static <MB extends Message.Builder> MB generateResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit) throws CouldNotPerformException {
+        try {
+            // generate action parameter
+            final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateBuilder.build(), serviceType, targetUnit);
+            actionParameter.setInterruptible(false);
+            actionParameter.setSchedulable(false);
+            actionParameter.setExecutionTimePeriod(timeUnit.toMicros(executionTimePeriod));
+
+            // generate responsible action
+            final Builder builder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
+            builder.setId(ActionDescriptionProcessor.ACTION_ID_GENERATOR.generateId(builder.build()));
+            serviceStateBuilder.setField(descriptor, builder.build());
+            return serviceStateBuilder;
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not setup responsible action!", ex);
         }
     }
 }

@@ -53,12 +53,24 @@ public interface UnitController<D extends AbstractMessage, DB extends D.Builder<
     /**
      * Applies the given service state update for this unit.
      *
-     * @param serviceType
-     * @param serviceArgument
+     * @param serviceType the type of the service to update.
+     * @param serviceState service state to apply.
      *
      * @throws CouldNotPerformException
      */
-    void applyDataUpdate(final Message serviceArgument, final ServiceType serviceType) throws CouldNotPerformException;
+    void applyDataUpdate(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException;
+
+    /**
+     * Applies the given service state update for this unit.
+     *
+     * @param serviceType the type of the service to update.
+     * @param serviceStateBuilder the service state to apply.
+     *
+     * @throws CouldNotPerformException
+     */
+    default void applyDataUpdate(final Message.Builder serviceStateBuilder, final ServiceType serviceType) throws CouldNotPerformException {
+        applyDataUpdate(serviceStateBuilder.build(), serviceType);
+    }
 
     /**
      * This method is called if an authorized and scheduled action causes a new service state.
