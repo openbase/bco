@@ -196,7 +196,7 @@ public class Units {
         @Override
         public void update(DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
-            UNIT_DIFF.diff(Registries.getUnitRegistry().getUnitConfigs());
+            UNIT_DIFF.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
             try {
                 for (String unitId : UNIT_DIFF.getRemovedMessageMap().keySet()) {
                     if (unitRemoteRegistry.contains(unitId)) {
@@ -242,7 +242,7 @@ public class Units {
 
             Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
             if (Registries.getUnitRegistry().isDataAvailable()) {
-                UNIT_DIFF.diff(Registries.getUnitRegistry().getUnitConfigs());
+                UNIT_DIFF.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);

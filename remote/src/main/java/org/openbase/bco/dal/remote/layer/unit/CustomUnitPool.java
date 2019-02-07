@@ -108,7 +108,7 @@ public class CustomUnitPool implements DefaultInitializable {
     private void sync() throws InterruptedException {
         try {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
-            unitConfigDiff.diff(Registries.getUnitRegistry().getUnitConfigs());
+            unitConfigDiff.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
             try {
 
                 // handle new units

@@ -206,7 +206,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
 
         try {
             synchronized (unitMapLock) {
-                hostedUnitDiff.diff(getHostedUnitConfigList());
+                hostedUnitDiff.diffMessages(getHostedUnitConfigList());
                 MultiException.ExceptionStack removeExceptionStack = null;
                 hostedUnitDiff.getRemovedMessageMap().getMessages().forEach((removedUnitConfig) -> {
                     unitMap.remove(removedUnitConfig.getId()).shutdown();
