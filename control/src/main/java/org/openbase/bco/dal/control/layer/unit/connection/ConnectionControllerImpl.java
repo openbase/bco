@@ -219,14 +219,6 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         serviceRemoteManager.deactivate();
     }
 
-    @Override
-    public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
-        // TODO release: Make sure the unit template of connections already contains all services which are defined in the connection interface.
-        // afterwards remove this method because all services should be registered by the abstract unit class. Please make sure the mock registry registers these services as well.
-        RPCHelper.registerInterface(Connection.class, this, server);
-        super.registerMethods(server);
-    }
-
     private boolean isSupportedServiceType(final ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
         if (serviceType == null) {
             assert false;
