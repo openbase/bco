@@ -148,8 +148,6 @@ public abstract class AbstractVirtualRegistryRemote<M extends Message> extends A
             }
         }
 
-        // TODO release:
-        // workaround, should be removed in release scrab
         virtualRegistryInitiallySynchronized = virtualRegistryInitiallySynchronized || isVirtualRegistrySynchronized();
 
         return super.isDataAvailable() && virtualRegistryInitiallySynchronized;
