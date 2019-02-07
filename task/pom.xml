@@ -123,20 +123,6 @@
             <artifactId>rta-lib</artifactId>
             <version>${dependency.rta.lib.version}</version>
             <type>jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>rsb</groupId>
-                    <artifactId>rsb</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>rsb</groupId>
-                    <artifactId>rst</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>rsb</groupId>
-                    <artifactId>rst-sandbox</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 </project>
