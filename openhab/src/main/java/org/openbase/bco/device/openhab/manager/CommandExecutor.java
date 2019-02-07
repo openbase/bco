@@ -95,23 +95,13 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
         }
         try {
             final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
-            final Message.Builder serviceDataBuilder = getServiceData(state, metaData.getServiceType()).toBuilder();
+            final Message.Builder serviceStateBuilder = getServiceData(state, metaData.getServiceType()).toBuilder();
 
             // update the responsible action to show that it was triggered by openHAB and add other parameters
             // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
-            final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceDataBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceDataBuilder.build(), metaData.getServiceType(), unitController);
-            actionParameter.setInterruptible(false);
-            actionParameter.setSchedulable(false);
-            actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
+            ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES);
 
-
-            // todo release: where should the id really set and which parts of the ActionDescriptionProcessor prepare method needs to be set as well?
-            final Builder builder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
-            builder.setId(ActionDescriptionProcessor.ACTION_ID_GENERATOR.generateId(builder.build()));
-            serviceDataBuilder.setField(descriptor, builder.build());
-
-            unitController.applyDataUpdate(serviceDataBuilder.build(), metaData.getServiceType());
+            unitController.applyDataUpdate(serviceStateBuilder, metaData.getServiceType());
         } catch (NotAvailableException ex) {
             if (!unitControllerRegistry.isInitiallySynchronized()) {
                 LOGGER.debug("ItemUpdate[" + itemName + "=" + state + "] skipped because controller registry was not ready yet!");
