@@ -71,16 +71,6 @@ public interface UnitRemote<M extends Message> extends Unit<M>, ConfigurableRemo
     void initById(final String id) throws InitializationException, InterruptedException;
 
     /**
-     * Method initializes this unit remote instance via the given label.
-     *
-     * @param label the unit label which is used to resolve the remote controller scope.
-     *
-     * @throws InitializationException is thrown in case the remote could not be initialized with the given label.
-     * @throws InterruptedException    is thrown in case the thread is externally interrupted.
-     */
-    void initByLabel(final String label) throws InitializationException, InterruptedException;
-
-    /**
      * This method returns if the unit of this remote is enabled.
      * An unit is marked as disabled if the related unit host is not available. For instance all units are automatically disabled when the providing device is currently borrowed or at least marked as not installed.
      * <p>

@@ -711,7 +711,7 @@ public class Units {
      *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
-     * @deprecated please use getUnitsByLabelAndType(...) instead.
+     * @deprecated since v2.0 and will be removed in v3.0. Please use getUnitsByLabelAndType(...) instead.
      */
     @Deprecated
     public static UnitRemote<?> getUnitByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
@@ -876,7 +876,7 @@ public class Units {
      *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
-     * @deprecated please use getUnitsByLabel(..) instead.
+     * @deprecated since v2.0 and will be removed in v3.0. Please use getUnitsByLabel(..) instead.
      */
     @Deprecated
     public static UnitRemote<?> getUnitByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
@@ -944,7 +944,7 @@ public class Units {
      * @throws InterruptedException  Checkout wrapped method doc
      *                               {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @see #getUnitByLabel(java.lang.String, boolean)
-     * @deprecated please use getUnitsByLabel(...) instead.
+     * @deprecated since v2.0 and will be removed in v3.0. Please use getUnitsByLabel(...) instead.
      */
     @Deprecated
     public static <UR extends UnitRemote<?>> UR getUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
@@ -1432,21 +1432,6 @@ public class Units {
      */
     public static boolean contains(final UnitRemote<? extends Message> unitRemote) throws CouldNotPerformException {
         return unitRemoteRegistry.contains(unitRemote);
-    }
-
-    /**
-     * Method returns the transformation between the root location and the given
-     * unit.
-     *
-     * @param unitConfig the unit where the transformation leads to.
-     *
-     * @return a transformation future
-     *
-     * @deprecated please use getRootToUnitTransformationFuture(...) instead.
-     */
-    @Deprecated
-    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfig) {
-        return getRootToUnitTransformationFuture(unitConfig);
     }
 
     /**

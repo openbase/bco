@@ -175,31 +175,6 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     /**
      * {@inheritDoc}
      *
-     * @param label
-     *
-     * @throws org.openbase.jul.exception.InitializationException
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public void initByLabel(final String label) throws InitializationException, InterruptedException {
-        try {
-            List<UnitConfig> unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabel(label);
-
-            if (unitConfigList.isEmpty()) {
-                throw new NotAvailableException("Unit with Label[" + label + "]");
-            } else if (unitConfigList.size() > 1) {
-                throw new InvalidStateException("Unit with Label[" + label + "] is not unique!");
-            }
-
-            init(unitConfigList.get(0));
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @param scope
      *
      * @throws org.openbase.jul.exception.InitializationException
@@ -243,15 +218,6 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     public void init(final String scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeGenerator.generateScope(scope));
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Deprecated
-    public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
-        try {
-            init(ScopeGenerator.generateScope(label, getDataClass().getSimpleName(), location.getScope()));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -567,22 +533,6 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      */
     public LocationRemote getBaseLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
         return Units.getUnit(getConfig().getPlacementConfig().getLocationId(), waitForData, Units.LOCATION);
-    }
-
-    /**
-     * Method returns the transformation between the root location and this unit.
-     *
-     * @return a transformation future
-     *
-     * @deprecated please use {@code getRootToUnitTransformationFuture()} instead.
-     */
-    @Deprecated
-    public Future<Transform> getTransformation() {
-        try {
-            return Units.getRootToUnitTransformationFuture(getConfig());
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
-        }
     }
 
     public Future<ActionDescription> applyAction(ActionDescription.Builder actionDescriptionBuilder) {

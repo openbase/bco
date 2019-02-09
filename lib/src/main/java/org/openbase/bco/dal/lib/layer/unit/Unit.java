@@ -121,21 +121,6 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     }
 
     /**
-     * Returns the related template for this unit.
-     * <p>
-     * Note: The unit template defines which services are provided by this unit.
-     *
-     * @return UnitTemplate the unit template of this unit.
-     *
-     * @throws NotAvailableException in case the unit template is not available.
-     * @deprecated please use {@code getUnitTemplate()} instead.
-     */
-    @Deprecated
-    default UnitTemplate getTemplate() throws NotAvailableException {
-        return getUnitTemplate();
-    }
-
-    /**
      * Method returns the unit shape of this unit.
      * <p>
      * If this unit configuration does not provide any shape information the shape of the unit host will be returned.
@@ -290,33 +275,6 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         return serviceTypeList;
     }
 
-
-    /**
-     * Gets the position of the unit relative to its parent location.
-     *
-     * @return relative position
-     *
-     * @throws NotAvailableException is thrown if the config is not available.
-     * @deprecated please use {@code getUnitPosition()} instead.
-     */
-    @Deprecated
-    default TranslationType.Translation getLocalPosition() throws NotAvailableException {
-        return getUnitPosition();
-    }
-
-    /**
-     * Gets the rotation of the unit relative to its parent location.
-     *
-     * @return relative rotation
-     *
-     * @throws NotAvailableException is thrown if the config is not available.
-     * @deprecated please use {@code getUnitRotation()} instead.
-     */
-    @Deprecated
-    default RotationType.Rotation getLocalRotation() throws NotAvailableException {
-        return getUnitRotation();
-    }
-
     /**
      * Gets the local position of the unit relative to its parent location.
      *
@@ -357,118 +315,6 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitRotation", ex);
         }
-    }
-
-    /**
-     * Gets the Transform3D of the transformation from root to unit coordinate system.
-     *
-     * @return transform relative to root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException  is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getRootToUnitTransform3D()} instead.
-     */
-    default Transform3D getTransform3D() throws NotAvailableException, InterruptedException {
-        return getRootToUnitTransform3D();
-    }
-
-    /**
-     * Gets the inverse Transform3D to getTransform3D().
-     * This is basically rotation and translation of the object in the root coordinate system
-     * and thereby the inverse transformation to the one returned by getTransform3D().
-     *
-     * @return transform relative to root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException  is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getUnitToRootTransform3D()} instead.
-     */
-    @Deprecated
-    default Transform3D getTransform3DInverse() throws NotAvailableException, InterruptedException {
-        return getUnitToRootTransform3D();
-    }
-
-    /**
-     * Gets the position of the unit relative to the root location as a Point3d object.
-     *
-     * @return position relative to the root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException  is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getUnitPositionGlobalPoint3d()} instead.
-     */
-    @Deprecated
-    default Point3d getGlobalPositionPoint3d() throws NotAvailableException, InterruptedException {
-        return getUnitPositionGlobalPoint3d();
-    }
-
-    /**
-     * Gets the position of the unit relative to the root location as a Translation object.
-     *
-     * @return position relative to the root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException  is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getUnitPositionGlobal()} instead.
-     */
-    @Deprecated
-    default TranslationType.Translation getGlobalPosition() throws NotAvailableException, InterruptedException {
-        return getUnitPositionGlobal();
-    }
-
-    /**
-     * Gets the rotation of the unit relative to the root location as a Quat4d object.
-     *
-     * @return rotation relative to the root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException  is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getUnitRotationGlobalQuat4d()} instead.
-     */
-    @Deprecated
-    default Quat4d getGlobalRotationQuat4d() throws NotAvailableException, InterruptedException {
-        return getUnitRotationGlobalQuat4d();
-    }
-
-    /**
-     * Gets the rotation of the unit relative to the root location as a Rotation object.
-     *
-     * @return rotation relative to the root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException  is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getUnitRotationGlobal()} instead.
-     */
-    @Deprecated
-    default Rotation getGlobalRotation() throws NotAvailableException, InterruptedException {
-        return getUnitRotationGlobal();
-    }
-
-    /**
-     * Gets the center coordinates of the unit's BoundingBox in the unit coordinate system as a Point3d object.
-     *
-     * @return center coordinates of the unit's BoundingBox relative to unit
-     *
-     * @throws NotAvailableException is thrown if the center can not be calculate.
-     * @deprecated please use {@code getUnitBoundingBoxCenterPoint3d()} instead.
-     */
-    @Deprecated
-    default Point3d getLocalBoundingBoxCenterPoint3d() throws NotAvailableException {
-        return getUnitBoundingBoxCenterPoint3d();
-    }
-
-    /**
-     * Gets the center coordinates of the unit's BoundingBox in the coordinate system of the root location as a Point3d object.
-     *
-     * @return center coordinates of the unit's BoundingBox relative to root location
-     *
-     * @throws NotAvailableException          is thrown if the center can not be calculate.
-     * @throws java.lang.InterruptedException
-     * @deprecated please use {@code getUnitBoundingBoxCenterGlobalPoint3d()} instead.
-     */
-    @Deprecated
-    default Point3d getGlobalBoundingBoxCenterPoint3d() throws NotAvailableException, InterruptedException {
-        return getUnitBoundingBoxCenterGlobalPoint3d();
     }
 
     /**

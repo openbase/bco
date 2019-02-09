@@ -305,7 +305,7 @@ public class Services extends ServiceStateProcessor {
     }
 
     /**
-     * @deprecated please use {@code getServiceStateClass(final ServiceType serviceType)} instead.
+     * @deprecated since v2.0 and will be removed in v3.0. Please use {@code getServiceStateClass(final ServiceType serviceType)} instead.
      */
     @Deprecated
     public static Class<? extends Message> detectServiceDataClass(final ServiceType serviceType) throws NotAvailableException {

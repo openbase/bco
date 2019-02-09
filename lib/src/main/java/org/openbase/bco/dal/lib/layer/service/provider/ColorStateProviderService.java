@@ -62,22 +62,6 @@ public interface ColorStateProviderService extends ProviderService {
         return getColorState().getColor().getRgbColor();
     }
 
-    /**
-     * @return
-     *
-     * @throws CouldNotPerformException
-     * @deprecated please use org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer instead.
-     */
-    @Deprecated
-    default java.awt.Color getJavaAWTColor() throws CouldNotPerformException {
-        try {
-            final HSBColor color = getHSBColor();
-            return java.awt.Color.getHSBColor((((float) color.getHue()) / 360f), (((float) color.getSaturation()) / 100f), (((float) color.getBrightness()) / 100f));
-        } catch (Exception ex) {
-            throw new CouldNotTransformException("Could not transform " + HSBColor.class.getName() + " to " + java.awt.Color.class.getName() + "!", ex);
-        }
-    }
-
     static void verifyColorState(final ColorState colorState) throws VerificationFailedException {
         if (!colorState.hasColor()) {
             throw new VerificationFailedException("Color state not available!");

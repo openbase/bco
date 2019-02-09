@@ -88,18 +88,6 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
         return unitRemote;
     }
 
-    /**
-     * @param unitType
-     * @param scope
-     * @throws CouldNotPerformException
-     * @throws InterruptedException
-     * @deprecated please use setUnitRemote(final Scope scope) because type is auto detected.
-     */
-    @Deprecated
-    public void setUnitRemote(final UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
-        setUnitRemote(scope);
-    }
-
     public void setUnitRemote(final Scope scope) throws CouldNotPerformException, InterruptedException {
         try {
             logger.info("Setup unit remote: " + ScopeGenerator.generateStringRep(scope));

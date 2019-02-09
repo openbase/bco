@@ -63,44 +63,6 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
     }
 
     /**
-     * Creates an unit remote out of the given unit configuration.
-     *
-     * @param config the unit configuration which defines the remote type.
-     *
-     * @return the new created unit remote.
-     *
-     * @throws CouldNotPerformException
-     * @deprecated use newInstance instead!
-     */
-    @Deprecated
-    @Override
-    public AbstractUnitRemote createUnitRemote(final UnitConfig config) throws CouldNotPerformException {
-        return (AbstractUnitRemote) newInstance(config);
-    }
-
-    /**
-     * Creates and initializes an unit remote out of the given unit
-     * configuration.
-     *
-     * @param config the unit configuration which defines the remote type and is
-     *               used for the remote initialization.
-     *
-     * @return the new created unit remote.
-     *
-     * @throws CouldNotPerformException
-     * @throws org.openbase.jul.exception.InitializationException * @deprecated use newInitializedInstance instead!
-     */
-    @Override
-    @Deprecated
-    public AbstractUnitRemote createAndInitUnitRemote(final UnitConfig config) throws CouldNotPerformException {
-        try {
-            return (AbstractUnitRemote) newInitializedInstance(config);
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("FATAL ERROR: Interrupted Exception was catched!!! Deprecated API in use!", ex);
-        }
-    }
-
-    /**
      * Method resolves the unit remote class of the given unit config.
      *
      * @param config the unit config to detect the unit class.

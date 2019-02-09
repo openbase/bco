@@ -349,21 +349,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return false;
     }
 
-    /**
-     * @return
-     *
-     * @deprecated please use Registries.getUnitRegistry(true) instead;
-     */
-    @Deprecated
-    public UnitRegistryRemote getUnitRegistry() {
-        try {
-            return Registries.getUnitRegistry(true);
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-            return null;
-        }
-    }
-
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
 

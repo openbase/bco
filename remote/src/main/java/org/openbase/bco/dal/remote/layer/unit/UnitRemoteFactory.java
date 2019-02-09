@@ -50,32 +50,6 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * @return the new created unit remote.
      *
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
-     * @deprecated use newInitializedInstance instead!
-     */
-    @Deprecated
-    AbstractIdentifiableRemote createAndInitUnitRemote(final UnitConfig config) throws CouldNotPerformException;
-
-    /**
-     * Creates an unit remote out of the given unit configuration.
-     *
-     * @param config the unit configuration which defines the remote type.
-     *
-     * @return the new created unit remote.
-     *
-     * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
-     * @deprecated use newInstance instead!
-     */
-    @Deprecated
-    AbstractIdentifiableRemote createUnitRemote(final UnitConfig config) throws CouldNotPerformException;
-
-    /**
-     * Creates and initializes an unit remote out of the given unit configuration.
-     *
-     * @param config the unit configuration which defines the remote type and is used for the remote initialization.
-     *
-     * @return the new created unit remote.
-     *
-     * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @throws InterruptedException
      */
     UnitRemote newInitializedInstance(final UnitConfig config) throws CouldNotPerformException, InterruptedException;
