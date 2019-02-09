@@ -520,9 +520,9 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     }
 
     /**
-     * This method returns the base location remote of this unit.
+     * This method returns the parent location remote of this unit.
      * If this unit is a location, than its parent location remote is returned,
-     * otherwise the base location remote is returned which refers the location where this unit is placed in.
+     * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
      *
@@ -531,7 +531,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
-    public LocationRemote getBaseLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
+    public LocationRemote getParentLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
         return Units.getUnit(getConfig().getPlacementConfig().getLocationId(), waitForData, Units.LOCATION);
     }
 

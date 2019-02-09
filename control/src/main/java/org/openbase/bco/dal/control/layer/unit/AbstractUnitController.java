@@ -52,7 +52,6 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.InstantiationException;
@@ -71,7 +70,6 @@ import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
-import org.openbase.jul.iface.Transformer;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
@@ -99,7 +97,6 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.timing.TimestampType.Timestamp;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
@@ -243,7 +240,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         };
 
-        this.actionComparator = new ActionComparator(() -> getBaseLocationRemote(false).getEmphasisState());
+        this.actionComparator = new ActionComparator(() -> getParentLocationRemote(false).getEmphasisState());
     }
 
     @Override
@@ -1358,9 +1355,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     /**
-     * This method returns the base location remote of this unit.
+     * This method returns the parent location remote of this unit.
      * If this unit is a location, than its parent location remote is returned,
-     * otherwise the base location remote is returned which refers the location where this unit is placed in.
+     * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
      *
@@ -1369,7 +1366,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
-    public LocationRemote getBaseLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
+    public LocationRemote getParentLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
         return Units.getUnit(getConfig().getPlacementConfig().getLocationId(), waitForData, Units.LOCATION);
     }
 
