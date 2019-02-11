@@ -77,7 +77,6 @@
     <file url="file://$PROJECT_DIR$/module/jul/extension" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/openhab" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/protobuf" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/rct" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/com" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/container" charset="UTF-8" />
@@ -87,7 +86,6 @@
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/util" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/tcp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/type/container" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type/interface" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type/processing" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type/storage" charset="UTF-8" />
@@ -96,6 +94,7 @@
     <file url="file://$PROJECT_DIR$/module/jul/extension/xml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/interface" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/pattern" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/pattern/controller" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/pattern/default" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/pattern/launch" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/pattern/trigger" charset="UTF-8" />

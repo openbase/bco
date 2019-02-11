@@ -7,7 +7,6 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/preset/bco.app.preset.iml" filepath="$PROJECT_DIR$/module/bco.app/preset/bco.app.preset.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/test/bco.app.test.iml" filepath="$PROJECT_DIR$/module/bco.app/test/bco.app.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/util/bco.app.util.iml" filepath="$PROJECT_DIR$/module/bco.app/util/bco.app.util.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/lib/bco.authentication.iml" filepath="$PROJECT_DIR$/module/bco.authentication/lib/bco.authentication.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/core/bco.authentication.core.iml" filepath="$PROJECT_DIR$/module/bco.authentication/core/bco.authentication.core.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/lib/bco.authentication.lib.iml" filepath="$PROJECT_DIR$/module/bco.authentication/lib/bco.authentication.lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/test/bco.authentication.test.iml" filepath="$PROJECT_DIR$/module/bco.authentication/test/bco.authentication.test.iml" />
@@ -51,37 +50,33 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/unit-registry/test/bco.registry.unit.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/unit-registry/test/bco.registry.unit.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/util/bco.registry.util.iml" filepath="$PROJECT_DIR$/module/bco.registry/util/bco.registry.util.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.stage/bco.stage.iml" filepath="$PROJECT_DIR$/module/bco.stage/bco.stage.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.annotation.iml" filepath="$PROJECT_DIR$/module/jul/jul.annotation.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.audio.iml" filepath="$PROJECT_DIR$/module/jul/jul.audio.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.exception.iml" filepath="$PROJECT_DIR$/module/jul/jul.exception.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.protobuf.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.protobuf.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.rsb.com.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.rsb.com.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.rsb.container.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.rsb.container.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.rsb.interface.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.rsb.interface.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.rsb.processing.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.rsb.processing.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.rsb.scope.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.rsb.scope.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.rsb.util.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.rsb.util.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.tcp.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.tcp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/annotation/jul.annotation.iml" filepath="$PROJECT_DIR$/module/jul/annotation/jul.annotation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/audio/jul.audio.iml" filepath="$PROJECT_DIR$/module/jul/audio/jul.audio.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/exception/jul.exception.iml" filepath="$PROJECT_DIR$/module/jul/exception/jul.exception.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/protobuf/jul.extension.protobuf.iml" filepath="$PROJECT_DIR$/module/jul/extension/protobuf/jul.extension.protobuf.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/rsb/com/jul.extension.rsb.com.iml" filepath="$PROJECT_DIR$/module/jul/extension/rsb/com/jul.extension.rsb.com.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/rsb/container/jul.extension.rsb.container.iml" filepath="$PROJECT_DIR$/module/jul/extension/rsb/container/jul.extension.rsb.container.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/rsb/interface/jul.extension.rsb.interface.iml" filepath="$PROJECT_DIR$/module/jul/extension/rsb/interface/jul.extension.rsb.interface.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/rsb/processing/jul.extension.rsb.processing.iml" filepath="$PROJECT_DIR$/module/jul/extension/rsb/processing/jul.extension.rsb.processing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/rsb/scope/jul.extension.rsb.scope.iml" filepath="$PROJECT_DIR$/module/jul/extension/rsb/scope/jul.extension.rsb.scope.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/rsb/util/jul.extension.rsb.util.iml" filepath="$PROJECT_DIR$/module/jul/extension/rsb/util/jul.extension.rsb.util.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/tcp/jul.extension.tcp.iml" filepath="$PROJECT_DIR$/module/jul/extension/tcp/jul.extension.tcp.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/extension/type/interface/jul.extension.type.interface.iml" filepath="$PROJECT_DIR$/module/jul/extension/type/interface/jul.extension.type.interface.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.type.interface.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.type.interface.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/extension/type/processing/jul.extension.type.processing.iml" filepath="$PROJECT_DIR$/module/jul/extension/type/processing/jul.extension.type.processing.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.type.processing.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.type.processing.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/extension/type/storage/jul.extension.type.storage.iml" filepath="$PROJECT_DIR$/module/jul/extension/type/storage/jul.extension.type.storage.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.type.storage.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.type.storage.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/extension/type/transform/jul.extension.type.transform.iml" filepath="$PROJECT_DIR$/module/jul/extension/type/transform/jul.extension.type.transform.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.type.transform.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.type.transform.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/extension/type/util/jul.extension.type.util.iml" filepath="$PROJECT_DIR$/module/jul/extension/type/util/jul.extension.type.util.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.type.util.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.type.util.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.extension.xml.iml" filepath="$PROJECT_DIR$/module/jul/jul.extension.xml.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.interface.iml" filepath="$PROJECT_DIR$/module/jul/jul.interface.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.pattern.iml" filepath="$PROJECT_DIR$/module/jul/jul.pattern.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.pattern.launch.iml" filepath="$PROJECT_DIR$/module/jul/jul.pattern.launch.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.pattern.trigger.iml" filepath="$PROJECT_DIR$/module/jul/jul.pattern.trigger.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.processing.iml" filepath="$PROJECT_DIR$/module/jul/jul.processing.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.schedule.iml" filepath="$PROJECT_DIR$/module/jul/jul.schedule.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.storage.iml" filepath="$PROJECT_DIR$/module/jul/jul.storage.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.visual.javafx.iml" filepath="$PROJECT_DIR$/module/jul/jul.visual.javafx.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/jul/jul.visual.swing.iml" filepath="$PROJECT_DIR$/module/jul/jul.visual.swing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/extension/xml/jul.extension.xml.iml" filepath="$PROJECT_DIR$/module/jul/extension/xml/jul.extension.xml.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/interface/jul.interface.iml" filepath="$PROJECT_DIR$/module/jul/interface/jul.interface.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/pattern/default/jul.pattern.iml" filepath="$PROJECT_DIR$/module/jul/pattern/default/jul.pattern.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/pattern/controller/jul.pattern.controller.iml" filepath="$PROJECT_DIR$/module/jul/pattern/controller/jul.pattern.controller.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/pattern/launch/jul.pattern.launch.iml" filepath="$PROJECT_DIR$/module/jul/pattern/launch/jul.pattern.launch.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/pattern/trigger/jul.pattern.trigger.iml" filepath="$PROJECT_DIR$/module/jul/pattern/trigger/jul.pattern.trigger.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/processing/jul.processing.iml" filepath="$PROJECT_DIR$/module/jul/processing/jul.processing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/schedule/jul.schedule.iml" filepath="$PROJECT_DIR$/module/jul/schedule/jul.schedule.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/storage/jul.storage.iml" filepath="$PROJECT_DIR$/module/jul/storage/jul.storage.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/visual/javafx/jul.visual.javafx.iml" filepath="$PROJECT_DIR$/module/jul/visual/javafx/jul.visual.javafx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/visual/swing/jul.visual.swing.iml" filepath="$PROJECT_DIR$/module/jul/visual/swing/jul.visual.swing.iml" />
     </modules>
   </component>
 </project>
