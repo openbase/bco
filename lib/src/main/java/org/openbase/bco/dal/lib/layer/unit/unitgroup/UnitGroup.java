@@ -23,11 +23,51 @@ package org.openbase.bco.dal.lib.layer.unit.unitgroup;
  */
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UnitGroup extends BaseUnit<UnitGroupData>, MultiUnit<UnitGroupData> {
 
+    /**
+     * Method returns a list of configuration of all aggregated units of this group.
+     *
+     * Note: Disabled units are not included.
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws NotAvailableException {@inheritDoc}
+     */
+    @Override
+    default List<UnitConfig> getAggregatedUnitConfigList() throws NotAvailableException {
+        final ArrayList<UnitConfig> unitConfigList = new ArrayList<>();
+
+        // init service unit list
+        for (final String unitId : getConfig().getUnitGroupConfig().getMemberIdList()) {
+            // resolve unit config by unit registry
+            UnitConfig unitConfig;
+            try {
+                unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+            } catch (NotAvailableException ex) {
+                LoggerFactory.getLogger(UnitGroup.class).warn("Unit[" + unitId + "] not available for [" + this + "]");
+                continue;
+            }
+
+            // filter disabled units
+            if (!UnitConfigProcessor.isEnabled(unitConfig)) {
+                continue;
+            }
+            unitConfigList.add(unitConfig);
+        }
+        return unitConfigList;
+    }
 }

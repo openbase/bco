@@ -66,13 +66,7 @@ public class UnitGroupRemote extends AbstractAggregatedBaseUnitRemote<UnitGroupD
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
     }
 
-
     public UnitGroupRemote() {
         super(UnitGroupData.class);
-    }
-
-    @Override
-    protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
-        return unitConfig.getUnitGroupConfig().getMemberIdList();
     }
 }

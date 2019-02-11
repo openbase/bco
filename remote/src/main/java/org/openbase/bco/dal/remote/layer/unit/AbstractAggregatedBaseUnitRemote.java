@@ -72,8 +72,7 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
         UnitConfig unitConfig = super.applyConfigUpdate(config);
 
         serviceTypeUnitMap.clear();
-        for (final String aggregatedUnitId : getAggregatedUnitIds(unitConfig)) {
-            final UnitConfig aggregatedUnitConfig = Registries.getUnitRegistry().getUnitConfigById(aggregatedUnitId);
+        for (final UnitConfig aggregatedUnitConfig : getAggregatedUnitConfigList()) {
             for (final ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(aggregatedUnitConfig.getUnitType()).getServiceDescriptionList()) {
                 if (!serviceTypeUnitMap.containsKey(serviceDescription.getServiceType())) {
                     serviceTypeUnitMap.put(serviceDescription.getServiceType(), new ArrayList<>());
@@ -84,8 +83,6 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
 
         return unitConfig;
     }
-
-    protected abstract List<String> getAggregatedUnitIds(final UnitConfig unitConfig);
 
     @Override
     public boolean isServiceAvailable(ServiceType serviceType) {
@@ -174,7 +171,7 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
         return GlobalCachedExecutorService.submit(() -> {
             final Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
             final Set<UnitRemote> unitRemoteSet = new HashSet<>();
-            for (final String aggregatedUnitId : getAggregatedUnitIds(getConfig())) {
+            for (final String aggregatedUnitId : getAggregatedUnitIdList()) {
                 UnitConfig aggregatedUnitConfig = Registries.getUnitRegistry().getUnitConfigById(aggregatedUnitId);
                 if (!UnitConfigProcessor.isDalUnit(aggregatedUnitConfig)) {
                     continue;

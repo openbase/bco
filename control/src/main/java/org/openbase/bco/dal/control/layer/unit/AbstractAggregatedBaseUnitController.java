@@ -47,6 +47,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -76,6 +77,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
                 updateUnitData();
             }
         };
+
         // Create a service remote manager that triggers data updates
         this.serviceRemoteManager = new ServiceRemoteManager<D>(this) {
             @Override
@@ -94,12 +96,10 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         };
     }
 
-    protected abstract List<String> getAggregatedUnitIds(final UnitConfig unitConfig);
-
     @Override
     public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(getAggregatedUnitIds(unitConfig));
+        serviceRemoteManager.applyConfigUpdate(getAggregatedUnitConfigList());
         // if already active than update the current state.
         if (isActive()) {
             updateUnitData();

@@ -24,6 +24,12 @@ package org.openbase.bco.dal.control.layer.unit.unitgroup;
 
 import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroupController;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
@@ -49,6 +55,7 @@ import org.openbase.type.vision.RGBColorType.RGBColor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -80,10 +87,5 @@ public class UnitGroupControllerImpl extends AbstractAggregatedBaseUnitControlle
 
     public UnitGroupControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UnitGroupData.newBuilder());
-    }
-
-    @Override
-    protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
-        return unitConfig.getUnitGroupConfig().getMemberIdList();
     }
 }

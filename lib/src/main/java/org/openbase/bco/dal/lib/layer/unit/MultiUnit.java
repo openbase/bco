@@ -26,7 +26,11 @@ import com.google.protobuf.Message;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Interface describes a unit which internally holds further units and aggregates its states.
@@ -91,4 +95,24 @@ public interface MultiUnit<DATA extends Message> extends Unit<DATA>, ServiceAggr
         }
         return false;
     }
+
+    /**
+     * Method returns a list of ids of all aggregated units.
+     *
+     * @return a list of the ids of all aggregated units.
+     */
+    default List<String> getAggregatedUnitIdList() throws NotAvailableException {
+        final ArrayList<String> unitIdList = new ArrayList<>();
+        for (UnitConfig aggregatedUnitConfig : getAggregatedUnitConfigList()) {
+            unitIdList.add(aggregatedUnitConfig.getId());
+        }
+        return unitIdList;
+    }
+
+    /**
+     * Method returns a list of configuration of all aggregated units.
+     *
+     * @return a list of the configurations of all aggregated units.
+     */
+    List<UnitConfig> getAggregatedUnitConfigList() throws NotAvailableException;
 }

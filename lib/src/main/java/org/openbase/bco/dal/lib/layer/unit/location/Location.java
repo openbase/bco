@@ -25,13 +25,22 @@ package org.openbase.bco.dal.lib.layer.unit.location;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 
 /**
@@ -42,4 +51,46 @@ public interface Location extends BaseUnit<LocationData>, MultiUnit<LocationData
     @RPCMethod(legacy = true)
     @Override
     Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
+
+    /**
+     * Method returns a list of configuration of all aggregated units.
+     *
+     * Note: Base units and disabled units are not included.
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws NotAvailableException {@inheritDoc}
+     */
+    @Override
+    default List<UnitConfig> getAggregatedUnitConfigList() throws NotAvailableException {
+        final ArrayList<UnitConfig> unitConfigList = new ArrayList<>();
+
+        // init service unit map
+        for (final String unitId : getConfig().getLocationConfig().getUnitIdList()) {
+            try {
+                // resolve unit config by unit registry
+                UnitConfig unitConfig;
+                try {
+                    unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+                } catch (NotAvailableException ex) {
+                    LoggerFactory.getLogger(Location.class).warn("Unit[" + unitId + "] not available for [" + this + "]");
+                    continue;
+                }
+
+                // filter non dal units and disabled units
+                try {
+                    if (!UnitConfigProcessor.isDalUnit(unitConfig) || !UnitConfigProcessor.isEnabled(unitConfig)) {
+                        continue;
+                    }
+                } catch (VerificationFailedException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("UnitConfig[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "] could not be verified as a dal unit!", ex), LoggerFactory.getLogger(Location.class));
+                }
+
+                unitConfigList.add(unitConfig);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "] for " + this + "!", ex), LoggerFactory.getLogger(Location.class));
+            }
+        }
+        return unitConfigList;
+    }
 }

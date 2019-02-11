@@ -40,6 +40,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
@@ -95,7 +96,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         this.serviceDataObserver = (source, data) -> notifyServiceUpdate(source, data);
     }
 
-    public synchronized void applyConfigUpdate(final List<String> unitIDList) throws CouldNotPerformException, InterruptedException {
+    public synchronized void applyConfigUpdate(final List<UnitConfig> unitConfigList) throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
         synchronized (serviceRemoteMapLock) {
             // shutdown all existing instances.
@@ -112,34 +113,12 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
             }
 
             // init service unit map
-            for (final String unitId : unitIDList) {
-                try {
-                    // resolve unit config by unit registry
-                    UnitConfig unitConfig;
-                    try {
-                        unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
-                    } catch (NotAvailableException ex) {
-                        LOGGER.warn("Unit[" + unitId + "] not available for [" + responsibleInstance + "]");
-                        continue;
-                    }
-
-                    // filter non dal units and disabled units
-                    try {
-                        if (!UnitConfigProcessor.isDalUnit(unitConfig) || !UnitConfigProcessor.isEnabled(unitConfig)) {
-                            continue;
-                        }
-                    } catch (VerificationFailedException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("UnitConfig[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "] could not be verified as a dal unit!", ex), LOGGER);
-                    }
-
-                    // sort dal unit by service type
-                    unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
-                        // register unit for each service type. UnitConfigs can be added twice because of duplicated types with different service patterns but are filtered by the set.
-                        serviceMap.get(serviceConfig.getServiceDescription().getServiceType()).add(unitConfig);
-                    });
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "] for " + responsibleInstance + "!", ex), LOGGER);
-                }
+            for (final UnitConfig unitConfig : unitConfigList) {
+                // sort dal unit by service type
+                unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
+                    // register unit for each service type. UnitConfigs can be added twice because of duplicated types with different service patterns but are filtered by the set.
+                    serviceMap.get(serviceConfig.getServiceDescription().getServiceType()).add(unitConfig);
+                });
             }
 
             // initialize service remotes

@@ -31,9 +31,9 @@ import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.processing.StandbyController;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -134,11 +134,6 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
         }
 
         presenceDetector.init(this);
-    }
-
-    @Override
-    protected List<String> getAggregatedUnitIds(final UnitConfig unitConfig) {
-        return unitConfig.getLocationConfig().getUnitIdList();
     }
 
     @Override

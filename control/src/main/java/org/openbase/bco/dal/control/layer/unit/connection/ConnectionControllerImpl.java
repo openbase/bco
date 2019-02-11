@@ -21,11 +21,7 @@ package org.openbase.bco.dal.control.layer.unit.connection;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
@@ -36,6 +32,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
 import org.openbase.bco.dal.lib.layer.unit.connection.ConnectionController;
 import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -166,7 +163,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
     @Override
     public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConnectionConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(unitConnectionConfig.getConnectionConfig().getUnitIdList());
+        serviceRemoteManager.applyConfigUpdate(getAggregatedUnitConfigList());
 
         contactDoorPositionMap.clear();
         contactWindowPositionMap.clear();
@@ -374,5 +371,28 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         if (getConnectionType() != connectionType) {
             throw new VerificationFailedException("ConnectionType verification failed. Connection [" + getConfig().getId() + "] has type [" + getConfig().getConnectionConfig().getType().name() + "] and not [" + connectionType.name() + "]");
         }
+    }
+
+    protected List<UnitConfig> getAggregatedUnitConfigList() throws NotAvailableException {
+        final ArrayList<UnitConfig> unitConfigList = new ArrayList<>();
+
+        // init service unit list
+        for (final String unitId : getConfig().getConnectionConfig().getUnitIdList()) {
+            // resolve unit config by unit registry
+            UnitConfig unitConfig;
+            try {
+                unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+            } catch (NotAvailableException ex) {
+                logger.warn("Unit[" + unitId + "] not available for [" + this + "]");
+                continue;
+            }
+
+            // filter disabled units
+            if (!UnitConfigProcessor.isEnabled(unitConfig)) {
+                continue;
+            }
+            unitConfigList.add(unitConfig);
+        }
+        return unitConfigList;
     }
 }
