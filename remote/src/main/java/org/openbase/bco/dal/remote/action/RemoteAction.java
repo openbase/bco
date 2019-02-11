@@ -46,6 +46,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.Logger;
@@ -69,6 +70,7 @@ public class RemoteAction implements Action {
     private Future<ActionDescription> futureObservationTask;
     private final ObservableImpl<RemoteAction, ActionDescription> actionDescriptionObservable;
     private final Observer unitObserver = (source, data) -> {
+
         // check if initial actionDescription is available
         if (RemoteAction.this.actionDescription == null) {
             return;
@@ -165,13 +167,13 @@ public class RemoteAction implements Action {
                     if (actionDescription.getIntermediary()) {
                         for (ActionReference actionReference : actionDescription.getActionImpactList()) {
                             RemoteAction remoteAction = new RemoteAction(actionReference);
-                            remoteAction.addActionDescriptionObserver(actionDescriptionObservable::notifyObservers);
+                            remoteAction.addActionDescriptionObserver((source, observable) -> actionDescriptionObservable.notifyObservers(source, observable));
                             impactedRemoteActions.add(remoteAction);
                         }
 
                     } else {
                         // register action update observation
-                        targetUnit.addDataObserver(unitObserver);
+                        targetUnit.addDataObserver(ServiceTempus.UNKNOWN, unitObserver);
 
                         executionSync.notifyAll();
 
@@ -218,7 +220,7 @@ public class RemoteAction implements Action {
                     }
 
                     // register action update observation
-                    targetUnit.addDataObserver(unitObserver);
+                    targetUnit.addDataObserver(ServiceTempus.UNKNOWN, unitObserver);
 
                     executionSync.notifyAll();
 
@@ -312,7 +314,7 @@ public class RemoteAction implements Action {
                 } else {
                     if (getActionDescription().getIntermediary()) {
                         // cancel all impacts of this actions and return the current action description
-                        return FutureProcessor.allOf(impactedRemoteActions, input -> getActionDescription(), RemoteAction::cancel);
+                        return FutureProcessor.allOf(impactedRemoteActions, input -> getActionDescription(), remoteAction -> remoteAction.cancel());
                     } else {
                         // cancel the action on the controller
                         return targetUnit.cancelAction(getActionDescription(), authenticationToken, authorizationToken);
