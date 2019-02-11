@@ -37,6 +37,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
@@ -58,6 +59,7 @@ import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -77,15 +79,19 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        // activate unit allocation
-        JPService.registerProperty(JPUnitAllocation.class, true);
+
+        // uncomment to enable debug mode
+        // JPService.registerProperty(JPDebugMode.class, true);
+
+        // uncomment to visualize action inspector during tests
+        // String[] args = {};
+        // new Thread(() -> BCOActionInspector.main(args)).start();
+
         // trigger super method
         AbstractBCODeviceManagerTest.setUpClass();
+
         // retrieve colorable light remote
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
-        String[] args = {};
-
-//        new Thread(() -> BCOActionInspector.main(args)).start();
     }
 
     @AfterClass
@@ -138,7 +144,10 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals("PowerState has not been updated", State.ON, colorableLightRemote.getData().getPowerState().getValue());
 
         // cancel the action
-        remoteAction.cancel().get();
+        System.out.println("try to cancel");
+        final Future<ActionDescription> cancelFuture = remoteAction.cancel();
+        System.out.println("wait for cancel");
+        cancelFuture.get();
 
         // validate that the action is cancelled
         assertEquals("ActionState is not canceled", ActionState.State.CANCELED, remoteAction.getActionState());
@@ -275,87 +284,81 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         firstAction.cancel().get();
         firstAction.waitForActionState(ActionState.State.CANCELED);
     }
-//    /**
-//     * Test priorized action execution and low priorized rescheduling afterwards.
-//     *
-//     * @throws Exception if an error occurs.
-//     */
-//    @Test
-//    public void testPriorityHandling() throws Exception {
-//        LOGGER.info("testPriorityHandling");
-//
-////        System.out.println("prepare...");
-////        Thread.sleep(10000);
-////        System.out.println("ready...");
-////        Thread.sleep(10000);
-////        System.out.println("go...");
-//
-//        // set the brightness of the colorable light to 90
-//        final ActionParameter.Builder secondaryActionParameter = ActionParameter.newBuilder();
-//        secondaryActionParameter.setExecutionTimePeriod(TimeUnit.HOURS.toMicros(1));
-//        secondaryActionParameter.setPriority(Priority.LOW);
-//        secondaryActionParameter.addCategory(Category.ECONOMY);
-//        secondaryActionParameter.setSchedulable(true);
-//        secondaryActionParameter.setInterruptible(true);
-//        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(90, secondaryActionParameter.build()));
-//        secondaryAction.waitForExecution();
-//
-//        assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
-//        assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
-//        // validate that brightness value was set
-//        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
-////        System.out.println("prev login: " + SessionManager.getInstance().getUserId());
-//        // set the brightness state with the admin user to 50 for 500 ms
-//        final SessionManager sessionManager = new SessionManager();
-//        sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
-////        System.out.println("admin login: " + sessionManager.getUserId());
-//        final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
-//        primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(6000));
-//        primaryActionParameter.setPriority(Priority.HIGH);
-//        primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
-//        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null, null);
-//
-//
-//        Thread.sleep(5000);
-//
-//
-//        AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
-//
-//        final RemoteAction primaryAction = new RemoteAction(authenticatedValueFuture);
-//        primaryAction.waitForExecution();
-//        secondaryAction.waitForActionState(ActionState.State.SCHEDULED);
-//
-//        assertEquals(primaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
-//        assertEquals(ActionState.State.EXECUTING, primaryAction.getActionState());
-//        // validate that light brightness was adjusted to 50 percent
-//        assertEquals(50, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
-//        // validate that previous action became scheduled
-//        assertEquals(ActionState.State.SCHEDULED, secondaryAction.getActionState());
-//
-//        // make sure primary action is finalised.
-//        primaryAction.waitForActionState(ActionState.State.FINISHED);
-//        assertEquals(0, primaryAction.getExecutionTime());
-//        assertEquals(6000, primaryAction.getLifetime());
-//        assertEquals(false, primaryAction.isValid());
-//        assertEquals(true, primaryAction.isDone());
-//        assertEquals(false, primaryAction.isScheduled());
-//
-//        // wait until old action is rescheduled to executing
-//        secondaryAction.waitForExecution();
-//
-//        assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
-//        assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
-//        assertEquals(ActionState.State.FINISHED, primaryAction.getActionState());
-//        // validate that color value was set
-//        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
-//
-//        Thread.sleep(100000);
-//
-//        // cancel remaining action for the next test
-////        System.out.println("end login: " + SessionManager.getInstance().getUserId());
-//        secondaryAction.cancel().get();
-//        secondaryAction.waitForActionState(ActionState.State.CANCELED);
-//    }
+    /**
+     * Test priorized action execution and low priorized rescheduling afterwards.
+     *
+     * @throws Exception if an error occurs.
+     */
+    @Test(timeout = 5000)
+    public void testPriorityHandling() throws Exception {
+        LOGGER.info("testPriorityHandling");
+
+        // uncomment to delay the test startup in case you need to prepare the action inspector
+        // System.out.println("prepare...");
+        // Thread.sleep(10000);
+        // System.out.println("ready...");
+        // Thread.sleep(10000);
+        // System.out.println("go...");
+
+        // set the brightness of the colorable light to 90
+        final ActionParameter.Builder secondaryActionParameter = ActionParameter.newBuilder();
+        secondaryActionParameter.setExecutionTimePeriod(TimeUnit.HOURS.toMicros(1));
+        secondaryActionParameter.setPriority(Priority.LOW);
+        secondaryActionParameter.addCategory(Category.ECONOMY);
+        secondaryActionParameter.setSchedulable(true);
+        secondaryActionParameter.setInterruptible(true);
+        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(90, secondaryActionParameter.build()));
+        secondaryAction.waitForExecution();
+
+        assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
+        assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
+        // validate that brightness value was set
+        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+
+        // set the brightness state with the admin user to 50 for 500 ms
+        final SessionManager sessionManager = new SessionManager();
+        sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
+
+        final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
+        primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(6000));
+        primaryActionParameter.setPriority(Priority.HIGH);
+        primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null, null);
+
+        AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
+
+        final RemoteAction primaryAction = new RemoteAction(authenticatedValueFuture);
+        primaryAction.waitForExecution();
+        secondaryAction.waitForActionState(ActionState.State.SCHEDULED);
+
+        assertEquals(primaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
+        assertEquals(ActionState.State.EXECUTING, primaryAction.getActionState());
+        // validate that light brightness was adjusted to 50 percent
+        assertEquals(50, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        // validate that previous action became scheduled
+        assertEquals(ActionState.State.SCHEDULED, secondaryAction.getActionState());
+
+        // make sure primary action is finalised.
+        primaryAction.waitForActionState(ActionState.State.FINISHED);
+        assertEquals(0, primaryAction.getExecutionTime());
+        assertEquals(6000, primaryAction.getLifetime());
+        assertEquals(false, primaryAction.isValid());
+        assertEquals(true, primaryAction.isDone());
+        assertEquals(false, primaryAction.isScheduled());
+
+        // wait until old action is rescheduled to executing
+        secondaryAction.waitForExecution();
+
+        assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
+        assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
+        assertEquals(ActionState.State.FINISHED, primaryAction.getActionState());
+        // validate that color value was set
+        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+
+        // cancel remaining action for the next test
+        secondaryAction.cancel().get();
+        secondaryAction.waitForActionState(ActionState.State.CANCELED);
+    }
 
     /**
      * Test finalization after execution time period has passed.
@@ -379,11 +382,10 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
         // validate that brightness value was set
         assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
-//        System.out.println("prev login: " + SessionManager.getInstance().getUserId());
+
         // set the brightness state with the admin user to 50 for 500 ms
         final SessionManager sessionManager = new SessionManager();
         sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
-//        System.out.println("admin login: " + sessionManager.getUserId());
         final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(500));
         primaryActionParameter.setPriority(Priority.HIGH);
@@ -397,8 +399,10 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         assertEquals(primaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
         assertEquals(ActionState.State.EXECUTING, primaryAction.getActionState());
+
         // validate that light brightness was adjusted to 50 percent
         assertEquals(50, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+
         // validate that previous action became scheduled
         assertEquals(ActionState.State.SCHEDULED, secondaryAction.getActionState());
 
@@ -420,7 +424,6 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
 
         // cancel remaining action for the next test
-//        System.out.println("end login: " + SessionManager.getInstance().getUserId());
         secondaryAction.cancel().get();
         secondaryAction.waitForActionState(ActionState.State.CANCELED);
     }
