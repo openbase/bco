@@ -122,6 +122,7 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
         // filter tempus
         Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
         descriptorForType.getFields().stream()
+                .filter((field) -> (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE))
                 .filter((field) -> (!fieldsToKeep.contains(field.getName()))).forEachOrdered((field) -> {
             builder.clearField(field);
         });
