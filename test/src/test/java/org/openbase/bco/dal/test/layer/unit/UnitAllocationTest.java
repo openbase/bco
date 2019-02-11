@@ -289,7 +289,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception if an error occurs.
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 15000)
     public void testPriorityHandling() throws Exception {
         LOGGER.info("testPriorityHandling");
 
