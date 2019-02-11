@@ -32,6 +32,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -47,9 +48,8 @@ import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.pattern.provider.Provider;
+import org.openbase.jul.schedule.*;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter.Builder;
 import org.openbase.type.domotic.action.SnapshotType;
@@ -77,19 +77,20 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     private boolean active;
     private long connectionPing;
-    private final SyncObject serviceRemoteMapLock = new SyncObject("ServiceRemoteMapLock");
     private final ServiceRemoteFactory serviceRemoteFactory;
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
     private final Observer<Unit, Message> serviceDataObserver;
     private final Unit<D> responsibleInstance;
     private boolean filterInfrastructureUnits;
+    private final CloseableLockProvider lockProvider;
 
-    public ServiceRemoteManager(final Unit<D> responsibleInstance) {
-        this(responsibleInstance, true);
+    public ServiceRemoteManager(final Unit<D> responsibleInstance, final CloseableLockProvider lockProvider) {
+        this(responsibleInstance, lockProvider, true);
     }
 
-    public ServiceRemoteManager(final Unit<D> responsibleInstance, final boolean filterInfrastructureUnits) {
+    public ServiceRemoteManager(final Unit<D> responsibleInstance, final CloseableLockProvider lockProvider, final boolean filterInfrastructureUnits) {
         this.responsibleInstance = responsibleInstance;
+        this.lockProvider = lockProvider;
         this.filterInfrastructureUnits = filterInfrastructureUnits;
         this.serviceRemoteMap = new HashMap<>();
         this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
@@ -98,7 +99,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     public synchronized void applyConfigUpdate(final List<UnitConfig> unitConfigList) throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableWriteLockWrapper ignored = lockProvider.getCloseableWriteLock(this)) {
             // shutdown all existing instances.
             for (final AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
                 serviceRemote.removeDataObserver(serviceDataObserver);
@@ -127,11 +128,9 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 serviceRemoteMap.put(serviceType, serviceRemote);
 
                 // if already active than update the current location state.
-                synchronized (serviceRemoteMapLock) {
-                    if (isActive()) {
-                        serviceRemote.addDataObserver(serviceDataObserver);
-                        serviceRemote.activate();
-                    }
+                if (isActive()) {
+                    serviceRemote.addDataObserver(serviceDataObserver);
+                    serviceRemote.activate();
                 }
             }
         }
@@ -139,7 +138,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             active = true;
             for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
                 serviceRemote.addDataObserver(serviceDataObserver);
@@ -150,7 +149,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             active = false;
             for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
                 serviceRemote.removeDataObserver(serviceDataObserver);
@@ -165,7 +164,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     }
 
     public List<AbstractServiceRemote> getServiceRemoteList() {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             return new ArrayList<>(serviceRemoteMap.values());
         }
     }
@@ -187,7 +186,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     }
 
     public AbstractServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             AbstractServiceRemote serviceRemote = serviceRemoteMap.get(serviceType);
             if (serviceRemote == null) {
                 final String responsible = (responsibleInstance != null ? responsibleInstance.toString() : "the underlying instance");
@@ -410,7 +409,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
      */
     @Override
     public Future<Long> ping() {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             if (serviceRemoteMap.isEmpty()) {
                 return CompletableFuture.completedFuture(0L);
             }
@@ -544,7 +543,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public void addDataObserver(final Observer<DataProvider<D>, D> observer) {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             for (final Remote<D> remote : serviceRemoteMap.values()) {
                 remote.addDataObserver(observer);
             }
@@ -553,7 +552,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public void removeDataObserver(Observer<DataProvider<D>, D> observer) {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             for (final Remote<D> remote : serviceRemoteMap.values()) {
                 remote.removeDataObserver(observer);
             }
@@ -562,7 +561,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             for (final Remote<D> remote : serviceRemoteMap.values()) {
                 remote.waitForData();
             }
@@ -571,7 +570,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             for (final Remote<D> remote : serviceRemoteMap.values()) {
                 remote.waitForData(timeout, timeUnit);
             }
@@ -579,7 +578,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     }
 
     public <B> Future<B> requestData(final B builder) throws CouldNotPerformException {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             final List<Future> futureData = new ArrayList<>();
 
             for (final Remote<?> remote : serviceRemoteMap.values()) {
@@ -597,7 +596,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     }
 
     public void validateMiddleware() throws InvalidStateException {
-        synchronized (serviceRemoteMapLock) {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             for (AbstractServiceRemote value : serviceRemoteMap.values()) {
                 for (Object internalUnit : value.getInternalUnits()) {
                     ((AbstractRemoteClient) internalUnit).validateMiddleware();

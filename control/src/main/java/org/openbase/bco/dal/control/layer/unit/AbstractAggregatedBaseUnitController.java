@@ -37,6 +37,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.pattern.provider.Provider;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -79,7 +81,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         };
 
         // Create a service remote manager that triggers data updates
-        this.serviceRemoteManager = new ServiceRemoteManager<D>(this) {
+        this.serviceRemoteManager = new ServiceRemoteManager<D>(this, getManageLock()) {
             @Override
             protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException {
                 return AbstractAggregatedBaseUnitController.this.getSupportedServiceTypes();

@@ -136,7 +136,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         this.supportedServiceTypes = new HashSet<>();
         this.supportedServiceTypes.add(ServiceType.CONTACT_STATE_SERVICE);
 
-        this.serviceRemoteManager = new ServiceRemoteManager(this) {
+        this.serviceRemoteManager = new ServiceRemoteManager(this, getManageLock()) {
 
             @Override
             protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
