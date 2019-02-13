@@ -551,9 +551,16 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public UnitConfig getUnitConfigById(final String unitConfigId) throws NotAvailableException {
         for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
             try {
+                if (!registry.contains(unitConfigId)) {
+                    continue;
+                }
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("UnitConfigId", unitConfigId, new CouldNotPerformException("Lookup of id [" + unitConfigId + "] failed!", ex));
+            }
+            try {
                 return (UnitConfig) registry.getMessage(unitConfigId);
             } catch (CouldNotPerformException ex) {
-                // ignore and throw a new exception if no registry contains the entry
+                throw new NotAvailableException("UnitConfigId", unitConfigId, new CouldNotPerformException("Lookup via "+registry.getName()+" of id [" + unitConfigId + "] failed!", ex));
             }
         }
         throw new NotAvailableException("UnitConfigId", unitConfigId, new CouldNotPerformException("None of the unit registries contains an entry with the id [" + unitConfigId + "]"));

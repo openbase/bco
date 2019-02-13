@@ -67,22 +67,26 @@ public class MockRegistryTest {
     @Test(timeout = 120000)
     public void testMockRegistryCreation() throws Exception {
         Stopwatch stopwatch = new Stopwatch();
-        List<Long> times = new ArrayList<>();
+        List<String> times = new ArrayList<>();
         System.out.println("testMockRegistryCreation");
         try {
             for (int i = 0; i < 5; ++i) {
                 System.out.println("start mock registry");
                 stopwatch.restart();
                 MockRegistryHolder.newMockRegistry();
+                times.add("Startup ["+(i + 1)+"] took: " + stopwatch.getTime() + "ms");
+                stopwatch.restart();
                 System.out.println("shutdown mock registry");
                 MockRegistryHolder.shutdownMockRegistry();
-                times.add(stopwatch.stop());
+                times.add("Shutdown ["+(i + 1)+"] took: " + stopwatch.stop() + "ms");
             }
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
         }
-        for (Long time : times) {
-            System.out.println("Startup + Shutdown took: " + time + "ms");
+
+        System.out.println("Summarized results:");
+        for (String time : times) {
+            System.out.println(time);
         }
     }
 }
