@@ -41,6 +41,8 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
 
     // ===================================== DeviceClass Methods =============================================================
 
+    // todo release: remove exceptions from future returning messages globally!
+
     /**
      * Method registers the given device class.
      *
