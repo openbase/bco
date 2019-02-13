@@ -358,7 +358,6 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
             }
         }
 
-        final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
         final Collection<Future<AuthenticatedValue>> futureCollection = new ArrayList<>();
         for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
             final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
@@ -371,22 +370,6 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
             final Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateDescription);
             final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder);
-
-            // todo: why is this needed?
-//            ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-//            ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-//
-//            // TODO: discuss if the responsible action shall be moved to the action chain, if yes a snapshot could already contain a list
-//            // of action descriptions which are initialized accordingly, this way the deserialization does not have to be done here
-//            // Furthermore restoring a snapshot itself should be have an action description which is the cause
-//            Message.Builder serviceAttribute = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType()).toBuilder();
-//            if (Services.hasResponsibleAction(serviceAttribute)) {
-//                ActionDescription responsibleAction = Services.getResponsibleAction(serviceAttribute);
-//                Services.clearResponsibleAction(serviceAttribute);
-//
-//                ActionDescriptionProcessor.updateActionCause(actionDescription, responsibleAction);
-//            }
-//            ActionDescriptionProcessor.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType(), unitRemote);
 
             AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
             if (ticketAuthenticatorWrapper != null) {
