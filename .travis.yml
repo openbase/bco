@@ -47,8 +47,7 @@ deploy:
 after_deploy:
    - |
        if [[ ($TRAVIS_BRANCH == master) &&
-             ($TRAVIS_PULL_REQUEST == false) &&
-             ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
+             ($TRAVIS_PULL_REQUEST == false) ]] ; then
          curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
 
          # trigger upstream projects
