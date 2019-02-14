@@ -115,8 +115,8 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public <R> Future<R> callMethodAsync(String methodName) throws CouldNotPerformException {
-        throw new NotSupportedException("Method[callMethodAsync]", this);
+    public <R> Future<R> callMethodAsync(String methodName) {
+        return FutureProcessor.canceledFuture(new NotSupportedException("Method[callMethodAsync]", this));
     }
 
     @Override
@@ -140,12 +140,12 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public <R, T> Future<R> callMethodAsync(String methodName, T argument) throws CouldNotPerformException {
-        throw new NotSupportedException("Method[callMethodAsync]", this);
+    public <R, T> Future<R> callMethodAsync(String methodName, T argument) {
+        return FutureProcessor.canceledFuture(new NotSupportedException("Method[callMethodAsync]", this));
     }
 
     @Override
-    public CompletableFuture<ObjectData> requestData() throws CouldNotPerformException {
+    public CompletableFuture<ObjectData> requestData() {
         return CompletableFuture.completedFuture(data);
     }
 

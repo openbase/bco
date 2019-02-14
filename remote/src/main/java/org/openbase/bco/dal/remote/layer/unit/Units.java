@@ -1267,7 +1267,7 @@ public class Units {
      *                               interrupted.
      */
     @Deprecated
-    public static Future<UnitRemote> getFutureUnitByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static Future<UnitRemote> getFutureUnitByLabelAndType(final String label, final UnitType unitType, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByLabelAndType(label, unitType, waitForData));
     }
 
