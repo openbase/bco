@@ -55,12 +55,17 @@ public interface AuthenticationService {
      *
      * @param clientId the id of the client whose password is used for the
      *                 encryption of the session key
+     *
      * @return the described TicketSessionKeyWrapper
-     * @throws NotAvailableException    If the clientId could not be found.
-     * @throws CouldNotPerformException In the case of an internal server error or if the remote call fails.
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * <p>
+     * * NotAvailableException    If the clientId could not be found.
+     * * CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws NotAvailableException, CouldNotPerformException;
+    Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId);
 
     /**
      * Request a ClientServerTicket from the AuthenticatorService. The reply is
@@ -78,15 +83,18 @@ public interface AuthenticationService {
      * @param ticketAuthenticatorWrapper a wrapper containing the authenticator
      *                                   encrypted with the TicketGrantingService session key and the unchanged
      *                                   TicketGrantingTicket
+     *
      * @return a wrapper containing a ClientServerTicket and a session key as
      * described above
-     * @throws RejectedException        If timestamp in Authenticator does not fit to time period in TGT,
-     *                                  if clientID in Authenticator does not match clientID in TGT or, if the decryption of the
-     *                                  Authenticator or TGT fails, probably because the wrong keys were used.
-     * @throws CouldNotPerformException In the case of an internal server error or if the remote call fails.
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * <p>
+     * * RejectedException        If timestamp in Authenticator does not fit to time period in TGT, if clientID in Authenticator does not match clientID in TGT or, if the decryption of the Authenticator or TGT fails, probably because the wrong keys were used.
+     * * CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, CouldNotPerformException;
+    Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
 
     /**
      * Validate a ClientServerTicket. If validation is successful the reply is
@@ -97,76 +105,95 @@ public interface AuthenticationService {
      *
      * @param ticketAuthenticatorWrapper a wrapper containing the authenticator
      *                                   encrypted with the session key and the unchanged ClientServerTicket
+     *
      * @return a TicketAuthenticatorWrapper as described above
-     * @throws RejectedException        If timestamp in Authenticator does not fit to time period in TGT,
-     *                                  if clientID in Authenticator does not match clientID in TGT or, if the decryption of the
-     *                                  Authenticator or CST fails, probably because the wrong keys were used.
-     * @throws CouldNotPerformException In the case of an internal server error or if the remote call fails.
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * <p>
+     * * RejectedException        If timestamp in Authenticator does not fit to time period in TGT, if clientID in Authenticator does not match clientID in TGT or, if the decryption of the Authenticator or CST fails, probably because the wrong keys were used.
+     * * CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, CouldNotPerformException;
+    Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
 
     /**
      * Changes the credentials for a given user.
      *
      * @param loginCredentialsChange Wrapper containing the user's ID, new and old password,
      *                               and a TicketAuthenticatorWrapper to authenticate the user.
+     *
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
-     * @throws RejectedException         If the password change fails (invalid ticket, user has no permission, old password doesn't match).
-     * @throws PermissionDeniedException If the user has no permission to change this password.
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * <p>
+     * * RejectedException         If the password change fails (invalid ticket, user has no permission, old password doesn't match).
+     * * PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
+    Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange);
 
     /**
      * Registers a client or user.
      *
      * @param loginCredentialsChange Wrapper containing the user's ID, password or public key, isAdmin flag,
      *                               and a TicketAuthenticatorWrapper to authenticate the user.
+     *
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
-     * @throws RejectedException         If the password change fails (invalid ticket, user has no permission, old password doesn't match)
-     *                                   or if the decryption fails, because the wrong keys were used.
-     * @throws PermissionDeniedException If the user has no permission to change this password.
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * <p>
+     * * RejectedException         If the password change fails (invalid ticket, user has no permission, old password doesn't match) or if the decryption fails, because the wrong keys were used.
+     * * PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
+    Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange);
 
     /**
      * Removes a user or client.
      *
      * @param loginCredentialsChange change of credentials (id of user to remove)
+     *
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
-     * @throws RejectedException         If the password change fails (invalid ticket, user has no permission, old password doesn't match)
-     *                                   or if the decryption fails, because the wrong keys were used.
-     * @throws PermissionDeniedException If the user has no permission to change this password.
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * <p>
+     * * RejectedException         If the password change fails (invalid ticket, user has no permission, old password doesn't match) or if the decryption fails, because the wrong keys were used.
+     * * PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
+    Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange);
 
     /**
      * Appoints a normal user to an administrator.
      *
      * @param loginCredentialsChange Wrapper containing the user's ID, password or public key, isAdmin flag,
      *                               and a TicketAuthenticatorWrapper to authenticate the user.
+     *
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
-     * @throws RejectedException         If the password change fails (invalid ticket, user has no permission)
-     *                                   or if the decryption fails, because the wrong keys were used.
-     * @throws PermissionDeniedException If the user has no permission to change this password.
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * * RejectedException If the password change fails (invalid ticket, user has no permission) or if the decryption fails, because the wrong keys were used.
+     * * PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
+    Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange);
 
     /**
      * Validates the client server ticket and returns the service server secret key encrypted
@@ -174,23 +201,32 @@ public interface AuthenticationService {
      *
      * @param ticketAuthenticatorWrapper a wrapper containing the authenticator
      *                                   encrypted with the session key and the unchanged ClientServerTicket
+     *
      * @return an authenticated value containing the updated client server ticket an the encrypted service server secret key
-     * @throws CouldNotPerformException if the validation of the client server ticket fails or the logged in client is not the service server
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * <p>
+     * * CouldNotPerformException if the validation of the client server ticket fails or the logged in client is not the service server
      */
     @RPCMethod
-    Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException;
+    Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
 
     /**
      * Returns whether a given user has admin rights or not.
      *
      * @param userId ID of the user to check for.
+     *
      * @return True, if the user is admin, false if not.
-     * @throws NotAvailableException    If the user could not be found.
-     * @throws CouldNotPerformException if the test could no be performed
+     * <p>
+     * The initial cause can be detected by calling .get() catching the cancellation exception and resolving the initial cause via ExceptionProcessor.getInitialCause(...).
+     * Initial cause could be one of the following:
+     * * NotAvailableException    If the user could not be found.
+     * * CouldNotPerformException if the test could no be performed
      */
     @RPCMethod
-    Future<Boolean> isAdmin(String userId) throws NotAvailableException, CouldNotPerformException;
+    Future<Boolean> isAdmin(String userId);
 
     @RPCMethod
-    Future<Boolean> hasUser(String userId) throws CouldNotPerformException;
+    Future<Boolean> hasUser(String userId);
 }

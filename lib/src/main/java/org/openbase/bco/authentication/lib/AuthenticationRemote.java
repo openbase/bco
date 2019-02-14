@@ -21,7 +21,9 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.concurrent.Future;
+
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -43,7 +45,6 @@ import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.T
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticationRemote implements AuthenticationService, Manageable<Void>, VoidInitializable {
@@ -54,7 +55,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentialsChange.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
     }
-    
+
     private RSBRemoteServer remoteServer;
     private WatchDog serverWatchDog;
 
@@ -97,52 +98,52 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) {
         return RPCHelper.callRemoteServerMethod(clientId, remoteServer, TicketSessionKeyWrapper.class);
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketSessionKeyWrapper.class);
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketAuthenticatorWrapper.class);
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) {
         return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) {
         return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) {
         return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) {
         return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
     }
 
     @Override
-    public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, AuthenticatedValue.class);
     }
 
     @Override
-    public Future<Boolean> isAdmin(String userId) throws CouldNotPerformException {
+    public Future<Boolean> isAdmin(String userId) {
         return RPCHelper.callRemoteServerMethod(userId, remoteServer, Boolean.class);
     }
 
     @Override
-    public Future<Boolean> hasUser(String userId) throws CouldNotPerformException {
+    public Future<Boolean> hasUser(String userId) {
         return RPCHelper.callRemoteServerMethod(userId, remoteServer, Boolean.class);
     }
 }

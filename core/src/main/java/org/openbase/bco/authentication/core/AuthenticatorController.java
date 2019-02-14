@@ -215,7 +215,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String id) throws CouldNotPerformException {
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String id) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 String[] split = id.split("@", 2);
