@@ -116,7 +116,7 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
         return appRemote.restoreSnapshotAuthenticated(authenticatedSnapshot);
     }
 

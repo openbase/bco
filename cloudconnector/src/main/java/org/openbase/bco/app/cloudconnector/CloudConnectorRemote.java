@@ -90,7 +90,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      *
      * @throws CouldNotPerformException if the task could not be created
      */
-    public Future<Void> connect(final Boolean connect) throws CouldNotPerformException {
+    public Future<Void> connect(final Boolean connect) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(connect, Void.class, SessionManager.getInstance(), this::connect);
     }
 
@@ -104,7 +104,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) {
         return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
@@ -174,7 +174,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue) {
         return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
@@ -187,7 +187,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      *
      * @throws CouldNotPerformException if the task could not be created
      */
-    public Future<Void> setAuthorizationToken(final String authorizationToken) throws CouldNotPerformException {
+    public Future<Void> setAuthorizationToken(final String authorizationToken) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(authorizationToken, Void.class, SessionManager.getInstance(), this::setAuthorizationToken);
     }
 
@@ -201,7 +201,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue) {
         return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 

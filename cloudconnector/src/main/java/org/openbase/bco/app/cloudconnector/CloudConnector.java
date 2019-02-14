@@ -61,10 +61,9 @@ public interface CloudConnector extends App {
      *
      * @param authenticatedValue the authenticated value authenticating a user and containing a value as described above
      * @return a future of the created task
-     * @throws CouldNotPerformException if the task could not performed
      */
     @RPCMethod
-    Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue);
 
     /**
      * Register a user at the BCO Cloud. This enables usage of the Google Assistant with BCO.
@@ -100,20 +99,18 @@ public interface CloudConnector extends App {
      *
      * @param authenticatedValue the authenticated value authenticating a user
      * @return a future of the created task
-     * @throws CouldNotPerformException if the task could not be created
      */
     @RPCMethod
-    Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue);
 
     /**
      * Set the authorization token used by the cloud connector to perform actions for the user.
      *
      * @param authenticatedValue the authenticated value authenticating a user and containing a new authorization token
      * @return a future of the created task
-     * @throws CouldNotPerformException if the task could not be created
      */
     @RPCMethod
-    Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue);
 
     /**
      * Create parameters for registration, see {@link #register(AuthenticatedValue)}.
