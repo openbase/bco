@@ -48,13 +48,13 @@ public class RegistryVerifiedCommunicationHelper {
         });
     }
 
-    public static <T extends Message> Future<T> requestVerifiedAction(final T type, final SymmetricCallable<TransactionValue> symmetricCallable) throws CouldNotPerformException {
+    public static <T extends Message> Future<T> requestVerifiedAction(final T type, final SymmetricCallable<TransactionValue> symmetricCallable) {
         final TransactionValue transactionValue = TransactionValue.newBuilder().setValue(type.toByteString()).build();
         return new TransactionValueConversionFuture<>(symmetricCallable.call(transactionValue), (Class<T>) type.getClass());
     }
 
     public interface SymmetricCallable<T extends Message> {
-        Future<T> call(final T type) throws CouldNotPerformException;
+        Future<T> call(final T type);
     }
 
     private static <T extends Message> T parseFrom(final ByteString bytes, final Class<T> messageClass) throws CouldNotPerformException {

@@ -68,14 +68,10 @@ public class UnitAliasUniqueVerificationConsistencyHandler extends AbstractProto
 
         // validate known aliases
         for (String alias : new ArrayList<>(aliasUnitIdMap.keySet())) {
-            try {
-                // remove alias entry if alias is globally unknown.
-                if (!unitRegistry.containsUnitConfigByAlias(alias)) {
-                    logger.debug("remove alias: " + alias);
-                    aliasUnitIdMap.remove(alias);
-                }
-            } catch (final CouldNotPerformException ex) {
-                logger.debug("Could not validate alias!", ex);
+             // remove alias entry if alias is globally unknown.
+            if (!unitRegistry.containsUnitConfigByAlias(alias)) {
+                logger.debug("remove alias: " + alias);
+                aliasUnitIdMap.remove(alias);
             }
         }
         super.reset();

@@ -33,12 +33,11 @@ import org.openbase.bco.registry.template.remote.TemplateRegistryRemote;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.annotation.Experimental;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.MultiException.ExceptionStack;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
@@ -312,12 +311,14 @@ public class Registries {
      * @param <M>     the type of message registered
      *
      * @return the registered message
-     *
-     * @throws CouldNotPerformException if registration fails or messages of this type cannot be registered
      */
     @Experimental
-    public static <M extends Message> Future<M> register(final M message) throws CouldNotPerformException {
-        return (Future<M>) invokeMethod("register", message);
+    public static <M extends Message> Future<M> register(final M message) {
+        try {
+            return (Future<M>) invokeMethod("register", message);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
     }
 
     /**
@@ -328,12 +329,14 @@ public class Registries {
      * @param <M>     the type of message updates
      *
      * @return the updated message
-     *
-     * @throws CouldNotPerformException if updating fails or messages of this type cannot be updated
      */
     @Experimental
-    public static <M extends Message> Future<M> update(final M message) throws CouldNotPerformException {
-        return (Future<M>) invokeMethod("update", message);
+    public static <M extends Message> Future<M> update(final M message) {
+        try {
+            return (Future<M>) invokeMethod("update", message);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
     }
 
     /**
@@ -344,12 +347,14 @@ public class Registries {
      * @param <M>     the type of message removed
      *
      * @return the removed message
-     *
-     * @throws CouldNotPerformException if removing fails or messages of this type cannot be removed
      */
     @Experimental
-    public static <M extends Message> Future<M> remove(final M message) throws CouldNotPerformException {
-        return (Future<M>) invokeMethod("remove", message);
+    public static <M extends Message> Future<M> remove(final M message) {
+        try {
+            return (Future<M>) invokeMethod("remove", message);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
     }
 
     /**
@@ -357,14 +362,18 @@ public class Registries {
      * The given message will be used to select the correct registry.
      *
      * @param message the message that will be tested
+     *                <p>
+     *                Note: The method returns false if the registry is not reachable.
      *
      * @return true if the message is contained in a registry, else false
-     *
-     * @throws CouldNotPerformException if it could not be checked for the message type or the check itself fails
      */
     @Experimental
-    public static Boolean contains(final Message message) throws CouldNotPerformException {
-        return (Boolean) invokeMethod("contains", message);
+    public static Boolean contains(final Message message) {
+        try {
+            return (Boolean) invokeMethod("contains", message);
+        } catch (CouldNotPerformException ex) {
+            return false;
+        }
     }
 
     /**
@@ -373,23 +382,14 @@ public class Registries {
      * @param id the id which is checked
      *
      * @return true if the message is contained in a registry, false if it is not contained in any and no exception is thrown
-     *
-     * @throws CouldNotPerformException if the check fails for at least one registry and the id is not contained in any
      */
     @Experimental
-    public static Boolean containsById(final String id) throws CouldNotPerformException {
-        ExceptionStack exceptionStack = null;
+    public static Boolean containsById(final String id) {
         for (final Message message : MESSAGE_TYPES) {
-            try {
-                if (containsById(id, message)) {
-                    return true;
-                }
-            } catch (CouldNotPerformException ex) {
-                exceptionStack = MultiException.push(Registries.class, ex, exceptionStack);
+            if (containsById(id, message)) {
+                return true;
             }
         }
-        MultiException.checkAndThrow(() -> "Could not check if a message with id[" + id + "] is contained", exceptionStack);
-
         return false;
     }
 
@@ -399,13 +399,15 @@ public class Registries {
      * @param id               the id that is checked
      * @param messageOrBuilder message or builder defining which registry is checked
      *
-     * @return true if the message is contained
-     *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if the message is contained or false if the registry is not available or the entry not contained.
      */
     @Experimental
-    public static Boolean containsById(final String id, final MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
-        return (Boolean) invokeMethod(getMethodName("contains", "ById", messageOrBuilder), messageOrBuilder, id);
+    public static Boolean containsById(final String id, final MessageOrBuilder messageOrBuilder) {
+        try {
+            return (Boolean) invokeMethod(getMethodName("contains", "ById", messageOrBuilder), messageOrBuilder, id);
+        } catch (CouldNotPerformException ex) {
+            return false;
+        }
     }
 
     /**
@@ -474,27 +476,33 @@ public class Registries {
      *
      * @param messageOrBuilder type to identify the registry checked.
      *
-     * @return true if the registry is read only
-     *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if the registry is read only or not reachable.
      */
     @Experimental
-    public static Boolean isReadOnly(MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
-        return (Boolean) invokeMethod(getMethodName("is", "RegistryReadOnly", messageOrBuilder), messageOrBuilder);
+    public static Boolean isReadOnly(MessageOrBuilder messageOrBuilder) {
+        try {
+            return (Boolean) invokeMethod(getMethodName("is", "RegistryReadOnly", messageOrBuilder), messageOrBuilder);
+        } catch (CouldNotPerformException ex) {
+            return true;
+        }
     }
 
     /**
      * Test if a registry is consistent.
      *
      * @param messageOrBuilder type to identify the registry checked.
+     *                         <p>
+     *                         Note: Methode also returns true in case the check could not be performed. Maybe you wanna check in advance if the registry is available.
      *
-     * @return true if the registry is consistent
-     *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if the registry is consistent.
      */
     @Experimental
-    public static Boolean isConsistent(MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
-        return (Boolean) invokeMethod(getMethodName("is", "RegistryConsistent", messageOrBuilder), messageOrBuilder);
+    public static Boolean isConsistent(MessageOrBuilder messageOrBuilder) {
+        try {
+            return (Boolean) invokeMethod(getMethodName("is", "RegistryConsistent", messageOrBuilder), messageOrBuilder);
+        } catch (CouldNotPerformException ex) {
+            return true;
+        }
     }
 
     private static Object invokeMethod(final String methodPrefix, final Message message) throws CouldNotPerformException {

@@ -29,6 +29,7 @@ import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.bco.registry.template.lib.jp.JPTemplateRegistryScope;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
@@ -95,7 +96,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
+    protected void registerRemoteRegistries() {
         registerRemoteRegistry(activityTemplateRemoteRegistry);
         registerRemoteRegistry(serviceTemplateRemoteRegistry);
         registerRemoteRegistry(unitTemplateRemoteRegistry);
@@ -136,12 +137,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+    public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(unitTemplate, this::updateUnitTemplateVerified);
     }
 
     @Override
-    public Future<TransactionValue> updateUnitTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateUnitTemplateVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -218,24 +219,30 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
-        return getData().getUnitTemplateRegistryReadOnly();
+    public Boolean isUnitTemplateRegistryReadOnly() {
+        try {
+            validateData();
+            return getData().getUnitTemplateRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException {
-        validateData();
-        return getData().getUnitTemplateRegistryConsistent();
+    public Boolean isUnitTemplateRegistryConsistent() {
+        try {
+            validateData();
+            return getData().getUnitTemplateRegistryConsistent();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -243,15 +250,14 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @param serviceTemplate {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
+    public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(serviceTemplate, this::updateServiceTemplateVerified);
     }
 
     @Override
-    public Future<TransactionValue> updateServiceTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateServiceTemplateVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -328,24 +334,30 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
-        return getData().getServiceTemplateRegistryReadOnly();
+    public Boolean isServiceTemplateRegistryReadOnly() {
+        try {
+            validateData();
+            return getData().getServiceTemplateRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException {
-        validateData();
-        return getData().getServiceTemplateRegistryConsistent();
+    public Boolean isServiceTemplateRegistryConsistent() {
+        try {
+            validateData();
+            return getData().getServiceTemplateRegistryConsistent();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -356,12 +368,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException {
+    public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityTemplate, this::updateActivityTemplateVerified);
     }
 
     @Override
-    public Future<TransactionValue> updateActivityTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateActivityTemplateVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -438,34 +450,39 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isActivityTemplateRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
-        return getData().getActivityTemplateRegistryReadOnly();
+    public Boolean isActivityTemplateRegistryReadOnly() {
+        try {
+            validateData();
+            return getData().getActivityTemplateRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isActivityTemplateRegistryConsistent() throws CouldNotPerformException {
-        validateData();
-        return getData().getServiceTemplateRegistryConsistent();
+    public Boolean isActivityTemplateRegistryConsistent() {
+        try {
+            validateData();
+            return getData().getServiceTemplateRegistryConsistent();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isConsistent() throws CouldNotPerformException {
+    public Boolean isConsistent() {
         return isActivityTemplateRegistryConsistent()
                 && isServiceTemplateRegistryConsistent()
                 && isUnitTemplateRegistryConsistent();

@@ -39,85 +39,75 @@ import java.util.concurrent.Future;
  */
 public interface ActivityRegistry extends ActivityConfigCollectionProvider, DataProvider<ActivityRegistryData>, Shutdownable, RegistryService {
 
-    // ===================================== ActivityConfig Methods ==============================================================================================
-
     /**
      * Method registers the given activity config.
      *
      * @param activityConfig the activity config to be registered.
      * @return the registered activity config.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException;
+    Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig);
 
     /**
      * Method registers an activity config encoded in a transaction id.
      *
      * @param transactionValue the activity config to be registered encoded in a transaction id.
      * @return a transaction value containing the registered activity config and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue);
 
     /**
      * Method updates the given activity config.
      *
      * @param activityConfig the updated activity config.
      * @return the updated activity config.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException;
+    Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig);
 
     /**
      * Method updates an activity config encoded in a transaction id.
      *
      * @param transactionValue the activity config to be updated encoded in a transaction id.
      * @return a transaction value containing the updated activity config and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue);
 
     /**
      * Method removes the given activity config.
      *
      * @param activityConfig the activity config to be removed.
      * @return the removed activity config.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException;
+    Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig);
 
     /**
      * Method removes an activity config encoded in a transaction id.
      *
      * @param transactionValue the activity config to be removed encoded in a transaction id.
      * @return a transaction value containing the removed activity config and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue);
 
 
     /**
      * Method returns true if the underlying registry is marked as read only.
      *
      * @return if the activity config registry is read only
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isActivityConfigRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isActivityConfigRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return if the user activity config registry is consistent
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isActivityConfigRegistryConsistent() throws CouldNotPerformException;
+    Boolean isActivityConfigRegistryConsistent();
 
 }

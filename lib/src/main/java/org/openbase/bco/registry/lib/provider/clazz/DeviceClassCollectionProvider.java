@@ -44,10 +44,9 @@ public interface DeviceClassCollectionProvider {
      *
      * @param deviceClassId the id of the device class
      * @return true if a device class with the given id is registered, otherwise false
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean containsDeviceClassById(final String deviceClassId) throws CouldNotPerformException;
+    Boolean containsDeviceClassById(final String deviceClassId);
 
 
     /**
@@ -57,10 +56,9 @@ public interface DeviceClassCollectionProvider {
      *
      * @param deviceClass the device class which is tested
      * @return true if a device class with the given id is registered, otherwise false
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean containsDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
+    Boolean containsDeviceClass(final DeviceClass deviceClass);
 
     /**
      * Method returns the device class which is registered with the given

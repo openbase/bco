@@ -118,11 +118,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     }
 
     @Override
-    protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
+    protected void registerPlugins() {
     }
 
     @Override
-    protected void registerRegistries() throws CouldNotPerformException {
+    protected void registerRegistries() {
         registerRegistry(agentClassRegistry);
         registerRegistry(appClassRegistry);
         registerRegistry(deviceClassRegistry);
@@ -146,7 +146,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     }
 
     @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
+    protected void registerRemoteRegistries() {
 
     }
 
@@ -210,16 +210,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param deviceClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<DeviceClass> registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> registerDeviceClass(DeviceClass deviceClass) {
         return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.register(deviceClass));
     }
 
     @Override
-    public Future<TransactionValue> registerDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> registerDeviceClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, DeviceClass.class, this::registerDeviceClass);
     }
 
@@ -229,11 +227,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param deviceClassId {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
+    public Boolean containsDeviceClassById(String deviceClassId) {
         return deviceClassRegistry.contains(deviceClassId);
     }
 
@@ -243,11 +239,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param deviceClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
+    public Boolean containsDeviceClass(DeviceClass deviceClass) {
         return deviceClassRegistry.contains(deviceClass);
     }
 
@@ -257,16 +251,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param deviceClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<DeviceClass> updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> updateDeviceClass(DeviceClass deviceClass) {
         return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.update(deviceClass));
     }
 
     @Override
-    public Future<TransactionValue> updateDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateDeviceClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, DeviceClass.class, this::updateDeviceClass);
     }
 
@@ -276,16 +268,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param deviceClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<DeviceClass> removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> removeDeviceClass(DeviceClass deviceClass) {
         return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.remove(deviceClass));
     }
 
     @Override
-    public Future<TransactionValue> removeDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> removeDeviceClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, DeviceClass.class, this::removeDeviceClass);
     }
 
@@ -305,11 +295,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isDeviceClassRegistryReadOnly() {
         return deviceClassRegistry.isReadOnly();
     }
 
@@ -317,11 +305,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isDeviceClassRegistryConsistent() {
         return deviceClassRegistry.isConsistent();
     }
 
@@ -331,16 +317,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param agentClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public Future<AgentClass> registerAgentClass(AgentClass agentClass) {
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.register(agentClass));
     }
 
     @Override
-    public Future<TransactionValue> registerAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> registerAgentClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AgentClass.class, this::registerAgentClass);
     }
 
@@ -350,11 +334,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param agentClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public Boolean containsAgentClass(AgentClass agentClass) {
         return agentClassRegistry.contains(agentClass);
     }
 
@@ -364,11 +346,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param agentClassId {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException {
+    public Boolean containsAgentClassById(String agentClassId) {
         return agentClassRegistry.contains(agentClassId);
     }
 
@@ -378,16 +358,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param agentClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public Future<AgentClass> updateAgentClass(AgentClass agentClass) {
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.update(agentClass));
     }
 
     @Override
-    public Future<TransactionValue> updateAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateAgentClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AgentClass.class, this::updateAgentClass);
     }
 
@@ -397,16 +375,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param agentClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public Future<AgentClass> removeAgentClass(AgentClass agentClass) {
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.remove(agentClass));
     }
 
     @Override
-    public Future<TransactionValue> removeAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> removeAgentClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AgentClass.class, this::removeAgentClass);
     }
 
@@ -426,11 +402,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAgentClassRegistryReadOnly() {
         return agentClassRegistry.isReadOnly();
     }
 
@@ -452,11 +426,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isAgentClassRegistryConsistent() {
         return agentClassRegistry.isConsistent();
     }
 
@@ -466,16 +438,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param appClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException {
+    public Future<AppClass> registerAppClass(AppClass appClass) {
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.register(appClass));
     }
 
     @Override
-    public Future<TransactionValue> registerAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> registerAppClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AppClass.class, this::registerAppClass);
     }
 
@@ -513,16 +483,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param appClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException {
+    public Future<AppClass> updateAppClass(AppClass appClass) {
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.update(appClass));
     }
 
     @Override
-    public Future<TransactionValue> updateAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateAppClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AppClass.class, this::updateAppClass);
     }
 
@@ -532,16 +500,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @param appClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
+    public Future<AppClass> removeAppClass(AppClass appClass) {
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.remove(appClass));
     }
 
     @Override
-    public Future<TransactionValue> removeAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> removeAppClassVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AppClass.class, this::removeAppClass);
     }
 
@@ -575,11 +541,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAppClassRegistryReadOnly() {
         return appClassRegistry.isReadOnly();
     }
 
@@ -587,11 +551,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isAppClassRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isAppClassRegistryConsistent() {
         return appClassRegistry.isConsistent();
     }
 }

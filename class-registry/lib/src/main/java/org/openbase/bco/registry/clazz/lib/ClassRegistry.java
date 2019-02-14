@@ -41,85 +41,80 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
 
     // ===================================== DeviceClass Methods =============================================================
 
-    // todo release: remove exceptions from future returning messages globally!
-
     /**
      * Method registers the given device class.
      *
      * @param deviceClass the device class to be registered.
      * @return the registered device class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
+    Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass);
 
     /**
      * Method registers a device class encoded in a transaction value.
      *
      * @param transactionValue the device class to be registered encoded in a transaction value
      * @return a transaction value containing the registered device class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> registerDeviceClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> registerDeviceClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method updates the given device class.
      *
      * @param deviceClass the updated device class.
      * @return the updated device class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
+    Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass);
 
     /**
      * Method updates a device class encoded in a transaction value.
      *
      * @param transactionValue the device class to be updated encoded in a transaction value
      * @return a transaction value containing the updated device class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> updateDeviceClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> updateDeviceClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method removes the given device class.
      *
      * @param deviceClass the device class to be removed.
      * @return the removed device class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
+    Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass);
 
     /**
      * Method removed a device class encoded in a transaction value.
      *
      * @param transactionValue the device class to be removed encoded in a transaction value
      * @return a transaction value containing the removed device class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> removeDeviceClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> removeDeviceClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method returns true if the underlying registry is marked as read only.
+     *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the device class registry is read only
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isDeviceClassRegistryReadOnly();
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @return if the device class registry is consistent
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException;
+    Boolean isDeviceClassRegistryConsistent();
 
     // ===================================== AgentClass Methods =============================================================
 
@@ -128,78 +123,74 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      *
      * @param agentClass the agent class to be registered.
      * @return the registered agent class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+    Future<AgentClass> registerAgentClass(AgentClass agentClass);
 
     /**
      * Method registers an agent class encoded in a transaction value.
      *
      * @param transactionValue the agent class to be registered encoded in a transaction value
      * @return a transaction value containing the registered agent class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> registerAgentClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> registerAgentClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method updates the given agent class.
      *
      * @param agentClass the updated agent class.
      * @return the updated agent class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+    Future<AgentClass> updateAgentClass(AgentClass agentClass);
 
     /**
      * Method updates an agent class encoded in a transaction value.
      *
      * @param transactionValue the agent class to be updated encoded in a transaction value
      * @return a transaction value containing the updated agent class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> updateAgentClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> updateAgentClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method removes the given agent class.
      *
      * @param agentClass the agent class to be removed.
      * @return the removed agent class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+    Future<AgentClass> removeAgentClass(AgentClass agentClass);
 
     /**
      * Method removes an agent class encoded in a transaction value.
      *
      * @param transactionValue the agent class to be removed encoded in a transaction value
      * @return a transaction value containing the removed agent class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> removeAgentClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> removeAgentClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method returns true if the underlying registry is marked as read only.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @return if the agent class registry is read only
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isAgentClassRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @return if the agent class registry is consistent
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException;
+    Boolean isAgentClassRegistryConsistent();
 
     // ===================================== AppClass Methods =============================================================
 
@@ -208,77 +199,73 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      *
      * @param appClass the app class to be registered.
      * @return the registered app class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException;
+    Future<AppClass> registerAppClass(AppClass appClass);
 
     /**
      * Method registers an app class encoded in a transaction value.
      *
      * @param transactionValue the app class to be registered encoded in a transaction value
      * @return a transaction value containing the registered app class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> registerAppClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> registerAppClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method updates the given app class.
      *
      * @param appClass the updated app class.
      * @return the updated app class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException;
+    Future<AppClass> updateAppClass(AppClass appClass);
 
     /**
      * Method updates an app class encoded in a transaction value.
      *
      * @param transactionValue the app class to be updated encoded in a transaction value
      * @return a transaction value containing the updated app class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> updateAppClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> updateAppClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method removes the given app class.
      *
      * @param appClass the app class to be removed.
      * @return the removed app class.
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException;
+    Future<AppClass> removeAppClass(AppClass appClass);
 
     /**
      * Method removes an app class encoded in a transaction value.
      *
      * @param transactionValue the app class to be removed encoded in a transaction value
      * @return a transaction value containing the removed app class and an id for this transaction
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> removeAppClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> removeAppClassVerified(final TransactionValue transactionValue);
 
     /**
      * Method returns true if the underlying registry is marked as read only.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @return if the app class registry is read only
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isAppClassRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @return if the app class registry is consistent
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isAppClassRegistryConsistent() throws CouldNotPerformException;
+    Boolean isAppClassRegistryConsistent();
 
 }

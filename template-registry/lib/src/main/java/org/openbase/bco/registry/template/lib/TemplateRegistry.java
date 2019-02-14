@@ -51,11 +51,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * @param unitTemplate the updated unit template.
      *
      * @return the updated unit template.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
+    Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate);
 
 
     /**
@@ -64,31 +62,27 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * @param transactionValue the unit template to update in a transaction id.
      *
      * @return a transaction value containing the transaction id from the controller and the updated unit template encoded.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> updateUnitTemplateVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> updateUnitTemplateVerified(final TransactionValue transactionValue);
 
     /**
      * Method returns true if the underlying registry is marked as read only.
      *
      * @return if the unit template registry is read only
-     *
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isUnitTemplateRegistryReadOnly();
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
      *
-     * @return if the unit template registry is consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return if the unit template registry is consistent
      */
     @RPCMethod
-    Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException;
+    Boolean isUnitTemplateRegistryConsistent();
 
 
     // ===================================== ServiceTemplate Methods =============================================================
@@ -99,11 +93,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * @param serviceTemplate the updated service template.
      *
      * @return the updated service template.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<ServiceTemplate> updateServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
+    Future<ServiceTemplate> updateServiceTemplate(final ServiceTemplate serviceTemplate);
 
     /**
      * Method updates a service template encoded in a transaction value.
@@ -111,32 +103,31 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * @param transactionValue the service template to update in a transaction id.
      *
      * @return a transaction value containing the transaction id from the controller and the updated service template encoded.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> updateServiceTemplateVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> updateServiceTemplateVerified(final TransactionValue transactionValue);
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
+     *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the service template registry is consistent
-     *
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
-    Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isServiceTemplateRegistryReadOnly();
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
      *
-     * @return if the unit template registry is consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return if the unit template registry is consistent
      */
     @RPCMethod
-    Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException;
+    Boolean isServiceTemplateRegistryConsistent();
 
+    //todo release rename into getServiceStateClassName(...) and move to ServiceProcessor.
     /**
      * Construct the service attribute type for a service type. The service attribute type is the class name of
      * the service state.
@@ -144,8 +135,6 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * @param serviceType the service type for which the attribute type is retrieved.
      *
      * @return a string representing the service state used for the given service type.
-     *
-     * @throws CouldNotPerformException if the service template for the service type is not available.
      */
     default String getServiceAttributeType(final ServiceType serviceType) throws CouldNotPerformException {
         final ServiceTemplate serviceTemplate = getServiceTemplateByType(serviceType);
@@ -161,11 +150,9 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * @param activityTemplate the updated activity template.
      *
      * @return the updated activity template.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException;
+    Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate);
 
     /**
      * Method updates a activity template encoded in a transaction value.
@@ -173,29 +160,27 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * @param transactionValue the activity template to update in a transaction id.
      *
      * @return a transaction value containing the transaction id from the controller and the updated activity template encoded.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<TransactionValue> updateActivityTemplateVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+    Future<TransactionValue> updateActivityTemplateVerified(final TransactionValue transactionValue);
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
      *
-     * @return if the activity template registry is consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return if the activity template registry is consistent
      */
     @RPCMethod
-    Boolean isActivityTemplateRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isActivityTemplateRegistryReadOnly();
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
      *
-     * @return if the activity template registry is consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return if the activity template registry is consistent
      */
     @RPCMethod
-    Boolean isActivityTemplateRegistryConsistent() throws CouldNotPerformException;
+    Boolean isActivityTemplateRegistryConsistent();
 }

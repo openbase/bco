@@ -33,6 +33,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -94,7 +95,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
     }
 
     @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
+    protected void registerRemoteRegistries() {
         registerRemoteRegistry(agentClassRemoteRegistry);
         registerRemoteRegistry(appClassRemoteRegistry);
         registerRemoteRegistry(deviceClassRemoteRegistry);
@@ -131,11 +132,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isConsistent() throws CouldNotPerformException {
+    public Boolean isConsistent() {
         return isDeviceClassRegistryConsistent()
                 && isAgentClassRegistryConsistent()
                 && isAppClassRegistryConsistent();
@@ -163,16 +162,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param deviceClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, this::registerDeviceClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> registerDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> registerDeviceClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -182,13 +179,15 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param deviceClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-        validateData();
-        return deviceClassRemoteRegistry.contains(deviceClass);
+    public Boolean containsDeviceClass(final DeviceClass deviceClass) {
+        try {
+            validateData();
+            return deviceClassRemoteRegistry.contains(deviceClass);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -197,13 +196,15 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param deviceClassId {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
-        validateData();
-        return deviceClassRemoteRegistry.contains(deviceClassId);
+    public Boolean containsDeviceClassById(String deviceClassId) {
+        try {
+            validateData();
+            return deviceClassRemoteRegistry.contains(deviceClassId);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -212,16 +213,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param deviceClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, this::updateDeviceClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> updateDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateDeviceClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -231,16 +230,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param deviceClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, this::removeDeviceClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> removeDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> removeDeviceClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -262,37 +259,32 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
-        try {
-            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return true;
-            }
-        } catch (JPServiceException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+    public Boolean isDeviceClassRegistryReadOnly() {
+        if (JPService.getValue(JPReadOnly.class, false) || !isConnected()) {
+            return true;
         }
-
-        validateData();
-        return getData().getDeviceClassRegistryReadOnly();
+        try {
+            validateData();
+            return getData().getDeviceClassRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isDeviceClassRegistryConsistent() {
         try {
             validateData();
             return getData().getDeviceClassRegistryConsistent();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not check consistency!", ex);
+        } catch (InvalidStateException e) {
+            return true;
         }
     }
 
@@ -302,16 +294,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param agentClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public Future<AgentClass> registerAgentClass(AgentClass agentClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(agentClass, this::registerAgentClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> registerAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> registerAgentClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -321,13 +311,15 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param agentClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException {
-        validateData();
-        return agentClassRemoteRegistry.contains(agentClass);
+    public Boolean containsAgentClass(AgentClass agentClass) {
+        try {
+            validateData();
+            return agentClassRemoteRegistry.contains(agentClass);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -336,13 +328,15 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param agentClassId {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException {
-        validateData();
-        return agentClassRemoteRegistry.contains(agentClassId);
+    public Boolean containsAgentClassById(String agentClassId) {
+        try {
+            validateData();
+            return agentClassRemoteRegistry.contains(agentClassId);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -351,16 +345,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param agentClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public Future<AgentClass> updateAgentClass(AgentClass agentClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(agentClass, this::updateAgentClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> updateAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateAgentClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -370,16 +362,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param agentClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public Future<AgentClass> removeAgentClass(AgentClass agentClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(agentClass, this::removeAgentClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> removeAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> removeAgentClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -400,13 +390,15 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
-        return getData().getAgentClassRegistryReadOnly();
+    public Boolean isAgentClassRegistryReadOnly() {
+        try {
+            validateData();
+            return getData().getAgentClassRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -428,13 +420,15 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException {
-        validateData();
-        return getData().getAgentClassRegistryConsistent();
+    public Boolean isAgentClassRegistryConsistent() {
+        try {
+            validateData();
+            return getData().getAgentClassRegistryConsistent();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -443,16 +437,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param appClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException {
+    public Future<AppClass> registerAppClass(AppClass appClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, this::registerAppClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> registerAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> registerAppClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -462,13 +454,15 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param appClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException {
-        validateData();
-        return appClassRemoteRegistry.contains(appClass);
+    public Boolean containsAppClass(AppClass appClass) {
+        try {
+            validateData();
+            return appClassRemoteRegistry.contains(appClass);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -477,13 +471,15 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param appClassId {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException {
-        validateData();
-        return appClassRemoteRegistry.contains(appClassId);
+    public Boolean containsAppClassById(String appClassId) {
+        try {
+            validateData();
+            return appClassRemoteRegistry.contains(appClassId);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -492,16 +488,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param appClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException {
+    public Future<AppClass> updateAppClass(AppClass appClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, this::updateAppClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> updateAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateAppClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -511,16 +505,14 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * @param appClass {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
+    public Future<AppClass> removeAppClass(AppClass appClass) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, this::removeAppClassVerified);
     }
 
     @Override
-    public Future<TransactionValue> removeAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> removeAppClassVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -556,26 +548,30 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
-        return getData().getAppClassRegistryReadOnly();
+    public Boolean isAppClassRegistryReadOnly() {
+        try {
+            validateData();
+            return getData().getAppClassRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isAppClassRegistryConsistent() throws CouldNotPerformException {
-        validateData();
-        return getData().getAppClassRegistryConsistent();
+    public Boolean isAppClassRegistryConsistent() {
+        try {
+            validateData();
+            return getData().getAppClassRegistryConsistent();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     @Override

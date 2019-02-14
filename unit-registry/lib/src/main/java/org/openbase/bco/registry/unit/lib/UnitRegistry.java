@@ -100,18 +100,16 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
     /**
      * This method registers the given unit config in the registry.
-     *
+     * Future get canceled if the entry already exists or results in an inconsistent registry
      * @param unitConfig the unit config to register.
      *
      * @return the registered unit config with all applied consistency changes.
-     *
-     * @throws CouldNotPerformException is thrown if the entry already exists or results in an inconsistent registry
      */
     @RPCMethod
-    Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig);
 
     @RPCMethod
-    Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue);
 
     /**
      * Method updates the given unit config.
@@ -119,14 +117,12 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param unitConfig the updated unit config.
      *
      * @return the updated unit config with all applied consistency changes.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
-    Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig);
 
     @RPCMethod
-    Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue);
 
     /**
      * Method removes the given unit config out of the global registry.
@@ -134,14 +130,12 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param unitConfig the unit config to remove.
      *
      * @return The removed unit config.
-     *
-     * @throws CouldNotPerformException is thrown if the removal fails.
      */
     @RPCMethod
-    Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig);
 
     @RPCMethod
-    Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue);
 
     /**
      * Method returns true if the unit config with the given id is
@@ -150,15 +144,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param unitConfig the unit config used for the identification.
      *
-     * @return true if the unit exists.
-     *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if the unit exists or false if the entry does not exists or the registry is not available.
      */
     @RPCMethod
-    Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    Boolean containsUnitConfig(final UnitConfig unitConfig);
 
     @RPCMethod
-    default Boolean containsUnitConfigByAlias(final String alias) throws CouldNotPerformException {
+    default Boolean containsUnitConfigByAlias(final String alias) {
         try {
             getUnitConfigByAlias(alias);
         } catch (final NotAvailableException ex) {
@@ -207,12 +199,12 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isUnitConfigRegistryReadOnly();
 
     /**
      * Method returns the unit matching the given alias. An alias is a unique identifier of units.
@@ -349,12 +341,12 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isUnitGroupConfigRegistryReadOnly();
 
     /**
      * Method returns all unit configs filtered by the given {@code unitType} and {@code serviceType}.
@@ -561,262 +553,264 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isDalUnitConfigRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isUserUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isUserUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isAuthorizationGroupUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isAuthorizationGroupUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @return true if read only.
      *
      * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean isDeviceUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isDeviceUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isUnitGroupUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isUnitGroupUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isLocationUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isLocationUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isConnectionUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isConnectionUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isAgentUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isAgentUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isAppUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isAppUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return true if read only.
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException is thrown if the check fails.
+     * @return true if read only.
      */
     @RPCMethod
-    Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isSceneUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as read only. A
      * registry is marked as read only in case of inconsistent data entries or
      * if the underling database is loaded out of a version tag.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @return true if read only.
-     *
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean isObjectUnitRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isObjectUnitRegistryReadOnly();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isUnitConfigRegistryConsistent() throws CouldNotPerformException;
+    Boolean isUnitConfigRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException;
+    Boolean isUnitGroupConfigRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException;
+    Boolean isDalUnitConfigRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isUserUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isUserUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isAuthorizationGroupUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isAuthorizationGroupUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isDeviceUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isDeviceUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isUnitGroupUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isUnitGroupUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isLocationUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isLocationUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isConnectionUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isConnectionUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isAgentUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isAgentUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isAppUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isAppUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isSceneUnitRegistryConsistent();
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
-     * @return true if consistent
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @return true if consistent
      */
     @RPCMethod
-    Boolean isObjectUnitRegistryConsistent() throws CouldNotPerformException;
+    Boolean isObjectUnitRegistryConsistent();
 
     default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException {
         return getUnitConfigsByCoordinate(coordinate, DEFAULT_RADIUS, UnitType.UNKNOWN);
@@ -1463,10 +1457,8 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param authorizationToken the authorizationToken which is verified an encrypted
      *
      * @return a future of a task that verifies and encrypts the token
-     *
-     * @throws CouldNotPerformException if the task cannot be created
      */
-    Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken) throws CouldNotPerformException;
+    Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken);
 
     /**
      * Request an authorization token while being authenticated. The ticket in the authenticated value is used
@@ -1482,16 +1474,14 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @return The future of a task that creates an authenticated value containing an updated ticket and the token encoded via Base64
      * and encrypted with the session key.
-     *
-     * @throws CouldNotPerformException if the task cannot be created
      */
     @RPCMethod
-    Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue);
 
-    Future<String> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException;
+    Future<String> requestAuthenticationToken(final AuthenticationToken authenticationToken);
 
     @RPCMethod
-    Future<AuthenticatedValue> requestAuthenticationTokenAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> requestAuthenticationTokenAuthenticated(final AuthenticatedValue authenticatedValue);
 
     Map<String, IdentifiableMessage<String, UnitConfig, Builder>> getAuthorizationGroupMap() throws CouldNotPerformException;
 
@@ -1505,11 +1495,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 //     * @param pointingRay3DFloat ray which probably intersects with a specific unit priorized by a given certainty.
 //     *
 //     * @return a collection of probably intersected units referred by there id.
-//     *
-//     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
 //     */
 //    @RPCMethod
-//    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException;
+//    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloat pointingRay3DFloat);
 //
 //    /**
 //     * Method returns a list of probably intersected units by the given 3D rays.
@@ -1518,9 +1506,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 //     * @param pointingRay3DFloatCollection a collection of rays which probably intersects with a specific unit priorized by a given certainty.
 //     *
 //     * @return a collection of probably intersected units referred by there id.
-//     *
-//     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
 //     */
 //    @RPCMethod
-//    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
+//    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection);
 }

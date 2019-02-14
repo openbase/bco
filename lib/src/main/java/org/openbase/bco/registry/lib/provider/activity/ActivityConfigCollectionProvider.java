@@ -36,23 +36,25 @@ public interface ActivityConfigCollectionProvider {
      * registered, otherwise false. The activity config id field is used for the
      * comparison.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @param activityConfig the activity config which is tested
      * @return if the activity config with the given id is registered, otherwise false
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean containsActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException;
+    Boolean containsActivityConfig(ActivityConfig activityConfig);
 
     /**
      * Method returns true if the activity config with the given id is
      * registered, otherwise false.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @param activityConfigId the id of the activity config
      * @return if the activity config with the given id is registered, otherwise false
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean containsActivityConfigById(String activityConfigId) throws CouldNotPerformException;
+    Boolean containsActivityConfigById(String activityConfigId);
 
     /**
      * Method returns the activity config which is registered with the given

@@ -519,7 +519,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig)  {
         return GlobalCachedExecutorService.submit(() -> {
             UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).register(unitConfig);
             return result;
@@ -527,7 +527,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue)  {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this, (unitConfig, authenticationBaseData) -> {
                     // find the location the unit will be placed at
                     final UnitConfig location;
@@ -550,12 +550,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public UnitConfig getUnitConfigById(final String unitConfigId) throws NotAvailableException {
         for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
-            try {
-                if (!registry.contains(unitConfigId)) {
-                    continue;
-                }
-            } catch (CouldNotPerformException ex) {
-                throw new NotAvailableException("UnitConfigId", unitConfigId, new CouldNotPerformException("Lookup of id [" + unitConfigId + "] failed!", ex));
+            // filter to avoid useless and heavy lookups
+            if (!registry.contains(unitConfigId)) {
+                continue;
             }
             try {
                 return (UnitConfig) registry.getMessage(unitConfigId);
@@ -614,26 +611,22 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException {
+    public Boolean containsUnitConfigById(final String unitConfigId)  {
         for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
-            try {
-                if (registry.contains(unitConfigId)) {
-                    return true;
-                }
-            } catch (CouldNotPerformException ex) {
-                // ignore and throw a new exception if no registry contains the entry
+            if (registry.contains(unitConfigId)) {
+                return true;
             }
         }
         return false;
     }
 
     @Override
-    public Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public Boolean containsUnitConfig(final UnitConfig unitConfig)  {
         return getUnitConfigRegistry(unitConfig.getUnitType()).contains(unitConfig);
     }
 
     @Override
-    public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig)  {
         return GlobalCachedExecutorService.submit(() -> {
             UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).update(unitConfig);
             return result;
@@ -641,7 +634,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue)  {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this,
                 (unitConfig, authenticationBaseData) -> {
                     // verify write permissions for the old unit config
@@ -653,7 +646,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig)  {
         return GlobalCachedExecutorService.submit(() -> {
             UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).remove(unitConfig);
             return result;
@@ -661,7 +654,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue)  {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this,
                 (unitConfig, authenticationBaseData) -> {
                     // verify write permissions for the old unit config
@@ -727,7 +720,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUnitConfigRegistryReadOnly()  {
         return unitConfigRegistryList.stream().anyMatch((unitConfigRegistry) -> (unitConfigRegistry.isReadOnly()));
     }
 
@@ -735,11 +728,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isUnitConfigRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isUnitConfigRegistryConsistent()  {
         return unitConfigRegistryList.stream().anyMatch((unitConfigRegistry) -> (unitConfigRegistry.isConsistent()));
     }
 
@@ -747,11 +738,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return
-     *
-     * @throws CouldNotPerformException
      */
     @Override
-    public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUnitGroupConfigRegistryReadOnly()  {
         return unitGroupUnitConfigRegistry.isReadOnly();
     }
 
@@ -759,11 +748,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return
-     *
-     * @throws CouldNotPerformException
      */
     @Override
-    public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isUnitGroupConfigRegistryConsistent()  {
         return unitGroupUnitConfigRegistry.isConsistent();
     }
 
@@ -865,117 +852,117 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isDalUnitConfigRegistryReadOnly()  {
         return dalUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isUserUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUserUnitRegistryReadOnly()  {
         return userUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isAuthorizationGroupUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAuthorizationGroupUnitRegistryReadOnly()  {
         return authorizationGroupUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isDeviceUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isDeviceUnitRegistryReadOnly()  {
         return deviceUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isUnitGroupUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUnitGroupUnitRegistryReadOnly()  {
         return unitGroupUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isLocationUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isLocationUnitRegistryReadOnly()  {
         return locationUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isConnectionUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isConnectionUnitRegistryReadOnly()  {
         return connectionUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isAgentUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAgentUnitRegistryReadOnly()  {
         return agentUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isAppUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAppUnitRegistryReadOnly()  {
         return appUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isSceneUnitRegistryReadOnly()  {
         return sceneUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isObjectUnitRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isObjectUnitRegistryReadOnly()  {
         return objectUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isDalUnitConfigRegistryConsistent()  {
         return dalUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isUserUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isUserUnitRegistryConsistent()  {
         return userUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isAuthorizationGroupUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isAuthorizationGroupUnitRegistryConsistent()  {
         return authorizationGroupUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isDeviceUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isDeviceUnitRegistryConsistent()  {
         return deviceUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isUnitGroupUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isUnitGroupUnitRegistryConsistent()  {
         return unitGroupUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isLocationUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isLocationUnitRegistryConsistent()  {
         return locationUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isConnectionUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isConnectionUnitRegistryConsistent()  {
         return connectionUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isAgentUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isAgentUnitRegistryConsistent()  {
         return agentUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isAppUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isAppUnitRegistryConsistent()  {
         return appUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isSceneUnitRegistryConsistent()  {
         return sceneUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isObjectUnitRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isObjectUnitRegistryConsistent()  {
         return objectUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
+    protected void registerRemoteRegistries()  {
     }
 
     @Override
@@ -1126,7 +1113,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<String> requestAuthenticationToken(final AuthenticationToken authenticationToken) throws CouldNotPerformException {
+    public Future<String> requestAuthenticationToken(final AuthenticationToken authenticationToken) {
         return GlobalCachedExecutorService.submit(() -> {
             // encrypt the authentication token
             final ByteString encrypted = EncryptionHelper.encryptSymmetric(authenticationToken, AuthenticatedServerManager.getInstance().getServiceServerSecretKey());
@@ -1136,7 +1123,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<AuthenticatedValue> requestAuthenticationTokenAuthenticated(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> requestAuthenticationTokenAuthenticated(AuthenticatedValue authenticatedValue) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 if (!authenticatedValue.hasTicketAuthenticatorWrapper()) {

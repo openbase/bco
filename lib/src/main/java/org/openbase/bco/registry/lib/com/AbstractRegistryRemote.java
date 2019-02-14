@@ -41,6 +41,7 @@ import java.util.concurrent.*;
 
 /**
  * @param <M>
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractRegistryRemote<M extends Message> extends AbstractAuthenticatedRemoteClient<M> implements RegistryRemote<M> {
@@ -160,6 +161,10 @@ public abstract class AbstractRegistryRemote<M extends Message> extends Abstract
     /**
      * This method registers this registry remote as a registry proxy for the registry controller where the given remote registry is based on.
      * This object than can be used for registry state checks and synchronization issues.
+     * <p>
+     * ATTENTION: the order here is important, if somebody registers an observer
+     * on one of these remote registries and tries to get values from other remote registries
+     * which are registered later than these are not synced yet
      *
      * @param registry a remote registry which must not be compatible with the Message type {@code M} declared for this registry remote.
      */

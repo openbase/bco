@@ -80,21 +80,19 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
 
     /**
      * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void registerRegistries() throws CouldNotPerformException {
+    protected void registerRegistries()  {
         registerRegistry(activityConfigRegistry);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @throws CouldNotPerformException {@inheritDoc}
+     * @ {@inheritDoc}
      */
     @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
+    protected void registerRemoteRegistries()  {
     }
 
     /**
@@ -110,10 +108,10 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
     /**
      * {@inheritDoc}
      *
-     * @throws CouldNotPerformException {@inheritDoc}
+     * @ {@inheritDoc}
      */
     @Override
-    protected void registerPlugins() throws CouldNotPerformException {
+    protected void registerPlugins() {
     }
 
     /**
@@ -163,15 +161,14 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      *
      * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
+    public Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig)  {
         return GlobalCachedExecutorService.submit(() -> activityConfigRegistry.register(activityConfig));
     }
 
     @Override
-    public Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue)  {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ActivityConfig.class, this::registerActivityConfig);
     }
 
@@ -180,15 +177,14 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      *
      * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
+    public Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig)  {
         return GlobalCachedExecutorService.submit(() -> activityConfigRegistry.update(activityConfig));
     }
 
     @Override
-    public Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue)  {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ActivityConfig.class, this::updateActivityConfig);
     }
 
@@ -197,15 +193,14 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      *
      * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
+    public Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig)  {
         return GlobalCachedExecutorService.submit(() -> activityConfigRegistry.remove(activityConfig));
     }
 
     @Override
-    public Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue)  {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ActivityConfig.class, this::removeActivityConfig);
     }
 
@@ -214,10 +209,9 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      *
      * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
+    public Boolean containsActivityConfig(ActivityConfig activityConfig)  {
         return activityConfigRegistry.contains(activityConfig);
     }
 
@@ -226,10 +220,9 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      *
      * @param activityConfigId {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsActivityConfigById(String activityConfigId) throws CouldNotPerformException {
+    public Boolean containsActivityConfigById(String activityConfigId)  {
         return activityConfigRegistry.contains(activityConfigId);
     }
 
@@ -249,7 +242,6 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<ActivityConfig> getActivityConfigs() throws CouldNotPerformException {
@@ -260,10 +252,9 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isActivityConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isActivityConfigRegistryReadOnly()  {
         return activityConfigRegistry.isReadOnly();
     }
 
@@ -271,10 +262,9 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isActivityConfigRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isActivityConfigRegistryConsistent()  {
         return activityConfigRegistry.isConsistent();
     }
 

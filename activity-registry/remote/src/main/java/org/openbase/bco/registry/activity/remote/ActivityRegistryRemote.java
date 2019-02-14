@@ -33,6 +33,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
@@ -89,15 +90,14 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      *
      * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
+    public Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::registerActivityConfigVerified);
     }
 
     @Override
-    public Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -106,15 +106,14 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      *
      * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
+    public Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::updateActivityConfigVerified);
     }
 
     @Override
-    public Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -123,15 +122,14 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      *
      * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
+    public Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) {
         return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::removeActivityConfigVerified);
     }
 
     @Override
-    public Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) {
         return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
     }
 
@@ -140,12 +138,15 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      *
      * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
-        validateData();
-        return activityConfigRemoteRegistry.contains(activityConfig);
+    public Boolean containsActivityConfig(ActivityConfig activityConfig) {
+        try {
+            validateData();
+            return activityConfigRemoteRegistry.contains(activityConfig);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -153,12 +154,15 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      *
      * @param activityConfigId {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsActivityConfigById(String activityConfigId) throws CouldNotPerformException {
-        validateData();
-        return activityConfigRemoteRegistry.contains(activityConfigId);
+    public Boolean containsActivityConfigById(String activityConfigId) {
+        try {
+            validateData();
+            return activityConfigRemoteRegistry.contains(activityConfigId);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -196,35 +200,32 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isActivityConfigRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
-        try {
-            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return true;
-            }
-        } catch (JPServiceException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+    public Boolean isActivityConfigRegistryReadOnly() {
+        if (JPService.getValue(JPReadOnly.class, false) || !isConnected()) {
+            return true;
         }
-
-        return getData().getActivityConfigRegistryReadOnly();
+        try {
+            validateData();
+            return getData().getActivityConfigRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isActivityConfigRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isActivityConfigRegistryConsistent() {
         try {
             validateData();
             return getData().getActivityConfigRegistryConsistent();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not check consistency!", ex);
+        } catch (InvalidStateException e) {
+            return true;
         }
     }
 
@@ -252,10 +253,9 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean isConsistent() throws CouldNotPerformException {
+    public Boolean isConsistent() {
         return isActivityConfigRegistryConsistent();
     }
 }

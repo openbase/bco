@@ -161,7 +161,7 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
-    public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
+    public final void syncRegistryFlags() throws CouldNotPerformException {
         setDataField(TemplateRegistryData.ACTIVITY_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, activityTemplateRemoteRegistry.isReadOnly());
         setDataField(TemplateRegistryData.ACTIVITY_TEMPLATE_REGISTRY_CONSISTENT_FIELD_NUMBER, activityTemplateRemoteRegistry.isConsistent());
 
@@ -173,7 +173,7 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
+    protected void registerRemoteRegistries() {
     }
 
     @Override
@@ -183,22 +183,22 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
-    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
+    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) {
         return GlobalCachedExecutorService.submit(() -> unitTemplateRemoteRegistry.update(unitTemplate));
     }
 
     @Override
-    public Future<TransactionValue> updateUnitTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateUnitTemplateVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, UnitTemplate.class, this::updateUnitTemplate);
     }
 
     @Override
-    public Boolean containsUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+    public Boolean containsUnitTemplate(UnitTemplate unitTemplate) {
         return unitTemplateRemoteRegistry.contains(unitTemplate);
     }
 
     @Override
-    public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
+    public Boolean containsUnitTemplateById(String unitTemplateId) {
         return unitTemplateRemoteRegistry.contains(unitTemplateId);
     }
 
@@ -223,32 +223,32 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
-    public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUnitTemplateRegistryReadOnly() {
         return unitTemplateRemoteRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isUnitTemplateRegistryConsistent() {
         return unitTemplateRemoteRegistry.isConsistent();
     }
 
     @Override
-    public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
+    public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) {
         return GlobalCachedExecutorService.submit(() -> serviceTemplateRemoteRegistry.update(serviceTemplate));
     }
 
     @Override
-    public Future<TransactionValue> updateServiceTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateServiceTemplateVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ServiceTemplate.class, this::updateServiceTemplate);
     }
 
     @Override
-    public Boolean containsServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
+    public Boolean containsServiceTemplate(ServiceTemplate serviceTemplate) {
         return serviceTemplateRemoteRegistry.contains(serviceTemplate);
     }
 
     @Override
-    public Boolean containsServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
+    public Boolean containsServiceTemplateById(String serviceTemplateId) {
         return serviceTemplateRemoteRegistry.contains(serviceTemplateId);
     }
 
@@ -273,32 +273,32 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
-    public Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isServiceTemplateRegistryReadOnly() {
         return serviceTemplateRemoteRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isServiceTemplateRegistryConsistent() {
         return serviceTemplateRemoteRegistry.isConsistent();
     }
 
     @Override
-    public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException {
+    public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) {
         return GlobalCachedExecutorService.submit(() -> activityTemplateRemoteRegistry.update(activityTemplate));
     }
 
     @Override
-    public Future<TransactionValue> updateActivityTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+    public Future<TransactionValue> updateActivityTemplateVerified(TransactionValue transactionValue) {
         return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ActivityTemplate.class, this::updateActivityTemplate);
     }
 
     @Override
-    public Boolean containsActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException {
+    public Boolean containsActivityTemplate(ActivityTemplate activityTemplate) {
         return activityTemplateRemoteRegistry.contains(activityTemplate);
     }
 
     @Override
-    public Boolean containsActivityTemplateById(String activityTemplateId) throws CouldNotPerformException {
+    public Boolean containsActivityTemplateById(String activityTemplateId) {
         return activityTemplateRemoteRegistry.contains(activityTemplateId);
     }
 
@@ -323,12 +323,12 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
-    public Boolean isActivityTemplateRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isActivityTemplateRegistryReadOnly() {
         return activityTemplateRemoteRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isActivityTemplateRegistryConsistent() throws CouldNotPerformException {
+    public Boolean isActivityTemplateRegistryConsistent() {
         return activityTemplateRemoteRegistry.isConsistent();
     }
 }
