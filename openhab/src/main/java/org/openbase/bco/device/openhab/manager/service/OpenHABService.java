@@ -128,7 +128,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         }
     }
 
-//    public Future<ActionDescription> executeCommand(final Command... commands) throws CouldNotPerformException {
+//    public Future<ActionDescription> executeCommand(final Command... commands) {
 //        if (itemName == null) {
 //            throw new NotAvailableException("itemID");
 //        }
