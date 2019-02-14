@@ -66,6 +66,9 @@ public class UnitUserPermissionConsistencyHandler extends AbstractProtoBufRegist
         boolean modification = false;
         final ArrayList<MapFieldEntry> groupPermissions = new ArrayList<>(location.getPermissionConfig().getGroupPermissionList());
         final PermissionConfig.Builder permissionConfigBuilder = location.getPermissionConfigBuilder();
+
+        permissionConfigBuilder.clearGroupPermission();
+
         for (final MapFieldEntry groupPermission : groupPermissions) {
             // test if the group permission is specified for a user
             if (unitRegistry.getUnitConfigById(groupPermission.getGroupId()).getUnitType() == UnitType.USER) {
