@@ -45,7 +45,6 @@ import org.openbase.type.domotic.binding.openhab.OpenhabCommandType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 public abstract class OpenHABService<ST extends Service & Unit<?>> implements Service {
@@ -122,7 +121,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
             }
 
             // todo build proper action description instead returning null.
-            return CompletableFuture.completedFuture(null);
+            return FutureProcessor.completedFuture(null);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
@@ -143,7 +142,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
 //            }
 //            throw ex;
 //        }
-//        return CompletableFuture.completedFuture(null);
+//        return FutureProcessor.completedFuture(null);
 //    }
 
     @Override
