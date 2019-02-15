@@ -31,6 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
@@ -87,8 +88,6 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      *                test should be established or stopped.
      *
      * @return a future of the task created
-     *
-     * @throws CouldNotPerformException if the task could not be created
      */
     public Future<Void> connect(final Boolean connect) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(connect, Void.class, SessionManager.getInstance(), this::connect);
@@ -100,8 +99,6 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @param authenticatedValue {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) {
@@ -115,11 +112,13 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @param password a password for the account of the user at the BCO Cloud
      *
      * @return a future of the task
-     *
-     * @throws CouldNotPerformException if the task could not be created
      */
-    public Future<Void> register(final String password) throws CouldNotPerformException {
-        return register(password, generateDefaultAuthorizationToken());
+    public Future<Void> register(final String password) {
+        try {
+            return register(password, generateDefaultAuthorizationToken());
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
     }
 
     /**
@@ -130,10 +129,8 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      *                           users name.
      *
      * @return a future of the task
-     *
-     * @throws CouldNotPerformException if the task could not be created
      */
-    public Future<Void> register(final String password, final String authorizationToken) throws CouldNotPerformException {
+    public Future<Void> register(final String password, final String authorizationToken) {
         final String params = CloudConnector.createRegistrationData(password, authorizationToken);
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(params, Void.class, SessionManager.getInstance(), this::register);
     }
@@ -145,11 +142,9 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @param authenticatedValue {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+    public Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) {
         return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
@@ -157,10 +152,8 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * Call {@link #remove(AuthenticatedValue)} for the user logged in at the default session manager.
      *
      * @return a future of the task
-     *
-     * @throws CouldNotPerformException if the task could not be created
      */
-    public Future<Void> remove() throws CouldNotPerformException {
+    public Future<Void> remove() {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(null, Void.class, SessionManager.getInstance(), this::remove);
     }
 
@@ -170,8 +163,6 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @param authenticatedValue {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue) {
@@ -184,8 +175,6 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @param authorizationToken the new authorization token for the user logged in at the default session manager.
      *
      * @return a future of the task
-     *
-     * @throws CouldNotPerformException if the task could not be created
      */
     public Future<Void> setAuthorizationToken(final String authorizationToken) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(authorizationToken, Void.class, SessionManager.getInstance(), this::setAuthorizationToken);
@@ -197,8 +186,6 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @param authenticatedValue {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue) {
