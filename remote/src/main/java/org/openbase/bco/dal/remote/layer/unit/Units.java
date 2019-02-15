@@ -1024,8 +1024,7 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
+     * @throws NotAvailableException is thrown in case the unit is not available.
      * @throws InterruptedException  is thrown in case the thread is externally
      *                               interrupted.
      */
@@ -1063,8 +1062,7 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
      *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
+     * @throws NotAvailableException is thrown in case the unit is not available.
      * @throws InterruptedException  is thrown in case the thread is externally
      *                               interrupted.
      */
@@ -1260,11 +1258,6 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
      */
     @Deprecated
     public static Future<UnitRemote> getFutureUnitByLabelAndType(final String label, final UnitType unitType, boolean waitForData) {
