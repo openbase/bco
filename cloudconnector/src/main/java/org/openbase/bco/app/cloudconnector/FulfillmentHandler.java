@@ -50,6 +50,7 @@ import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -583,7 +584,7 @@ public class FulfillmentHandler {
                                 // filter infrastructure units
                                 if (filterInfrastructureUnits && Units.getUnit(unitConfig, false).isInfrastructure()) {
                                     // add a completed future, this will make google respond with a success message
-                                    internalFutureSet.add(CompletableFuture.completedFuture(null));
+                                    internalFutureSet.add(FutureProcessor.completedFuture(null));
                                 } else {
                                     internalFutureSet.add(createExecutionTask(Units.getUnit(hostedUnitConfig, false), idCommand.getValue(), authenticationToken, authorizationToken));
                                 }
@@ -623,7 +624,7 @@ public class FulfillmentHandler {
                     // filter infrastructure units
                     if (filterInfrastructureUnits && Units.getUnit(unitConfig, false).isInfrastructure()) {
                         // add a completed future, this will make google respond with a success message
-                        future = CompletableFuture.completedFuture(null);
+                        future = FutureProcessor.completedFuture(null);
                     } else {
                         // dal unit so create a normal execution task
                         future = createExecutionTask(Units.getUnit(unitConfig, false), idCommand.getValue(), authenticationToken, authorizationToken);

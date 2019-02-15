@@ -42,7 +42,6 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.app.AppDataType.AppData;
 import org.openbase.type.com.ScopeType.Scope;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -176,7 +175,7 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public CompletableFuture<AppData> getDataFuture() {
+    public Future<AppData> getDataFuture() {
         return appRemote.getDataFuture();
     }
 

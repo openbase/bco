@@ -265,13 +265,7 @@ public class BCOSystemValidator {
         }
 
         if (online) {
-            try {
-                printed |= print(remote, StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.requestData(), delayTime));
-            } catch (CouldNotPerformException e) {
-                countError();
-                printed |= print(remote, StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) +
-                        "  " + AnsiColor.colorize(StringProcessor.fillWithSpaces("CANCELED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED));
-            }
+            printed |= print(remote, StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.requestData(), delayTime));
         }
 
         // add new line separator for better overview
