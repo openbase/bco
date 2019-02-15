@@ -616,7 +616,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // handle if action was not found
                 if (actionToCancel == null) {
                     logger.debug("Cannot cancel an unknown action, but than its not executing anyway.");
-                    return CompletableFuture.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.UNKNOWN).build()).build());
+                    return FutureProcessor.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.UNKNOWN).build()).build());
                 }
 
                 if (!Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(authenticatedId)) {
@@ -676,7 +676,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             logger.trace("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
         }
 
-        return CompletableFuture.completedFuture(actionToSchedule.getActionDescription());
+        return FutureProcessor.completedFuture(actionToSchedule.getActionDescription());
     }
 
     private int getSchedulingIndex(Action action) {
@@ -1457,7 +1457,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (!operationServiceMap.containsKey(serviceType)) {
                 if (JPService.getProperty(JPProviderControlMode.class).getValue()) {
                     applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
-                    return CompletableFuture.completedFuture(null);
+                    return FutureProcessor.completedFuture(null);
                 } else {
                     return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
                 }

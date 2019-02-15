@@ -25,7 +25,6 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.Message;
 
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -256,24 +255,22 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
      * Method request the data of all internal unit remotes.
      *
      * @return the recalculated server state data based on the newly requested data.
-     *
-     * @throws CouldNotPerformException is thrown if any error occurs during the request.
      */
     @Override
-    default CompletableFuture<ST> requestData() throws CouldNotPerformException {
+    default Future<ST> requestData() {
         return requestData(true);
     }
 
     /**
      * Method request the data of all internal unit remotes.
      *
-     * @param failOnError flag decides if an exception should be thrown in case one data request fails.
+     * @param failOnError flag decides if the task should be fail in case one data request fails.
      *
      * @return the recalculated server state data based on the newly requested data.
      *
-     * @throws CouldNotPerformException is thrown if non of the request was successful. In case the failOnError is set to true any request error throws an CouldNotPerformException.
+     * Note: Future is canceled if non of the request was successful. In case the failOnError is set to true any request error cancels the future.
      */
-    CompletableFuture<ST> requestData(final boolean failOnError) throws CouldNotPerformException;
+    Future<ST> requestData(final boolean failOnError);
 
     /**
      * Method applies the action on this instance.

@@ -32,7 +32,6 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.dal.ObjectDataType.ObjectData;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -62,12 +61,12 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
 
     @Override
     public Future<Snapshot> recordSnapshot() {
-        return CompletableFuture.completedFuture(Snapshot.getDefaultInstance());
+        return FutureProcessor.completedFuture(Snapshot.getDefaultInstance());
     }
 
     @Override
     public Future<Void> restoreSnapshot(Snapshot snapshot) {
-        return CompletableFuture.completedFuture(null);
+        return FutureProcessor.completedFuture(null);
     }
 
     @Override
@@ -145,8 +144,8 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public CompletableFuture<ObjectData> requestData() {
-        return CompletableFuture.completedFuture(data);
+    public Future<ObjectData> requestData() {
+        return FutureProcessor.completedFuture(data);
     }
 
     @Override
@@ -176,7 +175,7 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
 
     @Override
     public Future<Long> ping() {
-        return CompletableFuture.completedFuture(0L);
+        return FutureProcessor.completedFuture(0L);
     }
 
     @Override
@@ -185,7 +184,7 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public CompletableFuture<ObjectData> getDataFuture() {
-        return CompletableFuture.completedFuture(data);
+    public Future<ObjectData> getDataFuture() {
+        return FutureProcessor.completedFuture(data);
     }
 }

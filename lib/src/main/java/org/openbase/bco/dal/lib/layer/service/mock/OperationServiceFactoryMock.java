@@ -48,7 +48,6 @@ import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
@@ -262,7 +261,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
             }
             String methodName = "applyDataUpdate";
             unit.getClass().getMethod(methodName, Message.class, ServiceType.class).invoke(unit, argument, serviceType);
-            return CompletableFuture.completedFuture(null);
+            return FutureProcessor.completedFuture(null);
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not call remote Message[]", ex));
         }

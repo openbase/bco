@@ -29,6 +29,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
@@ -40,7 +41,7 @@ import org.openbase.type.timing.TimestampType.Timestamp;
 import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -174,8 +175,8 @@ public class ServiceStateProcessorTest {
         }
 
         @Override
-        public CompletableFuture<M> getDataFuture() {
-            return CompletableFuture.completedFuture(null);
+        public Future<M> getDataFuture() {
+            return FutureProcessor.completedFuture(null);
         }
 
         @Override

@@ -43,7 +43,6 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.Serializable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -150,7 +149,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                     // filter events that do not change anything
                     if (activationState.getValue() == getActivationState().getValue()) {
                         logger.trace("skip already applied state: {}", activationState.getValue().name());
-                        return CompletableFuture.completedFuture(null);
+                        return FutureProcessor.completedFuture(null);
                     }
 
                     final ActivationState fallbackActivationState = getActivationState();
@@ -167,7 +166,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
 
                         // filter duplicated execution
                         if (isExecuting()) {
-                            return CompletableFuture.completedFuture(null);
+                            return FutureProcessor.completedFuture(null);
                         }
 
                         //TODO: making this a separate thread makes it really difficult to wait for states from scenes in unit tests
@@ -215,7 +214,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                         }
                     }
                 }
-                return CompletableFuture.completedFuture(activationState.getResponsibleAction());
+                return FutureProcessor.completedFuture(activationState.getResponsibleAction());
             } catch (CouldNotPerformException ex) {
                 return FutureProcessor.canceledFuture(ActionDescription.class, ex);
             }

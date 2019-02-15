@@ -24,13 +24,10 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
@@ -56,6 +53,6 @@ public interface BaseUnitController<D extends AbstractMessage, DB extends D.Buil
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ex);
         }
-        return CompletableFuture.completedFuture(null);
+        return FutureProcessor.completedFuture(null);
     }
 }

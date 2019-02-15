@@ -32,7 +32,6 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.io.Serializable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
@@ -53,7 +52,7 @@ public abstract class AbstractBaseUnitController<D extends AbstractMessage & Ser
         }
         try {
             super.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
-            return CompletableFuture.completedFuture(null);
+            return FutureProcessor.completedFuture(null);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Void.class, ex);
         }

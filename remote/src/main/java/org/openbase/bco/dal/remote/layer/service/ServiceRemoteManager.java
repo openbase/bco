@@ -394,7 +394,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     public Future<Long> ping() {
         try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             if (serviceRemoteMap.isEmpty()) {
-                return CompletableFuture.completedFuture(0L);
+                return FutureProcessor.completedFuture(0L);
             }
 
             final List<Future<Long>> futurePings = new ArrayList<>();
@@ -520,7 +520,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     }
 
     @Override
-    public CompletableFuture<D> getDataFuture() {
+    public Future<D> getDataFuture() {
         return responsibleInstance.getDataFuture();
     }
 

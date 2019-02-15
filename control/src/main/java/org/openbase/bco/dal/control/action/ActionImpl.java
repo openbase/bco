@@ -41,6 +41,7 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -52,7 +53,6 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -287,7 +287,7 @@ public class ActionImpl implements SchedulableAction {
             if(!isDone()) {
                 updateActionState(State.CANCELED);
             }
-            return CompletableFuture.completedFuture(getActionDescription());
+            return FutureProcessor.completedFuture(getActionDescription());
         }
 
         // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
@@ -308,7 +308,7 @@ public class ActionImpl implements SchedulableAction {
         if (!isExecuting()) {
             // this should never happen since a task should be executing before it is aborted
             LOGGER.error("Aborted action was not executing before");
-            return CompletableFuture.completedFuture(getActionDescription());
+            return FutureProcessor.completedFuture(getActionDescription());
         }
 
         updateActionState(State.ABORTING);

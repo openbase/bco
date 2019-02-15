@@ -307,38 +307,33 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         @Override
         public Future<ActionDescription> setActivityMultiState(ActivityMultiState activityMultiState) {
             logger.info("Update activity list[" + activityMultiState.getActivityIdCount() + "]" + this);
-//            return GlobalScheduledExecutorService.submit(() -> {
-                try {
-                    if (activityMultiState.getActivityIdCount() == 0) {
-                        for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
+            try {
+                if (activityMultiState.getActivityIdCount() == 0) {
+                    for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
+                        stringRemoteActionPoolEntry.getValue().stop();
+                    }
+                } else if ((activityMultiState.getActivityIdCount() > 0)) {
+                    final String activityId = activityMultiState.getActivityId(0);
+                    for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
+                        if (!stringRemoteActionPoolEntry.getKey().equals(activityId)) {
                             stringRemoteActionPoolEntry.getValue().stop();
                         }
-                    } else if ((activityMultiState.getActivityIdCount() > 0)) {
-                        final String activityId = activityMultiState.getActivityId(0);
-                        for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
-                            if (!stringRemoteActionPoolEntry.getKey().equals(activityId)) {
-                                stringRemoteActionPoolEntry.getValue().stop();
-                            }
-                        }
-                        if (!remoteActionPoolMap.containsKey(activityId)) {
-                            final RemoteActionPool remoteActionPool = new RemoteActionPool(UserControllerImpl.this);
-                            remoteActionPoolMap.put(activityId, remoteActionPool);
-                            final ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityId);
-                            remoteActionPool.initViaServiceStateDescription(activityConfig.getServiceStateDescriptionList());
-                        }
-                        remoteActionPoolMap.get(activityId).execute(activityMultiState.getResponsibleAction());
                     }
-
-                    logger.info("Apply activity data update with {}", activityMultiState.getActivityIdCount());
-                    applyDataUpdate(activityMultiState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE);
-                    CompletableFuture<ActionDescription> future = new CompletableFuture<>();
-                    future.complete(null);
-                    return future;
-                } catch (Exception ex) {
-                    return FutureProcessor.canceledFuture(ex);
-//                    throw new CouldNotPerformException("Could not update activity state of " + this, ex);
+                    if (!remoteActionPoolMap.containsKey(activityId)) {
+                        final RemoteActionPool remoteActionPool = new RemoteActionPool(UserControllerImpl.this);
+                        remoteActionPoolMap.put(activityId, remoteActionPool);
+                        final ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityId);
+                        remoteActionPool.initViaServiceStateDescription(activityConfig.getServiceStateDescriptionList());
+                    }
+                    remoteActionPoolMap.get(activityId).execute(activityMultiState.getResponsibleAction());
                 }
-//            });
+
+                logger.info("Apply activity data update with {}", activityMultiState.getActivityIdCount());
+                applyDataUpdate(activityMultiState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE);
+                return FutureProcessor.completedFuture(null);
+            } catch (Exception ex) {
+                return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not update activity state of " + this, ex));
+            }
         }
 
         @Override

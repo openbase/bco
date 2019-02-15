@@ -245,18 +245,14 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      * @return the recalculated server state data based on the newly requested data.
      */
     @Override
-    public CompletableFuture<ST> requestData(final boolean failOnError) {
+    public Future<ST> requestData(final boolean failOnError) {
         final CompletableFuture<ST> requestDataFuture = new CompletableFuture<>();
         GlobalCachedExecutorService.submit(() -> {
             try {
                 final List<Future> taskList = new ArrayList<>();
                 MultiException.ExceptionStack exceptionStack = null;
                 for (final Remote remote : getInternalUnits()) {
-                    try {
-                        taskList.add(remote.requestData());
-                    } catch (CouldNotPerformException ex) {
-                        MultiException.push(remote, ex, exceptionStack);
-                    }
+                    taskList.add(remote.requestData());
                 }
                 boolean noResponse = true;
                 for (final Future task : taskList) {
@@ -1022,7 +1018,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     @Override
     public Future<Long> ping() {
         if (unitRemoteMap.isEmpty()) {
-            return CompletableFuture.completedFuture(0L);
+            return FutureProcessor.completedFuture(0L);
         }
 
         final List<Future<Long>> futurePings = new ArrayList<>();
