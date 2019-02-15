@@ -592,8 +592,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return true if read only.
-     *
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
     Boolean isDeviceUnitRegistryReadOnly();

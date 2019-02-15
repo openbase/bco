@@ -37,23 +37,25 @@ public interface UnitTemplateCollectionProvider {
      * registered, otherwise false. The unit template id field is used for the
      * comparison.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @param unitTemplate the unit template which is tested
      * @return if the unit template with the given id is registered, otherwise false
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
+    Boolean containsUnitTemplate(final UnitTemplate unitTemplate);
 
     /**
      * Method returns true if the unit template with the given id is
      * registered, otherwise false.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @param unitTemplateId the id of the unit template
      * @return if the unit template with the given id is registered, otherwise false
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean containsUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException;
+    Boolean containsUnitTemplateById(final String unitTemplateId);
 
     /**
      * Method returns the unit template which is registered with the given

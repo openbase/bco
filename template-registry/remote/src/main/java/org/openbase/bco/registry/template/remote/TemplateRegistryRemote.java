@@ -92,8 +92,6 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
 
     /**
      * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void registerRemoteRegistries() {
@@ -134,7 +132,6 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @param unitTemplate {@inheritDoc}.
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) {
@@ -151,12 +148,15 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @param unitTemplate {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
-        validateData();
-        return unitTemplateRemoteRegistry.contains(unitTemplate);
+    public Boolean containsUnitTemplate(UnitTemplate unitTemplate) {
+        try {
+            validateData();
+            return unitTemplateRemoteRegistry.contains(unitTemplate);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -164,12 +164,15 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @param unitTemplateId {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
+    public Boolean containsUnitTemplateById(String unitTemplateId) {
+        try {
         validateData();
         return unitTemplateRemoteRegistry.contains(unitTemplateId);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -365,7 +368,6 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @param activityTemplate {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) {
@@ -382,12 +384,15 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @param activityTemplate {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException {
-        validateData();
-        return activityTemplateRemoteRegistry.contains(activityTemplate);
+    public Boolean containsActivityTemplate(ActivityTemplate activityTemplate) {
+        try {
+            validateData();
+            return activityTemplateRemoteRegistry.contains(activityTemplate);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -395,12 +400,15 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @param activityTemplateId {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsActivityTemplateById(String activityTemplateId) throws CouldNotPerformException {
-        validateData();
-        return activityTemplateRemoteRegistry.contains(activityTemplateId);
+    public Boolean containsActivityTemplateById(String activityTemplateId) {
+        try {
+            validateData();
+            return activityTemplateRemoteRegistry.contains(activityTemplateId);
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 
     /**

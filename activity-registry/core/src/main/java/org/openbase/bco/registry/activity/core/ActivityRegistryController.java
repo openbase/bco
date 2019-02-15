@@ -88,8 +88,6 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
 
     /**
      * {@inheritDoc}
-     *
-     * @ {@inheritDoc}
      */
     @Override
     protected void registerRemoteRegistries()  {
@@ -107,8 +105,6 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
 
     /**
      * {@inheritDoc}
-     *
-     * @ {@inheritDoc}
      */
     @Override
     protected void registerPlugins() {

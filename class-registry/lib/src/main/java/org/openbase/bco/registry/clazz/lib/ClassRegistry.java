@@ -10,12 +10,12 @@ package org.openbase.bco.registry.clazz.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -45,6 +45,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method registers the given device class.
      *
      * @param deviceClass the device class to be registered.
+     *
      * @return the registered device class.
      */
     @RPCMethod
@@ -54,6 +55,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method registers a device class encoded in a transaction value.
      *
      * @param transactionValue the device class to be registered encoded in a transaction value
+     *
      * @return a transaction value containing the registered device class and an id for this transaction
      */
     @RPCMethod
@@ -63,6 +65,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method updates the given device class.
      *
      * @param deviceClass the updated device class.
+     *
      * @return the updated device class.
      */
     @RPCMethod
@@ -72,6 +75,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method updates a device class encoded in a transaction value.
      *
      * @param transactionValue the device class to be updated encoded in a transaction value
+     *
      * @return a transaction value containing the updated device class and an id for this transaction
      */
     @RPCMethod
@@ -81,6 +85,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method removes the given device class.
      *
      * @param deviceClass the device class to be removed.
+     *
      * @return the removed device class.
      */
     @RPCMethod
@@ -90,6 +95,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method removed a device class encoded in a transaction value.
      *
      * @param transactionValue the device class to be removed encoded in a transaction value
+     *
      * @return a transaction value containing the removed device class and an id for this transaction
      */
     @RPCMethod
@@ -97,18 +103,17 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
 
     /**
      * Method returns true if the underlying registry is marked as read only.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the device class registry is read only
-     * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
     Boolean isDeviceClassRegistryReadOnly();
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the device class registry is consistent
@@ -122,6 +127,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method registers the given agent class.
      *
      * @param agentClass the agent class to be registered.
+     *
      * @return the registered agent class.
      */
     @RPCMethod
@@ -131,6 +137,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method registers an agent class encoded in a transaction value.
      *
      * @param transactionValue the agent class to be registered encoded in a transaction value
+     *
      * @return a transaction value containing the registered agent class and an id for this transaction
      */
     @RPCMethod
@@ -140,6 +147,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method updates the given agent class.
      *
      * @param agentClass the updated agent class.
+     *
      * @return the updated agent class.
      */
     @RPCMethod
@@ -149,6 +157,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method updates an agent class encoded in a transaction value.
      *
      * @param transactionValue the agent class to be updated encoded in a transaction value
+     *
      * @return a transaction value containing the updated agent class and an id for this transaction
      */
     @RPCMethod
@@ -158,6 +167,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method removes the given agent class.
      *
      * @param agentClass the agent class to be removed.
+     *
      * @return the removed agent class.
      */
     @RPCMethod
@@ -167,6 +177,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method removes an agent class encoded in a transaction value.
      *
      * @param transactionValue the agent class to be removed encoded in a transaction value
+     *
      * @return a transaction value containing the removed agent class and an id for this transaction
      */
     @RPCMethod
@@ -174,7 +185,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
 
     /**
      * Method returns true if the underlying registry is marked as read only.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the agent class registry is read only
@@ -184,7 +195,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
 
     /**
      * Method returns true if the underling registry is marked as consistent.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the agent class registry is consistent
@@ -198,6 +209,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method registers the given app class.
      *
      * @param appClass the app class to be registered.
+     *
      * @return the registered app class.
      */
     @RPCMethod
@@ -207,6 +219,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method registers an app class encoded in a transaction value.
      *
      * @param transactionValue the app class to be registered encoded in a transaction value
+     *
      * @return a transaction value containing the registered app class and an id for this transaction
      */
     @RPCMethod
@@ -216,6 +229,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method updates the given app class.
      *
      * @param appClass the updated app class.
+     *
      * @return the updated app class.
      */
     @RPCMethod
@@ -225,6 +239,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method updates an app class encoded in a transaction value.
      *
      * @param transactionValue the app class to be updated encoded in a transaction value
+     *
      * @return a transaction value containing the updated app class and an id for this transaction
      */
     @RPCMethod
@@ -234,6 +249,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method removes the given app class.
      *
      * @param appClass the app class to be removed.
+     *
      * @return the removed app class.
      */
     @RPCMethod
@@ -243,6 +259,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      * Method removes an app class encoded in a transaction value.
      *
      * @param transactionValue the app class to be removed encoded in a transaction value
+     *
      * @return a transaction value containing the removed app class and an id for this transaction
      */
     @RPCMethod
@@ -250,7 +267,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
 
     /**
      * Method returns true if the underlying registry is marked as read only.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the app class registry is read only
@@ -260,7 +277,7 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
 
     /**
      * Method returns true if the underling registry is marked as consistent.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the app class registry is consistent

@@ -175,8 +175,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     /**
      * {@inheritDoc}
-     *
-     * @throws org.openbase.jul.exception.InitializationException {@inheritDoc}
      */
     @Override
     protected void registerRemoteRegistries() {
@@ -453,8 +451,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean isUnitConfigRegistryConsistent() {
@@ -784,8 +780,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * @param authorizationToken {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<String> requestAuthorizationToken(final AuthorizationToken authorizationToken) {
@@ -803,8 +797,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * @param authenticatedValue {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<AuthenticatedValue> requestAuthorizationTokenAuthenticated(final AuthenticatedValue authenticatedValue) {

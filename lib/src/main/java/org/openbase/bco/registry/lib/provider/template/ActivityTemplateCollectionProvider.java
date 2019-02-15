@@ -36,23 +36,25 @@ public interface ActivityTemplateCollectionProvider {
      * registered, otherwise false. The activity template id field is used for the
      * comparison.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @param activityTemplate the activity template which is tested
      * @return if the activity template with the given id is registered, otherwise false
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean containsActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException;
+    Boolean containsActivityTemplate(ActivityTemplate activityTemplate);
 
     /**
      * Method returns true if the activity template with the given id is
      * registered, otherwise false.
      *
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
      * @param activityTemplateId the id of the activity template
      * @return if the activity template with the given id is registered, otherwise false
-     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    Boolean containsActivityTemplateById(String activityTemplateId) throws CouldNotPerformException;
+    Boolean containsActivityTemplateById(String activityTemplateId);
 
     /**
      * Method returns the activity template which is registered with the given
