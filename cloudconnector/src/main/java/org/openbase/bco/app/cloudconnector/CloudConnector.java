@@ -26,7 +26,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
@@ -86,10 +85,9 @@ public interface CloudConnector extends App {
      *
      * @param authenticatedValue the authenticated value authenticating a user and containing a value as described above
      * @return a future of the created task
-     * @throws CouldNotPerformException if the task could not be created
      */
     @RPCMethod
-    Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue);
 
     /**
      * Remove a user from the BCO Cloud and from the cloud connector. This method will delete the account at the
