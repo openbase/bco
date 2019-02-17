@@ -229,8 +229,7 @@ public class AuthenticatedServiceProcessor {
          *
          * @param authenticatedValue The authenticated value which is send with this request.
          * @return A future containing the authenticated value which is the response from the server.
-         * @throws CouldNotPerformException If the request cannot be done.
          */
-        Future<AuthenticatedValue> request(AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+        Future<AuthenticatedValue> request(AuthenticatedValue authenticatedValue);
     }
 }

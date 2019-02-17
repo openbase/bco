@@ -33,5 +33,5 @@ import java.util.concurrent.Future;
 public interface AuthenticatedSnapshotable extends Snapshotable<SnapshotType.Snapshot>{
 
     @RPCMethod
-    Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) throws CouldNotPerformException, InterruptedException;
+    Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot);
 }

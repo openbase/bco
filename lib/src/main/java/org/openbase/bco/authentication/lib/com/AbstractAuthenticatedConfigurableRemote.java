@@ -27,9 +27,11 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
 import rsb.Handler;
@@ -88,12 +90,16 @@ public class AbstractAuthenticatedConfigurableRemote<M extends Message, CONFIG e
     }
 
     @Override
-    protected Future<Event> internalRequestStatus() throws CouldNotPerformException {
-        if (SessionManager.getInstance().isLoggedIn()) {
-            final Event event = new Event(TicketAuthenticatorWrapper.class, SessionManager.getInstance().initializeServiceServerRequest());
-            return new ReLoginFuture<>(getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event), SessionManager.getInstance());
-        } else {
-            return super.internalRequestStatus();
+    protected Future<Event> internalRequestStatus() {
+        try {
+            if (SessionManager.getInstance().isLoggedIn()) {
+                final Event event = new Event(TicketAuthenticatorWrapper.class, SessionManager.getInstance().initializeServiceServerRequest());
+                return new ReLoginFuture<>(getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event), SessionManager.getInstance());
+            } else {
+                return super.internalRequestStatus();
+            }
+        } catch (RejectedException ex) {
+            return FutureProcessor.canceledFuture(ex);
         }
     }
 
