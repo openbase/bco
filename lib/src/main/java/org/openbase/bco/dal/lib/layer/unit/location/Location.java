@@ -50,7 +50,7 @@ public interface Location extends BaseUnit<LocationData>, MultiUnit<LocationData
 
     @RPCMethod(legacy = true)
     @Override
-    Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
+    Future<Snapshot> recordSnapshot(final UnitType unitType);
 
     /**
      * Method returns a list of configuration of all aggregated units.

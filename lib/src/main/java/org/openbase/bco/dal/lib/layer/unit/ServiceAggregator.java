@@ -65,7 +65,7 @@ public interface ServiceAggregator extends
     ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException;
 
     @RPCMethod
-    Future<SnapshotType.Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
+    Future<SnapshotType.Snapshot> recordSnapshot(final UnitType unitType);
 
     @Override
     default BlindState getBlindState(final UnitType unitType) throws NotAvailableException {

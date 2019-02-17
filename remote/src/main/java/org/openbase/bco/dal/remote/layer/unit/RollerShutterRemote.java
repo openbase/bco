@@ -47,7 +47,7 @@ public class RollerShutterRemote extends AbstractUnitRemote<RollerShutterData> i
         super(RollerShutterData.class);
     }
 
-    public Future<ActionDescription> setBlindState(BlindState.State movementState) throws CouldNotPerformException {
+    public Future<ActionDescription> setBlindState(BlindState.State movementState) {
         return RollerShutterRemote.this.setBlindState(BlindState.newBuilder().setValue(movementState).build());
     }
 }

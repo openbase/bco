@@ -311,7 +311,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
     }
 
-    private synchronized Future executeSingleTask(final Callable task) throws CouldNotPerformException {
+    private synchronized Future executeSingleTask(final Callable task) {
         if (currentTask != null) {
             currentTask.cancel(true);
         }
@@ -610,7 +610,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         try {
             statusPanel.setStatus("Load new remote control " + scopeTextField.getText().toLowerCase() + "...", StatusPanel.StatusType.INFO, executeSingleTask(new Callable<Void>() {
                 @Override
-                public Void call() throws Exception {
+                public Void call() {
                     try {
                         scopeTextField.setForeground(Color.BLACK);
                         Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
@@ -624,7 +624,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                 }
             }));
             updateButtonStates();
-        } catch (CouldNotPerformException | NullPointerException ex) {
+        } catch (NullPointerException ex) {
             statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not load new remote!", ex), logger));
         }
     }//GEN-LAST:event_scopeApplyButtonActionPerformed

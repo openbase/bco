@@ -558,24 +558,6 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      *
      * @return {@inheritDoc}
      */
-//    @Override
-//    public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
-//        final ActionParameter.Builder builder;
-//        if (actionParameter instanceof ActionParameter.Builder) {
-//            builder = ((ActionParameter.Builder) actionParameter);
-//        } else {
-//            builder = ((ActionParameter) actionParameter).toBuilder();
-//        }
-//        builder.getServiceStateDescriptionBuilder().setUnitId(getId());
-//        // create action description from parameters
-//        final ActionDescription build = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build();
-//        // create authenticated value with tokens
-//        final AuthenticatedValue authenticatedValue =
-//                SessionManager.getInstance().initializeRequest(build, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
-//        // call apply action authenticated and wrap in future that decrypts response
-//        return new AuthenticatedValueFuture<>(applyActionAuthenticated(authenticatedValue), ActionDescription.class,
-//                authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
-//    }
     @Override
     public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
         try {

@@ -350,11 +350,15 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         }
     }
 
-    private Collection<Future<AuthenticatedValue>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final byte[] sessionKey) throws CouldNotPerformException {
+    private Collection<Future<AuthenticatedValue>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final byte[] sessionKey) {
         final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
         for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
             for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
-                unitRemoteMap.put(unitRemote.getId(), unitRemote);
+                try {
+                    unitRemoteMap.put(unitRemote.getId(), unitRemote);
+                } catch (NotAvailableException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve id to acquire unit state for snapshot", ex), LOGGER, LogLevel.WARN);
+                }
             }
         }
 
@@ -367,19 +371,22 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 continue;
             }
 
+            try {
+                final Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateDescription);
+                final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder);
 
-            final Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateDescription);
-            final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder);
-
-            AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
-            if (ticketAuthenticatorWrapper != null) {
-                // prepare authenticated value to request action
-                authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
-                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));
-            } else {
-                authenticatedValue.setValue(actionDescriptionBuilder.build().toByteString());
+                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+                if (ticketAuthenticatorWrapper != null) {
+                    // prepare authenticated value to request action
+                    authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+                    authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));
+                } else {
+                    authenticatedValue.setValue(actionDescriptionBuilder.build().toByteString());
+                }
+                futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not acquire unit state for snapshot", ex), LOGGER, LogLevel.WARN);
             }
-            futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
         }
 
         return futureCollection;
@@ -437,13 +444,17 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         return connectionPing;
     }
 
-    public Future<ActionDescription> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
-        if (actionDescription.getServiceStateDescription().getUnitType().equals(responsibleInstance.getUnitType())) {
-            ActionDescription.Builder builder = actionDescription.toBuilder();
-            builder.getServiceStateDescriptionBuilder().setUnitType(UnitType.UNKNOWN);
-            actionDescription = builder.build();
+    public Future<ActionDescription> applyAction(ActionDescription actionDescription) {
+        try {
+            if (actionDescription.getServiceStateDescription().getUnitType().equals(responsibleInstance.getUnitType())) {
+                ActionDescription.Builder builder = actionDescription.toBuilder();
+                builder.getServiceStateDescriptionBuilder().setUnitType(UnitType.UNKNOWN);
+                actionDescription = builder.build();
+            }
+            return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
+        } catch (NotAvailableException ex) {
+            return FutureProcessor.canceledFuture(ex);
         }
-        return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
     }
 
     /**
@@ -452,31 +463,34 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
      * as a byte string.
      * Select a service remote based on the service type provided in the action description and apply an authenticated action
      * on it. For detailed information refer to {@link AbstractServiceRemote#applyActionAuthenticated(AuthenticatedValue, ActionDescription.Builder, byte[])}.
+     * <p>
+     * Note: Future is canceled if no action description is available or can be extracted from the authenticated value.
      *
      * @param authenticatedValue The authenticated value containing an action description to be applied. Created with the
      *                           default session manager.
      *
      * @return An authenticated value containing an updated action description in which resulting actions are added as impacts.
-     *
-     * @throws CouldNotPerformException if no action description is available or can be extracted from the authenticated value.
      */
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        if (!authenticatedValue.hasValue() || authenticatedValue.getValue().isEmpty()) {
-            throw new NotAvailableException("Value in AuthenticatedValue");
-        }
-
-        final ActionDescription actionDescription;
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
         try {
-            if (SessionManager.getInstance().isLoggedIn()) {
-                actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
-            } else {
-                actionDescription = ActionDescription.parseFrom(authenticatedValue.getValue());
+            if (!authenticatedValue.hasValue() || authenticatedValue.getValue().isEmpty()) {
+                throw new NotAvailableException("Value in AuthenticatedValue");
             }
-        } catch (CouldNotPerformException | InvalidProtocolBufferException ex) {
-            throw new CouldNotPerformException("Could not extract ActionDescription from AuthenticatedValue", ex);
-        }
 
-        return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescription.toBuilder(), SessionManager.getInstance().getSessionKey());
+            final ActionDescription actionDescription;
+            try {
+                if (SessionManager.getInstance().isLoggedIn()) {
+                    actionDescription = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), ActionDescription.class);
+                } else {
+                    actionDescription = ActionDescription.parseFrom(authenticatedValue.getValue());
+                }
+            } catch (CouldNotPerformException | InvalidProtocolBufferException ex) {
+                throw new CouldNotPerformException("Could not extract ActionDescription from AuthenticatedValue", ex);
+            }
+            return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescription.toBuilder(), SessionManager.getInstance().getSessionKey());
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
     }
 
     /**
@@ -493,11 +507,13 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
      *
      * @return a future which returns the same authenticated value as in the request with an updated action description as its value. Calling get on this future makes sure that the
      * action description builder is updated properly and that all internal actions finished successfully.
-     *
-     * @throws CouldNotPerformException if something fails
      */
-    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final byte[] sessionKey) throws CouldNotPerformException {
-        return getServiceRemote(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey);
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final byte[] sessionKey) {
+        try {
+            return getServiceRemote(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey);
+        } catch (NotAvailableException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
     }
 
     protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
@@ -560,7 +576,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         }
     }
 
-    public <B> Future<B> requestData(final B builder) throws CouldNotPerformException {
+    public <B> Future<B> requestData(final B builder) {
         try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             final List<Future> futureData = new ArrayList<>();
 
