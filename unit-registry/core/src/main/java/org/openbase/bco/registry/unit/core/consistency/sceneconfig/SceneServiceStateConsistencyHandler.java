@@ -151,18 +151,18 @@ public class SceneServiceStateConsistencyHandler extends AbstractProtoBufRegistr
                 continue;
             }
 
-            final String serviceAttributeType = CachedTemplateRegistryRemote.getRegistry().getServiceStateClassName(builder.getServiceType());
-            if (!builder.getServiceAttributeType().equals(serviceAttributeType)) {
-                logger.debug("Update serviceAttributeType of serviceStateDescription from {} to {}", builder.getServiceAttributeType(), serviceAttributeType);
-                builder.setServiceAttributeType(serviceAttributeType);
+            final String serviceStateClassName = CachedTemplateRegistryRemote.getRegistry().getServiceStateClassName(builder.getServiceType());
+            if (!builder.getServiceStateClassName().equals(serviceStateClassName)) {
+                logger.debug("Update serviceStateClassName of serviceStateDescription from {} to {}", builder.getServiceStateClassName(), serviceStateClassName);
+                builder.setServiceStateClassName(serviceStateClassName);
                 modification = true;
             }
 
             try {
-                protoBufJSonProcessor.deserialize(builder.getServiceAttribute(), builder.getServiceAttributeType());
+                protoBufJSonProcessor.deserialize(builder.getServiceState(), builder.getServiceStateClassName());
             } catch (CouldNotPerformException ex) {
                 logger.debug("Remove serviceStateDescription because the attribute {} could not be de-serialized into attributeType {}",
-                        builder.getServiceAttributeType());
+                        builder.getServiceStateClassName());
                 modification = true;
                 continue;
             }
