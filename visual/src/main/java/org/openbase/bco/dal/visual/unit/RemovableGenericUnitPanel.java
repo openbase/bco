@@ -153,8 +153,8 @@ public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemo
     }
 
     @Override
-    public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceAttribute) throws CouldNotPerformException, InterruptedException {
-        genericUnitPanel.updateUnitConfig(unitConfig, serviceType, serviceAttribute);
+    public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceState) throws CouldNotPerformException, InterruptedException {
+        genericUnitPanel.updateUnitConfig(unitConfig, serviceType, serviceState);
     }
 
     public UnitType getSelectedUnitType() {

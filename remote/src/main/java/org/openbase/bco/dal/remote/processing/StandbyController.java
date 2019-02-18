@@ -83,13 +83,13 @@ public class StandbyController<C extends StandbyStateOperationService & Snapshot
                 List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>();
                 for (ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
                     // filter neutral power states
-                    if (serviceStateDescription.getServiceAttribute().toLowerCase().contains("off")) {
+                    if (serviceStateDescription.getServiceState().toLowerCase().contains("off")) {
                         logger.debug("ignore " + serviceStateDescription.getUnitId() + " because unit is off.");
                         continue;
                     }
 
                     // filter neutral brightness states
-                    if (serviceStateDescription.getServiceAttribute().toLowerCase().contains("brightness: 0.0")) {
+                    if (serviceStateDescription.getServiceState().toLowerCase().contains("brightness: 0.0")) {
                         logger.debug("ignore " + serviceStateDescription.getUnitId() + " because brightness is 0.");
                         continue;
                     }

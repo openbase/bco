@@ -185,8 +185,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
             ColorType.Color color = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(COLOR_VALUE).build();
             ColorState colorState = ColorState.newBuilder().setColor(color).build();
             serviceStateDescription.setServiceType(ServiceType.COLOR_STATE_SERVICE);
-            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(colorState));
-            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(colorState));
+            serviceStateDescription.setServiceState(serviceJSonProcessor.serialize(colorState));
+            serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(colorState));
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
                 if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
@@ -202,8 +202,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
             PowerState powerState = PowerState.newBuilder().setValue(POWER_ON).build();
             serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
-            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(powerState));
-            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(powerState));
+            serviceStateDescription.setServiceState(serviceJSonProcessor.serialize(powerState));
+            serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(powerState));
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
                 if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
@@ -226,8 +226,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
             serviceStateDescriptionList.clear();
             TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(TEMPERATURE).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
             serviceStateDescription.setServiceType(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
-            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(temperatureState));
-            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(temperatureState));
+            serviceStateDescription.setServiceState(serviceJSonProcessor.serialize(temperatureState));
+            serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(temperatureState));
             serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
 
@@ -256,8 +256,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
             serviceStateDescriptionList.clear();
             serviceStateDescription.clear();
             serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
-            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_ON));
-            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_ON));
+            serviceStateDescription.setServiceState(serviceJSonProcessor.serialize(POWER_STATE_ON));
+            serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(POWER_STATE_ON));
             serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
@@ -268,8 +268,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
             serviceStateDescriptionList.clear();
             serviceStateDescription.clear();
             serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
-            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_OFF));
-            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_OFF));
+            serviceStateDescription.setServiceState(serviceJSonProcessor.serialize(POWER_STATE_OFF));
+            serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(POWER_STATE_OFF));
             serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
@@ -285,8 +285,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
             serviceStateDescriptionList.clear();
             serviceStateDescription.clear();
             serviceStateDescription.setServiceType(ServiceType.COLOR_STATE_SERVICE);
-            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(colorState));
-            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(colorState));
+            serviceStateDescription.setServiceState(serviceJSonProcessor.serialize(colorState));
+            serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(colorState));
             serviceStateDescription.setUnitId(unitGroupId);
             serviceStateDescriptionList.add(serviceStateDescription.build());
             sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(serviceStateDescriptionList).build();

@@ -28,6 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.visual.swing.layout.LayoutGenerator;
@@ -152,8 +153,8 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         }
     }
 
-    public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType, final Object serviceAttribute, final boolean removable) throws CouldNotPerformException, InterruptedException {
-        LOGGER.info("Add " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " with " + serviceType.name() + " " + serviceAttribute + "to unit panel.");
+    public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType, final Object serviceState, final boolean removable) throws CouldNotPerformException, InterruptedException {
+        LOGGER.info("Add " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " with " + serviceType.name() + " " + serviceState + "to unit panel.");
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
             try {
@@ -165,11 +166,11 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
                     wrapperPanel.addObserver(removedObserver);
                     genericUnitPanel = wrapperPanel;
                 }
-                if (serviceAttribute == null) {
+                if (serviceState == null) {
                     genericUnitPanel.updateUnitConfig(unitConfig, serviceType);
                 } else {
                     LOGGER.info("Creating unit panel with command to set a value!");
-                    genericUnitPanel.updateUnitConfig(unitConfig, serviceType, serviceAttribute);
+                    genericUnitPanel.updateUnitConfig(unitConfig, serviceType, serviceState);
                 }
 
                 unitPanelMap.put(mapKey, genericUnitPanel);
@@ -185,9 +186,9 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         return add(unitConfig, serviceType, null, removable);
     }
 
-    public GenericUnitPanel add(final String unitId, final ServiceType serviceType, final Object serviceAttribute, final boolean removable) throws CouldNotPerformException, InterruptedException {
+    public GenericUnitPanel add(final String unitId, final ServiceType serviceType, final Object serviceState, final boolean removable) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
-        return add(unitConfig, serviceType, serviceAttribute, removable);
+        return add(unitConfig, serviceType, serviceState, removable);
     }
 
     public GenericUnitPanel add(final String unitId, final ServiceType serviceType, final boolean removable) throws CouldNotPerformException, InterruptedException {

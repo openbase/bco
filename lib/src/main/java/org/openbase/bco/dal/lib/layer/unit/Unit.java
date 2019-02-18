@@ -214,7 +214,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         // fill action config
                         final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
                         try {
-                            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(serviceState));
+                            serviceStateDescription.setServiceState(serviceJSonProcessor.serialize(serviceState));
                         } catch (InvalidStateException ex) {
                             // skip if serviceState is empty.
                             continue;
@@ -222,7 +222,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         serviceStateDescription.setUnitId(getId());
                         serviceStateDescription.setUnitType(getUnitTemplate().getType());
                         serviceStateDescription.setServiceType(serviceType);
-                        serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceState));
+                        serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(serviceState));
 
                         // add action config
                         snapshotBuilder.addServiceStateDescription(serviceStateDescription.build());

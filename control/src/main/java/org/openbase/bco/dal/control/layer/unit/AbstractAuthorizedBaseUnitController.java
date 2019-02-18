@@ -116,8 +116,8 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
                     .setServiceStateDescription(ServiceStateDescription.newBuilder()
                             .setServiceType(serviceType)
                             .setUnitType(unitType)
-                            .setServiceAttributeType(protoBufJSonProcessor.getServiceAttributeType(serviceArgument))
-                            .setServiceAttribute(protoBufJSonProcessor.serialize(serviceArgument)));
+                            .setServiceStateClassName(protoBufJSonProcessor.getServiceStateClassName(serviceArgument))
+                            .setServiceState(protoBufJSonProcessor.serialize(serviceArgument)));
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate action!", ex);
         }

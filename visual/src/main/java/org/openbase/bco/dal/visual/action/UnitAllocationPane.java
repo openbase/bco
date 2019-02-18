@@ -265,7 +265,7 @@ public class UnitAllocationPane extends AbstractFXController {
 
             String tmpServiceState;
             try {
-                final Message serviceStateMessage = protoBufJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
+                final Message serviceStateMessage = protoBufJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceState(), actionDescription.getServiceStateDescription().getServiceStateClassName());
                 tmpServiceState = StringProcessor.transformCollectionToString(Services.resolveStateValue(serviceStateMessage), ", ");
             } catch (CouldNotPerformException e) {
                 tmpServiceState = "?";

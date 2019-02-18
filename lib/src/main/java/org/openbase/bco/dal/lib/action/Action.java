@@ -269,7 +269,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      */
     static String toString(final Action action) {
         try {
-            return action.getClass().getSimpleName() + "[" + action.getId() + "|" + action.getActionDescription().getServiceStateDescription().getServiceType() + "|" + action.getActionDescription().getServiceStateDescription().getServiceAttribute() + "|" + action.getActionDescription().getServiceStateDescription().getUnitId() + "|" + ActionDescriptionProcessor.getInitialInitiator(action.getActionDescription()).getInitiatorId() + "]";
+            return action.getClass().getSimpleName() + "[" + action.getId() + "|" + action.getActionDescription().getServiceStateDescription().getServiceType() + "|" + action.getActionDescription().getServiceStateDescription().getServiceState() + "|" + action.getActionDescription().getServiceStateDescription().getUnitId() + "|" + ActionDescriptionProcessor.getInitialInitiator(action.getActionDescription()).getInitiatorId() + "]";
         } catch (NotAvailableException e) {
             try {
                 return action.getClass().getSimpleName() + "[" + action.getId() + "]";

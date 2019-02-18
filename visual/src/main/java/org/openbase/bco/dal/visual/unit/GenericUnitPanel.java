@@ -278,13 +278,13 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
         }
     }
 
-    public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceAttribute) throws CouldNotPerformException, InterruptedException {
+    public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceState) throws CouldNotPerformException, InterruptedException {
         updateUnitConfig(unitConfig, serviceType);
         String methodName = "set" + StringProcessor.transformUpperCaseToPascalCase(serviceType.toString()).replaceAll("Service", "");
-        logger.info("Calling method [" + methodName + "] with parameter [" + serviceAttribute.getClass() + "] on remote [" + getRemoteService().getId() + "]");
+        logger.info("Calling method [" + methodName + "] with parameter [" + serviceState.getClass() + "] on remote [" + getRemoteService().getId() + "]");
 
         try {
-            getRemoteService().getClass().getMethod(methodName, serviceAttribute.getClass()).invoke(getRemoteService(), serviceAttribute);
+            getRemoteService().getClass().getMethod(methodName, serviceState.getClass()).invoke(getRemoteService(), serviceState);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not call method[" + methodName + "] on remote[" + getRemoteService() + "]");
         }
