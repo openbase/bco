@@ -37,8 +37,8 @@ import java.util.Map;
  * since scenes are disabled if one required action fails. So we move it to the optional action list to preserve the old behaviour.
  *
  * Additionally, the following refactoring is applied:
- * * service_attribute_type -> service_state_class_name
- * * service_attribute -> service_state
+ * * service_attribute_type to service_state_class_name
+ * * service_attribute to service_state
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
