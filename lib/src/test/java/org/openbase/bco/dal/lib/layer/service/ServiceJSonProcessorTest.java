@@ -61,36 +61,36 @@ public class ServiceJSonProcessorTest {
     }
 
     /**
-     * Test of getServiceAttributeType method, of class ServiceJSonProcessor.
+     * Test of getServiceStateClassName method, of class ServiceJSonProcessor.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
     public void testGetServiceAttributeType() throws Exception {
-        System.out.println("getServiceAttributeType");
+        System.out.println("getServiceStateClassName");
         Object serviceAttribute;
         // outdated because service atributes must be messages.
         // TODO: move test to jul to test more generic json serialization. 
 //        Object serviceAttribute = 3.141d;
-//        assertEquals(JavaTypeToProto.DOUBLE.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+//        assertEquals(JavaTypeToProto.DOUBLE.getProtoType().toString(), serviceJSonProcessor.getServiceStateClassName(serviceAttribute));
 //
 //        serviceAttribute = true;
-//        assertEquals(JavaTypeToProto.BOOLEAN.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+//        assertEquals(JavaTypeToProto.BOOLEAN.getProtoType().toString(), serviceJSonProcessor.getServiceStateClassName(serviceAttribute));
 //
 //        serviceAttribute = 2.7f;
-//        assertEquals(JavaTypeToProto.FLOAT.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+//        assertEquals(JavaTypeToProto.FLOAT.getProtoType().toString(), serviceJSonProcessor.getServiceStateClassName(serviceAttribute));
 //
 //        serviceAttribute = 12;
-//        assertEquals(JavaTypeToProto.INTEGER.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+//        assertEquals(JavaTypeToProto.INTEGER.getProtoType().toString(), serviceJSonProcessor.getServiceStateClassName(serviceAttribute));
 //
 //        serviceAttribute = 42l;
-//        assertEquals(JavaTypeToProto.LONG.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+//        assertEquals(JavaTypeToProto.LONG.getProtoType().toString(), serviceJSonProcessor.getServiceStateClassName(serviceAttribute));
 //
 //        serviceAttribute = "This is a test!";
-//        assertEquals(JavaTypeToProto.STRING.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+//        assertEquals(JavaTypeToProto.STRING.getProtoType().toString(), serviceJSonProcessor.getServiceStateClassName(serviceAttribute));
 //
 //        serviceAttribute = JavaTypeToProto.BOOLEAN;
-//        assertEquals(serviceAttribute.getClass().getName(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+//        assertEquals(serviceAttribute.getClass().getName(), serviceJSonProcessor.getServiceStateClassName(serviceAttribute));
 
         serviceAttribute = PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.ON).build();
         assertEquals(serviceAttribute.getClass().getName(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
@@ -110,25 +110,25 @@ public class ServiceJSonProcessorTest {
         // TODO: move test to jul to test more generic json serialization. 
         
 //        Object serviceAttribute = 3.141d;
-//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceStateClassName(serviceAttribute)));
 //
 //        serviceAttribute = true;
-//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceStateClassName(serviceAttribute)));
 //
 //        serviceAttribute = 2.7f;
-//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceStateClassName(serviceAttribute)));
 //
 //        serviceAttribute = 12;
-//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceStateClassName(serviceAttribute)));
 //
 //        serviceAttribute = 42l;
-//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceStateClassName(serviceAttribute)));
 //
 //        serviceAttribute = "This is a test!";
-//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceStateClassName(serviceAttribute)));
 //        
 //        serviceAttribute = JavaTypeToProto.BOOLEAN;
-//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+//        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceStateClassName(serviceAttribute)));
 
         serviceAttribute = PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.ON).build();
         assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));

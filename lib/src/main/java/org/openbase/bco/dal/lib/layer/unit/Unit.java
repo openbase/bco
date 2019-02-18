@@ -201,11 +201,11 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder().setServiceType(serviceType).setUnitId(getId());
 
                         // load operation service attribute by related provider service
-                        Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceType, ServiceTemplate.ServicePattern.PROVIDER, this);
+                        Message serviceState = (Message) Services.invokeServiceMethod(serviceType, ServiceTemplate.ServicePattern.PROVIDER, this);
 
                         // verify operation service state (e.g. ignore UNKNOWN service states)
                         try {
-                            Services.verifyAndRevalidateServiceState(serviceAttribute);
+                            Services.verifyAndRevalidateServiceState(serviceState);
                         } catch (VerificationFailedException ex) {
                             // skip invalid or not available services.
                             continue;
@@ -214,15 +214,15 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         // fill action config
                         final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
                         try {
-                            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
+                            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(serviceState));
                         } catch (InvalidStateException ex) {
-                            // skip if serviceAttribute is empty.
+                            // skip if serviceState is empty.
                             continue;
                         }
                         serviceStateDescription.setUnitId(getId());
                         serviceStateDescription.setUnitType(getUnitTemplate().getType());
                         serviceStateDescription.setServiceType(serviceType);
-                        serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+                        serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceState));
 
                         // add action config
                         snapshotBuilder.addServiceStateDescription(serviceStateDescription.build());
