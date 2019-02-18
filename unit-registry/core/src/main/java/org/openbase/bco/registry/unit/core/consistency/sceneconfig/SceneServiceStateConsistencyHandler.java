@@ -151,7 +151,7 @@ public class SceneServiceStateConsistencyHandler extends AbstractProtoBufRegistr
                 continue;
             }
 
-            final String serviceAttributeType = CachedTemplateRegistryRemote.getRegistry().getServiceAttributeType(builder.getServiceType());
+            final String serviceAttributeType = CachedTemplateRegistryRemote.getRegistry().getServiceStateClassName(builder.getServiceType());
             if (!builder.getServiceAttributeType().equals(serviceAttributeType)) {
                 logger.debug("Update serviceAttributeType of serviceStateDescription from {} to {}", builder.getServiceAttributeType(), serviceAttributeType);
                 builder.setServiceAttributeType(serviceAttributeType);

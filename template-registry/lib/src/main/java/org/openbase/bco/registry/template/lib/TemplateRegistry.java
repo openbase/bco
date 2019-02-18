@@ -127,16 +127,15 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
     @RPCMethod
     Boolean isServiceTemplateRegistryConsistent();
 
-    //todo release rename into getServiceStateClassName(...) and move to ServiceProcessor.
     /**
-     * Construct the service attribute type for a service type. The service attribute type is the class name of
+     * Detects the service state class name attribute type for a service type. The service attribute type is the class name of
      * the service state.
      *
      * @param serviceType the service type for which the attribute type is retrieved.
      *
      * @return a string representing the service state used for the given service type.
      */
-    default String getServiceAttributeType(final ServiceType serviceType) throws CouldNotPerformException {
+    default String getServiceStateClassName(final ServiceType serviceType) throws CouldNotPerformException {
         final ServiceTemplate serviceTemplate = getServiceTemplateByType(serviceType);
         final String communicationTypeName = StringProcessor.transformUpperCaseToPascalCase(serviceTemplate.getCommunicationType().name());
         return PowerState.class.getName().replaceAll(PowerState.class.getSimpleName(), communicationTypeName);
