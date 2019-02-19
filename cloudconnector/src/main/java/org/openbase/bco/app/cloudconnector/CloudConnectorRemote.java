@@ -132,7 +132,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      */
     public Future<Void> register(final String password, final String authorizationToken) {
         final String params = CloudConnector.createRegistrationData(password, authorizationToken);
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(params, Void.class, SessionManager.getInstance(), this::register);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(params, Void.class, SessionManager.getInstance(), authenticatedValue -> register(authenticatedValue));
     }
 
 
@@ -177,7 +177,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      * @return a future of the task
      */
     public Future<Void> setAuthorizationToken(final String authorizationToken) {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(authorizationToken, Void.class, SessionManager.getInstance(), this::setAuthorizationToken);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(authorizationToken, Void.class, SessionManager.getInstance(), authenticatedValue -> setAuthorizationToken(authenticatedValue));
     }
 
     /**
