@@ -548,7 +548,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      */
     @Override
     public Future<ActionDescription> applyAction(ActionDescription actionDescription) {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), this::applyActionAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), authenticatedValue -> applyActionAuthenticated(authenticatedValue));
     }
 
     /**
