@@ -165,7 +165,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, this::registerDeviceClassVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, transactionValue -> registerDeviceClassVerified(transactionValue));
     }
 
     @Override
@@ -233,7 +233,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, this::removeDeviceClassVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, transactionValue -> removeDeviceClassVerified(transactionValue));
     }
 
     @Override
@@ -348,7 +348,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(agentClass, this::updateAgentClassVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(agentClass, transactionValue -> updateAgentClassVerified(transactionValue));
     }
 
     @Override
@@ -440,7 +440,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AppClass> registerAppClass(AppClass appClass) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, this::registerAppClassVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, transactionValue -> registerAppClassVerified(transactionValue));
     }
 
     @Override
@@ -508,7 +508,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AppClass> removeAppClass(AppClass appClass) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, this::removeAppClassVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, transactionValue -> removeAppClassVerified(transactionValue));
     }
 
     @Override

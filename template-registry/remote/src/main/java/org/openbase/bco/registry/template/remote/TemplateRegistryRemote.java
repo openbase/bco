@@ -135,7 +135,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(unitTemplate, this::updateUnitTemplateVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(unitTemplate, transactionValue -> updateUnitTemplateVerified(transactionValue));
     }
 
     @Override
@@ -371,7 +371,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      */
     @Override
     public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityTemplate, this::updateActivityTemplateVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityTemplate, transactionValue -> updateActivityTemplateVerified(transactionValue));
     }
 
     @Override

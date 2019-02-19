@@ -219,7 +219,7 @@ public class LocationUtils {
 
         // if the parent type is a zone but no childs are defined the location could be a tile or a zone which leaves the type undefined
         String childTypes = "";
-        childTypes = "[ " + childLocationTypes.stream().map((locationType) -> locationType.toString() + " ").reduce(childTypes, String::concat) + "]";
+        childTypes = "[ " + childLocationTypes.stream().map((locationType) -> locationType.toString() + " ").reduce(childTypes, (s, str) -> s.concat(str)) + "]";
         throw new CouldNotPerformException("Could not detect locationType from parentType[" + parentLocationType.name() + "] and childTypes" + childTypes);
     }
 }

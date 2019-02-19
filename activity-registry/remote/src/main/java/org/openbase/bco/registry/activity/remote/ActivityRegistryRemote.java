@@ -93,7 +93,7 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      */
     @Override
     public Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::registerActivityConfigVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, transactionValue -> registerActivityConfigVerified(transactionValue));
     }
 
     @Override
@@ -125,7 +125,7 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      */
     @Override
     public Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::removeActivityConfigVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, transactionValue -> removeActivityConfigVerified(transactionValue));
     }
 
     @Override
