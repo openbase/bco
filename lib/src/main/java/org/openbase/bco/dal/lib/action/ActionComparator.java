@@ -121,7 +121,7 @@ public class ActionComparator implements Comparator<Action> {
                         Thread.currentThread().interrupt();
                     }
                     // create mock-up to guarantee safety operations
-                    emphasisState = EmphasisState.newBuilder().setEconomy(1d / 3d).setSecurity(1d / 3d).setComfort(1d / 3d).build();
+                    emphasisState = EmphasisState.getDefaultInstance();
                 }
 
                 // make sure that diff is -1, 0 or 1

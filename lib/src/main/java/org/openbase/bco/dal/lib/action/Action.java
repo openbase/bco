@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.provider.EmphasisStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -252,9 +253,8 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
                     emphasisValue = Math.max(emphasisValue, emphasisState.getSecurity());
                     break;
                 case SAFETY:
-                    // because {@code emphasisValue} is max 1.0 we add 10 to force the safety category.
-                    emphasisValue = 10;
-                    break;
+                    // because {@code emphasisValue} is max 1.0 we return 10 to force the safety category.
+                    return 10;
             }
         }
         return emphasisValue;

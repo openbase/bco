@@ -29,6 +29,8 @@ import org.openbase.bco.dal.lib.layer.service.provider.EmphasisStateProviderServ
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis;
+import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 
 /**
@@ -284,9 +286,9 @@ public class EmphasisStateServicePanel extends AbstractServicePanel<EmphasisStat
                 securitySlider.setEnabled(false);
                 economySlider.setEnabled(false);
                 comfortSlider.setEnabled(false);
-                securitySlider.setValue((int) (getProviderService().getEmphasisState().getSecurity() * 100d));
-                economySlider.setValue((int) (getProviderService().getEmphasisState().getEconomy() * 100d));
-                comfortSlider.setValue((int) (getProviderService().getEmphasisState().getComfort() * 100d));
+                securitySlider.setValue((int) Math.round(getProviderService().getEmphasisState().getSecurity() * 100d));
+                economySlider.setValue((int) Math.round(getProviderService().getEmphasisState().getEconomy() * 100d));
+                comfortSlider.setValue((int) Math.round(getProviderService().getEmphasisState().getComfort() * 100d));
                 securitySlider.setEnabled(true);
                 economySlider.setEnabled(true);
                 comfortSlider.setEnabled(true);
@@ -300,28 +302,39 @@ public class EmphasisStateServicePanel extends AbstractServicePanel<EmphasisStat
 
         if (hasProviderService()) {
             try {
-                final double security = (Double.isNaN(getProviderService().getEmphasisState().getSecurity())? 0 : getProviderService().getEmphasisState().getSecurity());
+                final double security = (Double.isNaN(getProviderService().getEmphasisState().getSecurity()) ? 0 : getProviderService().getEmphasisState().getSecurity());
                 final double economy = (Double.isNaN(getProviderService().getEmphasisState().getEconomy()) ? 0 : getProviderService().getEmphasisState().getEconomy());
                 final double comfort = (Double.isNaN(getProviderService().getEmphasisState().getComfort()) ? 0 : getProviderService().getEmphasisState().getComfort());
 
                 emphasisLevelLabel.setForeground(Color.WHITE);
-                if (security > Math.max(economy, comfort)) {
-                    emphasisLevelLabel.setText("SECURITY");
-                    emphasisLevelLabelPanel.setBackground(Color.BLUE.darker());
-                } else if (economy > Math.max(security, comfort)) {
-                    emphasisLevelLabel.setText("ECONOMY");
-                    emphasisLevelLabelPanel.setBackground(Color.GREEN.darker());
-                } else if (comfort > Math.max(economy, security)) {
-                    emphasisLevelLabel.setText("COMFORT");
-                    emphasisLevelLabelPanel.setBackground(Color.MAGENTA.darker());
-                } else {
-                    emphasisLevelLabel.setText("ERROR");
-                    emphasisLevelLabelPanel.setBackground(Color.RED.darker());
+
+                final Category emphasisCategory = getProviderService().getEmphasisCategory();
+                switch (emphasisCategory) {
+                    case SECURITY:
+                        emphasisLevelLabel.setText(emphasisCategory.name());
+                        emphasisLevelLabelPanel.setBackground(Color.BLUE.darker());
+                        break;
+                    case ECONOMY:
+                        emphasisLevelLabel.setText(emphasisCategory.name());
+                        emphasisLevelLabelPanel.setBackground(Color.GREEN.darker());
+                        break;
+                    case COMFORT:
+                        emphasisLevelLabel.setText(emphasisCategory.name());
+                        emphasisLevelLabelPanel.setBackground(Color.MAGENTA.darker());
+                        break;
+                    case SAFETY:
+                    case UNKNOWN:
+                        emphasisLevelLabel.setText("ERROR");
+                        emphasisLevelLabelPanel.setBackground(Color.RED.darker());
+                        break;
                 }
                 
-                securityBar.setValue((int) (security * 100d));
-                economyBar.setValue((int) (economy * 100d));
-                comfortBar.setValue((int) (comfort * 100d));
+                securityBar.setValue((int) Math.round(security * 100d));
+                economyBar.setValue((int) Math.round(economy * 100d));
+                comfortBar.setValue((int) Math.round(comfort * 100d));
+                securityBar.setString(securityBar.getValue() + "% Security");
+                economyBar.setString(economyBar.getValue() + "% Economy");
+                comfortBar.setString(comfortBar.getValue() + "% Comfort");
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
             }
