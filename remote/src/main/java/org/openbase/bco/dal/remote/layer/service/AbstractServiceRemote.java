@@ -42,6 +42,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.jul.pattern.CompletableFutureLite;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
@@ -63,7 +64,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -246,7 +246,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     @Override
     public Future<ST> requestData(final boolean failOnError) {
-        final CompletableFuture<ST> requestDataFuture = new CompletableFuture<>();
+        final CompletableFutureLite<ST> requestDataFuture = new CompletableFutureLite<>();
         GlobalCachedExecutorService.submit(() -> {
             try {
                 final List<Future> taskList = new ArrayList<>();
