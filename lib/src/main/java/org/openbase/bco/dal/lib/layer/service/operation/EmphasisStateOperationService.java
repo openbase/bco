@@ -43,7 +43,7 @@ public interface EmphasisStateOperationService extends OperationService, Emphasi
     /* THIS WILL LATER BE USED TO COMPUTE THE AREA OF EACH EMPHASIS CATEGORY WHEN REPRESENTED WITHIN A TRIANGLE. */
     public static final double EMPHASIS_TRIANGLE_TOTAL_AREA = 1;
     public static final double EMPHASIS_TRIANGLE_OUTER_LINE = 1 / Math.sqrt(Math.sqrt(3) / 4);
-    public static final double EMPHASIS_TRIANGLE_HEIGH = (EMPHASIS_TRIANGLE_OUTER_LINE * Math.sqrt(3)) / 2;
+    public static final double EMPHASIS_TRIANGLE_HEIGHT = (EMPHASIS_TRIANGLE_OUTER_LINE * Math.sqrt(3)) / 2;
 
     /**
      * Method sets the emphasis state of this unit.
