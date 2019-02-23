@@ -1170,10 +1170,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             actionListNotificationLock.writeLock().lock();
                             try {
                                 final SchedulableAction schedulableAction = scheduledActionList.get(1);
-                                if (schedulableAction.getActionDescription().getInterruptible()) {
-                                    schedulableAction.abort();
-                                } else {
-                                    schedulableAction.reject();
+                                if (!schedulableAction.isDone()) {
+                                    // only abort/reject action if the action is not done
+                                    if (schedulableAction.getActionDescription().getInterruptible()) {
+                                        schedulableAction.abort();
+                                    } else {
+                                        schedulableAction.reject();
+                                    }
                                 }
 
                                 // trigger a reschedule which can trigger the action with a higher priority again
