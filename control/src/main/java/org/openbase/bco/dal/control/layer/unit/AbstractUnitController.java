@@ -1170,8 +1170,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             actionListNotificationLock.writeLock().lock();
                             try {
                                 final SchedulableAction schedulableAction = scheduledActionList.get(1);
-                                if (!schedulableAction.isDone()) {
-                                    // only abort/reject action if the action is not done
+                                if (schedulableAction.getActionState() == State.EXECUTING) {
+                                    // only abort/reject action if the action is executing
                                     if (schedulableAction.getActionDescription().getInterruptible()) {
                                         schedulableAction.abort();
                                     } else {
