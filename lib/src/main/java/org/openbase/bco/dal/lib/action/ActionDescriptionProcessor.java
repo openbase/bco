@@ -25,7 +25,6 @@ import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
-import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -122,10 +121,8 @@ public class ActionDescriptionProcessor {
      * @return an ActionParameter type with the described values.
      */
     public static ActionParameter.Builder generateDefaultActionParameter(final ServiceStateDescription serviceStateDescription, final boolean authenticated) {
-        ActionParameter.Builder actionParameter = ActionParameter.newBuilder();
+        ActionParameter.Builder actionParameter = ActionParameter.getDefaultInstance().toBuilder();
         actionParameter.setServiceStateDescription(serviceStateDescription);
-        actionParameter.setPriority(Priority.NORMAL);
-        actionParameter.setExecutionTimePeriod(0);
         actionParameter.setActionInitiator(detectActionInitiatorId(authenticated));
         return actionParameter;
     }
@@ -534,10 +531,10 @@ public class ActionDescriptionProcessor {
         }
 
         // prepare execution time period from cause if not available
-        if (!actionDescriptionBuilder.hasExecutionTimePeriod() || actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
+        if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
             // if the action has non search through its causes
             for (final ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {
-                if (actionReference.hasExecutionTimePeriod() && actionReference.getExecutionTimePeriod() != 0) {
+                if (actionReference.getExecutionTimePeriod() != 0) {
                     // use valid execution time period of cause
                     actionDescriptionBuilder.setExecutionTimePeriod(actionReference.getExecutionTimePeriod());
                     break;
@@ -652,7 +649,7 @@ public class ActionDescriptionProcessor {
             }
 
             // validate that execution time period is set
-            if (!actionDescriptionBuilder.hasExecutionTimePeriod() || actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
+            if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
                 throw new NotAvailableException("executionTimePeriod");
             }
             
