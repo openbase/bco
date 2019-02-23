@@ -21,10 +21,12 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
+import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -35,10 +37,7 @@ import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText.MapFie
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
@@ -506,6 +505,15 @@ public class ActionDescriptionProcessor {
         // setup creation time
         TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
 
+        // prepare parameters from causes if required.
+        // prepare execution time period from cause if not available
+        actionDescriptionBuilder.setExecutionTimePeriod(getExecutionTimePeriod(actionDescriptionBuilder));
+        actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(getInitiatorId(actionDescriptionBuilder));
+        actionDescriptionBuilder.setSchedulable(getSchedulable(actionDescriptionBuilder));
+        actionDescriptionBuilder.setInterruptible(getInterruptible(actionDescriptionBuilder));
+        actionDescriptionBuilder.addAllCategory(getCategoryList(actionDescriptionBuilder));
+        actionDescriptionBuilder.setPriority(getPriority(actionDescriptionBuilder));
+
         // update initiator type
         if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty()) {
             final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId());
@@ -519,23 +527,6 @@ public class ActionDescriptionProcessor {
             actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
         }
 
-        // prepare execution time period from cause if not available
-        if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
-            // if the action has non search through its causes
-            for (final ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {
-                if (actionReference.getExecutionTimePeriod() != 0) {
-                    // use valid execution time period of cause
-                    actionDescriptionBuilder.setExecutionTimePeriod(actionReference.getExecutionTimePeriod());
-                    break;
-                }
-            }
-        }
-
-        // An action without offered execution time is at most executed directly and once.
-        // There is no need for scheduling.
-        if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
-            actionDescriptionBuilder.setSchedulable(false);
-        }
 
         // if the action is not schedulable it is also not interruptible
         if (!actionDescriptionBuilder.getSchedulable()) {
@@ -544,7 +535,7 @@ public class ActionDescriptionProcessor {
 
         // humans action should be executed some time before they get rejected by automation routines.
         if (actionDescriptionBuilder.getActionInitiator().getInitiatorType() == InitiatorType.HUMAN && actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
-            actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
+            actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
         }
 
         // prepare
@@ -553,6 +544,142 @@ public class ActionDescriptionProcessor {
 
         // generate or update action description
         generateDescription(actionDescriptionBuilder, serviceState, unit);
+    }
+
+    /**
+     * Get the execution time period of an action. If the action description itself does not contain one its causes
+     * are queried.
+     *
+     * @param actionDescription the action description of which the execution time period is retrieved.
+     *
+     * @return the execution time period of the action.
+     *
+     * @throws NotAvailableException if neither the action description nor one of its causes have an execution time period.
+     */
+    public static long getExecutionTimePeriod(final ActionDescriptionOrBuilder actionDescription) throws NotAvailableException {
+        if (actionDescription.hasExecutionTimePeriod() || actionDescription.getExecutionTimePeriod() != 0) {
+            return actionDescription.getExecutionTimePeriod();
+        }
+
+        for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
+            if (actionReference.hasExecutionTimePeriod() || actionReference.getExecutionTimePeriod() != 0) {
+                return actionReference.getExecutionTimePeriod();
+            }
+        }
+
+        throw new NotAvailableException("ExecutionTimePeriod");
+    }
+
+    /**
+     * Get the initiator id of an action. If the action description itself does not contain one its causes
+     * are queried.
+     *
+     * @param actionDescription the action description of which the initiator id is retrieved.
+     *
+     * @return the id of the initiator of the action.
+     *
+     * @throws NotAvailableException if neither the action description nor one of its causes have an initiator id.
+     */
+    public static String getInitiatorId(final ActionDescriptionOrBuilder actionDescription) throws NotAvailableException {
+        if (!actionDescription.getActionInitiator().getInitiatorId().isEmpty()) {
+            return actionDescription.getActionInitiator().getInitiatorId();
+        }
+
+        for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
+            if (!actionReference.getActionInitiator().getInitiatorId().isEmpty()) {
+                return actionReference.getActionInitiator().getInitiatorId();
+            }
+        }
+
+        throw new NotAvailableException("InitiatorId");
+    }
+
+    /**
+     * Get the category list of an action. If the action description itself does not contain at least one category its
+     * causes are queried.
+     *
+     * @param actionDescription the action description of which the category list is retrieved.
+     *
+     * @return the category list of an action.
+     */
+    public static List<Category> getCategoryList(final ActionDescriptionOrBuilder actionDescription) {
+        if (actionDescription.getCategoryCount() > 0) {
+            return actionDescription.getCategoryList();
+        }
+
+        for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
+            if (actionReference.getCategoryCount() > 0) {
+                return actionReference.getCategoryList();
+            }
+        }
+
+        return actionDescription.getCategoryList();
+    }
+
+    /**
+     * Get the priority of an action. If the action description itself does not contain one its
+     * causes are queried.
+     *
+     * @param actionDescription the action description of which the priority is retrieved.
+     *
+     * @return the action priority. If the action and none of its causes have one, the default value is returned.
+     */
+    public static Priority getPriority(final ActionDescriptionOrBuilder actionDescription) {
+        if (actionDescription.hasPriority() && actionDescription.getPriority() != Priority.UNKNOWN) {
+            return actionDescription.getPriority();
+        }
+
+        for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
+            if (actionReference.hasPriority() && actionReference.getPriority() != Priority.UNKNOWN) {
+                return actionReference.getPriority();
+            }
+        }
+
+        return ActionDescription.getDefaultInstance().getPriority();
+    }
+
+    /**
+     * Get the inerruptible flag of an action. If the action description itself does not contain one its
+     * causes are queried.
+     *
+     * @param actionDescription the action description of which the interruptible flag is retrieved.
+     *
+     * @return the interruptible flag. If the action and none of its causes have one, the default value is returned.
+     */
+    public static boolean getInterruptible(final ActionDescriptionOrBuilder actionDescription) {
+        if (actionDescription.hasInterruptible()) {
+            return actionDescription.getInterruptible();
+        }
+
+        for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
+            if (actionReference.hasInterruptible()) {
+                return actionReference.getInterruptible();
+            }
+        }
+
+        return ActionDescription.getDefaultInstance().getInterruptible();
+    }
+
+    /**
+     * Get the schedulable flag of an action. If the action description itself does not contain one its
+     * causes are queried.
+     *
+     * @param actionDescription the action description of which the schedulable flag is retrieved.
+     *
+     * @return the schedulable flag. If the action and none of its causes have one, the default value is returned.
+     */
+    public static boolean getSchedulable(final ActionDescriptionOrBuilder actionDescription) {
+        if (actionDescription.hasSchedulable()) {
+            return actionDescription.getSchedulable();
+        }
+
+        for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
+            if (actionReference.hasSchedulable()) {
+                return actionReference.getSchedulable();
+            }
+        }
+
+        return ActionDescription.getDefaultInstance().getSchedulable();
     }
 
     /**
