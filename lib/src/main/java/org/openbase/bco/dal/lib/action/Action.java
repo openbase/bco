@@ -113,28 +113,12 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
 
     /**
      * Returns false if there is still some execution time left.
-     * <p>
-     * Note: An action without zero execution time period will at least executed once. Such an action has no execution time but is still not expired as long as it has been executed.
      *
      * @return true if the execution time is already expired.
      */
     default boolean isExpired() {
         try {
-            // make sure action is at least executed once if no execution time is offered.
-            if (getExecutionTimePeriod(TimeUnit.MILLISECONDS) == 0) {
-                switch (getActionState()) {
-                    case UNKNOWN:
-                    case INITIALIZED:
-                    case INITIATING:
-                    case EXECUTING:
-                    case EXECUTION_FAILED:
-                        return false;
-                    default:
-                        return true;
-                }
-
-            }
-            return getExecutionTime() == 0 || (System.currentTimeMillis() - getLastExtensionTime() > ACTION_MAX_EXECUTION_TIME_PERIOD);
+            return getExecutionTime() == 0 || (System.currentTimeMillis() - getLastExtensionTime(TimeUnit.MILLISECONDS) > ACTION_MAX_EXECUTION_TIME_PERIOD);
         } catch (NotAvailableException ex) {
             return false;
         }
@@ -147,15 +131,6 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      */
     default long getCreationTime() throws NotAvailableException {
         return TimeUnit.MICROSECONDS.toMillis(getActionDescription().getTimestamp().getTime());
-    }
-
-    /**
-     * Time when this action was last extended.
-     *
-     * @return time since last extension in milliseconds.
-     */
-    default long getLastExtensionTime() throws NotAvailableException {
-        return TimeUnit.MICROSECONDS.toMillis(getActionDescription().getLastExtension().getTime());
     }
 
     /**
