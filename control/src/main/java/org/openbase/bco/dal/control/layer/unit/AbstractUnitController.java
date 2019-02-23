@@ -93,7 +93,6 @@ import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStat
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -105,7 +104,6 @@ import rsb.converter.ProtocolBufferConverter;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -134,7 +132,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     private static final String LOCK_CONSUMER_SCHEDULEING = AbstractUnitController.class.getSimpleName() + ".reschedule(..)";
     private static final String LOCK_CONSUMER_INDEX_LOOKUP = AbstractUnitController.class.getSimpleName() + ".getSchedulingIndex()";
-    private static final String LOCK_CONSUMER_CANCEL_ACTION = AbstractUnitController.class.getSimpleName() + ".cancelAction(..";
+    private static final String LOCK_CONSUMER_CANCEL_ACTION = AbstractUnitController.class.getSimpleName() + ".cancelAction(..)";
+    private static final String LOCK_CONSUMER_EXTEND_ACTION = AbstractUnitController.class.getSimpleName() + ".extendAction(..)";
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
@@ -534,7 +533,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
 
             // validate and setup target unit
-            if(!builder.getServiceStateDescriptionBuilder().hasUnitId()) {
+            if (!builder.getServiceStateDescriptionBuilder().hasUnitId()) {
                 builder.getServiceStateDescriptionBuilder().setUnitId(getId());
             } else if (!builder.getServiceStateDescriptionBuilder().getUnitId().equals(getId())) {
                 logger.warn("Action is not applied to its correct target unit but will be forwarded...");
@@ -581,79 +580,101 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
-    @Override
-    public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
-        return cancelAction(actionDescription, null);
+    /**
+     * Resolve an action by its id. This method either checks if the action itself has the provided id or if one
+     * of its causes does.
+     *
+     * @param actionId     the id of the action retrieved.
+     * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
+     *                     of access to the {@link #scheduledActionList}.
+     *
+     * @return the action identified by the provided id as described above.
+     *
+     * @throws NotAvailableException if not action with the provided id could be found.
+     */
+    private SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
+        builderSetup.lockWrite(lockConsumer);
+        try {
+            // lookup action to cancel
+            for (SchedulableAction action : scheduledActionList) {
+                // provided action id is a direct match
+                if (action.getId().equals(actionId)) {
+                    return action;
+                }
+
+                // provided action id appears in the action chain of the action
+                for (final ActionReference actionReference : action.getActionDescription().getActionCauseList()) {
+                    if (actionReference.getActionId().equals(actionId)) {
+                        return action;
+                    }
+                }
+            }
+
+            throw new NotAvailableException("Action[" + actionId + "]");
+        } finally {
+            builderSetup.unlockWrite(false);
+        }
     }
 
-    protected Future<ActionDescription> cancelAction(final ActionDescription actionDescription, String authenticatedId) {
-        //TODO validate that on other permissions the initiator id is an empty string
-        if (authenticatedId == null) {
-            authenticatedId = "";
-        }
-
+    /**
+     * Validate that a user has permissions to modify an action (cancelling or extending). This is the case
+     * if it is an admin or if it is the executor of the action or one of its causes.
+     *
+     * @param userId the id of the user whose permissions are checked.
+     * @param action the action checked.
+     *
+     * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
+     * @throws CouldNotPerformException  if the permissions check could not be performed.
+     */
+    private void validateActionPermissions(final String userId, final Action action) throws CouldNotPerformException {
         try {
-            Action actionToCancel = null;
+            if (Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(userId)) {
+                // user is an admin
+                return;
+            }
+
+            if (action.getActionDescription().getActionInitiator().getInitiatorId().equals(userId)) {
+                // user is the direct initiator
+                return;
+            }
+
+            for (final ActionReference actionReference : action.getActionDescription().getActionCauseList()) {
+                if (actionReference.getActionInitiator().getInitiatorId().equals(userId)) {
+                    // user is initiator of one of its references
+                    return;
+                }
+            }
+
+            // build nice error description
+            final String cancelingInstance = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(userId).getLabel(), userId);
+            final String ownerInstanceList = StringProcessor.transformCollectionToString(action.getActionDescription().getActionCauseList(), actionReference -> {
+                try {
+                    return LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionReference.getActionInitiator().getInitiatorId()).getLabel());
+                } catch (NotAvailableException e) {
+                    return actionReference.getActionInitiator().getInitiatorId();
+                }
+            }, ", ");
+            final String description = MultiLanguageTextProcessor.getBestMatch(action.getActionDescription().getDescription(), action.getActionDescription().getId());
+
+            throw new PermissionDeniedException("User [" + cancelingInstance + "] is not allowed to cancel action [" + description + "] owned by " + ownerInstanceList);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not validate permissions for user [" + userId + "]", ex);
+        }
+    }
+
+    @Override
+    public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
+        return cancelAction(actionDescription, "");
+    }
+
+    protected Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticatedId) {
+        try {
             builderSetup.lockWrite(LOCK_CONSUMER_CANCEL_ACTION);
             try {
-                // lookup action to cancel
-                for (Action action : scheduledActionList) {
-                    // provided action id is a direct match
-                    if (action.getId().equals(actionDescription.getId())) {
-                        actionToCancel = action;
-                        break;
-                    }
-
-                    // provided action id appears in the action chain of the action
-                    for (final ActionReference actionReference : action.getActionDescription().getActionCauseList()) {
-                        if (actionReference.getActionId().equals(actionDescription.getId())) {
-                            actionToCancel = action;
-                            break;
-                        }
-                    }
-                }
-
-                // handle if action was not found
-                if (actionToCancel == null) {
-                    logger.debug("Cannot cancel an unknown action, but than its not executing anyway.");
-                    return FutureProcessor.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.UNKNOWN).build()).build());
-                }
-
-                if (!Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(authenticatedId)) {
-                    // authenticated is not an admin
-                    if (!actionToCancel.getActionDescription().getActionInitiator().getInitiatorId().equals(authenticatedId)) {
-                        // authenticated user is not the direct initiator
-                        boolean isAuthenticated = false;
-                        // // check if the authenticated user appears somewhere in the chain
-                        for (ActionReference actionReference : actionToCancel.getActionDescription().getActionCauseList()) {
-                            if (actionReference.getActionInitiator().getInitiatorId().equals(authenticatedId)) {
-                                isAuthenticated = true;
-                                break;
-                            }
-                        }
-
-                        // if not authenticated generate an error message and throw
-                        if (!isAuthenticated) {
-                            String cancelingInstance = authenticatedId;
-                            String ownerInstanceList = actionToCancel.getActionDescription().getActionInitiator().getInitiatorId();
-                            String description = actionDescription.getId();
-                            try {
-                                cancelingInstance = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(authenticatedId).getLabel(), authenticatedId);
-                                ownerInstanceList = StringProcessor.transformCollectionToString(actionToCancel.getActionDescription().getActionCauseList(), actionReference -> {
-                                    try {
-                                        return LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionReference.getActionInitiator().getInitiatorId()).getLabel());
-                                    } catch (NotAvailableException e) {
-                                        return actionReference.getActionInitiator().getInitiatorId();
-                                    }
-                                }, ", ");
-                                description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(), actionDescription.getId());
-                            } catch (CouldNotPerformException ex) {
-                                // no not care if error description is not that detailed.
-                            }
-                            throw new PermissionDeniedException("User [" + cancelingInstance + "] is not allowed to cancel action [" + description + "] owned by " + ownerInstanceList);
-                        }
-                    }
-                }
+                // retrieve action
+                final Action actionToCancel = getActionById(actionDescription.getId(), LOCK_CONSUMER_CANCEL_ACTION);
+                // validate permissions
+                validateActionPermissions(authenticatedId, actionToCancel);
                 // cancel the action which automatically triggers a reschedule.
                 return actionToCancel.cancel();
             } finally {
@@ -662,6 +683,31 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex));
+        }
+    }
+
+    protected Future<ActionDescription> extendAction(final ActionDescription actionDescription, final String authenticatedId) {
+        try {
+            builderSetup.lockWrite(LOCK_CONSUMER_EXTEND_ACTION);
+            try {
+                // retrieve action
+                final SchedulableAction actionToExtend = getActionById(actionDescription.getId(), LOCK_CONSUMER_EXTEND_ACTION);
+                // validate permissions
+                validateActionPermissions(authenticatedId, actionToExtend);
+                // extend action.
+                actionToExtend.extend();
+
+                //TODO: for performance reasons it could be nice to update the schedulingTimeout here
+                // because now rescheduling is guaranteed to be done every 15 minutes...
+
+                // return updated action description
+                return FutureProcessor.completedFuture(actionToExtend.getActionDescription());
+            } finally {
+                // unlock and notify updated action list
+                builderSetup.unlockWrite(true);
+            }
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not extend Action[" + actionDescription.getId() + "]", ex));
         }
     }
 
@@ -837,7 +883,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 try {
                     // setup timer only if action needs to be removed or the current action provides a limited execution time.
                     if (atLeastOneDoneActionOnList || currentAction.getExecutionTimePeriod(TimeUnit.MICROSECONDS) != 0) {
-                        final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : nextAction.getExecutionTime();
+                        final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : Math.min(nextAction.getExecutionTime(), Action.ACTION_MAX_EXECUTION_TIME_PERIOD);
                         logger.debug("Reschedule scheduled in:" + rescheduleTimeout);
                         // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
                         // this should not cause any latency because new incoming actions are scheduled anyway.
@@ -939,6 +985,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy()).get();
             } catch (ExecutionException ex) {
                 throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
+            }
+        }
+
+        // if action description has last extension and an id find it and extend it
+        if (actionDescriptionBuilder.hasLastExtension() && !actionDescriptionBuilder.getId().isEmpty()) {
+            try {
+                return extendAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy()).get();
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not extend authenticated action!", ex);
             }
         }
 

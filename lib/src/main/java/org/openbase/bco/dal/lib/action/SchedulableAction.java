@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -49,7 +48,13 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
     void finish();
 
     /**
+     * Extend this action to run at most {@link Action#ACTION_MAX_EXECUTION_TIME_PERIOD} milli seconds longer.
+     */
+    void extend();
+
+    /**
      * Abort this action.
+     *
      * @param forceReject forces an rejection after abortion.
      */
     Future<ActionDescription> abort(boolean forceReject);
@@ -63,6 +68,7 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
 
     /**
      * {@inheritDoc}
+     *
      * @param timeUnit {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -75,6 +81,7 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
 
     /**
      * {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -82,6 +89,7 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
 
     /**
      * {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override

@@ -114,7 +114,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
                 }
 
             }
-            return getExecutionTime() == 0;
+            return getExecutionTime() == 0 || (System.currentTimeMillis() - getLastExtensionTime() > ACTION_MAX_EXECUTION_TIME_PERIOD);
         } catch (NotAvailableException ex) {
             return false;
         }
@@ -127,6 +127,15 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      */
     default long getCreationTime() throws NotAvailableException {
         return TimeUnit.MICROSECONDS.toMillis(getActionDescription().getTimestamp().getTime());
+    }
+
+    /**
+     * Time when this action was last extended.
+     *
+     * @return time since last extension in milliseconds.
+     */
+    default long getLastExtensionTime() throws NotAvailableException {
+        return TimeUnit.MICROSECONDS.toMillis(getActionDescription().getLastExtension().getTime());
     }
 
     /**

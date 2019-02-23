@@ -641,7 +641,7 @@ public class ActionDescriptionProcessor {
             if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
                 throw new NotAvailableException("executionTimePeriod");
             }
-            
+
             return serviceState;
         } catch (CouldNotPerformException ex) {
             throw new VerificationFailedException("Given ActionDescription[" + actionDescriptionBuilder + "] is invalid!", ex);

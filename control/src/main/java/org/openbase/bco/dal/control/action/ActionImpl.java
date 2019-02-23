@@ -45,7 +45,6 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -107,6 +106,8 @@ public class ActionImpl implements SchedulableAction {
 
             // verify and prepare action description
             serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, true);
+            // initially set last extension to creation time
+            actionDescriptionBuilder.setLastExtension(actionDescriptionBuilder.getTimestamp());
             // set actions description as responsible in service state
             final FieldDescriptor responsibleActionField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             serviceState = serviceState.toBuilder().setField(responsibleActionField, actionDescriptionBuilder.build()).build();
@@ -130,7 +131,7 @@ public class ActionImpl implements SchedulableAction {
      */
     private boolean isExecutionTaskFinish() {
         synchronized (executionSync) {
-            return actionTask == null ||  actionTask.isDone();
+            return actionTask == null || actionTask.isDone();
         }
     }
 
@@ -223,6 +224,7 @@ public class ActionImpl implements SchedulableAction {
 
     /**
      * Method blocks until the action reaches a terminated state.
+     *
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
     public void waitUntilDone() throws InterruptedException {
@@ -235,6 +237,7 @@ public class ActionImpl implements SchedulableAction {
 
     /**
      * Method blocks until the action reaches a terminated state or the timeout is reached.
+     *
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
     public void waitUntilDone(final long timeout) throws InterruptedException {
@@ -285,7 +288,7 @@ public class ActionImpl implements SchedulableAction {
     public Future<ActionDescription> cancel() {
         // if action not executing, set to canceled if not already done and finish
         if (!isExecuting()) {
-            if(!isDone()) {
+            if (!isDone()) {
                 updateActionState(State.CANCELED);
             }
             return FutureProcessor.completedFuture(getActionDescription());
@@ -347,7 +350,7 @@ public class ActionImpl implements SchedulableAction {
         if (actionTask != null && !actionTask.isDone()) {
             actionTask.cancel(true);
         }
-        if(isExecuting()) {
+        if (isExecuting()) {
             abort(true);
         }
         updateActionState(State.REJECTED);
@@ -398,7 +401,7 @@ public class ActionImpl implements SchedulableAction {
         synchronized (executionSync) {
 
             // duplicated termination in some state should be ok, but than skip the update.
-            if(getActionDescription().getActionState().getValue() == state && isDone()) {
+            if (getActionDescription().getActionState().getValue() == state && isDone()) {
                 return;
             }
 
@@ -415,7 +418,7 @@ public class ActionImpl implements SchedulableAction {
             }
 
             // print update in debug mode
-            if(JPService.debugMode()) {
+            if (JPService.debugMode()) {
                 LOGGER.info(this + " State[" + state.name() + "]" + MultiLanguageTextProcessor.getBestMatch(getActionDescription().getDescription(), "?"));
                 //StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
             }
@@ -434,6 +437,11 @@ public class ActionImpl implements SchedulableAction {
         if (isNotifiedActionState(state)) {
             unit.notifyScheduledActionList();
         }
+    }
+
+    @Override
+    public void extend() {
+        actionDescriptionBuilder.setLastExtension(TimestampProcessor.getCurrentTimestamp());
     }
 
     @Override
