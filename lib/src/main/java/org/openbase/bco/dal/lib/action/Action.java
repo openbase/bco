@@ -22,11 +22,8 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.EmphasisStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -34,7 +31,6 @@ import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Catego
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 public interface Action extends Executable<ActionDescription>, Identifiable<String> {
 
     String TYPE_FIELD_NAME_ACTION = "action";
+
+    long ACTION_MAX_EXECUTION_TIME_PERIOD = TimeUnit.MINUTES.toMicros(15);
 
     @Override
     default String getId() throws NotAvailableException {
