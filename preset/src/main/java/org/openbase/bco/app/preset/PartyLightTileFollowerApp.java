@@ -65,14 +65,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
             Registries.waitForData();
             this.actionLocationMap = new HashMap<>();
             this.locationRemoteMap = new HashMap<>();
-
-            // init tile remotes
-            for (final UnitConfig locationUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
-                if (!locationUnitConfig.getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
-                    continue;
-                }
-                locationRemoteMap.put(locationUnitConfig.getId(), Units.getUnit(locationUnitConfig, false, Units.LOCATION));
-            }
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -93,9 +85,14 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Execute PartyLightTileFollowerApp[" + getLabel() + "]");
-        // verify
-        if (!Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
-            throw new InvalidStateException("App location is not a tile!");
+
+        // init tile remotes
+        locationRemoteMap.clear();
+        for (final UnitConfig locationUnitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LOCATION)) {
+            if (!locationUnitConfig.getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
+                continue;
+            }
+            locationRemoteMap.put(locationUnitConfig.getId(), Units.getUnit(locationUnitConfig, false, Units.LOCATION));
         }
 
         new TileFollower().call();
