@@ -29,26 +29,21 @@ import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.jul.pattern.provider.Provider;
 import org.openbase.jul.schedule.*;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter.Builder;
@@ -65,8 +60,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.*;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -200,7 +197,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         return updateBuilderWithAvailableServiceStates(builder, responsibleInstance.getDataClass(), getManagedServiceTypes());
     }
 
-    public <B> B updateBuilderWithAvailableServiceStates(final B builder, final Class dataClass, final Set<ServiceType> supportedServiceTypeSet) throws InterruptedException {
+    public <B> B updateBuilderWithAvailableServiceStates(final B builder, final Class dataClass, final Set<ServiceType> supportedServiceTypeSet) throws CouldNotPerformException {
         try {
             for (final ServiceType serviceType : supportedServiceTypeSet) {
 
@@ -238,10 +235,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 }
             }
         } catch (Exception ex) {
-            if (ex instanceof InterruptedException) {
-                throw (InterruptedException) ex;
-            }
-            new CouldNotPerformException("Could not update current status!", ex);
+            throw new CouldNotPerformException("Could not update current status!", ex);
         }
         return builder;
     }

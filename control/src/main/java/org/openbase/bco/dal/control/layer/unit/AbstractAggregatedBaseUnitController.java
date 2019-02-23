@@ -37,8 +37,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.pattern.provider.Provider;
-import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -49,8 +47,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -116,10 +112,12 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
             return;
         }
         logger.debug("Activate unit [" + getLabel() + "]!");
-        super.activate();
-        serviceRemoteManager.activate();
 
-        updateUnitData();
+        // activate and service remote manager and update data without notification before calling super activate
+        // the super call will then automatically notify the updated unit data
+        serviceRemoteManager.activate();
+        updateUnitData(false);
+        super.activate();
     }
 
     @Override
@@ -129,8 +127,20 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         serviceRemoteManager.deactivate();
     }
 
-    private void updateUnitData() throws InterruptedException {
-        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+    /**
+     * Call to {@link #updateUnitData(boolean)} with notify change as true.
+     */
+    private void updateUnitData() {
+        updateUnitData(true);
+    }
+
+    /**
+     * Synchronize the data from all internal units managed by the service remote manager into the data builder.
+     *
+     * @param notifyChange flag determining if the data builder should be notified afterwards.
+     */
+    private void updateUnitData(final boolean notifyChange) {
+        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, notifyChange)) {
             serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder.getInternalBuilder(), getDataClass(), getSupportedServiceTypes());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
