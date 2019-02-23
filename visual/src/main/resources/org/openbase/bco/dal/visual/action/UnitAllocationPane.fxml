@@ -25,7 +25,7 @@
               <content>
                 <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
                      <children>
-                          <TableView fx:id="actionTable" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="700.0" prefWidth="1260.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <TableView fx:id="actionTable" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-463.0" AnchorPane.topAnchor="0.0">
                               <columns>
                                   <TableColumn fx:id="positionColumn" text="Pos" visible="false" />
                                   <TableColumn fx:id="actionStateColumn" maxWidth="500.0" prefWidth="90.0" text="Actionstate" />
