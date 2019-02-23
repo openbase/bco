@@ -42,7 +42,12 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
 
     String TYPE_FIELD_NAME_ACTION = "action";
 
-    long ACTION_MAX_EXECUTION_TIME_PERIOD = TimeUnit.MINUTES.toMicros(15);
+    /**
+     * The max execution time of an action until the action finishes if it was never extended.
+     * The time unit is milliseconds.
+     */
+
+    long ACTION_MAX_EXECUTION_TIME_PERIOD = TimeUnit.MINUTES.toMillis(15);
 
     @Override
     default String getId() throws NotAvailableException {
@@ -71,6 +76,21 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      */
     default long getExecutionTimePeriod(final TimeUnit timeUnit) throws NotAvailableException {
         return timeUnit.convert(getActionDescription().getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
+    }
+
+    /**
+     * Method return the timestamp of the actions last extension.
+     * If the action execution period is larger than {@code Action.ACTION_MAX_EXECUTION_TIME_PERIOD},
+     * and it was never extended (indicated by the last extention value), than the action will be finished.
+     *
+     * @param timeUnit defines the time unit of the returned last extension time to use.
+     * @return the last extension of this action.
+     *
+     * @throws NotAvailableException is thrown if the last extension can not be accessed. This can for example happen,
+     *                               if a remote action is not yet fully synchronized and the related action description is not available.
+     */
+    default long getLastExtensionTime(final TimeUnit timeUnit) throws NotAvailableException {
+        return timeUnit.convert(getActionDescription().getLastExtension().getTime(), TimeUnit.MICROSECONDS);
     }
 
     /**
