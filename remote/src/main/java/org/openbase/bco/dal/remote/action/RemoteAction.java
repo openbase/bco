@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -26,6 +26,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.SchedulableAction;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -42,8 +43,10 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -52,6 +55,7 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -61,6 +65,8 @@ import java.util.concurrent.*;
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public class RemoteAction implements Action {
+
+    public final static long AUTO_EXTENTION_INTERVAL = Action.ACTION_MAX_EXECUTION_TIME_PERIOD - TimeUnit.MINUTES.toMillis(1);
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAction.class);
     private final SyncObject executionSync = new SyncObject("ExecutionSync");
@@ -104,7 +110,6 @@ public class RemoteAction implements Action {
         }
     }
 
-
     public RemoteAction(final ActionDescription actionDescription) {
         this(ActionDescriptionProcessor.generateActionReference(actionDescription));
     }
@@ -114,7 +119,6 @@ public class RemoteAction implements Action {
         this.actionDescriptionObservable = new ObservableImpl<>();
         this.initFutureObservationTask(actionReference);
     }
-
 
     public Future<ActionDescription> execute(final ActionDescription causeActionDescription) {
         try {
@@ -227,6 +231,9 @@ public class RemoteAction implements Action {
                     // because future can already be outdated but the update not received because
                     // the action id was not yet available we need to trigger an manual update.
                     updateActionDescription(targetUnit.getActionList());
+
+                    // setup auto extension if needed
+                    setupAutoExtension(getActionDescription());
                 }
                 return actionDescription;
             } catch (InterruptedException ex) {
@@ -234,6 +241,44 @@ public class RemoteAction implements Action {
             }
         });
         return futureObservationTask;
+    }
+
+    private void setupAutoExtension(final ActionDescription actionDescription) {
+
+        // check if auto extension is required, otherwise return.
+        if (TimeUnit.MICROSECONDS.toMillis(actionDescription.getExecutionTimePeriod()) <= Action.ACTION_MAX_EXECUTION_TIME_PERIOD) {
+            return;
+        }
+
+        try {
+            final ScheduledFuture<?> autoExtensionTask = GlobalScheduledExecutorService.scheduleWithFixedDelay(() -> {
+                try {
+                    // auto extend if not done
+                    if (!isDone()) {
+                        // update last extension time and reapply
+                        final Builder actionDescriptionBuilder = actionDescription.toBuilder();
+                        actionDescriptionBuilder.getLastExtensionBuilder().setTime(TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()));
+                        targetUnit.applyAction(actionDescriptionBuilder).get();
+                    }
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory("Could not auto extend " + RemoteAction.this.toString(), ex, LOGGER);
+                }
+            }, AUTO_EXTENTION_INTERVAL, AUTO_EXTENTION_INTERVAL, TimeUnit.MILLISECONDS);
+            final Observer<RemoteAction, ActionDescription> observer = new Observer<RemoteAction, ActionDescription>() {
+                @Override
+                public void update(RemoteAction remote, ActionDescription description) {
+                    if (remote.isDone()) {
+                        autoExtensionTask.cancel(false);
+                        RemoteAction.this.removeActionDescriptionObserver(this);
+                    }
+                }
+            };
+            addActionDescriptionObserver(observer);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not auto extend " + RemoteAction.this.toString(), ex, LOGGER);
+        }
     }
 
     /**

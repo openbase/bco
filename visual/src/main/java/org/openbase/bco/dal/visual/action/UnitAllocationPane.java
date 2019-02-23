@@ -107,6 +107,9 @@ public class UnitAllocationPane extends AbstractFXController {
     private TableColumn lifetimeColumn;
 
     @FXML
+    private TableColumn lastExtensionColumn;
+
+    @FXML
     private TableColumn executionTimeColumn;
 
     @FXML
@@ -168,6 +171,7 @@ public class UnitAllocationPane extends AbstractFXController {
             interruptibleColumn.setCellValueFactory(new PropertyValueFactory<>("interruptible"));
             schedulableColumn.setCellValueFactory(new PropertyValueFactory<>("schedulable"));
             executionTimeColumn.setCellValueFactory(new PropertyValueFactory<>("executionTime"));
+            lastExtensionColumn.setCellValueFactory(new PropertyValueFactory<>("lastExtension"));
 
             UnitSelectionPaneControllerPair.getValue().unitIdProperty().addListener((a, b, c) -> {
                 unitIdProperty.set(c);
@@ -343,6 +347,28 @@ public class UnitAllocationPane extends AbstractFXController {
                     minutes - TimeUnit.HOURS.toMinutes(hours),
                     seconds - TimeUnit.MINUTES.toSeconds(minutes))
                     + (days > 0 ? " ( + "+ days +" days)" : "");
+            } catch (NotAvailableException e) {
+                return "?";
+            }
+        }
+
+        public String getLastExtension() {
+            try {
+            final long lastExtension = remoteAction.getLastExtensionTime(TimeUnit.MILLISECONDS);
+                final long days = TimeUnit.MILLISECONDS.toDays(lastExtension);
+                final long hours = TimeUnit.MILLISECONDS.toHours(lastExtension);
+                final long minutes = TimeUnit.MILLISECONDS.toMinutes(lastExtension);
+                final long seconds = TimeUnit.MILLISECONDS.toSeconds(lastExtension);
+
+                if(days > 365) {
+                    return "∞";
+                }
+
+                return String.format("%02d:%02d:%02d",
+                        hours - TimeUnit.DAYS.toHours(days),
+                        minutes - TimeUnit.HOURS.toMinutes(hours),
+                        seconds - TimeUnit.MINUTES.toSeconds(minutes))
+                        + (days > 0 ? " ( + "+ days +" days)" : "");
             } catch (NotAvailableException e) {
                 return "?";
             }

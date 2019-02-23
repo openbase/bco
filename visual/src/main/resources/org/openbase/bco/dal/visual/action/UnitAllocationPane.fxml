@@ -30,6 +30,7 @@
                                   <TableColumn fx:id="positionColumn" text="Pos" visible="false" />
                                   <TableColumn fx:id="actionStateColumn" maxWidth="500.0" prefWidth="90.0" text="Actionstate" />
                               <TableColumn fx:id="executionTimeColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Executiontime" />
+                              <TableColumn fx:id="executionTimeColumn1" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="LastExtension" visible="false" />
                               <TableColumn fx:id="lifetimeColumn" prefWidth="75.0" text="Lifetime" />
                               <TableColumn fx:id="priorityColumn" maxWidth="300.0" prefWidth="70.0" text="Priority" />
                               <TableColumn fx:id="categoryColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Category" />
