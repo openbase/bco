@@ -36,7 +36,10 @@ import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText.MapFie
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
@@ -139,6 +142,7 @@ public class ActionDescriptionProcessor {
         actionReference.setActionId(actionDescription.getId());
         actionReference.setActionInitiator(actionDescription.getActionInitiator());
         actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
+        actionReference.setExecutionTimePeriod(actionDescription.getExecutionTimePeriod());
         return actionReference.build();
     }
 
@@ -154,6 +158,7 @@ public class ActionDescriptionProcessor {
         actionReference.setActionId(actionParameter.getActionInitiator().getInitiatorId());
         actionReference.setActionInitiator(actionParameter.getActionInitiator());
         actionReference.setServiceStateDescription(actionParameter.getServiceStateDescription());
+        actionReference.setExecutionTimePeriod(actionParameter.getExecutionTimePeriod());
         return actionReference.build();
     }
 
@@ -238,7 +243,7 @@ public class ActionDescriptionProcessor {
      * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
      *
      * @param serviceState the service attribute that will be applied by this action
-     * @param serviceType      the service type according to the service attribute
+     * @param serviceType  the service type according to the service attribute
      *
      * @return the generated action description
      *
@@ -283,8 +288,8 @@ public class ActionDescriptionProcessor {
      * Additionally the initiator is detected by using the session manager as well as the user id is properly configured.
      *
      * @param serviceState the service attribute that will be applied by this action
-     * @param serviceType      the service type according to the service attribute
-     * @param unitType         the service type according to the service attribute
+     * @param serviceType  the service type according to the service attribute
+     * @param unitType     the service type according to the service attribute
      *
      * @return the generated action description
      *
@@ -324,8 +329,8 @@ public class ActionDescriptionProcessor {
      * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
      *
      * @param serviceState the service attribute that will be applied by this action
-     * @param serviceType      the service type according to the service attribute
-     * @param unit             the unit to control.
+     * @param serviceType  the service type according to the service attribute
+     * @param unit         the unit to control.
      *
      * @return the generated action description
      *
@@ -402,8 +407,8 @@ public class ActionDescriptionProcessor {
      * This method will set the service state description according to the service attribute and service type.
      *
      * @param serviceState the service attribute that will be applied by this action
-     * @param serviceType      the service type according to the service attribute
-     * @param unit             the unit to control.
+     * @param serviceType  the service type according to the service attribute
+     * @param unit         the unit to control.
      *
      * @return the action description
      *
@@ -419,7 +424,7 @@ public class ActionDescriptionProcessor {
      * This method will set the service state description according to the service attribute and service type.
      *
      * @param serviceState the service attribute that will be applied by this action
-     * @param serviceType      the service type according to the service attribute
+     * @param serviceType  the service type according to the service attribute
      *
      * @return the action description builder
      *
@@ -528,15 +533,15 @@ public class ActionDescriptionProcessor {
             actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
         }
 
-        // validate execution time and lookup by cause action if needed.
-        if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
-//            for (ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {
-//                if(actionReference.get)
-//            }
-            // todo: as long as the action reference does not provide more parameters like the getExecutionTimePeriod, priority, category etc. we do not support zero ExecutionTimePeriod.
-            if (actionDescriptionBuilder.getActionInitiator().getInitiatorType() != InitiatorType.HUMAN) {
-                // remove me later!
-                actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+        // prepare execution time period from cause if not available
+        if (!actionDescriptionBuilder.hasExecutionTimePeriod() || actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
+            // if the action has non search through its causes
+            for (final ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {
+                if (actionReference.hasExecutionTimePeriod() && actionReference.getExecutionTimePeriod() != 0) {
+                    // use valid execution time period of cause
+                    actionDescriptionBuilder.setExecutionTimePeriod(actionReference.getExecutionTimePeriod());
+                    break;
+                }
             }
         }
 
@@ -645,6 +650,12 @@ public class ActionDescriptionProcessor {
             if (prepare) {
                 prepare(actionDescriptionBuilder, unit, serviceState);
             }
+
+            // validate that execution time period is set
+            if (!actionDescriptionBuilder.hasExecutionTimePeriod() || actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
+                throw new NotAvailableException("executionTimePeriod");
+            }
+            
             return serviceState;
         } catch (CouldNotPerformException ex) {
             throw new VerificationFailedException("Given ActionDescription[" + actionDescriptionBuilder + "] is invalid!", ex);
