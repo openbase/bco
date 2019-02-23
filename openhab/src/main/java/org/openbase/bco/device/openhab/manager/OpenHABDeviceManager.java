@@ -79,7 +79,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
             }
         };
 
-        // the sync observer triggers a lot when the test is initially activated and all unit controller are created
+        // the sync observer triggers a lot when the device manager is initially activated and all unit controllers are created
         // thus add an event filter
         final RecurrenceEventFilter<Object> unitChangeSynchronizationFilter = new RecurrenceEventFilter<Object>(5000) {
             @Override
@@ -87,7 +87,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                 try {
                     for (final Entry<String, String> entry : OpenHABRestCommunicator.getInstance().getStates().entrySet()) {
                         try {
-                            commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue());
+                            commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue(), true);
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "] because unit not available", ex, LOGGER, LogLevel.WARN);
                         }

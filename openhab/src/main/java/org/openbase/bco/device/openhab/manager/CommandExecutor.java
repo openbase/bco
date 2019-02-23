@@ -24,11 +24,9 @@ package org.openbase.bco.device.openhab.manager;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
@@ -42,11 +40,8 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +80,30 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
         }
     }
 
+    /**
+     * Call {@link #applyStateUpdate(String, String, boolean)} with false.
+     *
+     * @param itemName the item identifying the unit whose the state should be updated.
+     * @param state    a string serializing the state to be set.
+     *
+     * @throws CouldNotPerformException if applying the state update fails.
+     */
     public void applyStateUpdate(final String itemName, final String state) throws CouldNotPerformException {
+        applyStateUpdate(itemName, state, false);
+    }
+
+    /**
+     * Retrieve a unit controller by an item name and apply an update according to the serialized state.
+     * If the update is the result of a system sync it will be scheduled shortly so that the state is only applied.
+     * Else the update is handled as a human action.
+     *
+     * @param itemName   the item identifying the unit whose the state should be updated.
+     * @param state      a string serializing the state to be set.
+     * @param systemSync flag determining if the state update is the result of a system sync.
+     *
+     * @throws CouldNotPerformException
+     */
+    public void applyStateUpdate(final String itemName, final String state, final boolean systemSync) throws CouldNotPerformException {
         OpenHABItemNameMetaData metaData;
         try {
             metaData = OpenHABItemProcessor.getMetaData(itemName);
@@ -99,7 +117,15 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
 
             // update the responsible action to show that it was triggered by openHAB and add other parameters
             // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
-            ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES);
+            if (systemSync) {
+                //TODO: verify that this does not break anything
+                // this is mostly a hack so that updates triggered by updates on the unit controller registry (e.g. initial sync)
+                // do not cause actions which block system components for 30 minutes. Still this could cause issues when
+                // it supersedes non interruptible and non schedulable actions.
+                ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 1, TimeUnit.SECONDS);
+            } else {
+                ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES);
+            }
 
             unitController.applyDataUpdate(serviceStateBuilder, metaData.getServiceType());
         } catch (NotAvailableException ex) {
