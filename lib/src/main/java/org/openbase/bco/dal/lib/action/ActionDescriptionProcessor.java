@@ -140,22 +140,11 @@ public class ActionDescriptionProcessor {
         actionReference.setActionInitiator(actionDescription.getActionInitiator());
         actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
         actionReference.setExecutionTimePeriod(actionDescription.getExecutionTimePeriod());
-        return actionReference.build();
-    }
-
-    /**
-     * Build an ActionReference from a given ActionParameter which can be added to an action chain.
-     *
-     * @param actionParameter the ActionParameter from which the ActionReference is generated.
-     *
-     * @return an ActionReference for the given ActionParameter.
-     */
-    public static ActionReference generateActionReference(final ActionParameterOrBuilder actionParameter) {
-        ActionReference.Builder actionReference = ActionReference.newBuilder();
-        actionReference.setActionId(actionParameter.getActionInitiator().getInitiatorId());
-        actionReference.setActionInitiator(actionParameter.getActionInitiator());
-        actionReference.setServiceStateDescription(actionParameter.getServiceStateDescription());
-        actionReference.setExecutionTimePeriod(actionParameter.getExecutionTimePeriod());
+        actionReference.setInterruptible(actionDescription.getInterruptible());
+        actionReference.setPriority(actionDescription.getPriority());
+        actionReference.setSchedulable(actionDescription.getSchedulable());
+        actionReference.setTimestamp(actionDescription.getTimestamp());
+        actionReference.addAllCategory(actionDescription.getCategoryList());
         return actionReference.build();
     }
 
