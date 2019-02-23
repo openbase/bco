@@ -271,7 +271,6 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         @Override
         public Future<ActionDescription> setActivationState(final ActivationState activationState) {
-            System.out.println("incomming activation: " + activationState.getValue().name());
             final ActionDescription.Builder actionDescriptionBuilder = activationState.getResponsibleAction().toBuilder();
             actionDescriptionBuilder.setIntermediary(true);
             switch (activationState.getValue()) {
@@ -362,7 +361,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             }
 
             try {
-                applyDataUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE);
+                applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(activationState), ServiceType.ACTIVATION_STATE_SERVICE);
             } catch (CouldNotPerformException ex) {
                 return FutureProcessor.canceledFuture(ActionDescription.class, ex);
             }
