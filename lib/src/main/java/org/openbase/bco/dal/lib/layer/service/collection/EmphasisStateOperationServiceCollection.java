@@ -48,7 +48,7 @@ public interface EmphasisStateOperationServiceCollection extends EmphasisStateOp
     }
 
     /**
-     * Returns the average emphasis value for a collection of brightnessServices.
+     * Returns the average emphasis value for a collection of all available emphasis services.
      *
      * @return
      *
@@ -60,7 +60,7 @@ public interface EmphasisStateOperationServiceCollection extends EmphasisStateOp
     }
 
     /**
-     * Returns the average emphasis value for a collection of brightnessServices with given unitType.
+     * Returns the average emphasis value for a collection of emphasis services with given unit type.
      *
      * @param unitType
      *

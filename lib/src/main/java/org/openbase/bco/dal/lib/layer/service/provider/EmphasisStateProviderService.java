@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -29,6 +29,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
+
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE;
 
 /**
@@ -91,7 +92,7 @@ public interface EmphasisStateProviderService extends ProviderService {
         // value because this is already guaranteed by the previously distance > MARGIN check.
         if (security == economy) {
             // prefer security in case of a conflict with economy.
-            if(economy >= MARGIN) {
+            if (economy >= MARGIN) {
                 return emphasisState.toBuilder()
                         .setSecurity(security + MARGIN)
                         .setEconomy(economy - MARGIN)
@@ -110,7 +111,7 @@ public interface EmphasisStateProviderService extends ProviderService {
             }
         } else if (security == comfort) {
             // prefer security in case of a conflict with comfort.
-            if(comfort >= MARGIN) {
+            if (comfort >= MARGIN) {
                 return emphasisState.toBuilder()
                         .setSecurity(security + MARGIN)
                         .setEconomy(economy)
@@ -129,7 +130,7 @@ public interface EmphasisStateProviderService extends ProviderService {
             }
         } else if (economy == comfort) {
             // prefer economy in case of a conflict with comfort.
-            if(comfort >= MARGIN) {
+            if (comfort >= MARGIN) {
                 return emphasisState.toBuilder()
                         .setSecurity(security)
                         .setEconomy(economy + MARGIN)
@@ -191,4 +192,75 @@ public interface EmphasisStateProviderService extends ProviderService {
         }
     }
 
+    /**
+     * Method returns the ratio of the economy value related to the comfort.
+     *
+     * @return the economy ratio related to the comfort value.
+     *
+     * @throws NotAvailableException is thrown if the emphasis state is not yet available.
+     */
+    default double getEconomyToComfortRatio() throws NotAvailableException {
+        final EmphasisState emphasisState = getEmphasisState();
+        return emphasisState.getEconomy() / (emphasisState.getEconomy() + emphasisState.getComfort());
+    }
+
+    /**
+     * Method returns the ratio of the economy value related to the security.
+     *
+     * @return the economy ratio related to the security value.
+     *
+     * @throws NotAvailableException is thrown if the emphasis state is not yet available.
+     */
+    default double getEconomyToSecurityRatio() throws NotAvailableException {
+        final EmphasisState emphasisState = getEmphasisState();
+        return emphasisState.getEconomy() / (emphasisState.getEconomy() + emphasisState.getSecurity());
+    }
+
+    /**
+     * Method comfort the ratio of the comfort value related to the economy.
+     *
+     * @return the comfort ratio related to the economy value.
+     *
+     * @throws NotAvailableException is thrown if the emphasis state is not yet available.
+     */
+    default double getComfortToEconomyRatio() throws NotAvailableException {
+        final EmphasisState emphasisState = getEmphasisState();
+        return emphasisState.getComfort() / (emphasisState.getComfort() + emphasisState.getEconomy());
+    }
+
+    /**
+     * Method returns the ratio of the comfort value related to the security.
+     *
+     * @return the comfort ratio related to the security value.
+     *
+     * @throws NotAvailableException is thrown if the emphasis state is not yet available.
+     */
+    default double getComfortToSecurityRatio() throws NotAvailableException {
+        final EmphasisState emphasisState = getEmphasisState();
+        return emphasisState.getComfort() / (emphasisState.getComfort() + emphasisState.getSecurity());
+    }
+
+    /**
+     * Method returns the ratio of the security value related to the economy.
+     *
+     * @return the security ratio related to the economy value.
+     *
+     * @throws NotAvailableException is thrown if the emphasis state is not yet available.
+     */
+    default double getSecurityToEconomyRatio() throws NotAvailableException {
+        final EmphasisState emphasisState = getEmphasisState();
+        return emphasisState.getSecurity() / (emphasisState.getSecurity() + emphasisState.getEconomy());
+    }
+
+    /**
+     * Method returns the ratio of the security value related to the comfort.
+     *
+     * @return the security ratio related to the comfort value.
+     *
+     * @throws NotAvailableException is thrown if the emphasis state is not yet available.
+     */
+    default double getSecurityToComfortRatio() throws NotAvailableException {
+        final EmphasisState emphasisState = getEmphasisState();
+        return emphasisState.getSecurity() / (emphasisState.getSecurity() + emphasisState.getComfort());
+    }
 }
