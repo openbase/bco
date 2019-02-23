@@ -89,6 +89,6 @@ public class AbsenceEnergySavingAgent extends AbstractDelayedTriggerableAgent {
 
     @Override
     protected double getDelayScaleFactor() throws NotAvailableException {
-        return 1d - locationRemote.getEmphasisState().getEconomy();
+        return locationRemote.getComfortToEconomyRatio();
     }
 }

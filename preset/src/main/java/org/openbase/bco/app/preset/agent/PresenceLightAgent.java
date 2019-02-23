@@ -91,6 +91,6 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
 
     @Override
     protected double getDelayScaleFactor() throws NotAvailableException {
-        return locationRemote.getEmphasisState().getComfort();
+        return locationRemote.getComfortToEconomyRatio();
     }
 }
