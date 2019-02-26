@@ -450,7 +450,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         // init authenticated value
         final PowerState serviceState = PowerState.newBuilder().setValue(State.ON).build();
         final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.POWER_STATE_SERVICE, locationRemote).build();
-        final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, null, null);
+        final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, null);
 
         // perform request
         final AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(locationRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
