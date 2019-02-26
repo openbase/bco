@@ -38,6 +38,7 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -200,18 +201,19 @@ public class SessionManager implements Shutdownable {
         }
     }
 
-    public <VALUE extends Serializable> AuthenticatedValue initializeRequest(final VALUE value, final String authenticationToken, final String authorizationToken) throws CouldNotPerformException {
+    public <VALUE extends Serializable> AuthenticatedValue initializeRequest(final VALUE value, final AuthToken authToken) throws CouldNotPerformException {
         AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
         authenticatedValue.setTicketAuthenticatorWrapper(initializeServiceServerRequest());
         authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(value, sessionKey));
 
-        if (authenticationToken != null && !authenticationToken.isEmpty()) {
-            authenticatedValue.setAuthenticationToken(EncryptionHelper.encryptSymmetric(authenticationToken, sessionKey));
+        if (authToken != null && authToken.hasAuthenticationToken() && !authToken.getAuthenticationToken().isEmpty()) {
+            authenticatedValue.setAuthenticationToken(EncryptionHelper.encryptSymmetric(authToken.getAuthenticationToken(), sessionKey));
         }
 
-        if (authorizationToken != null && !authorizationToken.isEmpty()) {
-            authenticatedValue.setAuthorizationToken(EncryptionHelper.encryptSymmetric(authorizationToken, sessionKey));
+        if (authToken != null && authToken.hasAuthorizationToken() && !authToken.getAuthorizationToken().isEmpty()) {
+            authenticatedValue.setAuthorizationToken(EncryptionHelper.encryptSymmetric(authToken.getAuthorizationToken(), sessionKey));
         }
+
         return authenticatedValue.build();
     }
 
