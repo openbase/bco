@@ -62,8 +62,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -254,7 +253,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // set the power state with the admin user
         Builder builder = ActionDescriptionProcessor.generateActionDescriptionBuilder(PowerState.newBuilder().setValue(State.OFF).build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote);
         builder.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
-        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(builder.build(), null, null);
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(builder.build(), null);
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
         final RemoteAction secondAction = new RemoteAction(authenticatedValueFuture);
         secondAction.waitForExecution();
@@ -269,7 +268,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // cancel running action
         builder = secondAction.getActionDescription().toBuilder().setCancel(true);
-        authenticatedValue = sessionManager.initializeRequest(builder.build(), null, null);
+        authenticatedValue = sessionManager.initializeRequest(builder.build(), null);
         new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager).get();
         // wait until old action is rescheduled to executing
         firstAction.waitForExecution();
@@ -323,7 +322,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(6000));
         primaryActionParameter.setPriority(Priority.HIGH);
         primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
-        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null, null);
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null);
 
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
 
@@ -390,7 +389,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(500));
         primaryActionParameter.setPriority(Priority.HIGH);
         primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
-        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null, null);
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null);
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
 
         final RemoteAction primaryAction = new RemoteAction(authenticatedValueFuture);
@@ -426,5 +425,42 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // cancel remaining action for the next test
         secondaryAction.cancel().get();
         secondaryAction.waitForActionState(ActionState.State.CANCELED);
+    }
+
+    /**
+     * Test action extension..
+     *
+     * @throws Exception if an error occurs.
+     */
+    @Test(timeout = 5000)
+    public void testActionExtension() throws Exception {
+        LOGGER.info("testActionExtension");
+
+        // set the brightness of the colorable light to 90
+        final ActionParameter.Builder actionToExtendParameter = ActionParameter.newBuilder();
+        actionToExtendParameter.setExecutionTimePeriod(TimeUnit.HOURS.toMicros(1));
+        actionToExtendParameter.setPriority(Priority.LOW);
+        actionToExtendParameter.setSchedulable(true);
+        actionToExtendParameter.setInterruptible(true);
+        final RemoteAction actionToExtend = new RemoteAction(colorableLightRemote.setPowerState(State.ON, actionToExtendParameter.build()));
+        actionToExtend.waitForExecution();
+
+        assertEquals(actionToExtend.getId(), colorableLightRemote.getActionList().get(0).getId());
+        assertEquals(ActionState.State.EXECUTING, actionToExtend.getActionState());
+
+        // validate that power value was set
+        assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
+
+        assertEquals("last extension time was not initialized with the action creation time!", actionToExtend.getCreationTime(), actionToExtend.getLastExtensionTime());
+
+        // make sure this works when using quantum computing
+        Thread.sleep(1);
+        actionToExtend.extend();
+        actionToExtend.waitForExtension();
+        assertNotEquals("last extension time was not updated!", actionToExtend.getCreationTime(), actionToExtend.getLastExtensionTime());
+
+        // cancel remaining action for the next test
+        actionToExtend.cancel().get();
+        actionToExtend.waitForActionState(ActionState.State.CANCELED);
     }
 }
