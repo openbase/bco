@@ -46,6 +46,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
@@ -79,7 +80,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     private static ColorableLightRemote colorableLightRemote;
 
     private final SessionManager sessionManager;
-    private String adminToken = null;
+    private AuthToken adminToken = null;
 
     public ColorableLightRemoteWithAuthenticationTest() {
         sessionManager = new SessionManager();
@@ -97,9 +98,9 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         if (adminToken == null) {
             AuthenticationToken build = AuthenticationToken.newBuilder().setUserId(sessionManager.getUserId()).build();
-            AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(build, null, null);
+            AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(build, null);
             Future<AuthenticatedValue> authenticatedValueFuture = Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue);
-            adminToken = new AuthenticatedValueFuture<>(authenticatedValueFuture, String.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager).get();
+            adminToken = AuthToken.newBuilder().setAuthenticationToken(new AuthenticatedValueFuture<>(authenticatedValueFuture, String.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager).get()).build();
         }
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
         colorableLightRemote.setSessionManager(sessionManager);
@@ -109,7 +110,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     public void tearDown() throws CouldNotPerformException, ExecutionException, InterruptedException {
         // cancel all actions as an admin so that they do not interfere with following tests
         for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
-            colorableLightRemote.cancelAction(actionDescription, adminToken, null).get();
+            colorableLightRemote.cancelAction(actionDescription, adminToken).get();
         }
 
         sessionManager.logout();
@@ -241,7 +242,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         sessionManager.registerUser(userUnitConfig.getId(), password, false);
 
         // request authentication and authorization tokens for admin user
-        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationToken.newBuilder().setUserId(sessionManager.getUserId()).build(), null, null);
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationToken.newBuilder().setUserId(sessionManager.getUserId()).build(), null);
         final String authenticationToken = new AuthenticatedValueFuture<>(
                 Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
                 String.class,
@@ -251,12 +252,12 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         AuthorizationToken.PermissionRule.Builder permissionRuleBuilder = authorizationToken.addPermissionRuleBuilder();
         permissionRuleBuilder.setUnitId(colorableLightRemote.getId());
         permissionRuleBuilder.getPermissionBuilder().setAccess(true).setRead(true).setWrite(false);
-        authenticatedValue = sessionManager.initializeRequest(authorizationToken.build(), null, null);
-        final String token = new AuthenticatedValueFuture<>(
+        authenticatedValue = sessionManager.initializeRequest(authorizationToken.build(), null);
+        final AuthToken.Builder token = AuthToken.newBuilder().setAuthorizationToken(new AuthenticatedValueFuture<>(
                 Registries.getUnitRegistry().requestAuthorizationTokenAuthenticated(authenticatedValue),
                 String.class,
                 authenticatedValue.getTicketAuthenticatorWrapper(),
-                sessionManager).get();
+                sessionManager).get());
 
         // login previously registered user
         sessionManager.login(userUnitConfig.getId(), password);
@@ -276,7 +277,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         PowerState.Builder powerState = PowerState.newBuilder().setValue(State.ON);
         ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
 
-        authenticatedValue = sessionManager.initializeRequest(actionDescription, null, token);
+        authenticatedValue = sessionManager.initializeRequest(actionDescription,token.build());
         AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
         Actions.waitForExecution(future);
         assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
@@ -284,7 +285,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         powerState = PowerState.newBuilder().setValue(State.OFF);
         actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
 
-        authenticatedValue = sessionManager.initializeRequest(actionDescription, authenticationToken, token);
+        authenticatedValue = sessionManager.initializeRequest(actionDescription, token.setAuthenticationToken(authenticationToken).build());
         future = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
         Actions.waitForExecution(future);
         assertEquals(State.OFF, colorableLightRemote.getPowerState().getValue());

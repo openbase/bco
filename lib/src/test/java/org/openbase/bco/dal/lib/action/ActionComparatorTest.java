@@ -116,5 +116,10 @@ public class ActionComparatorTest {
         public Future<ActionDescription> execute() {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public Future<ActionDescription> extend() {
+            throw new UnsupportedOperationException();
+        }
     }
 }
