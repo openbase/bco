@@ -354,21 +354,7 @@ public class UnitAllocationPane extends AbstractFXController {
 
         public String getLastExtension() {
             try {
-            final long lastExtension = remoteAction.getLastExtensionTime(TimeUnit.MILLISECONDS);
-                final long days = TimeUnit.MILLISECONDS.toDays(lastExtension);
-                final long hours = TimeUnit.MILLISECONDS.toHours(lastExtension);
-                final long minutes = TimeUnit.MILLISECONDS.toMinutes(lastExtension);
-                final long seconds = TimeUnit.MILLISECONDS.toSeconds(lastExtension);
-
-                if(days > 365) {
-                    return "∞";
-                }
-
-                return String.format("%02d:%02d:%02d",
-                        hours - TimeUnit.DAYS.toHours(days),
-                        minutes - TimeUnit.HOURS.toMinutes(hours),
-                        seconds - TimeUnit.MINUTES.toSeconds(minutes))
-                        + (days > 0 ? " ( + "+ days +" days)" : "");
+                return dateFormat.format(new Date(remoteAction.getLastExtensionTime()));
             } catch (NotAvailableException e) {
                 return "?";
             }
@@ -384,7 +370,7 @@ public class UnitAllocationPane extends AbstractFXController {
 
                 if(days > 365) {
                     return "∞";
-                }
+                } 
 
                 return String.format("%02d:%02d:%02d",
                         hours - TimeUnit.DAYS.toHours(days),
