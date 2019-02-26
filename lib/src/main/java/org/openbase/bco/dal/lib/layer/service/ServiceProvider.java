@@ -78,10 +78,10 @@ public interface ServiceProvider<ST extends Message> {
     default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
         try {
             final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build();
-            if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthenticationToken() || actionParameter.hasAuthorizationToken())) {
+            if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthToken())) {
                 final AuthenticatedValue authenticatedValue;
                 try {
-                    authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
+                    authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, actionParameter.getAuthToken());
                 } catch (CouldNotPerformException ex) {
                     return FutureProcessor.canceledFuture(ActionDescription.class, ex);
                 }
