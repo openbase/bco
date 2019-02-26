@@ -107,7 +107,7 @@ public class ActionImpl implements SchedulableAction {
             // verify and prepare action description
             serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, true);
             // initially set last extension to creation time
-            actionDescriptionBuilder.setLastExtension(actionDescriptionBuilder.getTimestamp());
+            actionDescriptionBuilder.setLastExtensionTimestamp(actionDescriptionBuilder.getTimestamp());
             // set actions description as responsible in service state
             final FieldDescriptor responsibleActionField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             serviceState = serviceState.toBuilder().setField(responsibleActionField, actionDescriptionBuilder.build()).build();
@@ -402,7 +402,7 @@ public class ActionImpl implements SchedulableAction {
     private void updateActionState(ActionState.State state) {
         synchronized (executionSync) {
 
-            // duplicated termination in some state should be ok, but than skip the update.
+            // duplicated termination in same state should be ok, but than skip the update.
             if (getActionDescription().getActionState().getValue() == state && isDone()) {
                 return;
             }
@@ -432,6 +432,12 @@ public class ActionImpl implements SchedulableAction {
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);
             }
+
+            // setup termination time if needed
+            if(isDone()) {
+                actionDescriptionBuilder.setTerminationTimestamp(TimestampProcessor.getCurrentTimestamp());
+            }
+
             executionSync.notifyAll();
         }
 
@@ -442,8 +448,9 @@ public class ActionImpl implements SchedulableAction {
     }
 
     @Override
-    public void extend() {
-        actionDescriptionBuilder.setLastExtension(TimestampProcessor.getCurrentTimestamp());
+    public Future<ActionDescription> extend() {
+        actionDescriptionBuilder.setLastExtensionTimestamp(TimestampProcessor.getCurrentTimestamp());
+        return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
     }
 
     @Override
