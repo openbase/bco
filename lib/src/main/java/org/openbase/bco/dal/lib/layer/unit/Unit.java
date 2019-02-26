@@ -716,7 +716,6 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         }
     }
 
-
     /**
      * This method cancels the given action on remote controller.
      *
@@ -725,6 +724,15 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @return a future object representing the success of the cancellation.
      */
     Future<ActionDescription> cancelAction(final ActionDescription actionDescription);
+
+    /**
+     * This method extends the given action on remote controller.
+     *
+     * @param actionDescription the action to extend.
+     *
+     * @return a future of the extension request.
+     */
+    Future<ActionDescription> extendAction(final ActionDescription actionDescription);
 
     default ServiceProvider getServiceProvider() {
         return this;
