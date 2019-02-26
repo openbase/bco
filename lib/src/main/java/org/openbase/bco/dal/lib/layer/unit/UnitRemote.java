@@ -28,6 +28,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.controller.ConfigurableRemote;
 import org.openbase.type.com.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import rsb.Scope;
 
@@ -105,13 +106,68 @@ public interface UnitRemote<M extends Message> extends Unit<M>, ConfigurableRemo
     boolean isInfrastructure();
 
     /**
-     * Cancel an action with permission given through token. The provided token can be null.
+     * Method applies the action on this instance with permission given through authToken. The provided authToken can be null.
      *
-     * @param actionDescription   the action to cancel.
-     * @param authenticationToken the authentication token.
-     * @param authorizationToken  the authorization token.
+     * @param actionDescription the description of the action.
+     *
+     * @return a future which gives feedback about the action execution state.
+     */
+    Future<ActionDescription> applyAction(final ActionDescription actionDescription, final AuthToken authToken);
+
+    /**
+     * Method applies the action on this instance with permission given through authToken. The provided authToken can be null.
+     *
+     * @param actionDescriptionBuilder the description of the action.
+     *
+     * @return a future which gives feedback about the action execution state.
+     */
+    default Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder, final AuthToken authToken) {
+        return applyAction(actionDescriptionBuilder.build(), authToken);
+    }
+
+    /**
+     * Cancel an action with permission given through authToken. The provided authToken can be null.
+     *
+     * @param actionDescription the action to cancel.
+     * @param authToken         the authToken used to get permission for the cancellation.
      *
      * @return a future of the cancel request.
      */
-    Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticationToken, final String authorizationToken);
+    default Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final AuthToken authToken) {
+        return applyAction(actionDescription.toBuilder().setCancel(true), authToken);
+    }
+
+    /**
+     * Extends an action with permission given through authToken. The provided authToken can be null.
+     *
+     * @param actionDescription the action to extend.
+     * @param authToken         the authToken used to get permission for the extension.
+     *
+     * @return a future of the extension request.
+     */
+    default Future<ActionDescription> extendAction(final ActionDescription actionDescription, final AuthToken authToken) {
+        return applyAction(actionDescription.toBuilder().setExtend(true), authToken);
+    }
+
+    /**
+     * Cancel an action with permission given through authToken. The provided authToken can be null.
+     *
+     * @param actionDescription the action to cancel.
+     *
+     * @return a future of the cancel request.
+     */
+    default Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
+        return cancelAction(actionDescription, null);
+    }
+
+    /**
+     * Extends an action with permission given through authToken. The provided authToken can be null.
+     *
+     * @param actionDescription the action to extend.
+     *
+     * @return a future of the extension request.
+     */
+    default Future<ActionDescription> extendAction(final ActionDescription actionDescription) {
+        return extendAction(actionDescription, null);
+    }
 }
