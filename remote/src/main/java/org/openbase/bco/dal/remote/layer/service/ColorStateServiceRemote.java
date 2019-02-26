@@ -116,7 +116,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
 
     @Override
     public Future<ActionDescription> setNeutralWhite() {
-        List<Future> futureList = new ArrayList<>();
+        List<Future<?>> futureList = new ArrayList<>();
         for(ColorStateOperationService colorStateOperationService : getServices()) {
             futureList.add(colorStateOperationService.setNeutralWhite());
         }
