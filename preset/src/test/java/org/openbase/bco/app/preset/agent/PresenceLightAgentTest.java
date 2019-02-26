@@ -26,6 +26,7 @@ import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.MotionDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -36,7 +37,9 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
@@ -47,6 +50,9 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import org.openbase.type.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -76,13 +82,9 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
     public void testPreseceLightAgent() throws Exception {
         System.out.println("testPreseceLightAgent");
 
-        // It can take some time until the execute() method of the agent has finished
-        // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
-        Registries.waitForData();
-
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT,true, Units.COLORABLE_LIGHT).get(0);
-        MotionDetectorRemote motionDetectorRemote = locationRemote.getUnits(UnitType.MOTION_DETECTOR,true, Units.MOTION_DETECTOR).get(0);
+        ColorableLightRemote colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT).get(0);
+        MotionDetectorRemote motionDetectorRemote = locationRemote.getUnits(UnitType.MOTION_DETECTOR, true, Units.MOTION_DETECTOR).get(0);
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
 
         UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter<>(colorableLightRemote);
@@ -93,10 +95,10 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         locationRemote.waitForData();
         motionDetectorRemote.waitForData();
 
-        // create intial values with no_motion and lights off
+        // create initial values with no_motion and lights off
         motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
-        locationRemote.setPowerState(OFF).get();
+        final ActionDescription initialControl = locationRemote.setPowerState(OFF).get();
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
@@ -109,24 +111,40 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.PRESENT);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
-        //locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
         assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to MOTION", MotionState.State.MOTION, motionDetectorRemote.getMotionState().getValue());
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to PRESENT.", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
-        //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
+        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
 
-        // test if the lights stay on on no motion
+        for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
+            System.out.println("action: " + actionDescription.getId());
+            System.out.println("action: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
+        }
+
+        // test if the lights switch off after no motion
         motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.ABSENT);
-        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
-        //locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
         assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to NO_MOTION", MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue());
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.", PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has changes without intention", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
-        //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has changes without intention", PowerState.State.ON, locationRemote.getPowerState().getValue());
+        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
+        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, locationRemote.getPowerState().getValue());
+
+        // cancel initial control
+        locationRemote.cancelAction(initialControl).get();
+
+        // test if all task are done.
+        List<RemoteAction> actionList = new ArrayList<>();
+        for (ActionDescription actionDescription : colorableLightRemote.requestData().get().getActionList()) {
+            final RemoteAction remoteAction = new RemoteAction(actionDescription);
+            remoteAction.waitForSubmission();
+            assertEquals("There is still the running Action["+MultiLanguageTextProcessor.getBestMatch(remoteAction.getActionDescription().getDescription(), "?")+"] found which should actually be terminated!", true, remoteAction.isDone());
+        }
     }
 
     @Override
