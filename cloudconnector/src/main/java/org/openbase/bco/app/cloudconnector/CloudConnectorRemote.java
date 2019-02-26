@@ -236,7 +236,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
 
             for (PermissionRule permissionRule : authorizationToken.getPermissionRuleList()) {
                 UnitConfig unitConfigById = Registries.getUnitRegistry().getUnitConfigById(permissionRule.getUnitId());
-                System.out.println(LabelProcessor.getBestMatch(unitConfigById.getLabel()) + " - " + unitConfigById.getAlias(0) + " [" + permissionRule.getPermission().getRead() + ", " + permissionRule.getPermission().getWrite() + ". " + permissionRule.getPermission().getWrite() + "]");
+                //System.out.println(LabelProcessor.getBestMatch(unitConfigById.getLabel()) + " - " + unitConfigById.getAlias(0) + " [" + permissionRule.getPermission().getRead() + ", " + permissionRule.getPermission().getWrite() + ". " + permissionRule.getPermission().getWrite() + "]");
             }
             // request such a token from the unit registry
             return Registries.getUnitRegistry().requestAuthorizationToken(authorizationToken.build()).get();

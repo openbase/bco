@@ -51,11 +51,24 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
 
     /**
      * Constructor of this class.
+     * <p>
+     * Note: the default min delay is 0
      *
      * @param delayMode mode defines which trigger event is delayed.
-     * @param minDelay the minimal time to delay.
-     * @param maxDelay the maximal time to delay.
+     * @param maxDelay  the maximal time to delay.
      *
+     * @throws InstantiationException is throw if the instance could not be created.
+     */
+    public AbstractDelayedTriggerableAgent(final DelayMode delayMode, final long maxDelay) throws InstantiationException {
+        this(delayMode, 0, maxDelay);
+    }
+
+    /**
+     * Constructor of this class.
+     *
+     * @param delayMode mode defines which trigger event is delayed.
+     * @param minDelay  the minimal time to delay.
+     * @param maxDelay  the maximal time to delay.
      *
      * @throws InstantiationException is throw if the instance could not be created.
      */
@@ -85,7 +98,7 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
      * Scale the delay related to the delay scale.
      * The min value is always guaranteed while the delta between max and min timeout is scaled by the timescale.
      * Method can be overloaded to change its default behaviour.
-     *
+     * <p>
      * Note: Be aware that the default implementation returns 0 during junit tests and the average timeout in case the scale value is not available.
      *
      * @return the computed timeout in ms.
@@ -131,22 +144,23 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
 
     /**
      * Depending on the chosen delay mode the activation or deactivation is delayed before this method forwards the updated state.
-     *
+     * <p>
      * Node: the time to delay relative to the current timeout scale.
      *
      * @param activationState the forwarded or delayed state.
+     *
      * @throws CouldNotPerformException can be used to inform that the triggered action has failed.
-     * @throws ExecutionException can be used to inform that the triggered action has failed.
-     * @throws InterruptedException can be used to forward an external thread interruption.
+     * @throws ExecutionException       can be used to inform that the triggered action has failed.
+     * @throws InterruptedException     can be used to forward an external thread interruption.
      */
     abstract protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException;
 
     /**
      * Method should return a normalized scale factor between 0.0 - 1.0
      * which is used to dynamically scale the delay.
-     *
+     * <p>
      * Note: Agents can use there emphasis category values of its parent location to scale the delay.
-     *       Therefor no individual agent configuration is needed but the behaviour of agents can still be configured via the user emphasis.
+     * Therefor no individual agent configuration is needed but the behaviour of agents can still be configured via the user emphasis.
      */
     abstract protected double getDelayScaleFactor() throws NotAvailableException;
 }

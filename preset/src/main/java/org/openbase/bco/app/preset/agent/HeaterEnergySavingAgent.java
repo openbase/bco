@@ -88,7 +88,7 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
                 break;
             case DEACTIVE:
                 if(taskActionDescription != null) {
-                    taskActionDescription = locationRemote.cancelAction(taskActionDescription, getDefaultActionParameter().getAuthenticationToken(), null).get();
+                    taskActionDescription = locationRemote.cancelAction(taskActionDescription, getToken()).get();
                 }
                 break;
         }

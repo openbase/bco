@@ -121,7 +121,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
             final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(cloudConnectorUser.getId()).build();
             final SessionManager sessionManager = new SessionManager();
             sessionManager.login(cloudConnectorUser.getId());
-            final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null, null);
+            final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null);
             final String token = new AuthenticatedValueFuture<>(
                     Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
                     String.class,

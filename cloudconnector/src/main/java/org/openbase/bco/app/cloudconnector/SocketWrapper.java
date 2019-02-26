@@ -50,6 +50,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -369,7 +370,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 final int currentRequestNumber = requestNumber;
                 // Note: this is a hack because google will not update locations, this the unit is disabled when moved to a new location and then again enabled
                 // this triggers two synchronizations with google where the unit is removed and then added again which causes the location to update
-                AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
                 LOGGER.debug("Update unit location and set disabled");
                 Future<UnitConfig> updateFuture = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue), UnitConfig.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
                 try {
@@ -405,7 +406,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 final UnitConfig.Builder currentUnit = unitConfigFuture.get().toBuilder();
                 LOGGER.debug("Disabled and relocated unit. Now enable again");
                 currentUnit.getEnablingStateBuilder().setValue(State.ENABLED);
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
                 Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue).get();
                 LOGGER.debug("RequestCounters {}, {}", requestNumber, currentRequestNumber);
                 if (requestNumber < currentRequestNumber + 2) {
@@ -497,7 +498,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             LabelProcessor.replace(currentUnit.getLabelBuilder(), currentLabel, newLabel);
             response = currentLabel + " wurde zu " + newLabel + " umbenannt.";
             try {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(currentUnit.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
                 Registries.getUnitRegistry().updateUnitConfigAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
             } catch (ExecutionException ex) {
                 if (ExceptionProcessor.getInitialCause(ex) instanceof PermissionDeniedException) {
@@ -534,7 +535,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
 
             final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.USER_TRANSIT_STATE_SERVICE, userRemote).build();
-            final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+            final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
             userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
             respond(acknowledgement, "Alles klar");
@@ -656,7 +657,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             if (localPositionState != null) {
                 actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, userRemote).build();
-                authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
                 try {
                     userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
@@ -669,7 +670,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote).build();
-            authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+            authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
             try {
                 userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
@@ -773,7 +774,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             if (builder.getActivityIdCount() != initialCount) {
                 final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote).build();
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
                 userRemote.applyActionAuthenticated(authenticatedValue).get(2, TimeUnit.SECONDS);
             }
 
@@ -866,7 +867,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             try {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(sceneUnitConfig.build(), tokenStore.getCloudConnectorToken(), tokenStore.getBCOToken(userId));
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(sceneUnitConfig.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
                 UnitConfig unitConfig = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().registerUnitConfigAuthenticated(authenticatedValue), UnitConfig.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance()).get(5, TimeUnit.SECONDS);
                 try {
                     label = LabelProcessor.getLabelByLanguage(Locale.GERMAN, unitConfig.getLabel());

@@ -22,6 +22,8 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import org.openbase.bco.dal.control.layer.unit.AbstractAuthorizedBaseUnitController;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
@@ -40,6 +42,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,9 +56,10 @@ public class AbsenceEnergySavingAgent extends AbstractDelayedTriggerableAgent {
     public static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(30);
 
     private LocationRemote locationRemote;
+    private RemoteAction lastAction;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
-        super(DelayMode.DELAY_ACTIVATION, 0, MAX_TIMEOUT);
+        super(DelayMode.DELAY_ACTIVATION, MAX_TIMEOUT);
     }
 
     @Override
@@ -69,19 +73,15 @@ public class AbsenceEnergySavingAgent extends AbstractDelayedTriggerableAgent {
         }
     }
 
-    private ActionDescription taskActionDescription;
-
     @Override
     protected void delayedTrigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.OFF)).setExecutionTimePeriod(Long.MAX_VALUE)).get();
-                logger.warn("AbsenceEnergySavingAgent created action with id {}", taskActionDescription.getId());
+                lastAction = observe(locationRemote.setPowerState(State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
             case DEACTIVE:
-                if (taskActionDescription != null) {
-                    taskActionDescription = locationRemote.cancelAction(taskActionDescription, getDefaultActionParameter().getAuthenticationToken(), null).get();
-                    logger.warn("AbsenceEnergySavingAgent cancel action {}", taskActionDescription.getId());
+                if (lastAction != null && !lastAction.isDone()) {
+                    lastAction.cancel();
                 }
                 break;
         }

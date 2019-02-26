@@ -115,6 +115,11 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
+    public Future<ActionDescription> extendAction(ActionDescription actionDescription) {
+        return appRemote.extendAction(actionDescription);
+    }
+
+    @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
         return appRemote.restoreSnapshotAuthenticated(authenticatedSnapshot);
     }

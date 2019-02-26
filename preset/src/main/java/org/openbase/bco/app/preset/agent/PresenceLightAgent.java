@@ -22,6 +22,7 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
@@ -30,11 +31,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -54,10 +52,10 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
     public static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(30);
 
     private LocationRemote locationRemote;
-    private final PresenceState.State triggerState = PresenceState.State.PRESENT;
+    private RemoteAction lastAction;
 
     public PresenceLightAgent() throws InstantiationException {
-        super(DelayMode.DELAY_DEACTIVATION, 0, MAX_TIMEOUT);
+        super(DelayMode.DELAY_DEACTIVATION, MAX_TIMEOUT);
     }
 
     @Override
@@ -65,25 +63,21 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
+            registerTrigger(new GenericBCOTrigger(locationRemote, PresenceState.State.PRESENT, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    private ActionDescription taskActionDescription;
-
     @Override
     protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                taskActionDescription = locationRemote.applyAction(generateAction(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(State.ON)).setExecutionTimePeriod(Long.MAX_VALUE)).get();
-                logger.warn("PresenceLightAgent created action with id {}", taskActionDescription.getId());
+                lastAction = observe(locationRemote.setPowerState(State.ON, UnitType.LIGHT, getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
             case DEACTIVE:
-                if (taskActionDescription != null) {
-                    logger.warn("PresenceLightAgent cancel action {}", taskActionDescription.getId());
-                    taskActionDescription = locationRemote.cancelAction(taskActionDescription, getDefaultActionParameter().getAuthenticationToken(), null).get();
+                if (lastAction != null && !lastAction.isDone()) {
+                    lastAction.cancel();
                 }
                 break;
         }
