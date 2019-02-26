@@ -572,7 +572,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     public <B> Future<B> requestData(final B builder) {
         try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
-            final List<Future> futureData = new ArrayList<>();
+            final List<Future<?>> futureData = new ArrayList<>();
 
             for (final Remote<?> remote : serviceRemoteMap.values()) {
                 futureData.add(remote.requestData());
