@@ -241,14 +241,14 @@ public class SceneRemoteTest extends AbstractBCOTest {
             locationRemote.waitForData();
             locationRemote.setPowerState(POWER_ON).get();
             locationRemote.requestData().get();
-            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
+            sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             label = SCENE_ROOT_LOCATION_ALL_DEVICES_OFF;
             locationRemote.setPowerState(POWER_OFF).get();
             locationRemote.requestData().get();
-            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
+            sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
@@ -445,7 +445,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             Actions.waitForExecution(sceneRemoteDevicesOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
                 Thread.sleep(100);
-                locationRemote.requestData();
+                locationRemote.requestData().get();
             }
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
@@ -459,7 +459,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             while (locationRemote.getPowerState().getValue() != POWER_OFF) {
                 System.out.println("location was not yet switched " + POWER_OFF);
                 Thread.sleep(100);
-                locationRemote.requestData();
+                locationRemote.requestData().get();
             }
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
