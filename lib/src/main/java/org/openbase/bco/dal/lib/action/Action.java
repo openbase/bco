@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.action;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -46,9 +47,15 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * The max execution time of an action until the action finishes if it was never extended.
      * The time unit is milliseconds.
      */
+    long MAX_EXECUTION_TIME_PERIOD = TimeUnit.MINUTES.toMillis(30);
 
-    long ACTION_MAX_EXECUTION_TIME_PERIOD = TimeUnit.MINUTES.toMillis(15);
-
+    /**
+     * Returns the id of this action.
+     *
+     * @return the identifier as string.
+     *
+     * @throws NotAvailableException is thrown when the action description is not yet available.
+     */
     @Override
     default String getId() throws NotAvailableException {
         return getActionDescription().getId();
@@ -80,32 +87,53 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
 
     /**
      * Method return the timestamp of the actions last extension.
-     * If the action execution period is larger than {@code Action.ACTION_MAX_EXECUTION_TIME_PERIOD},
+     * If the action execution period is larger than {@code Action.MAX_EXECUTION_TIME_PERIOD},
      * and it was never extended (indicated by the last extention value), than the action will be finished.
      *
-     * @param timeUnit defines the time unit of the returned last extension time to use.
      * @return the last extension of this action.
      *
      * @throws NotAvailableException is thrown if the last extension can not be accessed. This can for example happen,
      *                               if a remote action is not yet fully synchronized and the related action description is not available.
      */
-    default long getLastExtensionTime(final TimeUnit timeUnit) throws NotAvailableException {
-        return timeUnit.convert(getActionDescription().getLastExtension().getTime(), TimeUnit.MICROSECONDS);
+    default long getLastExtensionTime() throws NotAvailableException {
+        return TimestampJavaTimeTransform.transform(getActionDescription().getLastExtensionTimestamp());
     }
 
     /**
      * Time passed since this action was initialized.
      *
      * @return time in milliseconds.
+     *
+     * @throws NotAvailableException is thrown when the action state can not be observed yet.
      */
     default long getLifetime() throws NotAvailableException {
+
+        // when done compute time passed between creation and termination.
+        if (isDone()) {
+            return getTerminationTime() - getCreationTime();
+        }
+
+        // otherwise compute time passed since this action was initialized.
         return Math.min(System.currentTimeMillis() - getCreationTime(), getExecutionTimePeriod(TimeUnit.MILLISECONDS));
+    }
+
+    /**
+     * The timestamp of the termination of this action.
+     *
+     * @return time in milliseconds.
+     *
+     * @throws NotAvailableException is thrown when the action was not yet terminated or its state can not be observed.
+     */
+    default long getTerminationTime() throws NotAvailableException {
+        return TimestampJavaTimeTransform.transform(getActionDescription().getTerminationTimestamp());
     }
 
     /**
      * Time left until the execution time has passed and the action expires.
      *
      * @return time in milliseconds.
+     *
+     * @throws NotAvailableException is thrown when the action state can not be observed yet.
      */
     default long getExecutionTime() throws NotAvailableException {
         return Math.max(getExecutionTimePeriod(TimeUnit.MILLISECONDS) - getLifetime(), 0);
@@ -118,7 +146,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      */
     default boolean isExpired() {
         try {
-            return getExecutionTime() == 0 || (System.currentTimeMillis() - getLastExtensionTime(TimeUnit.MILLISECONDS) > ACTION_MAX_EXECUTION_TIME_PERIOD);
+            return getExecutionTime() == 0 || (System.currentTimeMillis() - getLastExtensionTime() > MAX_EXECUTION_TIME_PERIOD);
         } catch (NotAvailableException ex) {
             return false;
         }
@@ -128,6 +156,8 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * Time when this action was created.
      *
      * @return time in milliseconds.
+     *
+     * @throws NotAvailableException is thrown when the action state can not be observed yet.
      */
     default long getCreationTime() throws NotAvailableException {
         return TimeUnit.MICROSECONDS.toMillis(getActionDescription().getTimestamp().getTime());
@@ -261,6 +291,13 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
         }
         return emphasisValue;
     }
+
+    /**
+     * Extend this action to run at most {@link Action#MAX_EXECUTION_TIME_PERIOD} milli seconds longer.
+     *
+     * @return the updated action description when the future was completed.
+     */
+    Future<ActionDescription> extend();
 
     /**
      * Method return a string representation of the given action instance.
