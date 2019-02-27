@@ -33,6 +33,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -149,6 +150,11 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
 
     @Override
     public boolean isServiceAvailable(ServiceType serviceType) {
+
+        if (serviceType == ServiceType.UNKNOWN) {
+            return false;
+        }
+
         try {
             return serviceRemoteManager.isServiceAvailable(serviceType) || !isServiceAggregated(serviceType);
         } catch (NotAvailableException e) {
@@ -179,6 +185,10 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         try {
+            if (actionDescription.getServiceStateDescription().getServiceType() == ServiceType.UNKNOWN) {
+                throw new InvalidStateException("Service type of applied action is unknown!");
+            }
+
             if (!isServiceAvailable(actionDescription.getServiceStateDescription().getServiceType())) {
                 throw new NotAvailableException("ServiceType[" + actionDescription.getServiceStateDescription().getServiceType().name() + "] is not available for " + this);
             }
@@ -187,6 +197,12 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
                 return super.applyAction(actionDescription);
             }
 
+            // skip verification when action is not new
+            if (actionDescription.getCancel() || actionDescription.getExtend()) {
+                return serviceRemoteManager.applyAction(actionDescription);
+            }
+
+            // prepare and validate new action
             final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
             ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
             return serviceRemoteManager.applyAction(actionDescriptionBuilder.build());
@@ -197,6 +213,10 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
 
     @Override
     protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
+        if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() == ServiceType.UNKNOWN) {
+            throw new InvalidStateException("Service type of applied action is unknown!");
+        }
+
         if (!isServiceAvailable(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
             throw new NotAvailableException("ServiceType[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for " + this);
         }
@@ -205,7 +225,11 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
             return super.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
         }
 
-        ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
+        // only perform validation if action is new
+        if (!(actionDescriptionBuilder.getCancel() || actionDescriptionBuilder.getExtend())) {
+            ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
+        }
+
         final byte[] sessionKey = (authenticationBaseData != null) ? authenticationBaseData.getSessionKey() : null;
         serviceRemoteManager.applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey).get();
         return actionDescriptionBuilder.build();
