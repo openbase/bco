@@ -55,6 +55,7 @@ import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -548,6 +549,12 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      */
     @Override
     public Future<ActionDescription> applyAction(ActionDescription actionDescription) {
+
+        // validate action
+        if((actionDescription.getCancel() || actionDescription.getExtend()) != actionDescription.hasId()) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException("New actions should not offer an id while action modification have to which is not the case!"));
+        }
+
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), authenticatedValue -> applyActionAuthenticated(authenticatedValue));
     }
 
@@ -565,8 +572,8 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
             if (actionDescriptionBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
                 actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
             }
-            if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthenticationToken() || actionParameter.hasAuthorizationToken())) {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescriptionBuilder.build(), actionParameter.getAuthenticationToken(), actionParameter.getAuthorizationToken());
+            if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthToken())) {
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescriptionBuilder.build(), actionParameter.getAuthToken());
                 final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
                 return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
             } else {
@@ -577,39 +584,15 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param actionDescription {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
     @Override
-    public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
-        return applyAction(actionDescription.toBuilder().setCancel(true));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param actionDescription   {@inheritDoc}
-     * @param authenticationToken {@inheritDoc}
-     * @param authorizationToken  {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticationToken, final String authorizationToken) {
+    public Future<ActionDescription> applyAction(final ActionDescription actionDescription, final AuthToken authToken) {
         try {
-            final Builder builder = actionDescription.toBuilder().setCancel(true);
-            ActionDescriptionProcessor.detectActionInitiatorId(builder.getActionInitiatorBuilder(), true);
-
-            if (SessionManager.getInstance().isLoggedIn() && (authenticationToken != null || authorizationToken != null)) {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(builder.build(), authenticationToken, authorizationToken);
+            if (SessionManager.getInstance().isLoggedIn() && (authToken != null)) {
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, authToken);
                 final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
                 return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
             } else {
-                return applyAction(builder.build());
+                return applyAction(actionDescription);
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
