@@ -32,6 +32,7 @@ import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionIdGenerator;
 import org.openbase.bco.dal.lib.layer.service.*;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -52,6 +53,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -79,6 +81,8 @@ import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.*;
 public abstract class AbstractServiceRemote<S extends Service, ST extends Message> implements ServiceRemote<S, ST> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    public static final ActionIdGenerator ACTION_ID_GENERATOR = new ActionIdGenerator();
 
     private boolean active;
     private boolean filterInfrastructureUnits;
@@ -628,25 +632,51 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            if (!actionDescriptionBuilder.getCancel()) {
-                actionDescriptionBuilder.setId(UUID.randomUUID().toString());
+            final boolean newSubmission = !actionDescriptionBuilder.getCancel() && !actionDescriptionBuilder.getExtend();
+
+            // only setup id of this intermediary action if this is an new submission
+            if (newSubmission) {
+
+                // validate that the id in not already set
+                if (!actionDescriptionBuilder.getId().isEmpty()) {
+                    // todo release: pleminoq why the id is not empty, is this a feature?
+                    //throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
+                }
+
+                // setup id for this intermediary action by overwriting the id of the cause unit.
+                actionDescriptionBuilder.setId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
             }
 
+            // generate and apply impact actions
             final List<Future<ActionDescription>> actionTaskList = new ArrayList<>();
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
-                final Builder builder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
-                builder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
+                final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
 
-                // update action cause
-                builder.addActionCause(ActionDescriptionProcessor.generateActionReference(actionDescriptionBuilder));
+                unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
+
+                // update action cause if this is a new submission
+                if (newSubmission) {
+                    ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
+                }
 
                 // apply action on remote
-                actionTaskList.add(unitRemote.applyAction(builder.build()));
+                actionTaskList.add(unitRemote.applyAction(unitActionDescriptionBuilder));
             }
+
+            // mark this actions as intermediary after impacts are prepared
             actionDescriptionBuilder.setIntermediary(true);
+
+            // collect results and setup action impact list of intermediary action
             return FutureProcessor.allOf(input -> {
+
+                // we are done if this is not a new action
+                if (!newSubmission) {
+                    return actionDescriptionBuilder.build();
+                }
+
                 for (final Future<ActionDescription> actionTask : input) {
                     try {
+                        // todo release: clarify which strategy to use (see auth version todo below)
                         ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, actionTask.get());
                     } catch (ExecutionException ex) {
                         throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
@@ -712,23 +742,37 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      * action description builder is updated properly and that all internal actions finished successfully.
      */
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final byte[] sessionKey) {
-
         try {
             if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            if (!actionDescriptionBuilder.getCancel()) {
-                actionDescriptionBuilder.setId(UUID.randomUUID().toString());
-            }
-            final List<Future<AuthenticatedValue>> actionTaskList = new ArrayList<>();
+            final boolean newSubmission = !actionDescriptionBuilder.getCancel() && !actionDescriptionBuilder.getExtend();
 
+            // only setup id of this intermediary action if this is an new submission
+            if (newSubmission) {
+
+                // validate that the id in not already set
+                if (!actionDescriptionBuilder.getId().isEmpty()) {
+                    // todo release: pleminoq why the id is not empty, is this a feature?
+                    //throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
+                }
+
+                // setup id for this intermediary action by overwriting the id of the cause unit.
+                actionDescriptionBuilder.setId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
+            }
+
+            // generate and apply impact actions
+            final List<Future<AuthenticatedValue>> actionTaskList = new ArrayList<>();
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
                 final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
+
                 unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
-                // update action cause
-                ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
+                // update action cause if this is a new submission
+                if (newSubmission) {
+                    ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
+                }
 
                 final AuthenticatedValue authValue;
                 // encrypt action description again
@@ -742,8 +786,19 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // apply action on remote
                 actionTaskList.add(unitRemote.applyActionAuthenticated(authValue));
             }
+
+            // mark this actions as intermediary after impacts are prepared
             actionDescriptionBuilder.setIntermediary(true);
+
+            // collect results and setup action impact list of intermediary action
             return FutureProcessor.allOf(input -> {
+
+                // we are done if this is not a new action
+                if (!newSubmission) {
+                    return authenticatedValue;
+                }
+
+                // generate impact list set store it into the authenticated value
                 for (final Future<AuthenticatedValue> future : input) {
                     try {
                         final AuthenticatedValue unitAuthenticatedValue = future.get();
@@ -756,7 +811,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                             unitActionResponse = ActionDescription.parseFrom(unitAuthenticatedValue.getValue());
                         }
                         // add resulting actions as impacts
-                        actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(unitActionResponse));
+                        // todo release: clarify which strategy to use
+                        //actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(unitActionResponse));
+                        ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, unitActionResponse);
+
                     } catch (ExecutionException ex) {
                         throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                     } catch (InvalidProtocolBufferException ex) {
@@ -769,7 +827,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 } else {
                     responseAuthValue.setValue(actionDescriptionBuilder.build().toByteString());
                 }
-                return authenticatedValue;
+                return responseAuthValue.build();
             }, actionTaskList);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
