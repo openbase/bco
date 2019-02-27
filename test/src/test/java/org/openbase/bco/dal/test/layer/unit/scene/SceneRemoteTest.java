@@ -260,7 +260,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(POWER_STATE_ON));
             serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
-            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
+            sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(serviceStateDescriptionList).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
@@ -272,7 +272,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(POWER_STATE_OFF));
             serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
-            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
+            sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(serviceStateDescriptionList).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
@@ -513,27 +513,27 @@ public class SceneRemoteTest extends AbstractBCOTest {
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
                 System.out.println("location was not yet switched " + POWER_ON);
                 Thread.sleep(100);
-                locationRemote.requestData();
+                locationRemote.requestData().get();
             }
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
             assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
             assertEquals("Location on scene is not active", State.ACTIVE, sceneRemoteOn.getActivationState().getValue());
-            assertEquals("Location off scene is not deactive", State.INACTIVE, sceneRemoteOff.getActivationState().getValue());
+            assertEquals("Location off scene is not inactive", State.INACTIVE, sceneRemoteOff.getActivationState().getValue());
 
             Thread.sleep(100);
             Actions.waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
             while (locationRemote.getPowerState().getValue() != POWER_OFF) {
                 System.out.println("location was not yet switched " + POWER_OFF);
                 Thread.sleep(100);
-                locationRemote.requestData();
+                locationRemote.requestData().get();
             }
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
             assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
-            assertEquals("Location on scene is not deactive", State.INACTIVE, sceneRemoteOn.getActivationState().getValue());
+            assertEquals("Location on scene is not inactive", State.INACTIVE, sceneRemoteOn.getActivationState().getValue());
             assertEquals("Location off scene is not active", State.ACTIVE, sceneRemoteOff.getActivationState().getValue());
 
             System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
