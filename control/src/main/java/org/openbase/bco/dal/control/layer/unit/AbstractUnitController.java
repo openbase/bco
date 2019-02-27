@@ -57,6 +57,7 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.BuilderSyncSetup;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
@@ -134,6 +135,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private static final String LOCK_CONSUMER_INDEX_LOOKUP = AbstractUnitController.class.getSimpleName() + ".getSchedulingIndex()";
     private static final String LOCK_CONSUMER_CANCEL_ACTION = AbstractUnitController.class.getSimpleName() + ".cancelAction(..)";
     private static final String LOCK_CONSUMER_EXTEND_ACTION = AbstractUnitController.class.getSimpleName() + ".extendAction(..)";
+    private static final String LOCK_CONSUMER_SYNC_ACTION_LIST = AbstractUnitController.class.getSimpleName() + ".syncActionList(..)";
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
@@ -538,8 +540,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             } else if (!builder.getServiceStateDescriptionBuilder().getUnitId().equals(getId())) {
                 logger.warn("Action is not applied to its correct target unit but will be forwarded...");
                 try {
+
+                    // todo release: is this a security risk?
                     Units.getUnit(builder.getServiceStateDescriptionBuilder().getUnitId(), false).applyAction(actionParameter);
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Action forwarding failed!", ex);
                 }
@@ -565,6 +570,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         try {
+            // todo release: is this really secure? this method can be called via rsb and no further authorization checks are performed.
             final ActionImpl action = new ActionImpl(actionDescription, this);
             try {
                 if (JPService.getProperty(JPUnitAllocation.class).getValue()) {
@@ -592,7 +598,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
-    private SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
+    protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
         builderSetup.lockWrite(lockConsumer);
         try {
             // lookup action to cancel
@@ -609,7 +615,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
                 }
             }
-
             throw new NotAvailableException("Action[" + actionId + "]");
         } finally {
             builderSetup.unlockWrite(false);
@@ -654,9 +659,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     return actionReference.getActionInitiator().getInitiatorId();
                 }
             }, ", ");
-            final String description = MultiLanguageTextProcessor.getBestMatch(action.getActionDescription().getDescription(), action.getActionDescription().getId());
 
-            throw new PermissionDeniedException("User [" + cancelingInstance + "] is not allowed to cancel action [" + description + "] owned by " + ownerInstanceList);
+            final String description = MultiLanguageTextProcessor.getBestMatch(action.getActionDescription().getDescription(), action.getActionDescription().getId());
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new PermissionDeniedException("User [" + cancelingInstance + "] is not allowed to modify action [" + description + "] owned by " + ownerInstanceList), logger, LogLevel.WARN);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not validate permissions for user [" + userId + "]", ex);
         }
@@ -668,6 +673,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     protected Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticatedId) {
+        logger.trace("cancel action " + actionDescription.getId() + " on controller with " + authenticatedId);
         try {
             builderSetup.lockWrite(LOCK_CONSUMER_CANCEL_ACTION);
             try {
@@ -686,24 +692,34 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
+    @Override
+    public Future<ActionDescription> extendAction(final ActionDescription actionDescription) {
+        return extendAction(actionDescription, "");
+    }
+
     protected Future<ActionDescription> extendAction(final ActionDescription actionDescription, final String authenticatedId) {
         try {
             builderSetup.lockWrite(LOCK_CONSUMER_EXTEND_ACTION);
             try {
                 // retrieve action
                 final SchedulableAction actionToExtend = getActionById(actionDescription.getId(), LOCK_CONSUMER_EXTEND_ACTION);
+
                 // validate permissions
                 validateActionPermissions(authenticatedId, actionToExtend);
+
                 // extend action.
                 actionToExtend.extend();
 
                 //TODO: for performance reasons it could be nice to update the schedulingTimeout here
                 // because now rescheduling is guaranteed to be done every 15 minutes...
 
+                // sync update
+                syncActionList(builderSetup.getBuilder());
+
                 // return updated action description
                 return FutureProcessor.completedFuture(actionToExtend.getActionDescription());
             } finally {
-                // unlock and notify updated action list
+                // unlock and notify
                 builderSetup.unlockWrite(true);
             }
         } catch (CouldNotPerformException ex) {
@@ -883,7 +899,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 try {
                     // setup timer only if action needs to be removed or the current action provides a limited execution time.
                     if (atLeastOneDoneActionOnList || currentAction.getExecutionTimePeriod(TimeUnit.MICROSECONDS) != 0) {
-                        final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : Math.min(nextAction.getExecutionTime(), Action.ACTION_MAX_EXECUTION_TIME_PERIOD);
+                        final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : Math.min(nextAction.getExecutionTime(), Action.MAX_EXECUTION_TIME_PERIOD);
                         logger.debug("Reschedule scheduled in:" + rescheduleTimeout);
                         // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
                         // this should not cause any latency because new incoming actions are scheduled anyway.
@@ -917,13 +933,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     private void notifyScheduledActionListUnlocked() {
         try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
-            final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
-            // get actions descriptions for all actions, repeat until no more notifications where skipped
-            dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
-            for (final Action action : scheduledActionList) {
-                dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, action.getActionDescription());
-            }
 
+            // sync
+            syncActionList(dataBuilder.getInternalBuilder());
+
+            // release lock
             if (actionListNotificationLock.isWriteLockedByCurrentThread()) {
                 actionListNotificationLock.writeLock().unlock();
             }
@@ -945,10 +959,31 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         notifyScheduledActionListUnlocked();
     }
 
+    /**
+     * Syncs the action list into the given {@code dataBuilder}.
+     *
+     * @param dataBuilder used to synchronize with.
+     *
+     * @throws CouldNotPerformException is thrown if the sync failed.
+     */
+    private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
+        try {
+            final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder, Action.TYPE_FIELD_NAME_ACTION);
+            // get actions descriptions for all actions and sync to data builder...
+            dataBuilder.clearField(actionFieldDescriptor);
+            for (final Action action : scheduledActionList) {
+                dataBuilder.addRepeatedField(actionFieldDescriptor, action.getActionDescription());
+            }
+        } catch (final CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not sync action list!", ex);
+        }
+    }
+
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
             try {
+
                 final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
                 final Builder actionDescriptionBuilder = actionDescription.toBuilder();
 
@@ -967,8 +1002,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 if (authPair.getAuthorizedBy() != null) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
                 }
-
-
                 return internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -980,8 +1013,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
-        if (actionDescriptionBuilder.hasId() && !actionDescriptionBuilder.getId().isEmpty() && actionDescriptionBuilder.getCancel()) {
+        if (actionDescriptionBuilder.getCancel()) {
             try {
+                if (!actionDescriptionBuilder.hasId() && actionDescriptionBuilder.getId().isEmpty()) {
+                    throw new NotAvailableException("ActionId");
+                }
                 return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy()).get();
             } catch (ExecutionException ex) {
                 throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
@@ -989,14 +1025,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
 
         // if action description has last extension and an id find it and extend it
-        if (actionDescriptionBuilder.hasLastExtension() && !actionDescriptionBuilder.getId().isEmpty()) {
+        if (actionDescriptionBuilder.getExtend()) {
             try {
+                if (!actionDescriptionBuilder.hasId() && actionDescriptionBuilder.getId().isEmpty()) {
+                    throw new NotAvailableException("ActionId");
+                }
                 return extendAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy()).get();
             } catch (ExecutionException ex) {
                 throw new CouldNotPerformException("Could not extend authenticated action!", ex);
             }
         }
-
         return applyAction(actionDescriptionBuilder.build()).get();
     }
 
@@ -1065,8 +1103,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public void applyDataUpdate(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException {
-        logger.trace("Apply service[" + serviceType + "] update[" + serviceState + "] for " + this + ".");
-
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
 
@@ -1138,6 +1174,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         }
                     }
 
+                    // todo release: why in the state always applied even when reschedule is initiated?
                     if (schedulingRequired) {
 
                         // retrieve the responsible action
@@ -1211,6 +1248,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             } catch (NotAvailableException ex) {
                 // skip update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
             }
+            //StringProcessor.formatHumanReadable(Services.getServiceBaseName(serviceType))
+            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
 
             // update the current state
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
@@ -1319,7 +1358,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) {
 //        return internalRestoreSnapshot(snapshot, null);
-        Collection<Future> futureCollection = new ArrayList<>();
+        Collection<Future<?>> futureCollection = new ArrayList<>();
         for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
             ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
             futureCollection.add(applyAction(actionDescription));
