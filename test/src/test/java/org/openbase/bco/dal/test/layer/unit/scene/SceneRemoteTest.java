@@ -232,7 +232,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             serviceStateDescriptionList.add(serviceStateDescription.build());
 
             label = SCENE_ROOT_LOCATION;
-            sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(serviceStateDescriptionList).build();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
@@ -241,14 +241,14 @@ public class SceneRemoteTest extends AbstractBCOTest {
             locationRemote.waitForData();
             locationRemote.setPowerState(POWER_ON).get();
             locationRemote.requestData().get();
-            sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             label = SCENE_ROOT_LOCATION_ALL_DEVICES_OFF;
             locationRemote.setPowerState(POWER_OFF).get();
             locationRemote.requestData().get();
-            sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
@@ -260,7 +260,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(POWER_STATE_ON));
             serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
-            sceneConfig = SceneConfig.newBuilder().addAllOptionalServiceStateDescription(serviceStateDescriptionList).build();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
             unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
