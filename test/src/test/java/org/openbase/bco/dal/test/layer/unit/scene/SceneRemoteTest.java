@@ -452,7 +452,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
             assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
             assertEquals("Devices on scene is not active", State.ACTIVE, sceneRemoteDevicesOn.getActivationState().getValue());
-            assertEquals("Devices off scene is not deactive", State.INACTIVE, sceneRemoteDevicesOff.getActivationState().getValue());
+            assertEquals("Devices off scene is not inactive", State.INACTIVE, sceneRemoteDevicesOff.getActivationState().getValue());
 
             Thread.sleep(100);
             Actions.waitForExecution(sceneRemoteDevicesOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
@@ -465,7 +465,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
             assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
-            assertEquals("Devices on scene is not deactive", State.INACTIVE, sceneRemoteDevicesOn.getActivationState().getValue());
+            assertEquals("Devices on scene is not inactive", State.INACTIVE, sceneRemoteDevicesOn.getActivationState().getValue());
             assertEquals("Devices off scene is not active", State.ACTIVE, sceneRemoteDevicesOff.getActivationState().getValue());
 
             System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");

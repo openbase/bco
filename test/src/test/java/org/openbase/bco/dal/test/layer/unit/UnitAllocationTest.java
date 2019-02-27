@@ -73,6 +73,8 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
     private static ColorableLightRemote colorableLightRemote;
 
+    private static final long VALID_EXECUTION_VARIATION = 100;
+
     public UnitAllocationTest() {
     }
 
@@ -340,7 +342,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // make sure primary action is finalised.
         primaryAction.waitForActionState(ActionState.State.FINISHED);
         assertEquals(0, primaryAction.getExecutionTime());
-        assertEquals(6000, primaryAction.getLifetime());
+        assertTrue(Math.abs(primaryAction.getLifetime() - 6000) < VALID_EXECUTION_VARIATION);
         assertEquals(false, primaryAction.isValid());
         assertEquals(true, primaryAction.isDone());
         assertEquals(false, primaryAction.isScheduled());
@@ -408,7 +410,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // make sure primary action is finalised.
         primaryAction.waitForActionState(ActionState.State.FINISHED);
         assertEquals(0, primaryAction.getExecutionTime());
-        assertEquals(500, primaryAction.getLifetime());
+        assertTrue(Math.abs(primaryAction.getLifetime() - 500) < VALID_EXECUTION_VARIATION);
         assertEquals(false, primaryAction.isValid());
         assertEquals(true, primaryAction.isDone());
         assertEquals(false, primaryAction.isScheduled());
