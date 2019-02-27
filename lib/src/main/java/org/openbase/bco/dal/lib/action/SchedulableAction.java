@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -46,11 +47,6 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
      * Finish this action.
      */
     void finish();
-
-    /**
-     * Extend this action to run at most {@link Action#ACTION_MAX_EXECUTION_TIME_PERIOD} milli seconds longer.
-     */
-    void extend();
 
     /**
      * Abort this action.
@@ -95,5 +91,10 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
     @Override
     default State getActionState() {
         return getActionDescription().getActionState().getValue();
+    }
+
+    @Override
+    default String getId() {
+        return getActionDescription().getId();
     }
 }
