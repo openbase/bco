@@ -26,6 +26,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
@@ -35,22 +36,26 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractExecutableBaseUnitController<D, DB> {
 
     private ActionParameter defaultActionParameter;
-    private String authenticationToken = null;
+    private AuthToken authToken = null;
 
     private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
 
@@ -60,21 +65,22 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
 
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        if (authenticationToken == null) {
-            authenticationToken = requestAuthenticationToken(config);
+        // update default action parameter
+        if (authToken == null) {
+            authToken = requestAuthToken(config);
         }
 
-        // update default action parameter
         defaultActionParameter = getActionParameterTemplate(config)
-                .setAuthenticationToken(authenticationToken)
+                .setAuthToken(authToken)
                 .setActionInitiator(ActionInitiator.newBuilder().setInitiatorId(config.getId()))
                 .build();
+
         return super.applyConfigUpdate(config);
     }
 
     protected abstract ActionParameter.Builder getActionParameterTemplate(final UnitConfig config) throws InterruptedException, CouldNotPerformException;
 
-    private String requestAuthenticationToken(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+    private AuthToken requestAuthToken(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         try {
             UnitConfig userUnitConfig = null;
             for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
@@ -98,12 +104,12 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
             final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(userUnitConfig.getId()).build();
             final SessionManager sessionManager = new SessionManager();
             sessionManager.login(userUnitConfig.getId());
-            final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null, null);
-            return new AuthenticatedValueFuture<>(
+            final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null);
+            return AuthToken.newBuilder().setAuthenticationToken(new AuthenticatedValueFuture<>(
                     Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
                     String.class,
                     authenticatedValue.getTicketAuthenticatorWrapper(),
-                    sessionManager).get();
+                    sessionManager).get()).build();
         } catch (CouldNotPerformException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not create authentication token for "+this+" " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()), ex);
         }
@@ -125,5 +131,25 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
 
     protected ActionParameter getDefaultActionParameter() {
         return defaultActionParameter;
+    }
+
+    protected ActionParameter getDefaultActionParameter(final long executionTimePeriod) {
+        return defaultActionParameter.toBuilder().setExecutionTimePeriod(executionTimePeriod).build();
+    }
+
+    protected AuthToken getToken() {
+        return authToken;
+    }
+
+    /**
+     * Method creates a new {@code RemoteAction} which observes the action represented by the {@code futureAction}.
+     * Additionally, the auth token of this controller is passed to the remote action and the action auto extension routine is enabled.
+     *
+     * @param futureAction used to identify the action to observe.
+     *
+     * @return a ready to use action remote instance.
+     */
+    protected RemoteAction observe(final Future<ActionDescription> futureAction) {
+        return new RemoteAction(futureAction, getToken(), () -> isEnabled() && isActive() && getActivationState().getValue() == ActivationState.State.ACTIVE);
     }
 }
