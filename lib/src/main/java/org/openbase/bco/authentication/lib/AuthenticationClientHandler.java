@@ -10,28 +10,28 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import com.google.protobuf.ByteString;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.timing.TimestampType.Timestamp;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
@@ -43,65 +43,36 @@ public class AuthenticationClientHandler {
      * Decrypts the TicketGrantingServer (TGS) session key with client's hashed password
      * Creates an Authenticator containing the clientID and current timestamp encrypted with the TGS session key
      *
-     * @param id        Identifier of the client or user
-     * @param userKey   hashed password or private key of user
-     * @param clientKey private key of the client
-     * @param wrapper   TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
-     * @return Returns a list of objects containing:
+     * @param userClientPair    pair identifying the user and client logged in
+     * @param userCredentials   credentials of the user logged in. Only required if the pair contains a user id.
+     * @param clientCredentials credentials of the client logged in. Only required if the pair contains a client id.
+     * @param wrapper           TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
+     *
+     * @return Returns a pair containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
      * 2. A SessionKey representing the TGS session key
+     *
      * @throws CouldNotPerformException If de-/encryption of the ticket fails
      */
-    public static List<Object> handleKeyDistributionCenterResponse(final String id, final byte[] userKey, final byte[] clientKey, final TicketSessionKeyWrapper wrapper) throws CouldNotPerformException {
+    public static TicketWrapperSessionKeyPair handleKeyDistributionCenterResponse(final UserClientPair userClientPair, final LoginCredentials userCredentials, final LoginCredentials clientCredentials, final TicketSessionKeyWrapper wrapper) throws CouldNotPerformException {
         byte[] ticketGrantingServiceSessionKey = wrapper.getSessionKey().toByteArray();
 
         // decrypt TGS session key
-        if (clientKey != null) {
-            ticketGrantingServiceSessionKey = EncryptionHelper.decrypt(ticketGrantingServiceSessionKey, clientKey, byte[].class, false);
+        if (userClientPair.hasClientId() && !userClientPair.getClientId().isEmpty()) {
+            ticketGrantingServiceSessionKey = EncryptionHelper.decrypt(ticketGrantingServiceSessionKey, clientCredentials, byte[].class);
         }
-        if (userKey != null) {
-            ticketGrantingServiceSessionKey = EncryptionHelper.decrypt(ticketGrantingServiceSessionKey, userKey, byte[].class, true);
+        if (userClientPair.hasUserId() && !userClientPair.getUserId().isEmpty()) {
+            ticketGrantingServiceSessionKey = EncryptionHelper.decrypt(ticketGrantingServiceSessionKey, userCredentials, byte[].class);
         }
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()
         Authenticator.Builder authenticator = Authenticator.newBuilder();
-        authenticator.setClientId(id);
+        authenticator.setUserClientPair(userClientPair);
         authenticator.setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
-        // create TicketAuthenticatorWrapper
-        TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = TicketAuthenticatorWrapper.newBuilder();
-        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticator.build(), ticketGrantingServiceSessionKey));
-        ticketAuthenticatorWrapper.setTicket(wrapper.getTicket());
-
-        // create wrapper list
-        List<Object> list = new ArrayList<>();
-        list.add(ticketAuthenticatorWrapper.build());
-        list.add(ticketGrantingServiceSessionKey);
-
-        return list;
-    }
-
-    /**
-     * Handles a KeyDistributionCenter (KDC) response
-     * Decrypts the TicketGrantingServer (TGS) session key with client's hashed password
-     * Creates an Authenticator containing the clientID and current timestamp encrypted with the TGS session key
-     *
-     * @param id      Identifier of the client or user
-     * @param key     hashed password or private key of user respectively
-     * @param isUser  true if ticket was requested for a user. This is important for the decryption method to be chosen.
-     * @param wrapper TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
-     * @return Returns a list of objects containing:
-     * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
-     * 2. A SessionKey representing the TGS session key
-     * @throws CouldNotPerformException If de-/encryption of the ticket fails
-     */
-    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws CouldNotPerformException {
-        if (isUser) {
-            return handleKeyDistributionCenterResponse(id, key, null, wrapper);
-        }
-
-        return handleKeyDistributionCenterResponse(id, null, key, wrapper);
+        // create a pair containing session key and wrapper with authenticator encrypted with session key.
+        return createTicketWrapperSessionKeyPair(ticketGrantingServiceSessionKey, authenticator.build(), wrapper.getTicket());
     }
 
     /**
@@ -109,34 +80,46 @@ public class AuthenticationClientHandler {
      * Decrypts the ServiceServer (SS) session key with TGS session key
      * Creates an Authenticator containing the clientID and empty timestamp encrypted with the SS session key
      *
-     * @param clientId                        Identifier of the client - must be present in client database
+     * @param userClientPair                  pair identifying the user and client logged in
      * @param ticketGrantingServiceSessionKey TGS session key provided by handleKDCResponse()
      * @param wrapper                         TicketSessionKeyWrapper containing the ClientServerTicket and SS session key
-     * @return Returns a list of objects containing:
+     *
+     * @return Returns a pair containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
      * 2. A SessionKey representing the SS session key
+     *
      * @throws CouldNotPerformException If de-/encryption of the ticket fails
      */
-    public static List<Object> handleTicketGrantingServiceResponse(final String clientId, final byte[] ticketGrantingServiceSessionKey, final TicketSessionKeyWrapper wrapper) throws CouldNotPerformException {
+    public static TicketWrapperSessionKeyPair handleTicketGrantingServiceResponse(final UserClientPair userClientPair, final byte[] ticketGrantingServiceSessionKey, final TicketSessionKeyWrapper wrapper) throws CouldNotPerformException {
         // decrypt SS session key
         byte[] SSSessionKey = EncryptionHelper.decryptSymmetric(wrapper.getSessionKey(), ticketGrantingServiceSessionKey, byte[].class);
 
         // create Authenticator with empty timestamp
         // set timestamp in initSSRequest()
-        Authenticator.Builder authenticator = Authenticator.newBuilder();
-        authenticator.setClientId(clientId);
+        Authenticator authenticator = Authenticator.newBuilder().setUserClientPair(userClientPair).build();
 
+        // create a pair containing session key and wrapper with authenticator encrypted with session key.
+        return createTicketWrapperSessionKeyPair(SSSessionKey, authenticator, wrapper.getTicket());
+    }
+
+    /**
+     * Create a pair of a session key and a ticket wrapper.
+     *
+     * @param sessionKey    the session key put into the pair.
+     * @param authenticator authenticator will be encrypted with the session key and added to the ticket wrapper.
+     * @param ticket        encrypted ticket added to the ticket wrapper.
+     *
+     * @return a pair bundling the ticket wrapper and the session key.
+     *
+     * @throws CouldNotPerformException if encryption of the authenticator with the session key fails.
+     */
+    private static TicketWrapperSessionKeyPair createTicketWrapperSessionKeyPair(final byte[] sessionKey, final Authenticator authenticator, final ByteString ticket) throws CouldNotPerformException {
         // create TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = TicketAuthenticatorWrapper.newBuilder();
-        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticator.build(), SSSessionKey));
-        ticketAuthenticatorWrapper.setTicket(wrapper.getTicket());
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticator, sessionKey));
+        ticketAuthenticatorWrapper.setTicket(ticket);
 
-        // create wrapper list
-        List<Object> list = new ArrayList<>();
-        list.add(ticketAuthenticatorWrapper.build());
-        list.add(SSSessionKey);
-
-        return list;
+        return new TicketWrapperSessionKeyPair(sessionKey, ticketAuthenticatorWrapper.build());
     }
 
     /**
@@ -144,7 +127,9 @@ public class AuthenticationClientHandler {
      *
      * @param serviceServerSessionKey SS session key provided by handleTGSResponse()
      * @param wrapper                 TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and CST
+     *
      * @return Returns a wrapper class containing both the CST and modified Authenticator
+     *
      * @throws CouldNotPerformException if de-/encrypting the authenticator inside the wrapper fails
      */
     public static TicketAuthenticatorWrapper initServiceServerRequest(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper wrapper) throws CouldNotPerformException {
@@ -169,7 +154,9 @@ public class AuthenticationClientHandler {
      * @param serviceServerSessionKey SS session key provided by handleTGSResponse()
      * @param lastWrapper             Last TicketAuthenticatorWrapper provided by either handleTGSResponse() or handleSSResponse()
      * @param currentWrapper          Current TicketAuthenticatorWrapper provided by (Remote?)
+     *
      * @return Returns an TicketAuthenticatorWrapperWrapper containing both the CST and Authenticator
+     *
      * @throws CouldNotPerformException If de-/encryption of the authenticator fails or the timestamps do not match
      */
     public static TicketAuthenticatorWrapper handleServiceServerResponse(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper lastWrapper, final TicketAuthenticatorWrapper currentWrapper) throws CouldNotPerformException {
@@ -189,11 +176,44 @@ public class AuthenticationClientHandler {
      *
      * @param now  the first timestamp
      * @param then the second timestamp
+     *
      * @throws RejectedException thrown if the timestamps have a different time
      */
     public static void validateTimestamp(final Timestamp now, final Timestamp then) throws RejectedException {
         if (now.getTime() + 1 != then.getTime()) {
             throw new RejectedException("Timestamps do not match");
+        }
+    }
+
+    /**
+     * Internal wrapper type used to bundle a session key with a ticket wrapper.
+     */
+    public static class TicketWrapperSessionKeyPair {
+
+        private final byte[] sessionKey;
+        private final TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
+
+        TicketWrapperSessionKeyPair(final byte[] sessionKey, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
+            this.sessionKey = sessionKey;
+            this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+        }
+
+        /**
+         * Get the stored session key.
+         *
+         * @return the session key.
+         */
+        public byte[] getSessionKey() {
+            return sessionKey;
+        }
+
+        /**
+         * Get the stored ticket wrapper.
+         *
+         * @return the wrapper.
+         */
+        public TicketAuthenticatorWrapper getTicketAuthenticatorWrapper() {
+            return ticketAuthenticatorWrapper;
         }
     }
 }

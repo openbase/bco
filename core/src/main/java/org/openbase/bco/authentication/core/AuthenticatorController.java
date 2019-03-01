@@ -70,8 +70,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentialsChange.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserClientPair.getDefaultInstance()));
     }
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);

@@ -228,6 +228,22 @@ public class EncryptionHelper {
     }
 
     /**
+     * Decrypt a ByteString into an object of type T.
+     *
+     * @param encryptedObject  byte array to be decrypted.
+     * @param loginCredentials type containing the credentials and if symmetric or asymmetric encryption needs to be used.
+     * @param encryptedClass   the class to which the decrypted object is cast
+     * @param <T>              the type to which the encrypted object is casted.
+     *
+     * @return the decrypted object cast to class T.
+     *
+     * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class.
+     */
+    public static <T> T decrypt(final byte[] encryptedObject, final LoginCredentials loginCredentials, final Class<T> encryptedClass) throws CouldNotPerformException {
+        return decrypt(encryptedObject, loginCredentials.getCredentials().toByteArray(), encryptedClass, loginCredentials.getSymmetric());
+    }
+
+    /**
      * Decrypts a ByteString into an Object of type T.
      *
      * @param <T>             the type to which the encrypted object is casted
@@ -243,7 +259,6 @@ public class EncryptionHelper {
     public static <T> T decrypt(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws CouldNotPerformException {
         return decrypt(encryptedObject.toByteArray(), key, encryptedClass, symmetric);
     }
-
 
     /**
      * Decrypts a ByteArray into an Object of type T.

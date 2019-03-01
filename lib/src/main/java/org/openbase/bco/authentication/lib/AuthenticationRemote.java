@@ -10,19 +10,17 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import java.util.concurrent.Future;
 
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
@@ -37,12 +35,14 @@ import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -52,8 +52,8 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentialsChange.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserClientPair.getDefaultInstance()));
     }
 
     private RSBRemoteServer remoteServer;
@@ -97,53 +97,123 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param userClientPair {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) {
-        return RPCHelper.callRemoteServerMethod(clientId, remoteServer, TicketSessionKeyWrapper.class);
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(final UserClientPair userClientPair) {
+        return RPCHelper.callRemoteServerMethod(userClientPair, remoteServer, TicketSessionKeyWrapper.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param ticketAuthenticatorWrapper {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketSessionKeyWrapper.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param ticketAuthenticatorWrapper {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketAuthenticatorWrapper.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) {
-        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
+    public Future<AuthenticatedValue> changeCredentials(final AuthenticatedValue authenticatedValue) {
+        return RPCHelper.callRemoteServerMethod(authenticatedValue, remoteServer, AuthenticatedValue.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) {
-        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
+    public Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) {
+        return RPCHelper.callRemoteServerMethod(authenticatedValue, remoteServer, AuthenticatedValue.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) {
-        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
+    public Future<AuthenticatedValue> removeUser(final AuthenticatedValue authenticatedValue) {
+        return RPCHelper.callRemoteServerMethod(authenticatedValue, remoteServer, AuthenticatedValue.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param AuthenticatedValue {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) {
-        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
+    public Future<AuthenticatedValue> setAdministrator(final AuthenticatedValue AuthenticatedValue) {
+        return RPCHelper.callRemoteServerMethod(AuthenticatedValue, remoteServer, AuthenticatedValue.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param ticketAuthenticatorWrapper {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
+    public Future<AuthenticatedValue> requestServiceServerSecretKey(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, AuthenticatedValue.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param userId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<Boolean> isAdmin(String userId) {
+    public Future<Boolean> isAdmin(final String userId) {
         return RPCHelper.callRemoteServerMethod(userId, remoteServer, Boolean.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param userOrClientId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<Boolean> hasUser(String userOrClientId) {
+    public Future<Boolean> hasUser(final String userOrClientId) {
         return RPCHelper.callRemoteServerMethod(userOrClientId, remoteServer, Boolean.class);
     }
 }
