@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.core;
  * #L%
  */
 
+import com.google.protobuf.ByteString;
 import org.apache.commons.lang.RandomStringUtils;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalIdentifiedProcessable;
@@ -158,9 +159,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             final KeyPair keyPair = EncryptionHelper.generateKeyPair();
             credentialStore.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false, false);
             try {
+                final LoginCredentials loginCredentials = credentialStore.getEntry(CredentialStore.SERVICE_SERVER_ID).toBuilder().setCredentials(ByteString.copyFrom(keyPair.getPrivate().getEncoded())).build();
                 File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), AuthenticatedServerManager.SERVICE_SERVER_PRIVATE_KEY_FILENAME);
                 try (FileOutputStream outputStream = new FileOutputStream(privateKeyFile)) {
-                    outputStream.write(keyPair.getPrivate().getEncoded());
+                    outputStream.write(loginCredentials.toByteArray());
                     outputStream.flush();
                 }
                 AbstractProtectedStore.protectFile(privateKeyFile);

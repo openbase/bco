@@ -10,18 +10,19 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler.TicketWrapperSessionKeyPair;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
@@ -32,20 +33,21 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.type.domotic.authentication.TicketType.Ticket;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Base64;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -92,7 +94,9 @@ public class AuthenticatedServerManager {
      * containing values according to the data in the authenticated value.
      *
      * @param authenticatedValue AuthenticationBaseData holding information about the authorized user and send tokens
+     *
      * @return an authentication base data object containing the user id, the session key and an updated ticket and tokens
+     *
      * @throws NotAvailableException    if the authenticated value does not contain a ticket
      * @throws CouldNotPerformException on de-/encryption errors
      * @throws RejectedException        If the ticket is not valid.
@@ -127,7 +131,9 @@ public class AuthenticatedServerManager {
      * containing values according to the authentication.
      *
      * @param ticketAuthenticatorWrapper TicketAuthenticatorWrapper holding information about the ticket's validity and the client ID.
+     *
      * @return an authentication base data object containing the user id, the session key and an updated ticket
+     *
      * @throws CouldNotPerformException on de-/encryption errors
      * @throws RejectedException        If the ticket is not valid.
      */
@@ -150,7 +156,7 @@ public class AuthenticatedServerManager {
             response.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket, serviceServerSecretKey));
             response.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticatorBuilder.build(), clientServerTicket.getSessionKeyBytes().toByteArray()));
 
-            return new AuthenticationBaseData(authenticator.getClientId(), clientServerTicket.getSessionKeyBytes().toByteArray(), response.build());
+            return new AuthenticationBaseData(authenticator.getUserClientPair(), clientServerTicket.getSessionKeyBytes().toByteArray(), response.build());
         } catch (RejectedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         }
@@ -164,30 +170,27 @@ public class AuthenticatedServerManager {
     private void login() throws CouldNotPerformException {
         try {
             // Load private key from file.
-            byte[] key;
+            LoginCredentials loginCredentials;
             File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
             try (FileInputStream inputStream = new FileInputStream(privateKeyFile)) {
-                key = new byte[(int) privateKeyFile.length()];
-                inputStream.read(key);
+                loginCredentials = LoginCredentials.parseFrom(inputStream);
             }
 
-            String id = "@" + CredentialStore.SERVICE_SERVER_ID;
+            final UserClientPair userClientPair = UserClientPair.newBuilder().setClientId(CredentialStore.SERVICE_SERVER_ID).build();
 
             // request TGT
-            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(id).get();
+            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userClientPair).get();
 
             // handle KDC response on client side
-            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(id, key, false, ticketSessionKeyWrapper);
-            TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-            byte[] ticketGrantingServiceSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+            TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userClientPair, null, loginCredentials, ticketSessionKeyWrapper);
 
             // request CST
-            ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(taw).get();
+            ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get();
 
             // handle TGS response on client side
-            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(id, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
-            this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-            this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+            ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userClientPair, ticketWrapperSessionKeyPair.getSessionKey(), ticketSessionKeyWrapper);
+            this.ticketAuthenticatorWrapper = ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper();
+            this.sessionKey = ticketWrapperSessionKeyPair.getSessionKey();
         } catch (ExecutionException | JPNotAvailableException | CouldNotPerformException | IOException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Login failed!", ex);
