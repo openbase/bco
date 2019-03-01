@@ -143,7 +143,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     }
 
     @Override
-    public Future<Boolean> hasUser(String userId) {
-        return RPCHelper.callRemoteServerMethod(userId, remoteServer, Boolean.class);
+    public Future<Boolean> hasUser(String userOrClientId) {
+        return RPCHelper.callRemoteServerMethod(userOrClientId, remoteServer, Boolean.class);
     }
 }

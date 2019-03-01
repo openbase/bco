@@ -160,10 +160,10 @@ implements <a href="../../../../../org/openbase/bco/authentication/lib/Authentic
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../../../org/openbase/bco/authentication/core/AuthenticatorController.html#AuthenticatorController-byte:A-">AuthenticatorController</a></span>(byte[]&nbsp;serviceServerPrivateKey)</code>&nbsp;</td>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../org/openbase/bco/authentication/core/AuthenticatorController.html#AuthenticatorController-org.openbase.bco.authentication.lib.CredentialStore-">AuthenticatorController</a></span>(<a href="../../../../../org/openbase/bco/authentication/lib/CredentialStore.html" title="class in org.openbase.bco.authentication.lib">CredentialStore</a>&nbsp;store)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../org/openbase/bco/authentication/core/AuthenticatorController.html#AuthenticatorController-org.openbase.bco.authentication.lib.CredentialStore-">AuthenticatorController</a></span>(<a href="../../../../../org/openbase/bco/authentication/lib/CredentialStore.html" title="class in org.openbase.bco.authentication.lib">CredentialStore</a>&nbsp;credentialStore)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../org/openbase/bco/authentication/core/AuthenticatorController.html#AuthenticatorController-org.openbase.bco.authentication.lib.CredentialStore-byte:A-">AuthenticatorController</a></span>(<a href="../../../../../org/openbase/bco/authentication/lib/CredentialStore.html" title="class in org.openbase.bco.authentication.lib">CredentialStore</a>&nbsp;store,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../org/openbase/bco/authentication/core/AuthenticatorController.html#AuthenticatorController-org.openbase.bco.authentication.lib.CredentialStore-byte:A-">AuthenticatorController</a></span>(<a href="../../../../../org/openbase/bco/authentication/lib/CredentialStore.html" title="class in org.openbase.bco.authentication.lib">CredentialStore</a>&nbsp;credentialStore,
                        byte[]&nbsp;serviceServerPrivateKey)</code>&nbsp;</td>
 </tr>
 </table>
@@ -199,7 +199,7 @@ implements <a href="../../../../../org/openbase/bco/authentication/lib/Authentic
 <td class="colFirst"><code>static <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/openbase/bco/authentication/core/AuthenticatorController.html#getInitialPassword--">getInitialPassword</a></span>()</code>
 <div class="block">Get the initial password which is randomly generated on startup with an empty
- store.</div>
+ credentialStore.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
@@ -337,7 +337,7 @@ implements <a href="../../../../../org/openbase/bco/authentication/lib/Authentic
 <ul class="blockList">
 <li class="blockList">
 <h4>AuthenticatorController</h4>
-<pre>public&nbsp;AuthenticatorController(<a href="../../../../../org/openbase/bco/authentication/lib/CredentialStore.html" title="class in org.openbase.bco.authentication.lib">CredentialStore</a>&nbsp;store)
+<pre>public&nbsp;AuthenticatorController(<a href="../../../../../org/openbase/bco/authentication/lib/CredentialStore.html" title="class in org.openbase.bco.authentication.lib">CredentialStore</a>&nbsp;credentialStore)
                         throws org.openbase.jul.exception.InitializationException</pre>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
@@ -365,7 +365,7 @@ implements <a href="../../../../../org/openbase/bco/authentication/lib/Authentic
 <ul class="blockListLast">
 <li class="blockList">
 <h4>AuthenticatorController</h4>
-<pre>public&nbsp;AuthenticatorController(<a href="../../../../../org/openbase/bco/authentication/lib/CredentialStore.html" title="class in org.openbase.bco.authentication.lib">CredentialStore</a>&nbsp;store,
+<pre>public&nbsp;AuthenticatorController(<a href="../../../../../org/openbase/bco/authentication/lib/CredentialStore.html" title="class in org.openbase.bco.authentication.lib">CredentialStore</a>&nbsp;credentialStore,
                                byte[]&nbsp;serviceServerPrivateKey)
                         throws org.openbase.jul.exception.InitializationException</pre>
 <dl>
@@ -746,7 +746,7 @@ implements <a href="../../../../../org/openbase/bco/authentication/lib/Authentic
 <h4>getInitialPassword</h4>
 <pre>public static&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;getInitialPassword()</pre>
 <div class="block">Get the initial password which is randomly generated on startup with an empty
- store. Else it is null and will also be reset to null after registration of the
+ credentialStore. Else it is null and will also be reset to null after registration of the
  first user.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

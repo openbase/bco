@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -24,6 +24,8 @@ package org.openbase.bco.authentication.core;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.openbase.bco.authentication.lib.*;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalIdentifiedProcessable;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.TicketValidator;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
@@ -42,21 +44,22 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.WatchDog;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials.Builder;
+import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
-import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
-import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
-import org.openbase.type.domotic.authentication.TicketType.Ticket;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.KeyPair;
-import java.util.Arrays;
 import java.util.concurrent.Future;
 
 /**
@@ -79,7 +82,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
 
-    private final CredentialStore store;
+    private final CredentialStore credentialStore;
 
     private static String initialPassword;
 
@@ -92,18 +95,18 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         this(new CredentialStore(), EncryptionHelper.generateKey());
     }
 
-    public AuthenticatorController(CredentialStore store) throws InitializationException {
-        this(store, EncryptionHelper.generateKey());
+    public AuthenticatorController(CredentialStore credentialStore) throws InitializationException {
+        this(credentialStore, EncryptionHelper.generateKey());
     }
 
     public AuthenticatorController(byte[] serviceServerPrivateKey) throws InitializationException {
         this(new CredentialStore(), serviceServerPrivateKey);
     }
 
-    public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) throws InitializationException {
+    public AuthenticatorController(CredentialStore credentialStore, byte[] serviceServerPrivateKey) throws InitializationException {
         this.server = new NotInitializedRSBLocalServer();
 
-        this.store = store;
+        this.credentialStore = credentialStore;
         this.serviceServerSecretKey = serviceServerPrivateKey;
 
         try {
@@ -126,23 +129,23 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             throw new InitializationException(this, ex);
         }
 
-        store.init(STORE_FILENAME);
+        credentialStore.init(STORE_FILENAME);
 
-        if (!store.hasEntry(TICKET_GRANTING_KEY)) {
-            store.addCredentials(TICKET_GRANTING_KEY, EncryptionHelper.generateKey(), false);
+        if (!credentialStore.hasEntry(TICKET_GRANTING_KEY)) {
+            credentialStore.addCredentials(TICKET_GRANTING_KEY, EncryptionHelper.generateKey(), false, true);
         }
 
-        if (!store.hasEntry(SERVICE_SERVER_SECRET_KEY)) {
+        if (!credentialStore.hasEntry(SERVICE_SERVER_SECRET_KEY)) {
             if (serviceServerSecretKey != null) {
-                store.addCredentials(SERVICE_SERVER_SECRET_KEY, serviceServerSecretKey, false);
+                credentialStore.addCredentials(SERVICE_SERVER_SECRET_KEY, serviceServerSecretKey, false, true);
             } else {
-                store.addCredentials(SERVICE_SERVER_SECRET_KEY, EncryptionHelper.generateKey(), false);
+                credentialStore.addCredentials(SERVICE_SERVER_SECRET_KEY, EncryptionHelper.generateKey(), false, true);
             }
         }
 
         try {
-            ticketGrantingServiceSecretKey = store.getCredentials(TICKET_GRANTING_KEY);
-            serviceServerSecretKey = store.getCredentials(SERVICE_SERVER_SECRET_KEY);
+            ticketGrantingServiceSecretKey = credentialStore.getCredentials(TICKET_GRANTING_KEY).getCredentials().toByteArray();
+            serviceServerSecretKey = credentialStore.getCredentials(SERVICE_SERVER_SECRET_KEY).getCredentials().toByteArray();
         } catch (NotAvailableException ex) {
             throw new InitializationException(this, ex);
         }
@@ -150,10 +153,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        if (!store.hasEntry(CredentialStore.SERVICE_SERVER_ID) || JPService.testMode()) {
+        if (!credentialStore.hasEntry(CredentialStore.SERVICE_SERVER_ID) || JPService.testMode()) {
             // Generate private/public key pair for service servers.
             final KeyPair keyPair = EncryptionHelper.generateKeyPair();
-            store.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false);
+            credentialStore.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false, false);
             try {
                 File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), AuthenticatedServerManager.SERVICE_SERVER_PRIVATE_KEY_FILENAME);
                 try (FileOutputStream outputStream = new FileOutputStream(privateKeyFile)) {
@@ -182,7 +185,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             serverWatchDog.deactivate();
         }
 
-        store.shutdown();
+        credentialStore.shutdown();
     }
 
     @Override
@@ -204,47 +207,59 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     /**
      * Test if the initial password needs to be generated. This is the case if only three entries are in the credential
-     * store. One for the service server client, one for the ticket granting key and one for the service server secret
+     * credentialStore. One for the service server client, one for the ticket granting key and one for the service server secret
      * key.
      *
      * @return if an initial password has to be generated.
      */
     private boolean initialPasswordRequired() {
-        return (store.getSize() == 3 && store.hasEntry(CredentialStore.SERVICE_SERVER_ID)
-                && store.hasEntry(TICKET_GRANTING_KEY) && store.hasEntry(SERVICE_SERVER_SECRET_KEY));
+        return (credentialStore.getSize() == 3 && credentialStore.hasEntry(CredentialStore.SERVICE_SERVER_ID)
+                && credentialStore.hasEntry(TICKET_GRANTING_KEY) && credentialStore.hasEntry(SERVICE_SERVER_SECRET_KEY));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param userClientPair {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String id) {
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(final UserClientPair userClientPair) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                String[] split = id.split("@", 2);
-                byte[] userKey = null;
-                byte[] clientKey = null;
-                boolean isUser = split[0].length() > 0;
-                boolean isClient = split.length > 1 && split[1].length() > 0;
-
-                if (isUser) {
-                    userKey = store.getCredentials(split[0].trim());
+                // retrieve required credentials from credentialStore
+                LoginCredentials userCredentials = null;
+                LoginCredentials clientCredentials = null;
+                if (!userClientPair.getUserId().isEmpty()) {
+                    userCredentials = credentialStore.getCredentials(userClientPair.getUserId());
                 }
-                if (isClient) {
-                    clientKey = store.getCredentials(split[1].trim());
+                if (!userClientPair.getClientId().isEmpty()) {
+                    clientCredentials = credentialStore.getCredentials(userClientPair.getClientId());
                 }
 
-                return AuthenticationServerHandler.handleKDCRequest(id, userKey, clientKey, "", ticketGrantingServiceSecretKey, ticketValidityTime);
+                // handle request
+                return AuthenticationServerHandler.handleKDCRequest(userClientPair, userCredentials, clientCredentials, ticketGrantingServiceSecretKey, ticketValidityTime);
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
-                throw new NotAvailableException(id);
-            } catch (InterruptedException | CouldNotPerformException | IOException ex) {
+                throw new NotAvailableException(ex.getMessage());
+            } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                 throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param ticketAuthenticatorWrapper {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServiceSecretKey, serviceServerSecretKey, ticketAuthenticatorWrapper, ticketValidityTime);
@@ -256,12 +271,31 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         });
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param ticketAuthenticatorWrapper {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper, ticketValidityTime);
-                // TODO: Validate that user/clientId exists in store. Otherwise somebody could still be logged in after being removed from store
+                // validate ticket
+                final AuthenticationBaseData authenticationBaseData = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper, ticketValidityTime);
+                // validate that user and client still exists so that no user can be logged in after being removed
+                final UserClientPair pair = authenticationBaseData.getUserClientPair();
+                if (!pair.getUserId().isEmpty() && !credentialStore.hasEntry(pair.getUserId())) {
+                    throw new RejectedException("User[" + pair.getUserId() + "] logged in after being removed from authenticator!");
+
+                }
+                if (!pair.getClientId().isEmpty() && !credentialStore.hasEntry(pair.getClientId())) {
+                    throw new RejectedException("Client[" + pair.getClientId() + "] logged in after being removed from authenticator!");
+
+                }
+                // return updated ticket wrapper
+                return authenticationBaseData.getTicketAuthenticatorWrapper();
             } catch (SessionExpiredException ex) {
                 throw ex;
             } catch (CouldNotPerformException ex) {
@@ -272,211 +306,183 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         });
     }
 
-    @Override
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) {
-        return GlobalCachedExecutorService.submit(() -> {
-            try {
-                // Validate the given authenticator and ticket.
-                TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper, ticketValidityTime);
-
-                // Decrypt ticket, authenticator and credentials.
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
-                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
-                Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
-                byte[] oldCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getOldCredentials(), clientServerSessionKey, byte[].class);
-                byte[] newCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), clientServerSessionKey, byte[].class);
-                String userId = loginCredentialsChange.getId();
-                String[] split = authenticator.getClientId().split("@", 2);
-                String authenticatorUserId = split[0];
-
-                    // Allow users to change their own password and admins to change passwords for other users.
-                    if (!userId.equals(authenticatorUserId) && !store.isAdmin(authenticatorUserId)) {
-                        throw new PermissionDeniedException("You are not permitted to perform this action.");
-                    }
-
-                // Avoid permission check and old password verification for admins
-                // to allow admins to change passwords for other users. Still make sure
-                // the old admin password was confirmed in case the the admin password itself should be changed.
-                if (!store.isAdmin(authenticatorUserId) || userId.equals(authenticatorUserId)) {
-                    // Check if the given credentials correspond to the old one.
-                    if (!Arrays.equals(oldCredentials, store.getCredentials(userId))) {
-                        throw new RejectedException("The old password is wrong.");
-                    }
-                }
-
-                // Update credentials.
-                store.setCredentials(userId, newCredentials);
-
-                return response;
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                ExceptionReporter.getInstance().report(ex);
-                throw new RejectedException(ex.getMessage());
-            }
-        });
+    /**
+     * Helper method for utilizing the {@link AuthenticatedServiceProcessor}.
+     *
+     * @return an object capable of verifying tickets,
+     */
+    private TicketValidator getTicketValidator() {
+        return authenticatedValue -> AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, authenticatedValue.getTicketAuthenticatorWrapper(), ticketValidityTime);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) {
-        return GlobalCachedExecutorService.submit(() -> {
-            try {
-                if (initialPassword != null && (initialPasswordRequired() || JPService.testMode())) {
-                    if (!loginCredentialsChange.hasId() || !loginCredentialsChange.hasNewCredentials()) {
-                        throw new RejectedException("Cannot register first user, id and/or new credentials empty");
+    public Future<AuthenticatedValue> changeCredentials(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, LoginCredentialsChange.class, getTicketValidator(), (InternalIdentifiedProcessable<LoginCredentialsChange, Serializable>) (loginCredentialsChange, authenticationBaseData) -> {
+            final UserClientPair userClientPair = authenticationBaseData.getUserClientPair();
+            // validate permissions to change credentials
+            boolean isAdmin = credentialStore.isAdmin(userClientPair.getUserId());
+            if (!isAdmin) {
+                // user is not admin, so verify that new credentials are either for logged in client or user
+                if (!userClientPair.getUserId().isEmpty() && !userClientPair.getUserId().equals(loginCredentialsChange.getId())) {
+                    if (!userClientPair.getClientId().isEmpty() && !userClientPair.getClientId().equals(loginCredentialsChange.getId())) {
+                        // invalid id so reject change
+                        throw new RejectedException("UserClientPair[" + userClientPair + "] cannot change password of user or client[" + loginCredentialsChange.getId() + "]");
                     }
-
-                    byte[] decryptedCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), EncryptionHelper.hash(initialPassword), byte[].class);
-
-                    this.store.addCredentials(loginCredentialsChange.getId(), decryptedCredentials, true);
-
-                    initialPassword = null;
-                    return null;
                 }
-
-                // validate the given authenticator and ticket.
-                TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper, ticketValidityTime);
-
-                // decrypt ticket and authenticator
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
-                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
-
-                Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
-                String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
-                String newId = loginCredentialsChange.getId();
-
-                // check if performing user is admin
-                if (!store.isAdmin(authenticatorUserId) && loginCredentialsChange.getAdmin()) {
-                    throw new PermissionDeniedException("You are not permitted to register an admin.");
-                }
-
-                // don't allow administrators to overwrite themselves
-                // don't allow to overwrite somebody else
-                if (newId.equals(authenticatorUserId) || store.hasEntry(newId)) {
-                    throw new CouldNotPerformException("You cannot register an existing user.");
-                }
-
-                // decrypt key
-                byte[] key = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), clientServerSessionKey, byte[].class);
-
-                // register
-                store.addCredentials(newId, key, loginCredentialsChange.getAdmin());
-
-                return response;
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                ExceptionReporter.getInstance().report(ex);
-                throw new RejectedException(ex.getMessage());
             }
-        });
+
+            // check that user is either an admin or provided the old credentials correctly
+            if (!isAdmin && credentialStore.getCredentials(loginCredentialsChange.getId()).getCredentials().equals(loginCredentialsChange.getOldCredentials())) {
+                throw new RejectedException("Old credentials do not match");
+            }
+
+            // update credentials in the credentialStore, this makes sure that a user does not appoint itself an admin
+            final Builder newCredentials = credentialStore.getCredentials(loginCredentialsChange.getId()).toBuilder();
+            newCredentials.setSymmetric(loginCredentialsChange.getSymmetric());
+            newCredentials.setCredentials(loginCredentialsChange.getNewCredentials());
+            credentialStore.addEntry(newCredentials.getId(), newCredentials.build());
+
+            // return login credentials
+            return loginCredentialsChange;
+        }));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) {
-        return GlobalCachedExecutorService.submit(() -> {
-            try {
-                // validate the given authenticator and ticket.
-                TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper, ticketValidityTime);
-
-                // decrypt ticket and authenticator
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
-                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
-
-                Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
-                String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
-                String idToRemove = loginCredentialsChange.getId();
-
-                // check if performing user is admin
-                if (!this.store.isAdmin(authenticatorUserId)) {
-                    throw new PermissionDeniedException("You are not permitted to perform this action.");
+    public Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, LoginCredentials.class, getTicketValidator(), (InternalIdentifiedProcessable<LoginCredentials, Serializable>) (loginCredentials, authenticationBaseData) -> {
+            // test if it is the initial registration
+            if (initialPassword != null && (initialPasswordRequired() || JPService.testMode())) {
+                // validate credentials
+                if (!loginCredentials.hasId() || !loginCredentials.hasCredentials()) {
+                    throw new RejectedException("Cannot register first user, id and/or new credentials empty");
                 }
 
-                // don't allow administrators to remove themselves
-                if (idToRemove.equals(authenticatorUserId)) {
-                    throw new CouldNotPerformException("You cannot remove yourself.");
-                }
+                // make sure first user is admin
+                final LoginCredentials adminCredentials = loginCredentials.toBuilder().setAdmin(true).build();
+                // save credentials
+                credentialStore.addEntry(loginCredentials.getId(), adminCredentials);
 
-                // don't allow administrators to remove nonexistent entry
-                if (!this.store.hasEntry(idToRemove)) {
-                    throw new CouldNotPerformException("Given user does not exist.");
-                }
-
-                // remove
-                this.store.removeEntry(idToRemove);
-
-                return response;
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                ExceptionReporter.getInstance().report(ex);
-                throw new RejectedException(ex.getMessage());
+                // clear initials password
+                initialPassword = null;
+                // return credentials
+                return adminCredentials;
             }
-        });
+
+            // validate that only admins can register new admins
+            if (loginCredentials.getAdmin() && !credentialStore.isAdmin(authenticationBaseData.getUserClientPair().getUserId())) {
+                throw new PermissionDeniedException("You are not permitted to register an admin.");
+            }
+
+            // do not allow overwriting of existing users
+            if (credentialStore.hasEntry(loginCredentials.getId())) {
+                throw new CouldNotPerformException("You cannot register an existing user.");
+            }
+
+            // register
+            credentialStore.addEntry(loginCredentials.getId(), loginCredentials);
+
+            // return login credentials
+            return loginCredentials;
+        }));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) {
-        return GlobalCachedExecutorService.submit(() -> {
-            try {
-                // validate the given authenticator and ticket.
-                TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper, ticketValidityTime);
+    public Future<AuthenticatedValue> removeUser(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, getTicketValidator(), new InternalIdentifiedProcessable<String, Serializable>() {
+            @Override
+            public Serializable process(String id, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
+                // validate that either a user/client removes itself or an admin is responsible
+                if (credentialStore.isAdmin(authenticationBaseData.getUserClientPair().getUserId())) {
+                    // if admin should be removed make sure that it is not
+                    if (credentialStore.getAdminCount() <= 1) {
+                        throw new PermissionDeniedException("The last admin cannot remove itself");
+                    }
+                } else {
+                    // validate that non-admins only try to remove themselves
+                    if (!id.equals(authenticationBaseData.getUserClientPair().getUserId()) || !id.equals(authenticationBaseData.getUserClientPair().getClientId())) {
+                        throw new PermissionDeniedException("You are not allowed to perform this action");
+                    }
+                }
 
-                // decrypt ticket and authenticator
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
-                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
+                credentialStore.removeEntry(id);
 
-                Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
-                String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
-                String newId = loginCredentialsChange.getId();
+                return id;
+            }
+        }));
+    }
 
-                // check if performing user is admin
-                if (!this.store.isAdmin(authenticatorUserId)) {
+    /**
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<AuthenticatedValue> setAdministrator(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, LoginCredentials.class, getTicketValidator(), new InternalIdentifiedProcessable<LoginCredentials, Serializable>() {
+            @Override
+            public Serializable process(LoginCredentials loginCredentials, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
+                // only admins can change admin flags
+                if (!credentialStore.isAdmin(loginCredentials.getId())) {
                     throw new PermissionDeniedException("You are not permitted to perform this action.");
                 }
 
                 // don't allow administrators to change administrator status of themselves
-                if (newId.equals(authenticatorUserId)) {
-                    throw new CouldNotPerformException("You cannot register an existing user.");
+                // this ensures that at least one admin will stay in the system
+                if (authenticationBaseData.getUserClientPair().getUserId().equals(loginCredentials.getId())) {
+                    throw new CouldNotPerformException("Admin status can only be revoked by another admin.");
                 }
 
-                // don't allow administrators to change administrator status of nonexistent entry
-                if (!this.store.hasEntry(newId)) {
-                    throw new CouldNotPerformException("Given user does not exist.");
-                }
+                // update admin flag
+                credentialStore.addEntry(loginCredentials.getId(), credentialStore.getCredentials(loginCredentials.getId()).toBuilder().setAdmin(loginCredentials.getAdmin()).build());
 
-                // register
-                this.store.setAdmin(newId, loginCredentialsChange.getAdmin());
-
-                return response;
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                ExceptionReporter.getInstance().report(ex);
-                throw new RejectedException(ex.getMessage());
+                return loginCredentials;
             }
-        });
+        }));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param ticketAuthenticatorWrapper {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                // Validate the given authenticator and ticket.
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper, ticketValidityTime);
+                final AuthenticationBaseData authenticationBaseData = getTicketValidator().verifyClientServerTicket(AuthenticatedValue.newBuilder().setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper).build());
 
-                // Decrypt ticket, authenticator and credentials.
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getTicket(), serviceServerSecretKey, Ticket.class);
-                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
-                Authenticator authenticator = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
-
-                if (!authenticator.getClientId().equals("@" + CredentialStore.SERVICE_SERVER_ID)) {
-                    throw new RejectedException("Client[" + authenticator.getClientId() + "] is not authorized to request the ServiceServerSecretKey");
+                if (!authenticationBaseData.getUserClientPair().getClientId().equals(CredentialStore.SERVICE_SERVER_ID)) {
+                    throw new RejectedException("Client[" + authenticationBaseData.getUserClientPair().getClientId() + "] is not authorized to request the ServiceServerSecretKey");
                 }
 
                 AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
-                authenticatedValue.setTicketAuthenticatorWrapper(response);
-                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(this.serviceServerSecretKey, clientServerSessionKey));
+                authenticatedValue.setTicketAuthenticatorWrapper(authenticationBaseData.getTicketAuthenticatorWrapper());
+                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(this.serviceServerSecretKey, authenticationBaseData.getSessionKey()));
 
                 return authenticatedValue.build();
             } catch (CouldNotPerformException ex) {
@@ -487,14 +493,21 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         });
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param userId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<Boolean> isAdmin(String userId) {
-        return GlobalCachedExecutorService.submit(() -> store.isAdmin(userId));
+    public Future<Boolean> isAdmin(final String userId) {
+        return GlobalCachedExecutorService.submit(() -> credentialStore.isAdmin(userId));
     }
 
     /**
      * Get the initial password which is randomly generated on startup with an empty
-     * store. Else it is null and will also be reset to null after registration of the
+     * credentialStore. Else it is null and will also be reset to null after registration of the
      * first user.
      *
      * @return the password required for the registration of the initial user
@@ -503,8 +516,15 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         return initialPassword;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param userOrClientId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
-    public Future<Boolean> hasUser(String userId) {
-        return GlobalCachedExecutorService.submit(() -> store.hasEntry(userId));
+    public Future<Boolean> hasUser(String userOrClientId) {
+        return GlobalCachedExecutorService.submit(() -> credentialStore.hasEntry(userOrClientId));
     }
 }

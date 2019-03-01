@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +28,12 @@ import java.util.Arrays;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -98,6 +99,7 @@ public class EncryptionHelper {
      * Hashes a string that has to be UTF-8 encoded symmetrically.
      *
      * @param string String to be hashed
+     *
      * @return Returns a byte[] representing the hashed string
      */
     public static byte[] hash(final String string) {
@@ -117,7 +119,9 @@ public class EncryptionHelper {
      *
      * @param object Object to be encrypted
      * @param key    byte[] to encrypt object with
+     *
      * @return Returns encrypted object as ByteString
+     *
      * @throws CouldNotPerformException if encrypting fails encryption.
      */
     public static ByteString encryptSymmetric(final Serializable object, final byte[] key) throws CouldNotPerformException {
@@ -129,11 +133,26 @@ public class EncryptionHelper {
      *
      * @param object Object to be encrypted
      * @param key    byte[] to encrypt object with
+     *
      * @return Returns encrypted object as ByteString
+     *
      * @throws CouldNotPerformException if encrypting fails encryption.
      */
     public static ByteString encryptAsymmetric(final Serializable object, final byte[] key) throws CouldNotPerformException {
         return ByteString.copyFrom(encrypt(object, key, false));
+    }
+
+    /**
+     * Encrypt an object into a byte array.
+     *
+     * @param object           the object which is encrypted.
+     * @param loginCredentials type containing the credentials and a flag if symmetric or asymmetric encryption should
+     *                         be used.
+     *
+     * @throws CouldNotPerformException if encryption fails.
+     */
+    public static byte[] encrypt(final Serializable object, final LoginCredentials loginCredentials) throws CouldNotPerformException {
+        return encrypt(object, loginCredentials.getCredentials().toByteArray(), loginCredentials.getSymmetric());
     }
 
     /**
@@ -142,7 +161,9 @@ public class EncryptionHelper {
      * @param object    Object to be encrypted
      * @param key       byte[] to encrypt object with
      * @param symmetric if the encryption should use a symmetric or asymmetric key
+     *
      * @return Returns encrypted object as ByteString
+     *
      * @throws CouldNotPerformException if encrypting fails encryption.
      */
     public static byte[] encrypt(final Serializable object, final byte[] key, final boolean symmetric) throws CouldNotPerformException {
@@ -181,7 +202,9 @@ public class EncryptionHelper {
      * @param encryptedObject the object encrypted as a ByteString
      * @param key             the key used to decrypt the object
      * @param encryptedClass  the class to which the decrypted object is cast
+     *
      * @return the decrypted object cast as T
+     *
      * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class
      */
     public static <T> T decryptSymmetric(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass) throws CouldNotPerformException {
@@ -195,7 +218,9 @@ public class EncryptionHelper {
      * @param encryptedObject the object encrypted as a ByteString
      * @param key             the key used to decrypt the object
      * @param encryptedClass  the class to which the decrypted object is cast
+     *
      * @return the decrypted object cast as T
+     *
      * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class
      */
     public static <T> T decryptAsymmetric(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass) throws CouldNotPerformException {
@@ -210,7 +235,9 @@ public class EncryptionHelper {
      * @param key             byte[] to decrypt the encrypted object with
      * @param encryptedClass  the class to which the decrypted object is cast
      * @param symmetric       if the key is symmetric or asymmetric
+     *
      * @return Returns decrypted object as Object
+     *
      * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class
      */
     public static <T> T decrypt(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws CouldNotPerformException {
@@ -226,7 +253,9 @@ public class EncryptionHelper {
      * @param key             byte[] to decrypt the encrypted object with
      * @param encryptedClass  the class to which the decrypted object is cast
      * @param symmetric       if the key is symmetric or asymmetric
+     *
      * @return Returns decrypted object as Object
+     *
      * @throws CouldNotPerformException if the byte array could not be decrypted using the given key or is not an instance of the given class
      */
     public static <T> T decrypt(final byte[] encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws CouldNotPerformException {

@@ -1,14 +1,10 @@
 package org.openbase.bco.authentication.lib;
 
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.PermissionDeniedException;
-import org.openbase.jul.exception.RejectedException;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 
 import java.util.concurrent.Future;
 
@@ -22,12 +18,12 @@ import java.util.concurrent.Future;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -45,16 +41,15 @@ public interface AuthenticationService {
      * Request a TicketGrantingTicket from the AuthenticatorService. The reply
      * is a TicketSessionKeyWrapper that contains the TicketGrantingTicket
      * encrypted with the private key of the TicketGrantingService and the
-     * session key for the TicketGrantingService encrypted with the client
-     * password.
+     * session key for the TicketGrantingService encrypted with the credentials
+     * of the user and/or client defined in the userClientPair.
      * <p>
      * Afterwards the client has to decrypt the session key with his password
      * and create an authenticator encrypted with it. Then the unchanged
      * TicketGrantingTicket and the encrypted Authenticator form a
      * TicketAuthenticatorWrapper which is used to request a ClientServerTicket.
      *
-     * @param clientId the id of the client whose password is used for the
-     *                 encryption of the session key
+     * @param userClientPair pair identifying the user and/or client requesting the ticket.
      *
      * @return the described TicketSessionKeyWrapper
      * <p>
@@ -65,7 +60,7 @@ public interface AuthenticationService {
      * * CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId);
+    Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(final UserClientPair userClientPair);
 
     /**
      * Request a ClientServerTicket from the AuthenticatorService. The reply is
@@ -94,7 +89,7 @@ public interface AuthenticationService {
      * * CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
+    Future<TicketSessionKeyWrapper> requestClientServerTicket(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
 
     /**
      * Validate a ClientServerTicket. If validation is successful the reply is
@@ -115,13 +110,16 @@ public interface AuthenticationService {
      * * CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
+    Future<TicketAuthenticatorWrapper> validateClientServerTicket(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
 
     /**
-     * Changes the credentials for a given user.
+     * Changes the credentials for a given user. Note that admins are allowed to change the credentials of other users
+     * without verification of the old credentials.
      *
-     * @param loginCredentialsChange Wrapper containing the user's ID, new and old password,
-     *                               and a TicketAuthenticatorWrapper to authenticate the user.
+     * @param authenticatedValue authenticated value containing a ticket of the current session and a login credentials
+     *                           change object for the user whose credentials should be changes as its value encrypted with the session key.
+     *                           For normal users the old credentials in the login credentials change object has to match
+     *                           its current credentials.
      *
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
@@ -135,13 +133,13 @@ public interface AuthenticationService {
      * * PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange);
+    Future<AuthenticatedValue> changeCredentials(final AuthenticatedValue authenticatedValue);
 
     /**
-     * Registers a client or user.
+     * Registers a client or user. Note that only admins may register an admin.
      *
-     * @param loginCredentialsChange Wrapper containing the user's ID, password or public key, isAdmin flag,
-     *                               and a TicketAuthenticatorWrapper to authenticate the user.
+     * @param authenticatedValue authenticated value containing a ticket of the current session and a login credentials
+     *                           object for the user to be registered as its value encrypted with the session key.
      *
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
@@ -155,12 +153,18 @@ public interface AuthenticationService {
      * * PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange);
+    Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue);
 
     /**
-     * Removes a user or client.
+     * Remove a user or client. Note:
+     * <ul>
+     * <li>normal user/clients only may remove themselves</li>
+     * <li>admins may remove other users or clients</li>
+     * <li>the last admin cannot remove itself so that at least one admin always remains</li>
+     * </ul>
      *
-     * @param loginCredentialsChange change of credentials (id of user to remove)
+     * @param authenticatedValue authenticated value containing a ticket of the current session and the id of the user
+     *                           to be removed as its value encrypted with the session key.
      *
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
@@ -174,13 +178,15 @@ public interface AuthenticationService {
      * * PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange);
+    Future<AuthenticatedValue> removeUser(final AuthenticatedValue authenticatedValue);
 
     /**
-     * Appoints a normal user to an administrator.
+     * Change the admin status of a user. This may only be done by administrators. Note that an admin cannot demote
+     * itself to a normal user so that at least one admin remains. An admin can only be changed to a normal user by
+     * another admin.
      *
-     * @param loginCredentialsChange Wrapper containing the user's ID, password or public key, isAdmin flag,
-     *                               and a TicketAuthenticatorWrapper to authenticate the user.
+     * @param authenticatedValue authenticated value containing a ticket of the current session and the id of the user
+     *                           whose admin settings are changed as its value encrypted with the session key.
      *
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
@@ -193,7 +199,7 @@ public interface AuthenticationService {
      * * PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange);
+    Future<AuthenticatedValue> setAdministrator(final AuthenticatedValue authenticatedValue);
 
     /**
      * Validates the client server ticket and returns the service server secret key encrypted
@@ -210,7 +216,7 @@ public interface AuthenticationService {
      * * CouldNotPerformException if the validation of the client server ticket fails or the logged in client is not the service server
      */
     @RPCMethod
-    Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
+    Future<AuthenticatedValue> requestServiceServerSecretKey(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper);
 
     /**
      * Returns whether a given user has admin rights or not.
@@ -225,8 +231,15 @@ public interface AuthenticationService {
      * * CouldNotPerformException if the test could no be performed
      */
     @RPCMethod
-    Future<Boolean> isAdmin(String userId);
+    Future<Boolean> isAdmin(final String userId);
 
+    /**
+     * Query if the authenticator has credentials for a given user/client.
+     *
+     * @param userOrClientId the id of the user or client checked.
+     *
+     * @return true if the user has credentials at the authenticator, else false.
+     */
     @RPCMethod
-    Future<Boolean> hasUser(String userId);
+    Future<Boolean> hasUser(final String userOrClientId);
 }

@@ -10,24 +10,24 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import com.google.protobuf.ByteString;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFileProcessor;
 import org.openbase.type.domotic.authentication.LoginCredentialsCollectionType.LoginCredentialsCollection;
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
-import java.util.Base64;
 import java.util.Map;
 
 /**
@@ -49,25 +49,14 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
     /**
      * Get the encrypted login credentials for a given user.
      *
-     * @param userId id of the user
+     * @param userId id of the user.
      *
-     * @return the credentials of the user
+     * @return the credentials of the user.
      *
-     * @throws NotAvailableException if not credentials for the user are saved in the store
+     * @throws NotAvailableException if not credentials for the user are saved in the store.
      */
-    public byte[] getCredentials(String userId) throws NotAvailableException {
-        return Base64.getDecoder().decode(getEntry(userId).getCredentials());
-    }
-
-    /**
-     * Adds or replaces credentials for a user. The admin flag is set to false on default or inherited if
-     * the credentials are replaced.
-     *
-     * @param userId      id of the user.
-     * @param credentials new credentials
-     */
-    public void setCredentials(final String userId, final byte[] credentials) {
-        addCredentials(userId, credentials, isAdmin(userId));
+    public LoginCredentials getCredentials(final String userId) throws NotAvailableException {
+        return getEntry(userId);
     }
 
     /**
@@ -76,12 +65,14 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      * @param userId      id of client or user
      * @param credentials password, public or private key
      * @param admin       admin flag
+     * @param symmetric   flag defining if symmetric or asymmetric encryption should be used.
      */
-    public void addCredentials(final String userId, final byte[] credentials, final boolean admin) {
+    public void addCredentials(final String userId, final byte[] credentials, final boolean admin, final boolean symmetric) {
         final LoginCredentials loginCredentials = LoginCredentials.newBuilder()
                 .setId(userId)
-                .setCredentials(Base64.getEncoder().encodeToString(credentials))
+                .setCredentials(ByteString.copyFrom(credentials))
                 .setAdmin(admin)
+                .setSymmetric(symmetric)
                 .build();
         addEntry(userId, loginCredentials);
     }
@@ -113,7 +104,7 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
         if (!hasEntry(userId)) {
             throw new NotAvailableException(userId);
         }
-        addEntry(userId, LoginCredentials.newBuilder(getEntry(userId)).setAdmin(isAdmin).build());
+        addEntry(userId, getEntry(userId).toBuilder().setAdmin(isAdmin).build());
     }
 
     /**
@@ -124,7 +115,7 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      */
     @Override
     protected void load(final LoginCredentialsCollection data, final Map<String, LoginCredentials> internalMap) {
-        data.getElementList().forEach((entry) -> internalMap.put(entry.getId(), entry));
+        data.getLoginCredentialsList().forEach((entry) -> internalMap.put(entry.getId(), entry));
     }
 
     /**
@@ -136,6 +127,21 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      */
     @Override
     protected LoginCredentialsCollection save(final Map<String, LoginCredentials> internalMap) {
-        return LoginCredentialsCollection.newBuilder().addAllElement(internalMap.values()).build();
+        return LoginCredentialsCollection.newBuilder().addAllLoginCredentials(internalMap.values()).build();
+    }
+
+    /**
+     * Query how many admin credentials are currently stored.
+     *
+     * @return the total number of admin credentials stored.
+     */
+    public int getAdminCount() {
+        int adminCount = 0;
+        for (LoginCredentials value : getEntryMap().values()) {
+            if (value.getAdmin()) {
+                adminCount++;
+            }
+        }
+        return adminCount;
     }
 }
