@@ -30,8 +30,8 @@ import org.openbase.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.com.ScopeType;
-import org.openbase.type.com.ScopeType.Scope;
+import org.openbase.type.communication.ScopeType;
+import org.openbase.type.communication.ScopeType.Scope;
 
 import java.util.concurrent.TimeUnit;
 

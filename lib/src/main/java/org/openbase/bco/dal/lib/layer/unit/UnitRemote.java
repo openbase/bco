@@ -26,7 +26,7 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.controller.ConfigurableRemote;
-import org.openbase.type.com.ScopeType;
+import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;

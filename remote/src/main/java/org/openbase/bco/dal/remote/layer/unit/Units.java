@@ -60,7 +60,7 @@ import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.com.ScopeType;
+import org.openbase.type.communication.ScopeType;
 
 import java.util.ArrayList;
 import java.util.List;
