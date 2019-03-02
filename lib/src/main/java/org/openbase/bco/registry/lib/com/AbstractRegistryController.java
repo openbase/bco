@@ -43,8 +43,8 @@ import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.RegistryController;
-import org.openbase.type.com.ScopeType;
-import org.openbase.type.com.ScopeType.Scope;
+import org.openbase.type.communication.ScopeType;
+import org.openbase.type.communication.ScopeType.Scope;
 
 import java.io.Serializable;
 import java.util.ArrayList;

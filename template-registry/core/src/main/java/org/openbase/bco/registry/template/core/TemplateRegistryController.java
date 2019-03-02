@@ -57,7 +57,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.com.ScopeType;
+import org.openbase.type.communication.ScopeType;
 
 import java.util.List;
 import java.util.concurrent.Future;

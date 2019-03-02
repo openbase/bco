@@ -38,7 +38,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
-import org.openbase.type.com.ScopeType.Scope;
+import org.openbase.type.communication.ScopeType.Scope;
 
 /**
  *

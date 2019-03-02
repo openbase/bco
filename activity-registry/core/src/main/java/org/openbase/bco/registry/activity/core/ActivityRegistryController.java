@@ -45,7 +45,7 @@ import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
 import org.openbase.type.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
-import org.openbase.type.com.ScopeType;
+import org.openbase.type.communication.ScopeType;
 
 import java.util.ArrayList;
 import java.util.List;

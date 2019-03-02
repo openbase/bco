@@ -61,7 +61,7 @@ import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig
 import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.math.Vec3DDoubleType;
 import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
-import org.openbase.type.com.ScopeType.Scope;
+import org.openbase.type.communication.ScopeType.Scope;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
