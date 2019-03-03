@@ -23,7 +23,7 @@ package org.openbase.bco.authentication.lib;
  */
 
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.processing.JSonObjectFileProcessor;
+import org.openbase.jul.processing.json.JSonObjectFileProcessor;
 
 import java.util.Map;
 import java.util.Map.Entry;
