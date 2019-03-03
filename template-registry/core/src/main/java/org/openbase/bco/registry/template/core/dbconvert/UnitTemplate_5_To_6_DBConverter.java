@@ -22,14 +22,11 @@ package org.openbase.bco.registry.template.core.dbconvert;
  * #L%
  */
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.openbase.bco.registry.lib.dbconvert.LabelDBConverter;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.File;
 import java.util.Map;

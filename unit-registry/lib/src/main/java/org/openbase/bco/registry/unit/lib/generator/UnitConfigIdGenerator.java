@@ -23,8 +23,6 @@ package org.openbase.bco.registry.unit.lib.generator;
  */
 
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 

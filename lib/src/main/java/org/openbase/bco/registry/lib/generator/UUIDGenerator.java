@@ -24,7 +24,6 @@ package org.openbase.bco.registry.lib.generator;
 
 import com.google.protobuf.Message;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
