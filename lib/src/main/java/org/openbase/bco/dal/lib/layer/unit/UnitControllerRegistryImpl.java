@@ -32,7 +32,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -143,7 +143,7 @@ public class UnitControllerRegistryImpl<CONTROLLER extends UnitController<?, ?>>
             final Collection<CONTROLLER> unitControllerCollection = new ArrayList<>(data.values());
             // add new entries to the scope controller map
             for (final CONTROLLER controller : unitControllerCollection) {
-                scopeControllerMap.put(ScopeGenerator.generateStringRep(controller.getScope()), controller);
+                scopeControllerMap.put(ScopeProcessor.generateStringRep(controller.getScope()), controller);
             }
 
             // remove controller which are no longer provided by the registry
@@ -151,7 +151,7 @@ public class UnitControllerRegistryImpl<CONTROLLER extends UnitController<?, ?>>
                 if (unitControllerCollection.contains(controller)) {
                     continue;
                 }
-                scopeControllerMap.remove(ScopeGenerator.generateStringRep(controller.getScope()));
+                scopeControllerMap.remove(ScopeProcessor.generateStringRep(controller.getScope()));
             }
         }
     }

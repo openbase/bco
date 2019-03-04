@@ -27,7 +27,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
@@ -121,10 +121,10 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
                         configPool.register(new MetaConfigVariableProvider("ServiceTemplateConfig", colorStateServiceTemplateConfig.getMetaConfig()));
                     }
                 } catch (NotAvailableException ex) {
-                    logger.warn("Could not check deviceClass of device[" + ScopeGenerator.generateStringRep(deviceUnitConfig.getScope()) + "] for neutral white because its not available");
+                    logger.warn("Could not check deviceClass of device[" + ScopeProcessor.generateStringRep(deviceUnitConfig.getScope()) + "] for neutral white because its not available");
                 }
             } catch (NotAvailableException ex) {
-                logger.warn("Could not check host of colorableLight[" + ScopeGenerator.generateStringRep(config.getScope()) + "] for neutral white because its not available");
+                logger.warn("Could not check host of colorableLight[" + ScopeProcessor.generateStringRep(config.getScope()) + "] for neutral white because its not available");
             }
 
             try {
@@ -132,7 +132,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
                 try {
                     String[] split = neutralWhiteString.replace(" ", "").split(",");
                     if (split.length != 3) {
-                        throw new CouldNotPerformException("NeutralWhite for [" + ScopeGenerator.generateStringRep(config.getScope()) + "] has the wrong number of parameters!");
+                        throw new CouldNotPerformException("NeutralWhite for [" + ScopeProcessor.generateStringRep(config.getScope()) + "] has the wrong number of parameters!");
                     }
                     double hue = Double.parseDouble(split[0]);
                     double saturation = Double.parseDouble(split[1]);

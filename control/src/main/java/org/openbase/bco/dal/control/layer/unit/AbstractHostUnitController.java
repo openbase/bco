@@ -34,7 +34,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -86,13 +86,13 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
             try {
                 unitConstructor = detectUnitControllerClass(unitConfig).getConstructor(HostUnitController.class, unitMessageBuilder.getClass());
             } catch (CouldNotTransformException | NoSuchMethodException | SecurityException | NullPointerException ex) {
-                throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]!", ex);
+                throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
             }
             UnitController unit;
             try {
                 unit = unitConstructor.newInstance(this, unitMessageBuilder);
             } catch (java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException ex) {
-                throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]!", ex);
+                throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
             }
             unit.init(unitConfig);
             if (isActive()) {
@@ -100,7 +100,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
             }
             registerUnit(unit);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not register Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]!", ex);
+            throw new CouldNotPerformException("Could not register Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
         }
     }
 
@@ -137,7 +137,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
             }
 
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could register UnitBuilder[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]!", ex);
+            throw new CouldNotPerformException("Could register UnitBuilder[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
         }
     }
 
@@ -247,7 +247,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
                 MultiException.checkAndThrow(() -> "Could not update unitHostController!", exceptionStack);
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not applyConfigUpdate for UnitHost[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]", ex);
+            throw new CouldNotPerformException("Could not applyConfigUpdate for UnitHost[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]", ex);
         }
 
         return unitConfig;

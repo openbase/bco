@@ -62,15 +62,12 @@ import org.openbase.jul.extension.protobuf.BuilderSyncSetup;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.iface.ScopeProvider;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
-import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
-import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
@@ -245,15 +242,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
-    public void init(Scope scope) throws InitializationException, InterruptedException {
-        try {
-            init(ScopeTransformer.transform(scope));
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
             super.init(Registries.getUnitRegistry(true).getUnitConfigByScope(scope));
@@ -264,7 +252,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
-            init(ScopeGenerator.generateScope(label, getClass().getSimpleName(), location.getScope()));
+            init(ScopeProcessor.generateScope(label, getClass().getSimpleName(), location.getScope()));
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new InitializationException(this, ex);
         }
@@ -1575,7 +1563,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             return (Class<? extends UnitController>) Class.forName(className);
         } catch (ClassNotFoundException ex) {
             try {
-                throw new CouldNotTransformException(ScopeGenerator.generateStringRep(unitConfig.getScope()), UnitController.class, new NotAvailableException("Class", ex));
+                throw new CouldNotTransformException(ScopeProcessor.generateStringRep(unitConfig.getScope()), UnitController.class, new NotAvailableException("Class", ex));
             } catch (CouldNotPerformException ex1) {
                 throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
             }

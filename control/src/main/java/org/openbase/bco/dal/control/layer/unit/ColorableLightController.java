@@ -29,7 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
@@ -128,7 +128,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                 try {
                     String[] split = neutralWhiteString.replace(" ", "").split(",");
                     if (split.length != 3) {
-                        throw new CouldNotPerformException("NeutralWhite for [" + ScopeGenerator.generateStringRep(config.getScope()) + "] has the wrong number of parameters!");
+                        throw new CouldNotPerformException("NeutralWhite for [" + ScopeProcessor.generateStringRep(config.getScope()) + "] has the wrong number of parameters!");
                     }
                     double hue = Double.parseDouble(split[0]);
                     double saturation = Double.parseDouble(split[1]);

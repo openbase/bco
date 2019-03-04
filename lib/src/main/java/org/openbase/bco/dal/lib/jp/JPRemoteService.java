@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.jp;
  */
 
 import org.openbase.jps.preset.AbstractJPClass;
-import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
+import org.openbase.jul.communication.controller.AbstractRemoteClient;
 
 /**
  *

@@ -28,14 +28,13 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.communication.ScopeType.Scope;
 
 /**
@@ -90,7 +89,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
 
     public void setUnitRemote(final Scope scope) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.info("Setup unit remote: " + ScopeGenerator.generateStringRep(scope));
+            logger.info("Setup unit remote: " + ScopeProcessor.generateStringRep(scope));
             RS remote = (RS) Units.getUnitByScope(scope, false);
             setRemoteService(remote);
         } catch (CouldNotPerformException ex) {

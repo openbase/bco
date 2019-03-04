@@ -41,9 +41,10 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessageMap;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -995,7 +996,7 @@ public class Units {
             return getUnit(getUnitRegistry().getUnitConfigByScope(scope), waitForData);
         } catch (CouldNotPerformException ex) {
             try {
-                throw new NotAvailableException("Unit[" + ScopeGenerator.generateStringRep(scope) + "]", ex);
+                throw new NotAvailableException("Unit[" + ScopeProcessor.generateStringRep(scope) + "]", ex);
             } catch (CouldNotPerformException ex1) {
                 throw new NotAvailableException("Unit[?]", ex);
             }
@@ -1072,7 +1073,7 @@ public class Units {
                 assert false;
                 throw new NotAvailableException("UnitScope");
             }
-            return getUnitByScope(ScopeGenerator.generateScope(scope), waitForData);
+            return getUnitByScope(ScopeProcessor.generateScope(scope), waitForData);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit[" + scope + "]", ex);
         }
@@ -1519,7 +1520,7 @@ public class Units {
             }
 
             for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigsByLabel(label)) {
-                if (ScopeGenerator.generateStringRep(getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getScope()).equals(locationScope)) {
+                if (ScopeProcessor.generateStringRep(getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getScope()).equals(locationScope)) {
                     return getUnit(unitConfig, waitForData);
                 }
             }

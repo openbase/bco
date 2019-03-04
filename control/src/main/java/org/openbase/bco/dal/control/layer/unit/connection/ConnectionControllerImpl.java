@@ -29,7 +29,6 @@ import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderServi
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
 import org.openbase.bco.dal.lib.layer.unit.connection.ConnectionController;
 import org.openbase.bco.dal.remote.layer.service.ServiceRemoteManager;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -44,8 +43,6 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;

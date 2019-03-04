@@ -96,7 +96,7 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
 //        System.out.println("ping");
 //        connectionRemote.ping().get();
 //        System.out.println("ping done");
-//        System.out.println("request data of " + ScopeGenerator.generateStringRep(connectionRemote.getScope()));
+//        System.out.println("request data of " + ScopeProcessor.generateStringRep(connectionRemote.getScope()));
 //        System.out.println("got data: " + connectionRemote.requestData().get().getDoorState().getValue());
 //        while (connectionRemote.getDoorState().getValue() != DoorState.State.CLOSED) {
 ////            System.out.println("current state: " + locationRemote.getData());
@@ -113,7 +113,7 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
 //        System.out.println("ping");
 //        connectionRemote.ping().get();
 //        System.out.println("ping done");
-//        System.out.println("request data of " + ScopeGenerator.generateStringRep(connectionRemote.getScope()));
+//        System.out.println("request data of " + ScopeProcessor.generateStringRep(connectionRemote.getScope()));
 //        System.out.println("got data: " + connectionRemote.requestData().get().getDoorState().getValue());
 //        while (connectionRemote.getDoorState().getValue() != DoorState.State.OPEN) {
 ////            System.out.println("current state: " + locationRemote.getData());

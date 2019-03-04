@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.util;
  * #L%
  */
 
-import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
+import org.openbase.jul.communication.controller.AbstractRemoteClient;
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;

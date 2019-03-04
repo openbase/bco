@@ -40,19 +40,17 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.MessageObservable;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.communication.controller.RPCHelper;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
-import org.openbase.jul.extension.type.iface.ScopeProvider;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.rct.Transform;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
@@ -218,7 +216,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     @Override
     public void init(final String scope) throws InitializationException, InterruptedException {
         try {
-            this.init(ScopeGenerator.generateScope(scope));
+            this.init(ScopeProcessor.generateScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -674,7 +672,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     @Override
     public String toString() {
         try {
-            return getClass().getSimpleName() + "[scope:" + ScopeGenerator.generateStringRep(scope) + "]";
+            return getClass().getSimpleName() + "[scope:" + ScopeProcessor.generateStringRep(scope) + "]";
         } catch (CouldNotPerformException ex) {
             try {
                 return getClass().getSimpleName() + "[label:" + getLabel() + "]";

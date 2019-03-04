@@ -27,7 +27,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -293,7 +293,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                     try {
                         unitConfigComboBox.setForeground(Color.BLACK);
                         unitConfigObservable.notifyObservers(selectedUnitConfig);
-                        scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
+                        scopeTextField.setText(ScopeProcessor.generateStringRep(selectedUnitConfig.getScope()));
                     } catch (MultiException ex) {
                         unitConfigComboBox.setForeground(Color.RED);
                         statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
@@ -585,7 +585,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private void scopeCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeCancelButtonActionPerformed
         try {
-            scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()));
+            scopeTextField.setText(ScopeProcessor.generateStringRep(unitConfigObservable.getValue().getScope()));
         } catch (CouldNotPerformException | NullPointerException ex) {
             scopeTextField.setText("");
         }
@@ -615,7 +615,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                         scopeTextField.setForeground(Color.BLACK);
                         Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
                         unitConfigObservable.notifyObservers(Registries.getUnitRegistry().getUnitConfigByScope(scope));
-                        scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()));
+                        scopeTextField.setText(ScopeProcessor.generateStringRep(unitConfigObservable.getValue().getScope()));
                     } catch (CouldNotPerformException ex) {
                         scopeTextField.setForeground(Color.RED);
                         statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
@@ -671,7 +671,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
 
         try {
-            changes = !ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()).equals(text);
+            changes = !ScopeProcessor.generateStringRep(unitConfigObservable.getValue().getScope()).equals(text);
         } catch (CouldNotPerformException ex) {
             changes = !scopeTextField.getText().isEmpty();
         }

@@ -30,7 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
+import org.openbase.jul.communication.controller.AbstractRemoteClient;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -59,7 +59,7 @@ public class DALRemote {
             } catch (IllegalAccessException ex) {
                 throw new CouldNotPerformException("Could not access remote!", ex);
             }
-            remote.init(JPService.getProperty(JPScope.class).getValue());
+            remote.init(JPService.getProperty(JPScope.class).getValue().toString());
             remote.activate();
             Method remoteMethod = JPService.getProperty(JPRemoteMethod.class).getValue();
 

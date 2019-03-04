@@ -41,7 +41,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.CompletableFutureLite;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -53,7 +53,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -544,7 +543,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         } else if (infrastructureUnitMap.containsKey(unitConfig.getId())) {
             unitRemote = infrastructureUnitMap.remove(unitConfig.getId());
         } else {
-            throw new NotAvailableException("UnitConfig[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]");
+            throw new NotAvailableException("UnitConfig[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]");
         }
 
         unitRemote.removeDataObserver(dataObserver);

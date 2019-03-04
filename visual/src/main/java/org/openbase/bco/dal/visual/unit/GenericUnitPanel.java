@@ -35,7 +35,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
@@ -232,7 +232,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                     if (!servicePanelMap.containsKey(serviceConfig.getServiceDescription().getServiceType())) {
                         try {
                             servicePanel = new JPanel();
-                            servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToPascalCase(serviceConfig.getServiceDescription().getServiceType().name()) + " " + ScopeGenerator.generateStringRep(unitConfig.getScope())));
+                            servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToPascalCase(serviceConfig.getServiceDescription().getServiceType().name()) + " " + ScopeProcessor.generateStringRep(unitConfig.getScope())));
                             AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceDescription().getServiceType()), getRemoteService());
                             abstractServicePanel.setUnitId(unitConfig.getId());
                             abstractServicePanel.setServiceType(serviceConfig.getServiceDescription().getServiceType());
