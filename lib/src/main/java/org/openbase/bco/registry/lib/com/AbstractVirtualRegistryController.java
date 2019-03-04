@@ -25,8 +25,8 @@ import com.google.protobuf.AbstractMessage;
 
 import java.io.Serializable;
 
+import org.openbase.jul.communication.controller.jp.JPScope;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 
 /**
  *

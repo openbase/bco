@@ -21,8 +21,10 @@ package org.openbase.bco.registry.unit.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
-import rsb.Scope;
+
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.jp.JPScope;
+import org.openbase.type.communication.ScopeType.Scope;
 
 /**
  *
@@ -37,8 +39,8 @@ public class JPUnitRegistryScope extends JPScope {
     }
 
     @Override
-    protected Scope getPropertyDefaultValue() {
-        return super.getPropertyDefaultValue().concat(new Scope("/registry/unit"));
+    protected Scope getPropertyDefaultValue() throws JPNotAvailableException {
+        return super.getPropertyDefaultValue().toBuilder().addComponent("registry").addComponent("unit").build();
     }
 
     @Override

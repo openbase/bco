@@ -22,8 +22,10 @@ package org.openbase.bco.registry.activity.lib.jp;
  * #L%
  */
 
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
-import rsb.Scope;
+
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.jp.JPScope;
+import org.openbase.type.communication.ScopeType.Scope;
 
 /**
  *
@@ -38,10 +40,10 @@ public class JPActivityRegistryScope extends JPScope {
 	}
 
     @Override
-    protected Scope getPropertyDefaultValue() {
-        return super.getPropertyDefaultValue().concat(new Scope("/registry/activity"));
+    protected Scope getPropertyDefaultValue() throws JPNotAvailableException {
+        return super.getPropertyDefaultValue().toBuilder().addComponent("registry").addComponent("activity").build();
     }
-    
+
     @Override
 	public String getDescription() {
 		return "Setup the activity registry scope which is used for the rsb communication.";

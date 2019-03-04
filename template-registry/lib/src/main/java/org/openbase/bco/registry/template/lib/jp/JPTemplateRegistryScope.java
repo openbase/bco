@@ -22,8 +22,9 @@ package org.openbase.bco.registry.template.lib.jp;
  * #L%
  */
 
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
-import rsb.Scope;
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.jp.JPScope;
+import org.openbase.type.communication.ScopeType.Scope;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -37,8 +38,8 @@ public class JPTemplateRegistryScope extends JPScope {
     }
 
     @Override
-    protected Scope getPropertyDefaultValue() {
-        return super.getPropertyDefaultValue().concat(new Scope("/registry/template"));
+    protected Scope getPropertyDefaultValue() throws JPNotAvailableException {
+        return super.getPropertyDefaultValue().toBuilder().addComponent("registry").addComponent("template").build();
     }
 
     @Override

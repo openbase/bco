@@ -26,14 +26,13 @@ import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedControllerServer;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.jp.JPScope;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.pattern.ChangeListener;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -119,8 +118,8 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     @Override
     public ScopeType.Scope getDefaultConfig() throws NotAvailableException {
         try {
-            return ScopeTransformer.transform(JPService.getProperty(jpScopeProperty).getValue());
-        } catch (JPNotAvailableException | CouldNotTransformException ex) {
+            return JPService.getProperty(jpScopeProperty).getValue();
+        } catch (JPNotAvailableException ex) {
             throw new NotAvailableException("DefaultConfig", ex);
         }
     }

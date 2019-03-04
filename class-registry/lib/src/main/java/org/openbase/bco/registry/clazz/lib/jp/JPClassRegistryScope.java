@@ -22,8 +22,10 @@ package org.openbase.bco.registry.clazz.lib.jp;
  * #L%
  */
 
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
-import rsb.Scope;
+
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.jp.JPScope;
+import org.openbase.type.communication.ScopeType.Scope;
 
 /**
  *
@@ -38,8 +40,8 @@ public class JPClassRegistryScope extends JPScope {
 	}
 
     @Override
-    protected Scope getPropertyDefaultValue() {
-        return super.getPropertyDefaultValue().concat(new Scope("/registry/class"));
+    protected Scope getPropertyDefaultValue() throws JPNotAvailableException {
+        return super.getPropertyDefaultValue().toBuilder().addComponent("registry").addComponent("class").build();
     }
     
     @Override
