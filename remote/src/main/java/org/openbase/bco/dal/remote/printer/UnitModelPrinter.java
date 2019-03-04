@@ -99,7 +99,7 @@ public class UnitModelPrinter {
                     physicalProperties = "";
                 }
                 outputConsumer.consume("unit_template("
-                        + unitTemplate.getType().name().toLowerCase() + ", ["
+                        + unitTemplate.getUnitType().name().toLowerCase() + ", ["
                         + StringProcessor.transformCollectionToString(
                         unitTemplate.getServiceDescriptionList(),
                         serviceDescription -> serviceDescription.getServiceType().name().toLowerCase(),
@@ -122,8 +122,8 @@ public class UnitModelPrinter {
                 try {
                     // print discrete service state values
                     outputConsumer.consume("service_template("
-                            + serviceTemplate.getType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
-                            Services.getServiceStateEnumValues(serviceTemplate.getType())
+                            + serviceTemplate.getServiceType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
+                            Services.getServiceStateEnumValues(serviceTemplate.getServiceType())
                             , (ProtocolMessageEnum o) -> o.getValueDescriptor().getName().toLowerCase(),
                             ", ",
                             type -> type.getValueDescriptor().getName().equals("UNKNOWN")) + "]).");
@@ -131,13 +131,13 @@ public class UnitModelPrinter {
                     try {
                         // print continuous service state values
                         outputConsumer.consume("service_template(" +
-                                serviceTemplate.getType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
-                                Services.getServiceStateFieldDataTypes(serviceTemplate.getType()),
+                                serviceTemplate.getServiceType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
+                                Services.getServiceStateFieldDataTypes(serviceTemplate.getServiceType()),
                                 (String o) -> o.toLowerCase(),
                                 ", ") + "]).");
                     } catch (CouldNotPerformException exx) {
                         try {
-                            MultiException.checkAndThrow(() -> "Skip ServiceState[" + serviceTemplate.getType().name() + "]", MultiException.push(UnitModelPrinter.class, ex, MultiException.push(UnitModelPrinter.class, exx, null)));
+                            MultiException.checkAndThrow(() -> "Skip ServiceState[" + serviceTemplate.getServiceType().name() + "]", MultiException.push(UnitModelPrinter.class, ex, MultiException.push(UnitModelPrinter.class, exx, null)));
                         } catch (CouldNotPerformException exxx) {
                             ExceptionPrinter.printHistory(exxx, LOGGER, LogLevel.WARN);
                         }
@@ -178,7 +178,7 @@ public class UnitModelPrinter {
                 outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
                         + "'" + unitConfig.getId() + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
-                        + "'" + unitConfig.getLocationConfig().getType().name().toLowerCase() + "', ["
+                        + "'" + unitConfig.getLocationConfig().getLocationType().name().toLowerCase() + "', ["
                         + StringProcessor.transformCollectionToString(
                         unitConfig.getLabel().getEntryList(),
                         mapFieldEntry -> mapFieldEntry.getKey() + "='" + mapFieldEntry.getValue(0) + "'",
@@ -198,7 +198,7 @@ public class UnitModelPrinter {
                 outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
                         + "'" + unitConfig.getId() + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
-                        + "'" + unitConfig.getConnectionConfig().getType().name().toLowerCase() + "', ["
+                        + "'" + unitConfig.getConnectionConfig().getConnectionType().name().toLowerCase() + "', ["
                         + StringProcessor.transformCollectionToString(
                         unitConfig.getLabel().getEntryList(),
                         mapFieldEntry -> mapFieldEntry.getKey() + "='" + mapFieldEntry.getValue(0) + "'",

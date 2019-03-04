@@ -138,13 +138,13 @@ public class UnitSelectionPane extends AbstractFXController {
 //            }
 //            if ((!unitTemplateComboBox.getSelectionModel().isEmpty()
 //                    && unitTemplateComboBox.getSelectionModel().getSelectedIndex() != 0
-//                    && !unitTemplateComboBox.getSelectionModel().getSelectedItem().getTemplate().getType().equals(unitConfigHolder.getConfig().getUnitType()))) {
+//                    && !unitTemplateComboBox.getSelectionModel().getSelectedItem().getUnitTemplate().getType().equals(unitConfigHolder.getConfig().getUnitType()))) {
 //                return false;
 //            }
 //            if (!serviceTemplateComboBox.getSelectionModel().isEmpty()
 //                    && serviceTemplateComboBox.getSelectionModel().getSelectedIndex() != 0) {
 //                boolean found = false;
-//                final ServiceType selectedServicType = serviceTemplateComboBox.getSelectionModel().getSelectedItem().getTemplate().getType();
+//                final ServiceType selectedServicType = serviceTemplateComboBox.getSelectionModel().getSelectedItem().getUnitTemplate().getType();
 //                for (ServiceConfig serviceConfig : unitConfigHolder.getConfig().getServiceConfigList()) {
 //                    if (serviceConfig.getServiceDescription().getServiceType() == selectedServicType) {
 //                        found = true;
@@ -268,19 +268,19 @@ public class UnitSelectionPane extends AbstractFXController {
 
                 ObservableList<ServiceTemplateHolder> serviceTemplateHolderList = FXCollections.observableArrayList();
                 serviceTemplateHolderList.add(ALL_SERVICE);
-                for (ServiceTemplate template : Registries.getTemplateRegistry().getServiceTemplates()) {
+                for (ServiceTemplate serviceTemplate : Registries.getTemplateRegistry().getServiceTemplates()) {
 
                     // apply location type filter if needed
-                    if (locationSupportedServiceConfigList != null && !locationSupportedServiceConfigList.contains(template.getType())) {
+                    if (locationSupportedServiceConfigList != null && !locationSupportedServiceConfigList.contains(serviceTemplate.getServiceType())) {
                         continue;
                     }
 
                     // apply unit type filter if needed
-                    if (unitTypeSupportedServiceConfigList != null && !unitTypeSupportedServiceConfigList.contains(template.getType())) {
+                    if (unitTypeSupportedServiceConfigList != null && !unitTypeSupportedServiceConfigList.contains(serviceTemplate.getServiceType())) {
                         continue;
                     }
 
-                    serviceTemplateHolderList.add(new ServiceTemplateHolder(template));
+                    serviceTemplateHolderList.add(new ServiceTemplateHolder(serviceTemplate));
                 }
 
                 Collections.sort(serviceTemplateHolderList);
@@ -486,10 +486,10 @@ public class UnitSelectionPane extends AbstractFXController {
 
     public static class UnitTemplateHolder implements Comparable<UnitTemplateHolder> {
 
-        private final UnitTemplate template;
+        private final UnitTemplate unitTemplate;
 
-        public UnitTemplateHolder(final UnitTemplate template) {
-            this.template = template;
+        public UnitTemplateHolder(final UnitTemplate unitTemplate) {
+            this.unitTemplate = unitTemplate;
         }
 
         @Override
@@ -497,22 +497,22 @@ public class UnitSelectionPane extends AbstractFXController {
             if (getType().equals(UnitType.UNKNOWN)) {
                 return "All";
             }
-            return LabelProcessor.getBestMatch(template.getLabel(), "?");
+            return LabelProcessor.getBestMatch(unitTemplate.getLabel(), "?");
         }
 
         public boolean isNotSpecified() {
             return getType().equals(UnitType.UNKNOWN);
         }
 
-        public UnitTemplate getTemplate() {
-            return template;
+        public UnitTemplate getUnitTemplate() {
+            return unitTemplate;
         }
 
         public UnitType getType() {
-            if (template == null) {
+            if (unitTemplate == null) {
                 return UnitType.UNKNOWN;
             }
-            return template.getType();
+            return unitTemplate.getUnitType();
         }
 
         @Override
@@ -558,10 +558,10 @@ public class UnitSelectionPane extends AbstractFXController {
 
     public static class ServiceTemplateHolder implements Comparable<ServiceTemplateHolder> {
 
-        private final ServiceTemplate template;
+        private final ServiceTemplate serviceTemplate;
 
         public ServiceTemplateHolder(final ServiceTemplate template) {
-            this.template = template;
+            this.serviceTemplate = template;
         }
 
         @Override
@@ -569,7 +569,7 @@ public class UnitSelectionPane extends AbstractFXController {
             if (getType().equals(ServiceType.UNKNOWN)) {
                 return "All";
             }
-            return LabelProcessor.getBestMatch(template.getLabel(), "?");
+            return LabelProcessor.getBestMatch(serviceTemplate.getLabel(), "?");
         }
 
         public boolean isNotSpecified() {
@@ -577,14 +577,14 @@ public class UnitSelectionPane extends AbstractFXController {
         }
 
         public ServiceType getType() {
-            if (template == null) {
+            if (serviceTemplate == null) {
                 return ServiceType.UNKNOWN;
             }
-            return template.getType();
+            return serviceTemplate.getServiceType();
         }
 
-        public ServiceTemplate getTemplate() {
-            return template;
+        public ServiceTemplate getServiceTemplate() {
+            return serviceTemplate;
         }
 
         @Override

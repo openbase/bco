@@ -167,7 +167,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         for (String unitId : unitConnectionConfig.getConnectionConfig().getUnitIdList()) {
             final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
 
-            switch (unitConnectionConfig.getConnectionConfig().getType()) {
+            switch (unitConnectionConfig.getConnectionConfig().getConnectionType()) {
                 case DOOR:
                     ContactDoorPosition contactDoorPosition;
                     try {
@@ -358,15 +358,15 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
     }
 
     public ConnectionType getConnectionType() throws NotAvailableException {
-        if (!getConfig().getConnectionConfig().hasType()) {
+        if (!getConfig().getConnectionConfig().hasConnectionType()) {
             throw new NotAvailableException("ConnectionConfig.Type");
         }
-        return getConfig().getConnectionConfig().getType();
+        return getConfig().getConnectionConfig().getConnectionType();
     }
 
     public void verifyConnectionState(ConnectionType connectionType) throws VerificationFailedException, NotAvailableException {
         if (getConnectionType() != connectionType) {
-            throw new VerificationFailedException("ConnectionType verification failed. Connection [" + getConfig().getId() + "] has type [" + getConfig().getConnectionConfig().getType().name() + "] and not [" + connectionType.name() + "]");
+            throw new VerificationFailedException("ConnectionType verification failed. Connection [" + getConfig().getId() + "] has type [" + getConfig().getConnectionConfig().getConnectionType().name() + "] and not [" + connectionType.name() + "]");
         }
     }
 

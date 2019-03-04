@@ -220,7 +220,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                             continue;
                         }
                         serviceStateDescription.setUnitId(getId());
-                        serviceStateDescription.setUnitType(getUnitTemplate().getType());
+                        serviceStateDescription.setUnitType(getUnitTemplate().getUnitType());
                         serviceStateDescription.setServiceType(serviceType);
                         serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(serviceState));
 

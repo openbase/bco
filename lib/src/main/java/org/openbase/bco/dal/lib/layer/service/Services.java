@@ -130,7 +130,7 @@ public class Services extends ServiceStateProcessor {
                 assert false;
                 throw new NotAvailableException("ServiceTemplate");
             }
-            return getServiceStateName(template.getType());
+            return getServiceStateName(template.getServiceType());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ServiceStateName", ex);
         }

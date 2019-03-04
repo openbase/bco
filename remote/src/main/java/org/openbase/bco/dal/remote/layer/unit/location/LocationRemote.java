@@ -116,7 +116,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
 
 
     public List<ConnectionRemote> getConnectionList(final boolean waitForData) throws CouldNotPerformException {
-        if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {
+        if (!getConfig().getLocationConfig().getLocationType().equals(LocationType.TILE)) {
             throw new CouldNotPerformException("Location is not a Tile!");
         }
 
@@ -145,7 +145,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
      */
     public List<ConnectionRemote> getDirectConnectionList(final String locationID, final boolean waitForData) throws CouldNotPerformException {
-        if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {
+        if (!getConfig().getLocationConfig().getLocationType().equals(LocationType.TILE)) {
             throw new CouldNotPerformException("Location is not a Tile!");
         }
 
@@ -177,7 +177,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
     public boolean hasDirectConnection(final String locationID, final ConnectionType connectionType, final boolean waitForData) throws CouldNotPerformException {
         // todo do not iterate over instances if configs providing all needed informations.
         for (ConnectionRemote relatedConnection : getDirectConnectionList(locationID, true)) {
-            if (relatedConnection.getConfig().getConnectionConfig().getType().equals(connectionType)) {
+            if (relatedConnection.getConfig().getConnectionConfig().getConnectionType().equals(connectionType)) {
                 return true;
             }
         }
