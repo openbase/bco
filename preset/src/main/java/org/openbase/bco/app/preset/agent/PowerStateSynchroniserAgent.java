@@ -37,7 +37,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observer;
@@ -176,7 +176,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             // get source remote
             UnitConfig sourceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY));
             if (sourceUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-                throw new NotAvailableException("Source[" + ScopeGenerator.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
+                throw new NotAvailableException("Source[" + ScopeProcessor.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
             }
             sourceId = sourceUnitConfig.getId();
 
@@ -190,8 +190,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                     logger.trace("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
                     UnitConfig targetUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId);
                     if (targetUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-                        logger.warn("TargetUnit[" + ScopeGenerator.generateStringRep(targetUnitConfig.getScope()) + "] "
-                                + "of powerStateSynchroniserAgent[" + ScopeGenerator.generateStringRep(config.getScope()) + "] is disabled and therefore skipped!");
+                        logger.warn("TargetUnit[" + ScopeProcessor.generateStringRep(targetUnitConfig.getScope()) + "] "
+                                + "of powerStateSynchroniserAgent[" + ScopeProcessor.generateStringRep(config.getScope()) + "] is disabled and therefore skipped!");
                         continue;
                     }
                     targetRemotes.add(Units.getUnit(unitId, false));

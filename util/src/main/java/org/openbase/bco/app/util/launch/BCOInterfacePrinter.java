@@ -37,7 +37,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RSBRemote;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.slf4j.Logger;
@@ -167,7 +167,7 @@ public class BCOInterfacePrinter {
 
                 System.out.println("    " + AnsiColor.colorize(registry.getName(), UNIT_TYPE_COLOR) + colorize(" : " + unitDataType));
 
-                final String scope = ScopeGenerator.generateStringRep(((RSBRemote) registry).getScope());
+                final String scope = ScopeProcessor.generateStringRep(((RSBRemote) registry).getScope());
                 for (final Method method : detectRPCMethods(registry)) {
                     final String params = detectParameterType(method);
                     final String returnType = detectReturnType(method);
@@ -233,7 +233,7 @@ public class BCOInterfacePrinter {
                     for (final Method method : detectRPCMethods(unitInstance)) {
                         final String params = detectParameterType(method);
                         final String returnType = detectReturnType(method);
-                        System.out.println(colorize("        / <LocationScope> / " + ScopeGenerator.convertIntoValidScopeComponent(unitType.name()) + " / <UnitLabel> / ctrl / " + method.getName() + "(" + transformToProtobufTypeName(params) + ")" + (returnType.isEmpty() ? "" : " : " + returnType)));
+                        System.out.println(colorize("        / <LocationScope> / " + ScopeProcessor.convertIntoValidScopeComponent(unitType.name()) + " / <UnitLabel> / ctrl / " + method.getName() + "(" + transformToProtobufTypeName(params) + ")" + (returnType.isEmpty() ? "" : " : " + returnType)));
                     }
                     System.out.println();
                 } catch (Exception ex) {
