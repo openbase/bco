@@ -319,7 +319,7 @@ public class FulfillmentHandler {
 
         // always register units at a tile so that they will respond to that when queried like this by google
         UnitConfig location = Registries.getUnitRegistry().getUnitConfigById(host.getPlacementConfig().getLocationId());
-        while (location.getLocationConfig().getType() == LocationType.REGION) {
+        while (location.getLocationConfig().getLocationType() == LocationType.REGION) {
             location = Registries.getUnitRegistry().getUnitConfigById(location.getPlacementConfig().getLocationId());
         }
         device.addProperty("roomHint", LabelProcessor.getBestMatch(userLocale, location.getLabel()));

@@ -67,7 +67,7 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
                 throw new InitializationException("LocationRemote not available.", ex);
             }
             for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(false)) {
-                if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionType.WINDOW)) {
+                if (connectionRemote.getConfig().getConnectionConfig().getConnectionType().equals(ConnectionType.WINDOW)) {
                     try {
                         registerTrigger(new GenericBCOTrigger(connectionRemote, WindowState.State.OPEN, ServiceType.WINDOW_STATE_SERVICE), TriggerAggregation.OR);
                     } catch (CouldNotPerformException ex) {
