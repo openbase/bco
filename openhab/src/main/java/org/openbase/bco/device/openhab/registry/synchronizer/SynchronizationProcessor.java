@@ -242,7 +242,7 @@ public class SynchronizationProcessor {
                     }
                     LOGGER.warn("Could not resolve channel for id [" + channelIdGuess + "]");
                 } catch (NotAvailableException ex) {
-                    LOGGER.warn("Service[" + serviceType.name() + "] of unitTemplateConfig[" + unitTemplateConfig.getType().name() +
+                    LOGGER.warn("Service[" + serviceType.name() + "] of unitTemplateConfig[" + unitTemplateConfig.getUnitType().name() +
                             "] deviceClass[" + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "] handled by openHAB app does have a channel configured");
                 }
             }

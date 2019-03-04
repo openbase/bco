@@ -66,13 +66,13 @@ public class ServiceTypeCommandMappingTest {
         boolean atLeastOneNotAvailable = false;
         for (ServiceTemplate serviceTemplate : Registries.getTemplateRegistry().getServiceTemplates()) {
             try {
-                Set<Class<Command>> commandClasses = ServiceTypeCommandMapping.getCommandClasses(serviceTemplate.getType());
+                Set<Class<Command>> commandClasses = ServiceTypeCommandMapping.getCommandClasses(serviceTemplate.getServiceType());
                 for (Class<Command> commandClass : commandClasses) {
                     try {
-                        ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceTemplate.getType(), commandClass);
+                        ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceTemplate.getServiceType(), commandClass);
                     } catch (CouldNotPerformException ex) {
                         atLeastOneNotAvailable = true;
-                        LOGGER.warn("Transformer for service type[" + serviceTemplate.getType().name() + "] and command type["
+                        LOGGER.warn("Transformer for service type[" + serviceTemplate.getServiceType().name() + "] and command type["
                                 + commandClass.getSimpleName() + "] it not available", ex);
                     }
                 }

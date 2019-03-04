@@ -124,7 +124,7 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
                 sitemap.addTextElement(getItem(ServiceType.SMOKE_STATE_SERVICE), getLabel() + "[%s]", SitemapIconType.FIRE);
                 break;
             case CONNECTION:
-                switch (unitConfig.getConnectionConfig().getType()) {
+                switch (unitConfig.getConnectionConfig().getConnectionType()) {
                     case DOOR:
                         sitemap.addTextElement(getItem(ServiceType.DOOR_STATE_SERVICE), getLabel() + "[%s]", SitemapIconType.DOOR);
                         break;

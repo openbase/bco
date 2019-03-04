@@ -42,10 +42,10 @@ public class TestClient {
                 for (ServiceTemplate serviceTemplate : data.getServiceTemplateList()) {
                     String commandClasses = "";
                     try {
-                        for (Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceTemplate.getType())) {
+                        for (Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceTemplate.getServiceType())) {
                             commandClasses += commandClass.getSimpleName() + ", ";
                         }
-                        LOGGER.info(serviceTemplate.getType().name() + ": " + commandClasses);
+                        LOGGER.info(serviceTemplate.getServiceType().name() + ": " + commandClasses);
                     } catch (NotAvailableException ex) {
                         // do nothing
                     }

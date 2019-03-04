@@ -102,9 +102,9 @@ public class ServiceTypeCommandMapping {
     private static void buildMap() throws CouldNotPerformException {
         synchronized (UPDATE_LOCK) {
             for (final ServiceTemplate serviceTemplate : Registries.getTemplateRegistry().getServiceTemplates()) {
-                MAP.put(serviceTemplate.getType(), new HashSet<>());
+                MAP.put(serviceTemplate.getServiceType(), new HashSet<>());
                 final MetaConfigPool metaConfigPool = new MetaConfigPool();
-                metaConfigPool.register(new MetaConfigVariableProvider(serviceTemplate.getType().name() + MetaConfig.class.getSimpleName(), serviceTemplate.getMetaConfig()));
+                metaConfigPool.register(new MetaConfigVariableProvider(serviceTemplate.getServiceType().name() + MetaConfig.class.getSimpleName(), serviceTemplate.getMetaConfig()));
 
                 String commandTypeClasses;
                 try {
@@ -118,9 +118,9 @@ public class ServiceTypeCommandMapping {
                     try {
                         final String className = commandTypePackage + "." + commandTypeClass.trim();
                         Class<Command> commandClass = (Class<Command>) ServiceTypeCommandMapping.class.getClassLoader().loadClass(className);
-                        MAP.get(serviceTemplate.getType()).add(commandClass);
+                        MAP.get(serviceTemplate.getServiceType()).add(commandClass);
                     } catch (ClassNotFoundException ex) {
-                        ExceptionPrinter.printHistory("Command class[" + commandTypeClass + "] for service type[" + serviceTemplate.getType().name() + "] not available", ex, LOGGER, LogLevel.WARN);
+                        ExceptionPrinter.printHistory("Command class[" + commandTypeClass + "] for service type[" + serviceTemplate.getServiceType().name() + "] not available", ex, LOGGER, LogLevel.WARN);
                     }
                 }
             }
