@@ -16,7 +16,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;

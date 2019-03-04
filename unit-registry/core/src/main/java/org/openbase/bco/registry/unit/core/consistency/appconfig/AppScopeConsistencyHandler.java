@@ -30,7 +30,8 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -74,11 +75,11 @@ public class AppScopeConsistencyHandler extends AbstractProtoBufRegistryConsiste
         final Scope newScope = ScopeGenerator.generateAppScope(appUnitConfig, appClass, locationRegistry.getMessage(appUnitConfig.getPlacementConfig().getLocationId()));
 
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(appUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
-            if (appMap.containsKey(ScopeGenerator.generateStringRep(newScope))) {
-                throw new InvalidStateException("Two apps [" + appUnitConfig + "][" + appMap.get(ScopeGenerator.generateStringRep(newScope)) + "] are registered with the same label and location");
+        if (!ScopeProcessor.generateStringRep(appUnitConfig.getScope()).equals(ScopeProcessor.generateStringRep(newScope))) {
+            if (appMap.containsKey(ScopeProcessor.generateStringRep(newScope))) {
+                throw new InvalidStateException("Two apps [" + appUnitConfig + "][" + appMap.get(ScopeProcessor.generateStringRep(newScope)) + "] are registered with the same label and location");
             } else {
-                appMap.put(ScopeGenerator.generateStringRep(newScope), appUnitConfig);
+                appMap.put(ScopeProcessor.generateStringRep(newScope), appUnitConfig);
                 entry.setMessage(appUnitConfig.toBuilder().setScope(newScope), this);
                 throw new EntryModification(entry, this);
             }

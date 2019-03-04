@@ -30,8 +30,9 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.EnablingStateType;
@@ -245,7 +246,7 @@ public class UnitConfigProcessor {
             }
 
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not load builder for " + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "!", ex);
+            throw new CouldNotPerformException("Could not load builder for " + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "!", ex);
         }
         return builder;
     }

@@ -26,7 +26,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
@@ -57,7 +57,7 @@ public class UnitAliasUniqueVerificationConsistencyHandler extends AbstractProto
             } else {
                 // if already known check if this unit is owning the alias otherwise throw invalid state
                 if (!aliasUnitIdMap.get(alias.toLowerCase()).equals(unitConfig.getId())) {
-                    throw new RejectedException("Alias[" + alias.toLowerCase() + "] of Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + ", " + unitConfig.getId() + "] is already used by Unit[" + aliasUnitIdMap.get(alias.toLowerCase()) + "]");
+                    throw new RejectedException("Alias[" + alias.toLowerCase() + "] of Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + ", " + unitConfig.getId() + "] is already used by Unit[" + aliasUnitIdMap.get(alias.toLowerCase()) + "]");
                 }
             }
         }

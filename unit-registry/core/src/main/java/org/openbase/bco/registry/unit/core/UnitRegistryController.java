@@ -65,7 +65,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.storage.registry.consistency.TransformationFrameConsistencyHandler;
 import org.openbase.jul.pattern.ListFilter;

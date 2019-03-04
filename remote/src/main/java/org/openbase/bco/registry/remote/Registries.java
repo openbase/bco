@@ -36,7 +36,7 @@ import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException.ExceptionStack;
-import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
+import org.openbase.jul.communication.controller.AbstractRemoteClient;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;

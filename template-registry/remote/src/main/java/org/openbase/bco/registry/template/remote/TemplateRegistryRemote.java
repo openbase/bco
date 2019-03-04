@@ -31,7 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.controller.Remote;
 import rsb.converter.DefaultConverterRepository;

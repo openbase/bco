@@ -28,7 +28,8 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -69,15 +70,15 @@ public class DalUnitScopeConsistencyHandler extends AbstractProtoBufRegistryCons
         ScopeType.Scope newScope = ScopeGenerator.generateUnitScope(unitConfigClone, locationRegistry.getMessage((dalUnitConfig.getPlacementConfig().getLocationId())));
 
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(dalUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeProcessor.generateStringRep(dalUnitConfig.getScope()).equals(ScopeProcessor.generateStringRep(newScope))) {
             dalUnitConfig.setScope(newScope);
             modification = true;
         }
 
-        if (unitScopeMap.containsKey(ScopeGenerator.generateStringRep(dalUnitConfig.getScope()))) {
-            throw new InvalidStateException("Two units with same scope[" + ScopeGenerator.generateStringRep(dalUnitConfig.getScope()) + "]!");
+        if (unitScopeMap.containsKey(ScopeProcessor.generateStringRep(dalUnitConfig.getScope()))) {
+            throw new InvalidStateException("Two units with same scope[" + ScopeProcessor.generateStringRep(dalUnitConfig.getScope()) + "]!");
         }
-        unitScopeMap.put(ScopeGenerator.generateStringRep(dalUnitConfig.getScope()), dalUnitConfig.build());
+        unitScopeMap.put(ScopeProcessor.generateStringRep(dalUnitConfig.getScope()), dalUnitConfig.build());
 
         if (modification) {
             throw new EntryModification(entry.setMessage(dalUnitConfig, this), this);

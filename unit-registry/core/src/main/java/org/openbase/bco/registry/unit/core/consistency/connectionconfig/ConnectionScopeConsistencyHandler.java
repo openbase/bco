@@ -24,7 +24,8 @@ package org.openbase.bco.registry.unit.core.consistency.connectionconfig;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -51,7 +52,7 @@ public class ConnectionScopeConsistencyHandler extends AbstractProtoBufRegistryC
 
         Scope newScope = ScopeGenerator.generateConnectionScope(connectionUnitConfig, locationRegistry.getMessage(connectionUnitConfig.getPlacementConfig().getLocationId()));
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(connectionUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeProcessor.generateStringRep(connectionUnitConfig.getScope()).equals(ScopeProcessor.generateStringRep(newScope))) {
             entry.setMessage(connectionUnitConfig.toBuilder().setScope(newScope), this);
             throw new EntryModification(entry, this);
         }

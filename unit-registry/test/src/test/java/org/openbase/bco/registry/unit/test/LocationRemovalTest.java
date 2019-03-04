@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -70,14 +70,14 @@ public class LocationRemovalTest extends AbstractBCORegistryTest {
 
                 // chose a location randomly
                 UnitConfig locationConfig = locationConfigList.remove(random.nextInt(locationConfigList.size()));
-                logger.info("Try to remove location[" + ScopeGenerator.generateStringRep(locationConfig.getScope()) + "].");
+                logger.info("Try to remove location[" + ScopeProcessor.generateStringRep(locationConfig.getScope()) + "].");
 
                 // remove location
                 Registries.getUnitRegistry().removeUnitConfig(locationConfig).get();
 
                 // test if removal really worked
                 assertFalse("LocationRegistry still contains locationConfig[" + locationConfig.getLabel() + "] after removal", Registries.getUnitRegistry().containsUnitConfig(locationConfig));
-                logger.info("Removed location[" + ScopeGenerator.generateStringRep(locationConfig.getScope()) + "] successfully. " + locationConfigList.size() + " location[s] remaining.");
+                logger.info("Removed location[" + ScopeProcessor.generateStringRep(locationConfig.getScope()) + "] successfully. " + locationConfigList.size() + " location[s] remaining.");
             }
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);

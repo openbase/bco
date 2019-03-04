@@ -24,7 +24,8 @@ package org.openbase.bco.registry.unit.core.consistency.sceneconfig;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.type.communication.ScopeType.Scope;
@@ -63,7 +64,7 @@ public class SceneScopeConsistencyHandler extends AbstractProtoBufRegistryConsis
         Scope newScope = ScopeGenerator.generateSceneScope(sceneUnitConfig, locationRegistry.getMessage(sceneUnitConfig.getPlacementConfig().getLocationId()));
 
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(sceneUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeProcessor.generateStringRep(sceneUnitConfig.getScope()).equals(ScopeProcessor.generateStringRep(newScope))) {
             throw new EntryModification(entry.setMessage(sceneUnitConfig.toBuilder().setScope(newScope), this), this);
         }
     }

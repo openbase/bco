@@ -27,7 +27,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -125,7 +125,7 @@ public class BCOUnitQueryPrinter {
             // print by scope
             unitConfigs.clear();
             for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
-                if (ScopeGenerator.generateStringRep(unitConfig.getScope()).contains(args[0].toLowerCase())) {
+                if (ScopeProcessor.generateStringRep(unitConfig.getScope()).contains(args[0].toLowerCase())) {
                     unitConfigs.add(unitConfig);
                 }
             }
@@ -224,7 +224,7 @@ public class BCOUnitQueryPrinter {
         // sort by scope
         Collections.sort(unitConfigList, (o1, o2) -> {
             try {
-                return ScopeGenerator.generateStringRep(o1.getScope()).compareTo(ScopeGenerator.generateStringRep(o2.getScope()));
+                return ScopeProcessor.generateStringRep(o1.getScope()).compareTo(ScopeProcessor.generateStringRep(o2.getScope()));
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory("Could not sort scope!", ex, System.err);
                 return 0;
@@ -239,7 +239,7 @@ public class BCOUnitQueryPrinter {
         for (final UnitConfig unitConfig : unitConfigList) {
             maxUnitLabelLength = Math.max(maxUnitLabelLength, LabelProcessor.getBestMatch(unitConfig.getLabel()).length());
             maxLocationUnitLabelLength = Math.max(maxLocationUnitLabelLength, getLocationLabel(unitConfig).length());
-            maxScopeLength = Math.max(maxScopeLength, ScopeGenerator.generateStringRep(unitConfig.getScope()).length());
+            maxScopeLength = Math.max(maxScopeLength, ScopeProcessor.generateStringRep(unitConfig.getScope()).length());
             maxAliasLength = Math.max(maxAliasLength, Arrays.toString(unitConfig.getAliasList().toArray()).length());
         }
 
@@ -257,7 +257,7 @@ public class BCOUnitQueryPrinter {
                 + StringProcessor.fillWithSpaces(LabelProcessor.getBestMatch(unitConfig.getLabel()), maxUnitLabelLength, StringProcessor.Alignment.RIGHT)
                 + " @ " + StringProcessor.fillWithSpaces(getLocationLabel(unitConfig), maxLocationUnitLabelLength)
                 + "  "
-                + "[ " + StringProcessor.fillWithSpaces(ScopeGenerator.generateStringRep(unitConfig.getScope()), maxScopeLength) + " ]"
+                + "[ " + StringProcessor.fillWithSpaces(ScopeProcessor.generateStringRep(unitConfig.getScope()), maxScopeLength) + " ]"
         );
     }
 

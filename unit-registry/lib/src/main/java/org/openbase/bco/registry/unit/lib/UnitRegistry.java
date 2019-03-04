@@ -38,8 +38,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
@@ -186,12 +187,12 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
     @RPCMethod
     default String getUnitScopeById(final String id) throws CouldNotPerformException {
-        return ScopeGenerator.generateStringRep(getUnitConfigById(id).getScope());
+        return ScopeProcessor.generateStringRep(getUnitConfigById(id).getScope());
     }
 
     @RPCMethod
     default String getUnitScopeByAlias(final String alias) throws CouldNotPerformException {
-        return ScopeGenerator.generateStringRep(getUnitConfigByAlias(alias).getScope());
+        return ScopeProcessor.generateStringRep(getUnitConfigByAlias(alias).getScope());
     }
 
     /**

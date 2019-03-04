@@ -30,7 +30,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.rsb.com.AbstractRemoteClient;
+import org.openbase.jul.communication.controller.AbstractRemoteClient;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.AbstractFilter;
 import org.openbase.jul.pattern.Observable;

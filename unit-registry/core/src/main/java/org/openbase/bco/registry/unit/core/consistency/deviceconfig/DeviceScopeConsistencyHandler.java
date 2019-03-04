@@ -25,7 +25,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -61,7 +62,7 @@ public class DeviceScopeConsistencyHandler extends AbstractProtoBufRegistryConsi
         ScopeType.Scope newScope = ScopeGenerator.generateDeviceScope(unitDeviceConfig, unitLocationConfig);
 
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(unitDeviceConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeProcessor.generateStringRep(unitDeviceConfig.getScope()).equals(ScopeProcessor.generateStringRep(newScope))) {
             entry.setMessage(unitDeviceConfig.toBuilder().setScope(newScope), this);
             throw new EntryModification(entry, this);
         }

@@ -27,7 +27,7 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.configuration.MetaConfigType;
@@ -86,11 +86,11 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         DeviceClass motionSensorClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("F_MotionSensor", productNumber, company, UnitType.BATTERY)).get();
         UnitConfig motionSensorConfig = Registries.getUnitRegistry().registerUnitConfig(generateDeviceUnitConfig(deviceLabel, serialNumber, motionSensorClass)).get();
 
-        assertEquals("Device scope is not set properly", deviceScope, ScopeGenerator.generateStringRep(motionSensorConfig.getScope()));
+        assertEquals("Device scope is not set properly", deviceScope, ScopeProcessor.generateStringRep(motionSensorConfig.getScope()));
         assertEquals("Device has not the correct number of units", 1, motionSensorConfig.getDeviceConfig().getUnitIdCount());
 
         UnitConfig batteryUnit = Registries.getUnitRegistry().getUnitConfigById(motionSensorConfig.getDeviceConfig().getUnitId(0));
-        assertEquals("Unit scope is not set properly", expectedUnitScope, ScopeGenerator.generateStringRep(batteryUnit.getScope()));
+        assertEquals("Unit scope is not set properly", expectedUnitScope, ScopeProcessor.generateStringRep(batteryUnit.getScope()));
         assertEquals("Device id is not set in unit", motionSensorConfig.getId(), batteryUnit.getUnitHostId());
     }
 

@@ -24,7 +24,8 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.type.communication.ScopeType;
@@ -61,7 +62,7 @@ public class UnitGroupScopeConsistencyHandler extends AbstractProtoBufRegistryCo
         ScopeType.Scope newScope = ScopeGenerator.generateUnitGroupScope(unitGroupUnitConfig, locationConfig);
 
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(unitGroupUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeProcessor.generateStringRep(unitGroupUnitConfig.getScope()).equals(ScopeProcessor.generateStringRep(newScope))) {
             entry.setMessage(unitGroupUnitConfig.toBuilder().setScope(newScope), this);
             throw new EntryModification(entry, this);
         }
