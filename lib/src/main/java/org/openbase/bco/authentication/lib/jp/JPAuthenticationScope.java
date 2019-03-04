@@ -22,8 +22,10 @@ package org.openbase.bco.authentication.lib.jp;
  * #L%
  */
 
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
-import rsb.Scope;
+
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.jp.JPScope;
+import org.openbase.type.communication.ScopeType.Scope;
 
 /**
  *
@@ -38,8 +40,8 @@ public class JPAuthenticationScope extends JPScope {
     }
 
     @Override
-    protected Scope getPropertyDefaultValue() {
-        return super.getPropertyDefaultValue().concat(new Scope("/bco/authentication"));
+    protected Scope getPropertyDefaultValue() throws JPNotAvailableException {
+        return super.getPropertyDefaultValue().toBuilder().addComponent("bco").addComponent("authentication").build();
     }
 
     @Override

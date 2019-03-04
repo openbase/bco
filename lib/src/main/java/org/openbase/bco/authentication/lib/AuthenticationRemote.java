@@ -34,6 +34,8 @@ import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
+import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
@@ -66,7 +68,9 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(
+                    ScopeTransformer.transform(JPService.getProperty(JPAuthenticationScope.class).getValue()),
+                    RSBSharedConnectionConfig.getParticipantConfig());
 
             serverWatchDog = new WatchDog(remoteServer, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {

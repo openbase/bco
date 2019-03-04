@@ -38,6 +38,7 @@ import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -63,7 +64,7 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorController implements AuthenticationService, Launchable<Void>, VoidInitializable {
-
+    // todo release: validate name (AuthenticatorController vs. AuthenticationRemote)
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
@@ -116,7 +117,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(
+                    ScopeTransformer.transform(JPService.getProperty(JPAuthenticationScope.class).getValue()),
+                    RSBSharedConnectionConfig.getParticipantConfig());
 
             // register rpc methods.
             RPCHelper.registerInterface(AuthenticationService.class, this, server);
