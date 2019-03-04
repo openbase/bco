@@ -26,16 +26,18 @@ import org.openbase.bco.dal.lib.jp.JPRemoteMethodParameters;
 import org.openbase.bco.dal.lib.jp.JPRemoteService;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jul.communication.controller.jp.JPScope;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.communication.controller.AbstractRemoteClient;
-import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +61,7 @@ public class DALRemote {
             } catch (IllegalAccessException ex) {
                 throw new CouldNotPerformException("Could not access remote!", ex);
             }
-            remote.init(JPService.getProperty(JPScope.class).getValue().toString());
+            remote.init(JPService.getProperty(JPScope.class).getValue());
             remote.activate();
             Method remoteMethod = JPService.getProperty(JPRemoteMethod.class).getValue();
 
