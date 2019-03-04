@@ -29,7 +29,7 @@ import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
+import org.openbase.jul.communication.controller.AbstractConfigurableRemote;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;

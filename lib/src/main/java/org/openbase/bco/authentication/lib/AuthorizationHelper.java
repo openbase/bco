@@ -29,7 +29,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
@@ -129,7 +129,7 @@ public class AuthorizationHelper {
             } catch (NotAvailableException ex) {
                 String scope;
                 try {
-                    scope = ScopeGenerator.generateStringRep(unitConfig.getScope());
+                    scope = ScopeProcessor.generateStringRep(unitConfig.getScope());
                 } catch (CouldNotPerformException exx) {
                     scope = "?";
                 }
@@ -269,7 +269,7 @@ public class AuthorizationHelper {
         } catch (CouldNotPerformException ex) {
             String scope;
             try {
-                scope = ScopeGenerator.generateStringRep(unitConfig.getScope());
+                scope = ScopeProcessor.generateStringRep(unitConfig.getScope());
             } catch (CouldNotPerformException exx) {
                 scope = "?";
             }

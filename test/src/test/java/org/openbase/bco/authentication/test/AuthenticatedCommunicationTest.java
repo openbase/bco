@@ -49,7 +49,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatedCommunicationTest.class);
 
-    private static final Scope SCOPE = new Scope("/test/authentication/communication");
+    private static final String SCOPE = "/test/authentication/communication";
 
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
