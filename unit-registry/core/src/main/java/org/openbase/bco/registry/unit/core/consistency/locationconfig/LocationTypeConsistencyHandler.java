@@ -43,9 +43,9 @@ public class LocationTypeConsistencyHandler extends AbstractProtoBufRegistryCons
         UnitConfig.Builder locationUnit = entry.getMessage().toBuilder();
         LocationConfig.Builder locationConfig = locationUnit.getLocationConfigBuilder();
 
-        if (!locationConfig.hasType()) {
+        if (!locationConfig.hasLocationType()) {
             try {
-                locationConfig.setType(LocationUtils.detectLocationType(entry.getMessage(), registry));
+                locationConfig.setLocationType(LocationUtils.detectLocationType(entry.getMessage(), registry));
                 throw new EntryModification(entry.setMessage(locationUnit, this), this);
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("The locationType of location[" + locationUnit.getLabel() + "] has to be defined manually", ex);
@@ -53,12 +53,12 @@ public class LocationTypeConsistencyHandler extends AbstractProtoBufRegistryCons
         } else {
             try {
                 LocationType detectedType = LocationUtils.detectLocationType(entry.getMessage(), registry);
-                if (detectedType != locationConfig.getType()) {
-                    locationConfig.setType(detectedType);
+                if (detectedType != locationConfig.getLocationType()) {
+                    locationConfig.setLocationType(detectedType);
                     throw new EntryModification(entry.setMessage(locationUnit, this), this);
                 }
             } catch (CouldNotPerformException ex) {
-                logger.debug("Could not detect locationType for location[" + locationUnit.getLabel() + "] with current type [" + locationConfig.getType().name() + "]", ex);
+                logger.debug("Could not detect locationType for location[" + locationUnit.getLabel() + "] with current type [" + locationConfig.getLocationType().name() + "]", ex);
             }
         }
     }

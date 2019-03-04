@@ -51,7 +51,7 @@ public class ActivityTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugi
                     if (activityType == ActivityType.UNKNOWN) {
                         continue;
                     }
-                    template = ActivityTemplate.newBuilder().setType(activityType).build();
+                    template = ActivityTemplate.newBuilder().setActivityType(activityType).build();
                     if (!containsActivityTemplateByType(activityType)) {
                         registry.register(template);
                     }
@@ -64,7 +64,7 @@ public class ActivityTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugi
 
     private boolean containsActivityTemplateByType(ActivityType activityType) throws CouldNotPerformException {
         for (ActivityTemplate activityTemplate : registry.getMessages()) {
-            if (activityTemplate.getType() == activityType) {
+            if (activityTemplate.getActivityType() == activityType) {
                 return true;
             }
         }

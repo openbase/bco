@@ -884,7 +884,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     default List<UnitConfig> getLocationUnitConfigsByType(final LocationType locationType) throws CouldNotPerformException {
         return getUnitConfigs(UnitType.LOCATION)
                 .stream()
-                .filter(locationUnitConfig -> locationUnitConfig.getLocationConfig().getType() == locationType)
+                .filter(locationUnitConfig -> locationUnitConfig.getLocationConfig().getLocationType() == locationType)
                 .collect(Collectors.toList());
     }
 
@@ -923,7 +923,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         try {
             for (UnitConfig locationUnitConfig : getUnitConfigs(UnitType.LOCATION)) {
                 // Check if the unit meets the requirements of the filter
-                if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(locationUnitConfig.getLocationConfig().getType())) {
+                if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(locationUnitConfig.getLocationConfig().getLocationType())) {
                     continue;
                 }
 
@@ -953,9 +953,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
         if (locationType == LocationType.UNKNOWN) {
             result.sort((o1, o2) -> {
-                switch (o1.getLocationConfig().getType()) {
+                switch (o1.getLocationConfig().getLocationType()) {
                     case REGION:
-                        switch (o2.getLocationConfig().getType()) {
+                        switch (o2.getLocationConfig().getLocationType()) {
                             case REGION:
                                 return 0;
                             default:
@@ -963,7 +963,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                                 return -1;
                         }
                     case TILE:
-                        switch (o2.getLocationConfig().getType()) {
+                        switch (o2.getLocationConfig().getLocationType()) {
                             case REGION:
                                 // o1 is bigger than o2
                                 return 1;
@@ -974,7 +974,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                                 return -1;
                         }
                     case ZONE:
-                        switch (o2.getLocationConfig().getType()) {
+                        switch (o2.getLocationConfig().getLocationType()) {
                             case REGION:
                             case TILE:
                                 return 1;
@@ -1351,7 +1351,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<UnitConfig> getNeighborLocations(final String locationId) throws CouldNotPerformException {
         final UnitConfig locationConfig = getUnitConfigById(locationId, UnitType.LOCATION);
-        if (locationConfig.getLocationConfig().getType() != LocationType.TILE) {
+        if (locationConfig.getLocationConfig().getLocationType() != LocationType.TILE) {
             throw new CouldNotPerformException("Id[" + locationId + "] does not belong to a tile and therefore its neighbors aren't defined!");
         }
 

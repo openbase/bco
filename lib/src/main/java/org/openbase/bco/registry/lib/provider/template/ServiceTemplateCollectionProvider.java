@@ -107,8 +107,8 @@ public interface ServiceTemplateCollectionProvider {
         List<ServiceType> serviceTypes = new ArrayList<>();
         for (ServiceTemplate template : getServiceTemplates()) {
             if (template.getSuperTypeList().contains(type)) {
-                serviceTypes.add(template.getType());
-                serviceTypes.addAll(getSubServiceTypes(template.getType()));
+                serviceTypes.add(template.getServiceType());
+                serviceTypes.addAll(getSubServiceTypes(template.getServiceType()));
             }
         }
         return serviceTypes;
@@ -128,9 +128,9 @@ public interface ServiceTemplateCollectionProvider {
         ServiceTemplate serviceTemplate = getServiceTemplateByType(type);
         List<ServiceType> serviceTypes = new ArrayList<>();
         for (ServiceTemplate template : getServiceTemplates()) {
-            if (serviceTemplate.getSuperTypeList().contains(template.getType())) {
-                serviceTypes.add(template.getType());
-                serviceTypes.addAll(getSuperServiceTypes(template.getType()));
+            if (serviceTemplate.getSuperTypeList().contains(template.getServiceType())) {
+                serviceTypes.add(template.getServiceType());
+                serviceTypes.addAll(getSuperServiceTypes(template.getServiceType()));
             }
         }
         return serviceTypes;

@@ -82,7 +82,7 @@ public class DeviceClassUnitTemplateConfigConsistencyHandler extends AbstractPro
             }
 
             // generate a set of service types provided by the unit template
-            final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitTemplateConfig.getType());
+            final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitTemplateConfig.getUnitType());
             final Set<ServiceType> unitTemplateServiceTypeSet = new HashSet<>();
             for (final ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
                 unitTemplateServiceTypeSet.add(serviceDescription.getServiceType());
@@ -137,10 +137,10 @@ public class DeviceClassUnitTemplateConfigConsistencyHandler extends AbstractPro
      */
     private String generateUnitTemplateConfigId(final String deviceClassId, final UnitTemplateConfig.Builder unitTemplateConfig) {
         int number = 0;
-        String unitConfigTemplateTypeId = deviceClassId + "_" + unitTemplateConfig.getType().name() + "_" + number;
+        String unitConfigTemplateTypeId = deviceClassId + "_" + unitTemplateConfig.getUnitType().name() + "_" + number;
         while (unitTemplateMap.containsKey(unitConfigTemplateTypeId)) {
             number++;
-            unitConfigTemplateTypeId = deviceClassId + "_" + unitTemplateConfig.getType().name() + "_" + number;
+            unitConfigTemplateTypeId = deviceClassId + "_" + unitTemplateConfig.getUnitType().name() + "_" + number;
         }
         return unitConfigTemplateTypeId;
     }

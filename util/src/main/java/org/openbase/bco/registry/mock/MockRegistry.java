@@ -260,15 +260,15 @@ public class MockRegistry {
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 LOGGER.debug("Update serviceTemplates...");
                 for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
-                    final String id = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getType()).getId();
+                    final String id = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).getId();
                     Registries.getTemplateRegistry().updateServiceTemplate(mockServiceTemplate.getServiceTemplate().toBuilder().setId(id).build()).get();
                 }
 
                 LOGGER.debug("Update unit templates...");
                 // load templates
                 for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                    String unitTemplateId = Registries.getTemplateRegistry().getUnitTemplateByType(template.getTemplate().getType()).getId();
-                    Registries.getTemplateRegistry().updateUnitTemplate(template.getTemplate().toBuilder().setId(unitTemplateId).build()).get();
+                    String unitTemplateId = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).getId();
+                    Registries.getTemplateRegistry().updateUnitTemplate(template.getUnitTemplate().toBuilder().setId(unitTemplateId).build()).get();
                 }
 
                 LOGGER.debug("Register user...");
@@ -393,10 +393,10 @@ public class MockRegistry {
         final List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
         for (UnitTemplate.UnitType type : unitTypes) {
             Set<ServiceTemplateConfig> serviceTemplateConfigs = new HashSet<>();
-            for (ServiceDescription serviceDescription : MockUnitTemplate.getTemplate(type).getServiceDescriptionList()) {
+            for (ServiceDescription serviceDescription : MockUnitTemplate.getUnitTemplate(type).getServiceDescriptionList()) {
                 serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getServiceType()).build());
             }
-            UnitTemplateConfig config = UnitTemplateConfig.newBuilder().setType(type).addAllServiceTemplateConfig(serviceTemplateConfigs).build();
+            UnitTemplateConfig config = UnitTemplateConfig.newBuilder().setUnitType(type).addAllServiceTemplateConfig(serviceTemplateConfigs).build();
             unitTemplateConfigs.add(config);
         }
         return unitTemplateConfigs;
@@ -481,8 +481,8 @@ public class MockRegistry {
             LabelProcessor.addLabel(rootLocation.getLabelBuilder(), Locale.ENGLISH, ALIAS_LOCATION_ROOT_PARADISE);
             rootLocation.addAlias(ALIAS_LOCATION_ROOT_PARADISE);
             UnitConfig paradise = Registries.getUnitRegistry().updateUnitConfig(rootLocation.build()).get();
-            LocationConfig tileLocationConfig = LocationConfig.newBuilder().setType(LocationType.TILE).build();
-            LocationConfig regionLocationConfig = LocationConfig.newBuilder().setType(LocationType.REGION).build();
+            LocationConfig tileLocationConfig = LocationConfig.newBuilder().setLocationType(LocationType.TILE).build();
+            LocationConfig regionLocationConfig = LocationConfig.newBuilder().setLocationType(LocationType.REGION).build();
 
             // Create hell
             final List<Vec3DDouble> hellVertices = new ArrayList<>();
@@ -549,28 +549,28 @@ public class MockRegistry {
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
             String reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(getUnitAlias(UnitType.REED_CONTACT)).getId();
-            ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setConnectionType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_GATE, connectionConfig));
 
             tileIds.clear();
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN).getId());
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).getId());
             reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_REED_SWITCH_HEAVEN_STAIRWAY_GATE).getId();
-            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            connectionConfig = ConnectionConfig.newBuilder().setConnectionType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_STAIRS_HEAVEN_GATE, connectionConfig));
 
             tileIds.clear();
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL).getId());
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).getId());
             reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_REED_SWITCH_STAIRWAY_HELL_GATE).getId();
-            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            connectionConfig = ConnectionConfig.newBuilder().setConnectionType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_STAIRWAY_HELL_GATE, connectionConfig));
 
             tileIds.clear();
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL).getId());
             tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_STAIRWAY_TO_HEAVEN).getId());
             reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_REED_SWITCH_STAIRWAY_HELL_WINDOW).getId();
-            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            connectionConfig = ConnectionConfig.newBuilder().setConnectionType(ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_WINDOW_STAIRWAY_HELL_LOOKOUT, connectionConfig));
 
         } catch (ExecutionException | IndexOutOfBoundsException ex) {
@@ -822,9 +822,9 @@ public class MockRegistry {
         private final ServiceTemplate serviceTemplate;
 
         MockServiceTemplate(final ServiceType serviceType, final CommunicationType communicationType) {
-            ServiceTemplate.Builder serviceTemplateBuilder = ServiceTemplate.newBuilder().setType(serviceType).setCommunicationType(communicationType);
+            ServiceTemplate.Builder serviceTemplateBuilder = ServiceTemplate.newBuilder().setServiceType(serviceType).setCommunicationType(communicationType);
 
-            switch (serviceTemplateBuilder.getType()) {
+            switch (serviceTemplateBuilder.getServiceType()) {
                 case BRIGHTNESS_STATE_SERVICE:
                     serviceTemplateBuilder.addSuperType(ServiceType.POWER_STATE_SERVICE);
                     break;
@@ -930,21 +930,21 @@ public class MockRegistry {
         private final UnitTemplate template;
 
         MockUnitTemplate(final UnitType type, final MockServiceDescription... serviceTemplates) {
-            final UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
-            templateBuilder.setType(type);
+            final UnitTemplate.Builder unitTemplateBuilder = UnitTemplate.newBuilder();
+            unitTemplateBuilder.setUnitType(type);
 
             for (final MockServiceDescription serviceTemplate : serviceTemplates) {
-                templateBuilder.addServiceDescription(serviceTemplate.getDescription());
+                unitTemplateBuilder.addServiceDescription(serviceTemplate.getDescription());
             }
 
             if (type == UnitType.UNIT_GROUP) {
-                for (final ServiceDescription.Builder serviceDescription : templateBuilder.getServiceDescriptionBuilderList()) {
+                for (final ServiceDescription.Builder serviceDescription : unitTemplateBuilder.getServiceDescriptionBuilderList()) {
                     serviceDescription.setAggregated(true);
                 }
             }
 
             if (type == UnitType.LOCATION) {
-                for (final ServiceDescription.Builder serviceDescription : templateBuilder.getServiceDescriptionBuilderList()) {
+                for (final ServiceDescription.Builder serviceDescription : unitTemplateBuilder.getServiceDescriptionBuilderList()) {
                     switch (serviceDescription.getServiceType()) {
                         case PRESENCE_STATE_SERVICE:
                         case STANDBY_STATE_SERVICE:
@@ -958,26 +958,26 @@ public class MockRegistry {
 
             switch (type) {
                 case COLORABLE_LIGHT:
-                    templateBuilder.addSuperType(UnitType.DIMMABLE_LIGHT);
+                    unitTemplateBuilder.addSuperType(UnitType.DIMMABLE_LIGHT);
                     break;
                 case DIMMABLE_LIGHT:
-                    templateBuilder.addSuperType(UnitType.LIGHT);
+                    unitTemplateBuilder.addSuperType(UnitType.LIGHT);
                     break;
             }
 
-            this.template = templateBuilder.build();
+            this.template = unitTemplateBuilder.build();
         }
 
-        public static UnitTemplate getTemplate(UnitType type) throws CouldNotPerformException {
+        public static UnitTemplate getUnitTemplate(UnitType type) throws CouldNotPerformException {
             for (MockUnitTemplate templateType : values()) {
-                if (templateType.getTemplate().getType() == type) {
-                    return templateType.getTemplate();
+                if (templateType.getUnitTemplate().getUnitType() == type) {
+                    return templateType.getUnitTemplate();
                 }
             }
             throw new CouldNotPerformException("Could not find template for " + type + "!");
         }
 
-        public UnitTemplate getTemplate() {
+        public UnitTemplate getUnitTemplate() {
             return template;
         }
     }

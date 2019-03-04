@@ -55,11 +55,11 @@ public class ServiceTemplateUniqueTypeConsistencyHandler extends AbstractProtoBu
             throws CouldNotPerformException, EntryModification {
 
         final ServiceTemplate serviceTemplate = entry.getMessage();
-        if (serviceTypeServiceTemplateMap.containsKey(serviceTemplate.getType()) && !serviceTemplate.getId().equals(serviceTypeServiceTemplateMap.get(serviceTemplate.getType()).getId())) {
-            throw new VerificationFailedException("ServiceTemplate[" + serviceTypeServiceTemplateMap.get(serviceTemplate.getType()) + "] and serviceTemplate[" + serviceTemplate + "] both contain the same type");
+        if (serviceTypeServiceTemplateMap.containsKey(serviceTemplate.getServiceType()) && !serviceTemplate.getId().equals(serviceTypeServiceTemplateMap.get(serviceTemplate.getServiceType()).getId())) {
+            throw new VerificationFailedException("ServiceTemplate[" + serviceTypeServiceTemplateMap.get(serviceTemplate.getServiceType()) + "] and serviceTemplate[" + serviceTemplate + "] both contain the same type");
         }
 
-        serviceTypeServiceTemplateMap.put(serviceTemplate.getType(), serviceTemplate);
+        serviceTypeServiceTemplateMap.put(serviceTemplate.getServiceType(), serviceTemplate);
     }
 
     @Override

@@ -59,7 +59,7 @@ public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAda
                         continue;
                     }
                     if (!containsUnitTemplateByType(unitType)) {
-                        template = UnitTemplate.newBuilder().setType(unitType);
+                        template = UnitTemplate.newBuilder().setUnitType(unitType);
                         LabelProcessor.addLabel(template.getLabelBuilder(), Locale.ENGLISH,
                                 StringProcessor.insertSpaceBetweenPascalCase(
                                         StringProcessor.transformUpperCaseToPascalCase(unitType.name())));
@@ -74,7 +74,7 @@ public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAda
 
     private boolean containsUnitTemplateByType(UnitType type) throws CouldNotPerformException {
         for (UnitTemplate unitTemplate : registry.getMessages()) {
-            if (unitTemplate.getType() == type) {
+            if (unitTemplate.getUnitType() == type) {
                 return true;
             }
         }

@@ -99,7 +99,7 @@ public abstract class AbstractBCORegistryTest {
 
     private UnitTemplateConfig getUnitTemplateConfig(UnitType unitType) throws CouldNotPerformException {
         Set<ServiceType> serviceTypeSet = new HashSet<>();
-        UnitTemplateConfig.Builder unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(unitType);
+        UnitTemplateConfig.Builder unitTemplateConfig = UnitTemplateConfig.newBuilder().setUnitType(unitType);
         for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitType).getServiceDescriptionList()) {
             if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
                 unitTemplateConfig.addServiceTemplateConfig(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getServiceType()));

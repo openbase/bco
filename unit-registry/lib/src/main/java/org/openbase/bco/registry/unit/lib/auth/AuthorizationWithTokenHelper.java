@@ -276,14 +276,14 @@ public class AuthorizationWithTokenHelper {
         if (serviceType != null
                 && serviceType != ServiceType.UNKNOWN
                 && permissionRule.hasServiceTemplateId()
-                && templateRegistry.getServiceTemplateById(permissionRule.getServiceTemplateId()).getType() != serviceType) {
+                && templateRegistry.getServiceTemplateById(permissionRule.getServiceTemplateId()).getServiceType() != serviceType) {
             return false;
         }
         // if the given unit type is defined and the rule contains a unit type which does not match return false
         return unitType == null
                 || unitType == UnitType.UNKNOWN
                 || !permissionRule.hasUnitTemplateId()
-                || templateRegistry.getUnitTemplateById(permissionRule.getUnitTemplateId()).getType() == unitType;
+                || templateRegistry.getUnitTemplateById(permissionRule.getUnitTemplateId()).getUnitType() == unitType;
     }
 
     private static boolean containsUnit(final UnitConfig unitConfig, final UnitConfig locationToCheck, final UnitRegistry unitRegistry) throws CouldNotPerformException {

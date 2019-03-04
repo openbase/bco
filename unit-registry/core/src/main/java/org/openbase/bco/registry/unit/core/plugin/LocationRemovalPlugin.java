@@ -78,7 +78,7 @@ public class LocationRemovalPlugin extends ProtobufRegistryPluginAdapter<String,
 
         try {
             // handle special case that the location to be removed is a tile
-            if (entry.getMessage().getLocationConfig().getType() == LocationType.TILE) {
+            if (entry.getMessage().getLocationConfig().getLocationType() == LocationType.TILE) {
                 // remove all regions which are placed in this tile
                 try {
                     for (UnitConfig unitConfig : getChildLocationSet(entry.getMessage())) {

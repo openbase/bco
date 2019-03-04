@@ -158,9 +158,9 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         unitTemplate = Registries.getTemplateRegistry().updateUnitTemplate(unitTemplate).get();
         assertTrue(unitTemplate.getServiceDescriptionList().get(0).getServiceType() == ServiceType.BATTERY_STATE_SERVICE);
         assertTrue(unitTemplate.getServiceDescriptionList().get(1).getServiceType() == ServiceType.COLOR_STATE_SERVICE);
-        assertTrue(unitTemplate.getType() == UnitType.COLORABLE_LIGHT);
+        assertTrue(unitTemplate.getUnitType() == UnitType.COLORABLE_LIGHT);
 
-        UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(unitTemplate.getType()).build();
+        UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setUnitType(unitTemplate.getUnitType()).build();
         String serialNumber1 = "5073";
         String deviceLabel = "thisIsARandomLabel12512";
         BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
@@ -206,10 +206,10 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         Registries.getTemplateRegistry().updateUnitTemplate(unitTemplate).get();
 
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
-        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
+        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setUnitType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
         ServiceTemplateConfig serviceTemplate2 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.BATTERY_STATE_SERVICE).build();
         ServiceTemplateConfig serviceTemplate3 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.HANDLE_STATE_SERVICE).build();
-        UnitTemplateConfig unitTemplateConfig2 = UnitTemplateConfig.newBuilder().setType(UnitType.HANDLE).addServiceTemplateConfig(serviceTemplate2).addServiceTemplateConfig(serviceTemplate3).build();
+        UnitTemplateConfig unitTemplateConfig2 = UnitTemplateConfig.newBuilder().setUnitType(UnitType.HANDLE).addServiceTemplateConfig(serviceTemplate2).addServiceTemplateConfig(serviceTemplate3).build();
 
         unitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceDescription(ServiceDescription.newBuilder().setServiceType(serviceTemplate1.getServiceType())).build();
         Registries.getTemplateRegistry().updateUnitTemplate(unitTemplate).get();
@@ -231,11 +231,11 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
             dalUnitConfigs.add(Registries.getUnitRegistry().getUnitConfigById(unitId));
         }
         for (UnitConfig unit : dalUnitConfigs) {
-            if (unit.getUnitType().equals(unitTemplateConfig1.getType())) {
+            if (unit.getUnitType().equals(unitTemplateConfig1.getUnitType())) {
                 containsLight = true;
                 assertEquals("The light unit contains more or less services than the template config", unit.getServiceConfigCount(), unitTemplateConfig1.getServiceTemplateConfigCount());
                 assertTrue("The service type of the light unit does not match", unit.getServiceConfig(0).getServiceDescription().getServiceType().equals(serviceTemplate1.getServiceType()));
-            } else if (unit.getUnitType().equals(unitTemplateConfig2.getType())) {
+            } else if (unit.getUnitType().equals(unitTemplateConfig2.getUnitType())) {
                 containsHandlseSensor = true;
                 assertEquals("The handle sensor unit contains more or less services than the template config", unitTemplateConfig2.getServiceTemplateConfigCount(), unit.getServiceConfigCount());
                 assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(0).getServiceDescription().getServiceType(), serviceTemplate2.getServiceType());
@@ -246,7 +246,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         assertTrue("The device config does not contain a handle sensor unit even though the device class has an according unit template", containsHandlseSensor);
 
         ServiceTemplateConfig serviceTemplate4 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.BUTTON_STATE_SERVICE).build();
-        UnitTemplateConfig unitTemplateConfig3 = UnitTemplateConfig.newBuilder().setType(UnitType.BUTTON).addServiceTemplateConfig(serviceTemplate1).build();
+        UnitTemplateConfig unitTemplateConfig3 = UnitTemplateConfig.newBuilder().setUnitType(UnitType.BUTTON).addServiceTemplateConfig(serviceTemplate1).build();
 
         unitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(UnitType.BUTTON).toBuilder().addServiceDescription(ServiceDescription.newBuilder().setServiceType(ServiceType.BUTTON_STATE_SERVICE)).build();
         Registries.getTemplateRegistry().updateUnitTemplate(unitTemplate).get();
@@ -266,7 +266,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         for (String unitId : config.getDeviceConfig().getUnitIdList()) {
             dalUnitConfigs.add(Registries.getUnitRegistry().getUnitConfigById(unitId));
         }
-        assertEquals("Device config does not contain the right unit config", dalUnitConfigs.get(2).getUnitType(), unitTemplateConfig3.getType());
+        assertEquals("Device config does not contain the right unit config", dalUnitConfigs.get(2).getUnitType(), unitTemplateConfig3.getUnitType());
         assertEquals("Unit config does not contain the right service", dalUnitConfigs.get(2).getServiceConfig(0).getServiceDescription().getServiceType(), serviceTemplate4.getServiceType());
 
         int sizeBefore = Registries.getUnitRegistry().getDalUnitConfigs().size();
@@ -355,7 +355,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
     public void testInventoryEnablingStateConnection() throws Exception {
         System.out.println("testInventoryEnablingStateConnection");
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
-        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
+        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setUnitType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
         UnitTemplate unitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceDescription(ServiceDescription.newBuilder().setServiceType(serviceTemplate1.getServiceType())).build();
         Registries.getTemplateRegistry().updateUnitTemplate(unitTemplate).get();
 

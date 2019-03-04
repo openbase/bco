@@ -71,12 +71,12 @@ public class UniteTemplateServiceTemplateConsistencyHandler extends AbstractProt
                 serviceTemplate = serviceTemplateRegistry.getMessage(serviceDescription.getServiceTemplateId());
                 
                 // sync type to service description
-                if(serviceDescription.hasServiceType() && serviceTemplate.getType() == serviceDescription.getServiceType()) {
+                if(serviceDescription.hasServiceType() && serviceTemplate.getServiceType() == serviceDescription.getServiceType()) {
                     // id and type match
                     serviceDescriptionList.add(serviceDescription);
                 } else {
                     // sync type to description
-                    serviceDescriptionList.add(serviceDescription.toBuilder().setServiceType(serviceTemplate.getType()).build());
+                    serviceDescriptionList.add(serviceDescription.toBuilder().setServiceType(serviceTemplate.getServiceType()).build());
                     modification = true;
                 }
             }
@@ -91,7 +91,7 @@ public class UniteTemplateServiceTemplateConsistencyHandler extends AbstractProt
 
     private ServiceTemplate getServiceTemplateByType(ServiceType type) throws CouldNotPerformException {
         for (ServiceTemplate serviceTemplate : serviceTemplateRegistry.getMessages()) {
-            if (serviceTemplate.getType() == type) {
+            if (serviceTemplate.getServiceType() == type) {
                 return serviceTemplate;
             }
         }

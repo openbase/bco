@@ -55,10 +55,10 @@ public class DeviceConfigUtils {
         for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
 
             // check if device contains already this unit type
-            if (unitTypeList.contains(unitTemplateConfig.getType())) {
+            if (unitTypeList.contains(unitTemplateConfig.getUnitType())) {
                 return true;
             }
-            unitTypeList.add(unitTemplateConfig.getType());
+            unitTypeList.add(unitTemplateConfig.getUnitType());
         }
         return false;
     }

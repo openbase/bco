@@ -211,7 +211,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
     public UnitTemplate getUnitTemplateByType(UnitType unitType) throws CouldNotPerformException {
         validateData();
         for (final UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
-            if (unitTemplate.getType() == unitType) {
+            if (unitTemplate.getUnitType() == unitType) {
                 return unitTemplate;
             }
         }
@@ -326,7 +326,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
     public ServiceTemplate getServiceTemplateByType(ServiceType serviceType) throws CouldNotPerformException {
         validateData();
         for (final ServiceTemplate serviceTemplate : serviceTemplateRemoteRegistry.getMessages()) {
-            if (serviceTemplate.getType() == serviceType) {
+            if (serviceTemplate.getServiceType() == serviceType) {
                 return serviceTemplate;
             }
         }
@@ -447,7 +447,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
     public ActivityTemplate getActivityTemplateByType(ActivityType activityType) throws CouldNotPerformException {
         validateData();
         for (final ActivityTemplate activityTemplate : activityTemplateRemoteRegistry.getMessages()) {
-            if (activityTemplate.getType() == activityType) {
+            if (activityTemplate.getActivityType() == activityType) {
                 return activityTemplate;
             }
         }

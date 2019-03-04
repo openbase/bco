@@ -123,7 +123,7 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegist
                     serviceConfigs.add(serviceConfig.build());
                 }
 
-                UnitConfig dalUnitConfig = UnitConfig.newBuilder().setUnitType(unitTemplateConfig.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).setUnitHostId(deviceUnitConfig.getId()).build();
+                UnitConfig dalUnitConfig = UnitConfig.newBuilder().setUnitType(unitTemplateConfig.getUnitType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).setUnitHostId(deviceUnitConfig.getId()).build();
                 dalUnitConfig = dalUnitRegistry.register(dalUnitConfig);
                 deviceConfig.addUnitId(dalUnitConfig.getId());
                 modification = true;

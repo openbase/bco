@@ -83,7 +83,7 @@ public class RootLocationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         UnitConfig.Builder defaultRoot = UnitConfig.newBuilder()
                 .setUnitType(UnitType.LOCATION)
                 .setLocationConfig(LocationConfig.newBuilder()
-                        .setType(LocationType.ZONE)
+                        .setLocationType(LocationType.ZONE)
                         .build())
                 .setPlacementConfig(PlacementConfig.newBuilder()
                         .setShape(Shape.newBuilder()

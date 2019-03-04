@@ -57,11 +57,11 @@ public class ActivityTemplateUniqueTypeConsistencyHandler extends AbstractProtoB
             throws CouldNotPerformException, EntryModification {
 
         final ActivityTemplate activityTemplate = entry.getMessage();
-        if (activityTypeServiceTemplateMap.containsKey(activityTemplate.getType()) && !activityTemplate.getId().equals(activityTypeServiceTemplateMap.get(activityTemplate.getType()).getId())) {
-            throw new VerificationFailedException("ActivityTemplate[" + activityTypeServiceTemplateMap.get(activityTemplate.getType()) + "] and activityTemplate[" + activityTemplate + "] both contain the same type");
+        if (activityTypeServiceTemplateMap.containsKey(activityTemplate.getActivityType()) && !activityTemplate.getId().equals(activityTypeServiceTemplateMap.get(activityTemplate.getActivityType()).getId())) {
+            throw new VerificationFailedException("ActivityTemplate[" + activityTypeServiceTemplateMap.get(activityTemplate.getActivityType()) + "] and activityTemplate[" + activityTemplate + "] both contain the same type");
         }
 
-        activityTypeServiceTemplateMap.put(activityTemplate.getType(), activityTemplate);
+        activityTypeServiceTemplateMap.put(activityTemplate.getActivityType(), activityTemplate);
     }
 
     @Override

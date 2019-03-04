@@ -55,7 +55,7 @@ public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugin
                     if (serviceType == ServiceType.UNKNOWN) {
                         continue;
                     }
-                    template = ServiceTemplate.newBuilder().setType(serviceType).build();
+                    template = ServiceTemplate.newBuilder().setServiceType(serviceType).build();
                     if (!containsServiceTemplateByType(serviceType)) {
                         registry.register(template);
                     }
@@ -68,7 +68,7 @@ public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugin
 
     private boolean containsServiceTemplateByType(ServiceType type) throws CouldNotPerformException {
         for (ServiceTemplate serviceTemplate : registry.getMessages()) {
-            if (serviceTemplate.getType() == type) {
+            if (serviceTemplate.getServiceType() == type) {
                 return true;
             }
         }

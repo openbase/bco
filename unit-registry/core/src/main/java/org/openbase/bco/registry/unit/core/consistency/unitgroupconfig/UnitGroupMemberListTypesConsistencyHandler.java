@@ -153,7 +153,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         List<UnitType> unitTypes = new ArrayList<>();
         for (UnitTemplate template : CachedTemplateRegistryRemote.getRegistry().getUnitTemplates()) {
             if (template.getSuperTypeList().contains(type)) {
-                unitTypes.add(template.getType());
+                unitTypes.add(template.getUnitType());
             }
         }
         return unitTypes;

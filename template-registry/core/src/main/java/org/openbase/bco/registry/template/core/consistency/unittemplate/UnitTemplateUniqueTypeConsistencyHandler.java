@@ -56,11 +56,11 @@ public class UnitTemplateUniqueTypeConsistencyHandler extends AbstractProtoBufRe
             throws CouldNotPerformException, EntryModification {
 
         final UnitTemplate unitTemplate = entry.getMessage();
-        if (unitTypeUnitTemplateMap.containsKey(unitTemplate.getType()) && !unitTemplate.getId().equals(unitTypeUnitTemplateMap.get(unitTemplate.getType()).getId())) {
-            throw new VerificationFailedException("UnitTemplate[" + unitTypeUnitTemplateMap.get(unitTemplate.getType()) + "] and unitTemplate[" + unitTemplate + "] both contain the same type");
+        if (unitTypeUnitTemplateMap.containsKey(unitTemplate.getUnitType()) && !unitTemplate.getId().equals(unitTypeUnitTemplateMap.get(unitTemplate.getUnitType()).getId())) {
+            throw new VerificationFailedException("UnitTemplate[" + unitTypeUnitTemplateMap.get(unitTemplate.getUnitType()) + "] and unitTemplate[" + unitTemplate + "] both contain the same type");
         }
 
-        unitTypeUnitTemplateMap.put(unitTemplate.getType(), unitTemplate);
+        unitTypeUnitTemplateMap.put(unitTemplate.getUnitType(), unitTemplate);
     }
 
     @Override

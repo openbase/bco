@@ -178,10 +178,10 @@ public class LocationUtils {
                 return LocationType.ZONE;
             }
 
-            LocationType parentLocationType = locationRegistry.get(locationUnit.getPlacementConfig().getLocationId()).getMessage().getLocationConfig().getType();
+            LocationType parentLocationType = locationRegistry.get(locationUnit.getPlacementConfig().getLocationId()).getMessage().getLocationConfig().getLocationType();
             Set<LocationType> childLocationTypes = new HashSet<>();
             for (String childId : locationUnit.getLocationConfig().getChildIdList()) {
-                childLocationTypes.add(locationRegistry.get(childId).getMessage().getLocationConfig().getType());
+                childLocationTypes.add(locationRegistry.get(childId).getMessage().getLocationConfig().getLocationType());
             }
 
             return detectLocationType(parentLocationType, childLocationTypes);

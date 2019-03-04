@@ -77,9 +77,9 @@ public class UnitServiceConfigConsistencyHandler extends AbstractProtoBufRegistr
                 // service template id is available so match service type
                 final ServiceTemplate serviceTemplate = CachedTemplateRegistryRemote.getRegistry().getServiceTemplateById(serviceDescription.getServiceTemplateId());
 
-                if (serviceDescription.getServiceType() != serviceTemplate.getType()) {
+                if (serviceDescription.getServiceType() != serviceTemplate.getServiceType()) {
                     modification = true;
-                    serviceDescription.setServiceType(serviceTemplate.getType());
+                    serviceDescription.setServiceType(serviceTemplate.getServiceType());
                 }
 
                 continue;

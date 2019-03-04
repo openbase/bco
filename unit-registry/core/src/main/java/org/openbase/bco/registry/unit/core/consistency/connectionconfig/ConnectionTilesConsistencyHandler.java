@@ -68,7 +68,7 @@ public class ConnectionTilesConsistencyHandler extends AbstractProtoBufRegistryC
             if (locationRegistry.contains(tileId)) {
                 location = locationRegistry.get(tileId).getMessage();
             }
-            if (location != null && location.getLocationConfig().hasType() && location.getLocationConfig().getType() == LocationConfig.LocationType.TILE) {
+            if (location != null && location.getLocationConfig().hasLocationType() && location.getLocationConfig().getLocationType() == LocationConfig.LocationType.TILE) {
                 tileIds.put(tileId, tileId);
             } else {
                 modification = true;

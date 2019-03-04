@@ -53,7 +53,7 @@ public class TileConnectionIdConsistencyHandler extends AbstractProtoBufRegistry
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         // Do nothing if not a tile
-        if (entry.getMessage().getLocationConfig().getType() != LocationType.TILE) {
+        if (entry.getMessage().getLocationConfig().getLocationType() != LocationType.TILE) {
             return;
         }
 

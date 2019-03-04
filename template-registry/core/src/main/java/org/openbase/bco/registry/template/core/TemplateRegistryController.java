@@ -215,7 +215,7 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     @Override
     public UnitTemplate getUnitTemplateByType(UnitType unitType) throws CouldNotPerformException {
         for (final UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
-            if (unitTemplate.getType() == unitType) {
+            if (unitTemplate.getUnitType() == unitType) {
                 return unitTemplate;
             }
         }
@@ -265,7 +265,7 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     @Override
     public ServiceTemplate getServiceTemplateByType(ServiceType serviceType) throws CouldNotPerformException {
         for (final ServiceTemplate serviceTemplate : serviceTemplateRemoteRegistry.getMessages()) {
-            if (serviceTemplate.getType() == serviceType) {
+            if (serviceTemplate.getServiceType() == serviceType) {
                 return serviceTemplate;
             }
         }
@@ -315,7 +315,7 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     @Override
     public ActivityTemplate getActivityTemplateByType(ActivityType activityType) throws CouldNotPerformException {
         for (final ActivityTemplate activityTemplate : activityTemplateRemoteRegistry.getMessages()) {
-            if (activityTemplate.getType() == activityType) {
+            if (activityTemplate.getActivityType() == activityType) {
                 return activityTemplate;
             }
         }

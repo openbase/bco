@@ -59,7 +59,7 @@ public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugin
                         continue;
                     }
                     if (!containsServiceTemplateByType(serviceType)) {
-                        template = ServiceTemplate.newBuilder().setType(serviceType);
+                        template = ServiceTemplate.newBuilder().setServiceType(serviceType);
                         LabelProcessor.addLabel(template.getLabelBuilder(), Locale.ENGLISH,
                                 StringProcessor.insertSpaceBetweenPascalCase(
                                         StringProcessor.transformUpperCaseToPascalCase(serviceType.name())));
@@ -74,7 +74,7 @@ public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugin
 
     private boolean containsServiceTemplateByType(ServiceType type) throws CouldNotPerformException {
         for (ServiceTemplate serviceTemplate : registry.getMessages()) {
-            if (serviceTemplate.getType() == type) {
+            if (serviceTemplate.getServiceType() == type) {
                 return true;
             }
         }

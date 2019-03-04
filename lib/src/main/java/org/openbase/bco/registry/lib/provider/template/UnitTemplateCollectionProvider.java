@@ -98,8 +98,8 @@ public interface UnitTemplateCollectionProvider {
         List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
         for (UnitTemplate template : getUnitTemplates()) {
             if (template.getSuperTypeList().contains(type)) {
-                unitTypes.add(template.getType());
-                unitTypes.addAll(getSubUnitTypes(template.getType()));
+                unitTypes.add(template.getUnitType());
+                unitTypes.addAll(getSubUnitTypes(template.getUnitType()));
             }
         }
         return unitTypes;
@@ -117,9 +117,9 @@ public interface UnitTemplateCollectionProvider {
         UnitTemplate unitTemplate = getUnitTemplateByType(type);
         List<UnitType> unitTypes = new ArrayList<>();
         for (UnitTemplate template : getUnitTemplates()) {
-            if (unitTemplate.getSuperTypeList().contains(template.getType())) {
-                unitTypes.add(template.getType());
-                unitTypes.addAll(getSuperUnitTypes(template.getType()));
+            if (unitTemplate.getSuperTypeList().contains(template.getUnitType())) {
+                unitTypes.add(template.getUnitType());
+                unitTypes.addAll(getSuperUnitTypes(template.getUnitType()));
             }
         }
         return unitTypes;

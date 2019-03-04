@@ -42,7 +42,7 @@ public class LocationHierarchyConsistencyHandler extends AbstractProtoBufRegistr
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder locationUnit = entry.getMessage().toBuilder();
 
-        if (!locationUnit.getLocationConfig().hasType()) {
+        if (!locationUnit.getLocationConfig().hasLocationType()) {
             throw new NotAvailableException("locationConfig.type");
         }
 
@@ -55,50 +55,50 @@ public class LocationHierarchyConsistencyHandler extends AbstractProtoBufRegistr
         }
 
         UnitConfig parent, child;
-        switch (locationUnit.getLocationConfig().getType()) {
+        switch (locationUnit.getLocationConfig().getLocationType()) {
             case REGION:
                 // on top of a region can be a region or a tile
                 parent = registry.getMessage(locationUnit.getPlacementConfig().getLocationId());
-                if (parent.getLocationConfig().getType() == LocationType.ZONE) {
+                if (parent.getLocationConfig().getLocationType() == LocationType.ZONE) {
                     throw new CouldNotPerformException("Parent[" + parent.getLabel() + "] of region[" + locationUnit.getLabel() + "]"
                             + " is a zone which is against the location hierarchy!");
                 }
                 // below a region can only be other regions
                 for (String childId : locationUnit.getLocationConfig().getChildIdList()) {
                     child = registry.getMessage(childId);
-                    if (child.getLocationConfig().getType() != LocationType.REGION) {
+                    if (child.getLocationConfig().getLocationType() != LocationType.REGION) {
                         throw new CouldNotPerformException("Child[" + child.getLabel() + "] of region[" + locationUnit.getLabel() + "]"
-                                + " is not a region but[" + child.getLocationConfig().getType() + "] which is against the location hierarchy!");
+                                + " is not a region but[" + child.getLocationConfig().getLocationType() + "] which is against the location hierarchy!");
                     }
                 }
                 break;
             case TILE:
                 // on top of a tile can only be a zone
                 parent = registry.getMessage(locationUnit.getPlacementConfig().getLocationId());
-                if (parent.getLocationConfig().getType() != LocationType.ZONE) {
+                if (parent.getLocationConfig().getLocationType() != LocationType.ZONE) {
                     throw new CouldNotPerformException("Parent[" + parent.getLabel() + "] of tile[" + locationUnit.getLabel() + "]"
-                            + " is not a zone but[" + parent.getLocationConfig().getType() + "] which is against the location hierarchy!");
+                            + " is not a zone but[" + parent.getLocationConfig().getLocationType() + "] which is against the location hierarchy!");
                 }
                 // below a tile can only be regions
                 for (String childId : locationUnit.getLocationConfig().getChildIdList()) {
                     child = registry.getMessage(childId);
-                    if (child.getLocationConfig().getType() != LocationType.REGION) {
+                    if (child.getLocationConfig().getLocationType() != LocationType.REGION) {
                         throw new CouldNotPerformException("Child[" + child.getLabel() + "] of tile[" + locationUnit.getLabel() + "]"
-                                + " is not a region but[" + parent.getLocationConfig().getType() + "] which is against the location hierarchy!");
+                                + " is not a region but[" + parent.getLocationConfig().getLocationType() + "] which is against the location hierarchy!");
                     }
                 }
                 break;
             case ZONE:
                 // on top of a zone can only be a zone
                 parent = registry.getMessage(locationUnit.getPlacementConfig().getLocationId());
-                if (parent.getLocationConfig().getType() != LocationType.ZONE) {
+                if (parent.getLocationConfig().getLocationType() != LocationType.ZONE) {
                     throw new CouldNotPerformException("Parent[" + parent.getLabel() + "] of zone[" + locationUnit.getLabel() + "]"
-                            + " is not a zone but[" + parent.getLocationConfig().getType() + "] which is against the location hierarchy!");
+                            + " is not a zone but[" + parent.getLocationConfig().getLocationType() + "] which is against the location hierarchy!");
                 }
                 // below a zone can only be zones or tiles
                 for (String childId : locationUnit.getLocationConfig().getChildIdList()) {
                     child = registry.getMessage(childId);
-                    if (child.getLocationConfig().getType() == LocationType.REGION) {
+                    if (child.getLocationConfig().getLocationType() == LocationType.REGION) {
                         throw new CouldNotPerformException("Child[" + child.getLabel() + "] of zone[" + locationUnit.getLabel() + "]"
                                 + " is a region which is against the location hierarchy!");
                     }

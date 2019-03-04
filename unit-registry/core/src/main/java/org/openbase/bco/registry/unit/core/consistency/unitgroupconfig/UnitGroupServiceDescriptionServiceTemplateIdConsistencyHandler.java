@@ -65,7 +65,7 @@ public class UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler exte
 
     public String getServiceIdByType(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
         for (ServiceTemplateType.ServiceTemplate serviceTemplate : CachedTemplateRegistryRemote.getRegistry().getServiceTemplates()) {
-            if (serviceTemplate.getType() == serviceType) {
+            if (serviceTemplate.getServiceType() == serviceType) {
                 return serviceTemplate.getId();
             }
         }

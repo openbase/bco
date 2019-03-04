@@ -56,7 +56,7 @@ public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAda
                     if (unitType == UnitType.UNKNOWN) {
                         continue;
                     }
-                    template = UnitTemplate.newBuilder().setType(unitType).build();
+                    template = UnitTemplate.newBuilder().setUnitType(unitType).build();
                     if (!containsUnitTemplateByType(unitType)) {
                         registry.register(template);
                     }
@@ -69,7 +69,7 @@ public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAda
 
     private boolean containsUnitTemplateByType(UnitType type) throws CouldNotPerformException {
         for (UnitTemplate unitTemplate : registry.getMessages()) {
-            if (unitTemplate.getType() == type) {
+            if (unitTemplate.getUnitType() == type) {
                 return true;
             }
         }

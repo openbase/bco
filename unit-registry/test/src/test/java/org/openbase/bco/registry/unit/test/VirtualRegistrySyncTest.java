@@ -145,7 +145,7 @@ public class VirtualRegistrySyncTest {
 //            Registries.getUnitRegistry().waitForData();
 //
 //            ROOT_LOCATION = locationRegistry.getRootLocationConfig();
-//            UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).build();
+//            UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setUnitType(UnitType.LIGHT).build();
 //            DeviceClass deviceClass = DeviceClass.newBuilder().setLabel(DEVICE_CLASS_LABEL).setCompany(DEVICE_CLASS_COMPANY).setProductNumber(DEVICE_CLASS_PRODUCT_NUMBER).addUnitTemplateConfig(unitTemplateConfig).build();
 //            DEVICE_CLASS = deviceRegistry.registerDeviceClass(deviceClass).get();
 //
