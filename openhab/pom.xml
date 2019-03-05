@@ -48,37 +48,15 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.device.openhab.OpenHABApp</mainClass>
-                            <id>bco-device-openhab</id>
+                            <mainClass>org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher</mainClass>
+                            <id>bco-manager-device-openhab</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
                             <mainClass>org.openbase.bco.device.openhab.ConfigUpdater</mainClass>
-                            <id>bco-device-openhab-config-updater</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.device.openhab.registry.OpenHABConfigSynchronizerLauncher
-                            </mainClass>
-                            <id>bco-device-openhab-config-synchronizer</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.device.openhab.manager.OpenHABDeviceManagerLauncher</mainClass>
-                            <id>bco-device-openhab-device-manager</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.device.openhab.sitemap.OpenHABSitemapSynchronizerLauncher</mainClass>
-                            <id>bco-device-openhab-sitemap-synchronizer</id>
+                            <id>bco-manager-device-openhab-config-updater</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
