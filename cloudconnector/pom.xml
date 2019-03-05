@@ -51,7 +51,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.app.cloudconnector.CloudConnectorLauncher</mainClass>
-                            <id>bco-cloud-connector</id>
+                            <id>bco-app-cloud-connector</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
