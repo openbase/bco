@@ -67,6 +67,20 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
+                        <program>
+                            <mainClass>org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher</mainClass>
+                            <id>bco-manager-device</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.dal.control.layer.unit.device.FallbackDeviceManagerLauncher</mainClass>
+                            <id>bco-manager-device-fallback</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
                     </programs>
                 </configuration>
             </plugin>

@@ -55,3 +55,4 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerImpl> {
         main(args, DeviceManager.class, DeviceManagerLauncher.class);
     }
 }
+
