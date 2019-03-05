@@ -34,6 +34,7 @@ public class JPOpenHABSitemap extends AbstractJPFile {
 
     public JPOpenHABSitemap() {
         super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.On);
+        registerDependingProperty(JPOpenHABConfiguration.class);
     }
 
     @Override

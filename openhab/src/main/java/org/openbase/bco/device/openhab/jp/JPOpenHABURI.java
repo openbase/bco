@@ -24,6 +24,7 @@ package org.openbase.bco.device.openhab.jp;
 
 import org.openbase.jps.core.AbstractJavaProperty;
 
+import java.io.File;
 import java.net.URI;
 import java.util.List;
 
@@ -37,6 +38,8 @@ public class JPOpenHABURI extends AbstractJavaProperty<URI> {
 
     private static final String DEFAULT_URI = "http://localhost:8080";
 
+    public static final String SYSTEM_VARIABLE_OPENHAB_PORT = "OPENHAB_HTTP_PORT";
+
     public JPOpenHABURI() {
         super(COMMAND_IDENTIFIERS);
     }
@@ -49,6 +52,13 @@ public class JPOpenHABURI extends AbstractJavaProperty<URI> {
     @Override
     protected URI getPropertyDefaultValue() {
         // URI.create does not throw an exception which is fine for the default value
+
+        // use system variable if defined
+        String systemDefinedPort = System.getenv(SYSTEM_VARIABLE_OPENHAB_PORT);
+        if (systemDefinedPort != null) {
+            return URI.create("http://localhost:"+systemDefinedPort);
+        }
+
         return URI.create(DEFAULT_URI);
     }
 

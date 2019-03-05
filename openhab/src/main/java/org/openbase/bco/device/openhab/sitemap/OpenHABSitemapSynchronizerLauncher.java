@@ -24,7 +24,6 @@ package org.openbase.bco.device.openhab.sitemap;
  */
 
 import org.openbase.bco.device.openhab.jp.JPOpenHABConfiguration;
-import org.openbase.bco.device.openhab.jp.JPOpenHABDistribution;
 import org.openbase.bco.device.openhab.jp.JPOpenHABSitemap;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jps.core.JPService;
@@ -45,7 +44,6 @@ public class OpenHABSitemapSynchronizerLauncher extends AbstractLauncher<Sitemap
     protected void loadProperties() {
         JPService.registerProperty(JPPrefix.class);
         JPService.registerProperty(JPOpenHABSitemap.class);
-        JPService.registerProperty(JPOpenHABDistribution.class);
         JPService.registerProperty(JPOpenHABConfiguration.class);
     }
 

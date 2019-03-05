@@ -24,8 +24,6 @@ package org.openbase.bco.device.openhab;
 
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
-import org.openbase.bco.device.openhab.jp.JPOpenHABConfiguration;
-import org.openbase.bco.device.openhab.jp.JPOpenHABDistribution;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
 import org.openbase.bco.device.openhab.manager.OpenHABDeviceManager;
 import org.openbase.bco.authentication.lib.BCO;
@@ -48,8 +46,6 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
     @Override
     protected void loadProperties() {
         JPService.registerProperty(JPOpenHABURI.class);
-        JPService.registerProperty(JPOpenHABConfiguration.class);
-        JPService.registerProperty(JPOpenHABDistribution.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
         JPService.registerProperty(JPRSBHost.class);
