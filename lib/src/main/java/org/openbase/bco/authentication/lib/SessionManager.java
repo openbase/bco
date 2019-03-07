@@ -676,7 +676,13 @@ public class SessionManager implements Shutdownable {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
-        return credentialStore.getEntry(userId).getCredentials();
+
+        if (credentialStore.hasEntry(userId)) {
+            return credentialStore.getEntry(userId).getCredentials();
+        }
+
+        // todo: remove me after @ was removed in user id
+        return credentialStore.getEntry("@" + userId).getCredentials();
     }
 
     public synchronized boolean hasCredentials() throws CouldNotPerformException {
@@ -697,7 +703,7 @@ public class SessionManager implements Shutdownable {
     }
 
     public synchronized boolean hasCredentialsForId(final String id) {
-        return this.credentialStore.hasEntry(id);
+        return this.credentialStore.hasEntry(id) || this.credentialStore.hasEntry("@" + id);
     }
 
     /**
