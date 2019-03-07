@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
@@ -325,8 +326,11 @@ public class SessionManager implements Shutdownable {
 
         // handle cases when somebody is already logged in
         if (this.isLoggedIn()) {
-            // do nothing if same user or client is already logged in
-            if (id.equals(this.userId) || id.equals(this.clientId)) {
+
+            // todo release: here we need to handle if the current session is not expired. Otherwise the relogin is skipped and the session is not recovered!
+
+            // do nothing if same user or client is already logged in and its session is still valid
+            if (id.equals(this.userId) || id.equals(this.clientId) /* check needed if session is not epired! */) {
                 return;
             }
 
@@ -666,6 +670,17 @@ public class SessionManager implements Shutdownable {
             ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Internal server error.", cause);
         }
+    }
+
+    public synchronized String getCredentialHashFromLocalStore(String userId) throws CouldNotPerformException {
+        if (!this.isLoggedIn()) {
+            throw new CouldNotPerformException("Please log in first!");
+        }
+        return credentialStore.getEntry(userId).getCredentials();
+    }
+
+    public synchronized boolean hasCredentials() throws CouldNotPerformException {
+        return !credentialStore.isEmpty();
     }
 
     /**
