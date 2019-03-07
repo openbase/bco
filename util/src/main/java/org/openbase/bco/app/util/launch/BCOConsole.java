@@ -248,11 +248,11 @@ public class BCOConsole {
     }
 
     private void printKey(final Console console, final SessionManager session) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        System.out.println("");
+        System.out.println();
         System.out.println("For security reasons, this command only requests and prints credentials from your local credential store.");
         System.out.println("Please type the user to look for.");
         String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: "));
-        System.out.println("");
+        System.out.println();
 
         boolean success = false;
 
@@ -260,6 +260,8 @@ public class BCOConsole {
             System.out.println("client store key[" + session.getCredentialHashFromLocalStore(userId) + "]");
             success = true;
         }
+
+        System.out.println();
 
         final CredentialStore store = new CredentialStore();
         store.init(AuthenticatorController.STORE_FILENAME);
