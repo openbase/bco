@@ -250,33 +250,16 @@ public class BCOConsole {
     private void printKey(final Console console, final SessionManager session) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         System.out.println();
         System.out.println("For security reasons, this command only requests and prints credentials from your local credential store.");
+        if (!session.hasCredentials()) {
+            throw new CouldNotPerformException("local store is empty!");
+        }
         System.out.println("Please type the user to look for.");
         String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: "));
         System.out.println();
-
-        boolean success = false;
-
-        if (session.hasCredentialsForId(userId)) {
-            System.out.println("client store key[" + session.getCredentialHashFromLocalStore(userId) + "]");
-            success = true;
-        }
-
-        System.out.println();
-
-        final CredentialStore store = new CredentialStore();
-        store.init(AuthenticatorController.STORE_FILENAME);
-        try {
-            if (store.hasEntry(userId)) {
-                System.out.println("server store key[" + store.getEntry(userId).getCredentials() + "]");
-                success = true;
-            }
-        } finally {
-            store.shutdown();
-        }
-
-        if(!success) {
+        if (!session.hasCredentialsForId(userId)) {
             throw new CouldNotPerformException("no keys available!");
         }
+        System.out.println("client store key[" + session.getCredentialHashFromLocalStore(userId) + "]");
     }
 
     private void listUser(final Console console) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
