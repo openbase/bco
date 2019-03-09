@@ -73,7 +73,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
-    public static final String STORE_FILENAME = "server_credential_store.json";
+    private static final String STORE_FILENAME = "server_credential_store.json";
     private static final String TICKET_GRANTING_KEY = "ticket_granting_key";
     private static final String SERVICE_SERVER_SECRET_KEY = "service_server_secret_key";
 
