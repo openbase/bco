@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib.com;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -39,10 +39,11 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.AbstractControllerServer;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 
 import java.io.Serializable;
 
@@ -57,6 +58,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
      * Create a communication service.
      *
      * @param builder the initial data builder
+     *
      * @throws InstantiationException if the creation fails
      */
     public AbstractAuthenticatedControllerServer(final MB builder) throws InstantiationException {
@@ -67,6 +69,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
      * {@inheritDoc}
      *
      * @param server {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -78,6 +81,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -110,7 +114,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
                 newData = (M) cloneDataBuilder().build();
             } else {
                 // filter data for user
-                newData = filterDataForUser(cloneDataBuilder(), authenticationBaseData.getUserId());
+                newData = filterDataForUser(cloneDataBuilder(), authenticationBaseData.getUserClientPair());
             }
         } catch (JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Could not validate authentication property.", ex, logger);
@@ -155,5 +159,5 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
         }
     }
 
-    protected abstract M filterDataForUser(final MB dataBuilder, final String userId) throws CouldNotPerformException;
+    protected abstract M filterDataForUser(final MB dataBuilder, final UserClientPair userClientPair) throws CouldNotPerformException;
 }

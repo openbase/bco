@@ -261,8 +261,10 @@ public class AuthenticatedServiceProcessor {
          * @param authenticatedValue The authenticated value which is send with this request.
          *
          * @return A future containing the authenticated value which is the response from the server.
+         *
+         * @throws CouldNotPerformException if the request cannot be made.
          */
-        Future<AuthenticatedValue> request(AuthenticatedValue authenticatedValue);
+        Future<AuthenticatedValue> request(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
     }
 
     public interface TicketValidator {

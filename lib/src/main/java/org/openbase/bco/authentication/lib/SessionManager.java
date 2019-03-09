@@ -10,18 +10,20 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import com.google.protobuf.ByteString;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler.TicketWrapperSessionKeyPair;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
@@ -42,14 +44,15 @@ import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticatorType.Authenticator;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
-import java.util.Base64;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -83,7 +86,7 @@ public class SessionManager implements Shutdownable {
      * Observable on which it is notified if login or logout is triggered.
      * The user@client id is notified on login in null on logout.
      */
-    private final ObservableImpl<SessionManager, String> loginObservable;
+    private final ObservableImpl<SessionManager, UserClientPair> loginObservable;
     /**
      * The ticket and authenticator of the current session.
      */
@@ -97,13 +100,9 @@ public class SessionManager implements Shutdownable {
      */
     private final CredentialStore credentialStore;
     /**
-     * The id of the client currently logged in.
+     * Pair describing the currently logged in user and client.
      */
-    private String clientId;
-    /**
-     * The id of the user currently logged in.
-     */
-    private String userId;
+    private UserClientPair.Builder userClientPair;
     /**
      * Future of a task that renews the ticket of a user if he wants to stay logged in.
      */
@@ -229,8 +228,8 @@ public class SessionManager implements Shutdownable {
         login(userId, password, false);
     }
 
-    public synchronized void loginClient(final String clientId, final String base64Credentials) throws CouldNotPerformException {
-        internalLogin(clientId, Base64.getDecoder().decode(base64Credentials), true, false);
+    public synchronized void loginClient(final String clientId, final String credentialsUTF8) throws CouldNotPerformException {
+        internalLogin(clientId, LoginCredentials.newBuilder().setCredentials(ByteString.copyFrom(credentialsUTF8, StandardCharsets.UTF_8)).setSymmetric(false).build(), true, false);
     }
 
     /**
@@ -258,11 +257,11 @@ public class SessionManager implements Shutdownable {
      * @throws CouldNotPerformException if the user could not be logged in with the given password
      */
     public synchronized void login(final String userId, final String password, final boolean stayLoggedIn, final boolean rememberPassword) throws CouldNotPerformException {
-        final byte[] credentials = EncryptionHelper.hash(password);
+        final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(userId).setCredentials(ByteString.copyFrom(EncryptionHelper.hash(password))).setSymmetric(true).build();
         if (rememberPassword) {
-            credentialStore.setCredentials(userId, credentials);
+            credentialStore.addEntry(userId, loginCredentials);
         }
-        internalLogin(userId, credentials, stayLoggedIn, true);
+        internalLogin(userId, loginCredentials, stayLoggedIn, true);
     }
 
     /**
@@ -289,7 +288,7 @@ public class SessionManager implements Shutdownable {
      */
     public synchronized void login(final String clientIdOrUserId, final boolean stayLoggedIn) throws CouldNotPerformException, NotAvailableException {
         boolean isUser;
-        byte[] credentials;
+        LoginCredentials credentials;
         if (credentialStore.hasEntry(clientIdOrUserId)) {
             isUser = true;
             credentials = credentialStore.getCredentials(clientIdOrUserId);
@@ -305,15 +304,15 @@ public class SessionManager implements Shutdownable {
     /**
      * Perform a login for a given userId and password.
      *
-     * @param id          Identifier of the user or client
-     * @param credentials Password or private key of the user or client
+     * @param id               Identifier of the user or client
+     * @param loginCredentials credentials of the user/client to be logged in.
      *
      * @return Returns true if login successful
      *
      * @throws NotAvailableException    If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    private synchronized void internalLogin(final String id, final byte[] credentials, final boolean stayLoggedIn, final boolean isUser) throws CouldNotPerformException, NotAvailableException {
+    private synchronized void internalLogin(final String id, final LoginCredentials loginCredentials, final boolean stayLoggedIn, final boolean isUser) throws CouldNotPerformException, NotAvailableException {
         // validate authentication property
         try {
             if (!JPService.getProperty(JPAuthentication.class).getValue()) {
@@ -326,7 +325,7 @@ public class SessionManager implements Shutdownable {
         // handle cases when somebody is already logged in
         if (this.isLoggedIn()) {
             // do nothing if same user or client is already logged in
-            if (id.equals(this.userId) || id.equals(this.clientId)) {
+            if (id.equals(this.userClientPair.getUserId()) || id.equals(this.userClientPair.getClientId())) {
                 return;
             }
 
@@ -336,49 +335,46 @@ public class SessionManager implements Shutdownable {
             }
 
             // if new client is logged in while a user is logged in the user has to be logged out
-            if (userId != null && !isUser) {
+            if (!userClientPair.getUserId().isEmpty() && !isUser) {
                 this.logout();
             }
         }
 
         // save the new id
         if (isUser) {
-            this.userId = id;
+            userClientPair.setUserId(id);
         } else {
-            this.clientId = id;
+            userClientPair.setClientId(id);
         }
 
         // resolve user at client id and credentials
-        final String userAtClientId = getUserAtClientId();
-        byte[] userKey = null;
-        byte[] clientKey = null;
+        LoginCredentials userCredentials = null;
+        LoginCredentials clientCredentials = null;
         if (isUser) {
             // user is logged in so the parameters are his credentials
-            userKey = credentials;
+            userCredentials = loginCredentials;
 
             // if client was logged in get its credentials from the store
-            if (clientId != null) {
-                clientKey = credentialStore.getCredentials("@" + clientId);
+            if (!userClientPair.getClientId().isEmpty()) {
+                clientCredentials = credentialStore.getCredentials(userClientPair.getClientId());
             }
         } else {
             // client is logged in so the parameters are his credentials
-            clientKey = credentials;
+            clientCredentials = loginCredentials;
         }
 
         try {
             // request ticket granting ticket
-            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userAtClientId).get();
+            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(getUserClientPair()).get();
             // handle response
-            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userAtClientId, userKey, clientKey, ticketSessionKeyWrapper);
-            final TicketAuthenticatorWrapper wrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-            final byte[] ticketGrantingServiceSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+            TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(getUserClientPair(), userCredentials, clientCredentials, ticketSessionKeyWrapper);
 
             // request client server ticket
-            ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(wrapper).get();
+            ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get();
             // handle response
-            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userAtClientId, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
-            this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-            this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+            ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleTicketGrantingServiceResponse(getUserClientPair(), ticketWrapperSessionKeyPair.getSessionKey(), ticketSessionKeyWrapper);
+            this.ticketAuthenticatorWrapper = ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper();
+            this.sessionKey = ticketWrapperSessionKeyPair.getSessionKey();
 
             notifyLoginObserver();
 
@@ -435,22 +431,22 @@ public class SessionManager implements Shutdownable {
         this.sessionKey = null;
 
         // if a user was logged in clear user id
-        if (this.userId != null) {
-            this.userId = null;
+        if (!userClientPair.getUserId().isEmpty()) {
+            userClientPair.clearUserId();
 
             // if a client was logged in additionally, log him in again
-            if (clientId != null) {
+            if (!userClientPair.getClientId().isEmpty()) {
                 try {
-                    login(clientId);
+                    login(userClientPair.getClientId());
                     // return because the login notifies observer already
                     return;
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not login as client again after user logout", ex, LOGGER, LogLevel.WARN);
                 }
             }
-        } else if (this.clientId != null) {
+        } else if (!userClientPair.getClientId().isEmpty()) {
             // only a client has been logged in so clear its id
-            this.clientId = null;
+            userClientPair.clearClientId();
         }
 
         // notify observer of logout
@@ -465,8 +461,8 @@ public class SessionManager implements Shutdownable {
         if (ticketRenewalTask != null && !ticketRenewalTask.isDone()) {
             ticketRenewalTask.cancel(true);
         }
-        userId = null;
-        clientId = null;
+        userClientPair.clearUserId();
+        userClientPair.clearClientId();
         sessionKey = null;
         ticketAuthenticatorWrapper = null;
         notifyLoginObserver();
@@ -481,7 +477,7 @@ public class SessionManager implements Shutdownable {
         }
 
         try {
-            loginObservable.notifyObservers(getUserAtClientId());
+            loginObservable.notifyObservers(getUserClientPair());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not notify logout to observer", ex, LOGGER, LogLevel.WARN);
         }
@@ -508,7 +504,7 @@ public class SessionManager implements Shutdownable {
         }
 
         try {
-            return CachedAuthenticationRemote.getRemote().isAdmin(userId).get();
+            return CachedAuthenticationRemote.getRemote().isAdmin(userClientPair.getUserId()).get();
         } catch (InterruptedException | CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
         }
@@ -583,18 +579,17 @@ public class SessionManager implements Shutdownable {
             // save if user stayed logged in
             final boolean stayLoggedIn = ticketRenewalTask != null && !ticketRenewalTask.isDone();
             // save user and client id
-            final String userId = getUserId();
-            final String clientId = getClientId();
-            // logout
+            final UserClientPair userClientPair = getUserClientPair();
+            // logout);
             logout();
-            if (userId != null && !userId.isEmpty() && credentialStore.hasEntry(userId)) {
+            if (!userClientPair.getUserId().isEmpty() && credentialStore.hasEntry(userClientPair.getUserId())) {
                 // if user was save in store log him in again, this is valid because logout will login a client
                 // if a user was logged in at a client
-                login(userId, stayLoggedIn);
+                login(userClientPair.getUserId(), stayLoggedIn);
             } else {
                 // user was not logged in so login the client again if possible
-                if (clientId != null && !clientId.isEmpty() && credentialStore.hasEntry("@" + clientId)) {
-                    login(clientId, stayLoggedIn);
+                if (!userClientPair.getClientId().isEmpty() && credentialStore.hasEntry(userClientPair.getClientId())) {
+                    login(userClientPair.getClientId(), stayLoggedIn);
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -616,13 +611,9 @@ public class SessionManager implements Shutdownable {
      *
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public synchronized void changeCredentials(String userId, String oldCredentials, String newCredentials) throws CouldNotPerformException {
+    public synchronized void changePassword(final String userId, final String oldCredentials, final String newCredentials) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
-        }
-
-        if (clientId == null) {
-            clientId = userId;
         }
 
         try {
@@ -631,14 +622,13 @@ public class SessionManager implements Shutdownable {
             byte[] newHash = EncryptionHelper.hash(newCredentials);
 
             LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-                    .setId(clientId)
+                    .setId(userId)
                     .setOldCredentials(EncryptionHelper.encryptSymmetric(oldHash, sessionKey))
                     .setNewCredentials(EncryptionHelper.encryptSymmetric(newHash, sessionKey))
-                    .setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper)
+                    .setSymmetric(true)
                     .build();
 
-            TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
+            AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentialsChange, LoginCredentialsChange.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().changeCredentials(authenticatedValue)).get();
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         } catch (InterruptedException ex) {
@@ -669,16 +659,18 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * Registers a client.
+     * Registers a client. Automatically generate a key pair and save the private key in the credential store of
+     * the session manager.
      *
-     * @param clientId the id of the client
+     * @param clientId the id of the client to be registered with a asymmetric encryption
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException if the client could not registered
      */
-    public synchronized void registerClient(String clientId) throws CouldNotPerformException {
-        KeyPair keyPair = EncryptionHelper.generateKeyPair();
-        this.internalRegister(clientId, keyPair.getPublic().getEncoded(), false);
-        this.credentialStore.setCredentials("@" + clientId, keyPair.getPrivate().getEncoded());
+    public synchronized void registerClient(final String clientId) throws CouldNotPerformException {
+        final KeyPair keyPair = EncryptionHelper.generateKeyPair();
+        final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(clientId).setCredentials(ByteString.copyFrom(keyPair.getPublic().getEncoded())).setSymmetric(false).setAdmin(false).build();
+        this.internalRegister(loginCredentials);
+        this.credentialStore.addEntry(clientId, loginCredentials);
     }
 
     public synchronized boolean hasCredentialsForId(final String id) {
@@ -696,7 +688,8 @@ public class SessionManager implements Shutdownable {
      */
     public synchronized void registerUser(final String userId, final String password, final boolean isAdmin) throws CouldNotPerformException {
         byte[] key = EncryptionHelper.hash(password);
-        this.internalRegister(userId, key, isAdmin);
+        final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(userId).setAdmin(isAdmin).setSymmetric(true).setCredentials(ByteString.copyFrom(key)).build();
+        this.internalRegister(loginCredentials);
     }
 
     /**
@@ -705,31 +698,17 @@ public class SessionManager implements Shutdownable {
      * Overwrites duplicate entries on client, if entry to be registered does not exist on server.
      * Does not overwrite duplicate entries on client, if entry does exist on server.
      *
-     * @param id      the id of the user
-     * @param key     the password of the user
-     * @param isAdmin flag if user should be an administrator
+     * @param loginCredentials type containing all information for the user/client to be registered.
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    private void internalRegister(String id, byte[] key, boolean isAdmin) throws CouldNotPerformException {
+    private void internalRegister(final LoginCredentials loginCredentials) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
 
         try {
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
-
-            LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-                    .setId(id)
-                    .setNewCredentials(EncryptionHelper.encryptSymmetric(key, this.sessionKey))
-                    .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
-                    .setAdmin(isAdmin)
-                    .build();
-
-            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().register(loginCredentialsChange).get();
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
-        } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+            AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentials, LoginCredentials.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().register(authenticatedValue)).get();
         } catch (InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Action was interrupted.", ex);
@@ -763,17 +742,7 @@ public class SessionManager implements Shutdownable {
         }
 
         try {
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
-
-            LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-                    .setId(id)
-                    .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
-                    .build();
-
-            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().removeUser(loginCredentialsChange).get();
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
-        } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+            AuthenticatedServiceProcessor.requestAuthenticatedAction(id, String.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().removeUser(authenticatedValue)).get();
         } catch (InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Action was interrupted.", ex);
@@ -801,24 +770,14 @@ public class SessionManager implements Shutdownable {
         }
     }
 
-    public synchronized void setAdministrator(String id, boolean isAdmin) throws CouldNotPerformException {
+    public synchronized void setAdministrator(final String id, boolean isAdmin) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
 
+        final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(id).setAdmin(isAdmin).build();
         try {
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
-
-            LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-                    .setId(id)
-                    .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
-                    .setAdmin(isAdmin)
-                    .build();
-
-            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().setAdministrator(loginCredentialsChange).get();
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
-        } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+            AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentials, LoginCredentials.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().setAdministrator(authenticatedValue)).get();
         } catch (InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Action was interrupted.", ex);
@@ -851,36 +810,16 @@ public class SessionManager implements Shutdownable {
      *
      * @return userId@clientId
      */
-    public String getUserAtClientId() {
-        String userAtClient = "";
-
-        if (userId != null) {
-            userAtClient += userId;
-        }
-
-        userAtClient += "@";
-
-        if (clientId != null) {
-            userAtClient += clientId;
-        }
-
-        return userAtClient;
+    public UserClientPair getUserClientPair() {
+        return userClientPair.build();
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void addLoginObserver(Observer<SessionManager, String> observer) {
+    public void addLoginObserver(final Observer<SessionManager, UserClientPair> observer) {
         loginObservable.addObserver(observer);
     }
 
-    public void removeLoginObserver(Observer<SessionManager, String> observer) {
+    public void removeLoginObserver(final Observer<SessionManager, UserClientPair> observer) {
         loginObservable.removeObserver(observer);
-    }
-
-    public String getClientId() {
-        return clientId;
     }
 
     @Override

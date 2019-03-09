@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -34,6 +34,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.slf4j.LoggerFactory;
@@ -61,69 +62,69 @@ public class AuthorizationHelper {
      * Checks whether a user has the permission to read from a permissionConfig,
      * for example to query information about the unit's state who has this permissionConfig.
      *
-     * @param unitConfig The unitConfig of the unit the user wants to read.
-     * @param userId     ID of the user whose permissions should be checked.
-     * @param groups     All available groups in the system, indexed by their group ID.
-     * @param locations  All available locations in the system, indexed by their id.
+     * @param unitConfig     The unitConfig of the unit the user wants to read.
+     * @param userClientPair ID of the user whose permissions should be checked.
+     * @param groups         All available groups in the system, indexed by their group ID.
+     * @param locations      All available locations in the system, indexed by their id.
      *
      * @return True if the user can read from the unit, false if not.
      */
-    public static boolean canRead(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
-        return canDo(unitConfig, userId, groups, locations, PermissionType.READ);
+    public static boolean canRead(UnitConfig unitConfig, final UserClientPair userClientPair, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
+        return canDo(unitConfig, userClientPair, groups, locations, PermissionType.READ);
     }
 
     /**
      * Checks whether a user has the permission to write to a something with the given permissionConfig,
      * for example to run any action on a unit.
      *
-     * @param unitConfig The unitConfig of the unit the user wants to write to.
-     * @param userId     ID of the user whose permissions should be checked.
-     * @param groups     All available groups in the system, indexed by their group ID.
-     * @param locations  All available locations in the system, indexed by their id.
+     * @param unitConfig     The unitConfig of the unit the user wants to write to.
+     * @param userClientPair ID of the user whose permissions should be checked.
+     * @param groups         All available groups in the system, indexed by their group ID.
+     * @param locations      All available locations in the system, indexed by their id.
      *
      * @return True if the user can write to the unit, false if not.
      */
-    public static boolean canWrite(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
-        return canDo(unitConfig, userId, groups, locations, PermissionType.WRITE);
+    public static boolean canWrite(UnitConfig unitConfig, final UserClientPair userClientPair, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
+        return canDo(unitConfig, userClientPair, groups, locations, PermissionType.WRITE);
     }
 
     /**
      * Checks whether a user has the permission to access a unit with the given permissionConfig.
      *
-     * @param unitConfig The unitConfig of the unit the user wants to access.
-     * @param userId     ID of the user whose permissions should be checked.
-     * @param groups     All available groups in the system, indexed by their group ID.
-     * @param locations  All available locations in the system, indexed by their id.
+     * @param unitConfig     The unitConfig of the unit the user wants to access.
+     * @param userClientPair ID of the user whose permissions should be checked.
+     * @param groups         All available groups in the system, indexed by their group ID.
+     * @param locations      All available locations in the system, indexed by their id.
      *
      * @return True if the user can access the unit, false if not.
      */
-    public static boolean canAccess(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
-        return canDo(unitConfig, userId, groups, locations, PermissionType.ACCESS);
+    public static boolean canAccess(UnitConfig unitConfig, final UserClientPair userClientPair, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
+        return canDo(unitConfig, userClientPair, groups, locations, PermissionType.ACCESS);
     }
 
     /**
      * Checks all permissions for a user.
      *
-     * @param unitConfig The unitConfig of the unit for which the permissions apply.
-     * @param userId     ID of the user whose permissions should be checked.
-     * @param groups     All available groups in the system, indexed by their group ID.
-     * @param locations  All available locations in the system, indexed by their id.
+     * @param unitConfig     The unitConfig of the unit for which the permissions apply.
+     * @param userClientPair ID of the user whose permissions should be checked.
+     * @param groups         All available groups in the system, indexed by their group ID.
+     * @param locations      All available locations in the system, indexed by their id.
      *
      * @return Permission object representing the maximum permissions for the given user on the given unit.
      */
-    public static Permission getPermission(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
+    public static Permission getPermission(UnitConfig unitConfig, UserClientPair userClientPair, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
         return Permission.newBuilder()
-                .setAccess(canAccess(unitConfig, userId, groups, locations))
-                .setRead(canRead(unitConfig, userId, groups, locations))
-                .setWrite(canWrite(unitConfig, userId, groups, locations))
+                .setAccess(canAccess(unitConfig, userClientPair, groups, locations))
+                .setRead(canRead(unitConfig, userClientPair, groups, locations))
+                .setWrite(canWrite(unitConfig, userClientPair, groups, locations))
                 .build();
     }
 
-    public static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, PermissionType type) {
+    public static boolean canDo(UnitConfig unitConfig, final UserClientPair userClientPair, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, PermissionType type) {
         if (!isAuthenticationUnit(unitConfig) && !isRootLocation(unitConfig, locations)) {
             // check if the given user has read permissions for the parent location otherwise skip all further checks
             try {
-                if (!canRead(getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations), userId, groups, locations)) {
+                if (!canRead(getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations), userClientPair, groups, locations)) {
                     return false;
                 }
             } catch (NotAvailableException ex) {
@@ -139,7 +140,7 @@ public class AuthorizationHelper {
         }
 
         try {
-            return canDo(getPermissionConfig(unitConfig, locations), userId, groups, type);
+            return canDo(getPermissionConfig(unitConfig, locations), userClientPair, groups, type);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("can not perform the canDo check! Permission will be denied!", ex, LOGGER, LogLevel.WARN);
             return false;
@@ -150,34 +151,28 @@ public class AuthorizationHelper {
      * Internal helper method to check one of the permissions on a unit.
      *
      * @param permissionConfig The unit for which the permissions apply.
-     * @param userId           ID of the user whose permissions should be checked.
+     * @param userClientPair   ID of the user whose permissions should be checked.
      * @param groups           All available groups in the system, indexed by their group ID.
      * @param type             The permission type to check.
      *
      * @return True if the user has the given permission, false if not.
      */
-    private static boolean canDo(final PermissionConfig permissionConfig, String userId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, PermissionType type) {
+    private static boolean canDo(final PermissionConfig permissionConfig, final UserClientPair userClientPair, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, PermissionType type) {
         // Other
         if (permitted(permissionConfig.getOtherPermission(), type)) {
             return true;
         }
 
         // If no user was given, only "other" rights apply.
-        if (userId == null) {
+        if (userClientPair.getUserId().isEmpty() && userClientPair.getClientId().isEmpty()) {
             return false;
         }
 
-        // If the given ID has the form user@client, we check both.
-        String[] split = userId.split("@", 2);
-        if (split.length > 1 && !split[0].isEmpty() && !split[1].isEmpty()) {
-            return canDo(permissionConfig, split[0], groups, type) || canDo(permissionConfig, split[1], groups, type);
-        } else {
-            userId = userId.replace("@", "");
-        }
-
         // Owner
-        if (permissionConfig.getOwnerId().equals(userId) && permitted(permissionConfig.getOwnerPermission(), type)) {
-            return true;
+        if (permissionConfig.getOwnerId().equals(userClientPair.getUserId()) || permissionConfig.getOwnerId().equals(userClientPair.getClientId())) {
+            if (permitted(permissionConfig.getOwnerPermission(), type)) {
+                return true;
+            }
         }
 
         // Groups
@@ -189,7 +184,7 @@ public class AuthorizationHelper {
         ProtocolStringList groupMembers;
         for (final MapFieldEntry entry : permissionConfig.getGroupPermissionList()) {
             // every user is also a group so check if the group id matches the user id
-            if (entry.getGroupId().equals(userId) && permitted(entry.getPermission(), type)) {
+            if ((entry.getGroupId().equals(userClientPair.getUserId()) || entry.getGroupId().equals(userClientPair.getClientId())) && permitted(entry.getPermission(), type)) {
                 return true;
             }
 
@@ -201,7 +196,7 @@ public class AuthorizationHelper {
             // retrieve group
             groupMembers = groups.get(entry.getGroupId()).getMessage().getAuthorizationGroupConfig().getMemberIdList();
             // Check if the user belongs to the group and the group has the according permissions
-            if (groupMembers.contains(userId) && permitted(entry.getPermission(), type)) {
+            if ((groupMembers.contains(userClientPair.getUserId()) || groupMembers.contains(userClientPair.getClientId())) && permitted(entry.getPermission(), type)) {
                 return true;
             }
         }
