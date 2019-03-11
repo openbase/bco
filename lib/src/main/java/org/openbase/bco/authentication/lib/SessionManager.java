@@ -22,7 +22,6 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
@@ -567,7 +566,7 @@ public class SessionManager implements Shutdownable {
             matcher = pattern.matcher(cause.getMessage());
 
             if (matcher.find()) {
-                throw new SessionExpiredException();
+                throw new SessionExpiredException(matcher.group(1));
             }
 
             ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
