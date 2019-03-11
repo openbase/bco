@@ -25,6 +25,7 @@ package org.openbase.bco.device.openhab.sitemap;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.language.LabelType.Label;
 
 public class BcoSitemapBuilder extends AbstractSitemapBuilder {
@@ -33,6 +34,10 @@ public class BcoSitemapBuilder extends AbstractSitemapBuilder {
 
     public BcoSitemapBuilder() throws InstantiationException {
         super(FILENAME, getRootLocationLabel());
+    }
+
+    public BcoSitemapBuilder(final UnitConfig rootLocation) throws InstantiationException {
+        super(FILENAME, rootLocation.getLabel());
     }
 
     private static Label getRootLocationLabel() throws InstantiationException {

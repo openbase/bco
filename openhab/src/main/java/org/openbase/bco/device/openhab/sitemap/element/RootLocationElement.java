@@ -10,12 +10,12 @@ package org.openbase.bco.device.openhab.sitemap.element;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -40,13 +40,9 @@ import java.util.*;
 
 public class RootLocationElement extends LocationElement {
 
-    public RootLocationElement() throws InstantiationException {
+    public RootLocationElement(final UnitConfig rootLocation) throws InstantiationException {
         super();
-        try {
-            init(Registries.getUnitRegistry().getRootLocationConfig());
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        init(rootLocation);
     }
 
     @Override
@@ -126,7 +122,7 @@ public class RootLocationElement extends LocationElement {
         boolean absoluteLabel;
         for (UnitType unitType : unitTypeUnitConfigMap.keySet()) {
 
-            if(unitType == UnitType.USER) {
+            if (unitType == UnitType.USER) {
                 absoluteLabel = false;
             } else {
                 absoluteLabel = true;
@@ -171,7 +167,7 @@ public class RootLocationElement extends LocationElement {
 
         for (List<UnitConfig> unitConfigListValue : serviceTypeUnitConfigMap.values()) {
             // sort by name
-            Collections.sort(unitConfigListValue, Comparator.comparing(o ->  LabelProcessor.getBestMatch(o.getLabel(), "?")));
+            Collections.sort(unitConfigListValue, Comparator.comparing(o -> LabelProcessor.getBestMatch(o.getLabel(), "?")));
         }
 
         for (ServiceType serviceType : serviceTypeUnitConfigMap.keySet()) {

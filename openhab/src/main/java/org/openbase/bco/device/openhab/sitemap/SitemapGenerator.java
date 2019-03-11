@@ -23,10 +23,15 @@ package org.openbase.bco.device.openhab.sitemap;
  */
 
 import org.apache.commons.io.FileUtils;
+import org.openbase.bco.device.openhab.jp.JPOpenHABConfiguration;
 import org.openbase.bco.device.openhab.jp.JPOpenHABSitemap;
 import org.openbase.bco.device.openhab.sitemap.element.RootLocationElement;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -36,18 +41,37 @@ public class SitemapGenerator {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SitemapGenerator.class);
 
+
     public void generate() throws CouldNotPerformException {
+        generate(Registries.getUnitRegistry().getRootLocationConfig());
+    }
+
+    public void generate(final UnitConfig zone) throws CouldNotPerformException {
         logger.info("generate sitemap...");
         try {
-            serializeToFile(new BcoSitemapBuilder().append(new RootLocationElement()).build());
+
+            // generate for current zone
+            serializeToFile(new BcoSitemapBuilder(zone).append(new RootLocationElement(zone)).build(), zone.getAlias(0).toLowerCase());
+
+            // generate for child zones
+            try {
+                for (String childId : zone.getLocationConfig().getChildIdList()) {
+                    final UnitConfig childLocationConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
+                    if(childLocationConfig.getLocationConfig().getLocationType() == LocationType.ZONE) {
+                        generate(childLocationConfig);
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                throw new InstantiationException(this, ex);
+            }
         } catch (NullPointerException ex) {
             throw new CouldNotPerformException("Could not generate sitemap!", ex);
         }
     }
 
-    private void serializeToFile(final String content) throws CouldNotPerformException {
+    private void serializeToFile(final String content, final String fileNameSufix) throws CouldNotPerformException {
         try {
-            final File configFile = JPService.getProperty(JPOpenHABSitemap.class).getValue();
+            final File configFile = new File(JPService.getProperty(JPOpenHABSitemap.class).getValue(), "bco-"+fileNameSufix+".sitemap");
             FileUtils.writeStringToFile(configFile, content, Charset.forName("UTF8"), false);
             logger.info("Sitemap[" + configFile.getAbsolutePath() + "] successfully generated.");
         } catch (Exception ex) {
