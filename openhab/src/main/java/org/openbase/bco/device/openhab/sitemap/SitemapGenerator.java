@@ -50,8 +50,11 @@ public class SitemapGenerator {
         logger.info("generate sitemap...");
         try {
 
+            // generate filename
+            final String fileName = "bco-"+zone.getAlias(0).toLowerCase();
+
             // generate for current zone
-            serializeToFile(new BcoSitemapBuilder(zone).append(new RootLocationElement(zone)).build(), zone.getAlias(0).toLowerCase());
+            serializeToFile(new BcoSitemapBuilder(zone, fileName).append(new RootLocationElement(zone)).build(), fileName);
 
             // generate for child zones
             try {
@@ -69,9 +72,9 @@ public class SitemapGenerator {
         }
     }
 
-    private void serializeToFile(final String content, final String fileNameSufix) throws CouldNotPerformException {
+    private void serializeToFile(final String content, final String fileName) throws CouldNotPerformException {
         try {
-            final File configFile = new File(JPService.getProperty(JPOpenHABSitemap.class).getValue(), "bco-"+fileNameSufix+".sitemap");
+            final File configFile = new File(JPService.getProperty(JPOpenHABSitemap.class).getValue(), fileName+".sitemap");
             FileUtils.writeStringToFile(configFile, content, Charset.forName("UTF8"), false);
             logger.info("Sitemap[" + configFile.getAbsolutePath() + "] successfully generated.");
         } catch (Exception ex) {

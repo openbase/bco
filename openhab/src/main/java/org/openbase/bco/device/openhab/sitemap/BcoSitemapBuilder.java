@@ -30,21 +30,7 @@ import org.openbase.type.language.LabelType.Label;
 
 public class BcoSitemapBuilder extends AbstractSitemapBuilder {
 
-    public static final String FILENAME = "bco";
-
-    public BcoSitemapBuilder() throws InstantiationException {
-        super(FILENAME, getRootLocationLabel());
-    }
-
-    public BcoSitemapBuilder(final UnitConfig rootLocation) throws InstantiationException {
-        super(FILENAME, rootLocation.getLabel());
-    }
-
-    private static Label getRootLocationLabel() throws InstantiationException {
-        try {
-            return Registries.getUnitRegistry().getRootLocationConfig().getLabel();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(BcoSitemapBuilder.class, ex);
-        }
+    public BcoSitemapBuilder(final UnitConfig rootLocation, final String fileName) throws InstantiationException {
+        super(fileName, rootLocation.getLabel());
     }
 }
