@@ -51,7 +51,7 @@ public class SitemapGenerator {
         try {
 
             // generate filename
-            final String fileName = "bco-"+zone.getAlias(0).toLowerCase();
+            final String fileName = "bco"+zone.getAlias(0).toLowerCase().replace("-", "");
 
             // generate for current zone
             serializeToFile(new BcoSitemapBuilder(zone, fileName).append(new RootLocationElement(zone)).build(), fileName);
