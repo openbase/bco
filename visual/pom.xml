@@ -47,15 +47,15 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.dal.visual.BCOVisualRemote</mainClass>
-                            <id>bco-visual-remote</id>
+                            <mainClass>${app.mainclass.bco.visual.remote}</mainClass>
+                            <id>${app.name.bco.visual.remote}</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.dal.visual.action.BCOActionInspectorLauncher</mainClass>
-                            <id>bco-action-inspector</id>
+                            <mainClass>${app.mainclass.bco.action.inspector}</mainClass>
+                            <id>${app.name.bco.action.inspector}</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
@@ -65,30 +65,40 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
+                <artifactId>maven-shade-plugin</artifactId>
                 <version>3.1.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.openbase.bco.dal.visual.BCOVisualRemote</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.jolira</groupId>
-                <artifactId>onejar-maven-plugin</artifactId>
-                <version>1.4.4</version>
                 <executions>
                     <execution>
-                        <configuration>
-                            <!--<onejarVersion>0.97</onejarVersion>-->
-                            <attachToBuild>false</attachToBuild>
-                            <classifier>onejar</classifier>
-                        </configuration>
+                        <id>build-first</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>one-jar</goal>
+                            <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${app.mainclass.bco.visual.remote}</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>${app.name.bco.visual.remote}-${project.version}</finalName>
+                            <dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-second</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${app.mainclass.bco.action.inspector}</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>${app.name.bco.action.inspector}-${project.version}</finalName>
+                            <dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -118,6 +128,13 @@
             <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
         </pluginRepository>
     </pluginRepositories>
+
+    <properties>
+        <app.mainclass.bco.visual.remote>org.openbase.bco.dal.visual.BCOVisualRemote</app.mainclass.bco.visual.remote>
+        <app.mainclass.bco.action.inspector>org.openbase.bco.dal.visual.action.BCOActionInspectorLauncher</app.mainclass.bco.action.inspector>
+        <app.name.bco.visual.remote>bco-visual-remote</app.name.bco.visual.remote>
+        <app.name.bco.action.inspector>bco-action-inspector</app.name.bco.action.inspector>
+    </properties>
     
     <dependencies>
         <dependency>
