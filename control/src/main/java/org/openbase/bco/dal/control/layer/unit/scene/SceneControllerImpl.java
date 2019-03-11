@@ -135,7 +135,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                         if (getActivationState().getValue() == ActivationState.State.ACTIVE && (source.isDone() || source.isScheduled())) {
                             logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
                             requiredActionPool.removeActionDescriptionObserver(requiredActionPoolObserver);
-                            stop();
+                            // stop disabled, so scene can be reactivated because it will never be active but still possilble required actions are executed.
+                            // stop();
 
                             try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
                                 final Builder internalBuilder = dataBuilder.getInternalBuilder();
@@ -311,7 +312,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                 actionList.add(actionFuture.get(timeout, TimeUnit.MILLISECONDS));
                             }
                         } catch (TimeoutException | ExecutionException | CouldNotPerformException ex) {
-                            stop();
+                            // stop disabled, so scene can be reactivated because it will never be active but still possilble required actions are executed.
+                            // stop();
                             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("At least one required action could not be executed", ex));
                         }
 
