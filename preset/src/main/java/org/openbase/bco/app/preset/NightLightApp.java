@@ -177,23 +177,35 @@ public class NightLightApp extends AbstractAppController {
                     // no locations excluded.
                 }
 
-                // deregister tile remotes
+                // deregister all tile remotes
                 locationMap.forEach((remote, observer) -> {
                     remote.removeDataObserver(observer);
                 });
 
-                // clear tile remotes
+                // clear all tile remotes
                 locationMap.clear();
+
+                // load parent location
+                final UnitConfig parentLocationConfig = Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId());
 
                 // load tile remotes
                 remoteLocationLoop:
-                for (final UnitConfig locationUnitConfig : Registries.getUnitRegistry(true).getLocationUnitConfigsByType(LocationType.TILE)) {
+                for (String s : parentLocationConfig.getLocationConfig().getChildIdList()) {
 
-                    // check if location was excluded
+                    final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(s);
+
+                    // let only tiles pass
+                    if(locationUnitConfig.getLocationConfig().getLocationType() != LocationType.TILE) {
+                        continue;
+                    }
+
+                    // check if location was excluded by id
                     if (excludedLocations.contains(locationUnitConfig.getId())) {
                         // System.out.println("exclude locations: " + locationUnitConfig.getLabel());
                         continue remoteLocationLoop;
                     }
+
+                    // check if location was excluded by alias
                     for (String alias : locationUnitConfig.getAliasList()) {
                         if (excludedLocations.contains(alias)) {
                             // System.out.println("exclude locations: " + locationUnitConfig.getLabel());
