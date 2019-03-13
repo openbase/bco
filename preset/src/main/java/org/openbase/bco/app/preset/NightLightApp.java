@@ -23,6 +23,7 @@ package org.openbase.bco.app.preset;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
@@ -67,10 +68,10 @@ public class NightLightApp extends AbstractAppController {
 
     private SyncObject locationMapLock = new SyncObject("LocationMapLock");
 
-    private Map<Unit, ActionDescription> presentsActionLocationMap, absenceActionLocationMap;
+    private Map<Unit, RemoteAction> presentsActionLocationMap, absenceActionLocationMap;
     private Map<LocationRemote, Observer> locationMap;
 
-    public NightLightApp() throws InstantiationException, InterruptedException {
+    public NightLightApp() throws InstantiationException {
         this.locationMap = new HashMap<>();
         this.presentsActionLocationMap = new HashMap<>();
         this.absenceActionLocationMap = new HashMap<>();
@@ -78,7 +79,6 @@ public class NightLightApp extends AbstractAppController {
 
     private void update(final LocationRemote location, final Timeout timeout) {
         try {
-
             // init present state with main location.
             PresenceState.State presentState = location.getPresenceState().getValue();
             for (final LocationRemote neighbor : location.getNeighborLocationList(true)) {
@@ -94,8 +94,9 @@ public class NightLightApp extends AbstractAppController {
                 }
             }
 
-            final ActionDescription absenceActionDescription = absenceActionLocationMap.get(location);
-            final ActionDescription presentsActionDescription = presentsActionLocationMap.get(location);
+            final RemoteAction absenceAction = absenceActionLocationMap.get(location);
+            final RemoteAction presentsAction = presentsActionLocationMap.get(location);
+
             switch (presentState) {
                 case PRESENT:
                     if (timeout != null) {
@@ -103,45 +104,43 @@ public class NightLightApp extends AbstractAppController {
                     }
 
                     // if ongoing action skip the update.
-                    if(presentsActionDescription != null) {
+                    if(presentsAction != null && !presentsAction.isDone()) {
                         return;
-                    }
-
-                    // cancel absence actions
-                    if(absenceActionDescription != null) {
-                        location.cancelAction(absenceActionDescription);
-                        absenceActionLocationMap.remove(absenceActionDescription);
                     }
 
                     if (location.getPowerState(UnitType.COLORABLE_LIGHT).getValue() != State.ON || !isColorReached(location.getColor().getHsbColor(), COLOR_ORANGE)) {
                     // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
-                        presentsActionLocationMap.put(location, location.setColor(COLOR_ORANGE, getDefaultActionParameter()).get(1, TimeUnit.SECONDS));
+                        presentsActionLocationMap.put(location, observe(location.setColor(COLOR_ORANGE, getDefaultActionParameter())));
                     }
+
+                    // cancel absence actions
+                    if(absenceAction != null) {
+                        absenceAction.cancel();
+                        absenceActionLocationMap.remove(location);
+                    }
+
                     break;
                 case ABSENT:
 
-
                     // if ongoing action skip the update.
-                    if(absenceActionDescription != null) {
+                    if(absenceAction != null && absenceAction != null) {
                         return;
-                    }
-
-                    // cancel presents actions
-                    if(presentsActionDescription != null) {
-                        location.cancelAction(presentsActionDescription);
-                        presentsActionLocationMap.remove(presentsActionDescription);
                     }
 
                     if (location.getPowerState(UnitType.LIGHT).getValue() == State.ON && (timeout == null || timeout.isExpired() || !timeout.isActive())) {
                         // System.out.println("Location power State[" + location.getPowerState().getValue() + ". " + location.getPowerState(UnitType.LIGHT).getValue() + "]");
                         // System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
-                        absenceActionLocationMap.put(location, location.setPowerState(State.OFF, UnitType.LIGHT, getDefaultActionParameter()).get(1, TimeUnit.SECONDS));
+                        absenceActionLocationMap.put(location, observe(location.setPowerState(State.OFF, UnitType.LIGHT, getDefaultActionParameter())));
+                    }
+
+                    // cancel presents actions
+                    if(presentsAction != null) {
+                        presentsAction.cancel();
+                        presentsActionLocationMap.remove(location);
                     }
                     break;
             }
-        } catch (InterruptedException ex) {
-            // skip
-        } catch (CouldNotPerformException | TimeoutException | ExecutionException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not control light in "+location.getLabel("?")+" by night light!", ex, LOGGER);
         }
     }
@@ -167,6 +166,14 @@ public class NightLightApp extends AbstractAppController {
         try {
             synchronized (locationMapLock) {
 
+                // deregister all tile remotes
+                locationMap.forEach((remote, observer) -> {
+                    remote.removeDataObserver(observer);
+                });
+
+                // clear all tile remotes
+                locationMap.clear();
+
                 final Collection<String> excludedLocations = new ArrayList<>();
 
                 // check location exclusion
@@ -176,14 +183,6 @@ public class NightLightApp extends AbstractAppController {
                     ExceptionPrinter.printHistory("Could not load variable pool!", ex, LOGGER);
                     // no locations excluded.
                 }
-
-                // deregister all tile remotes
-                locationMap.forEach((remote, observer) -> {
-                    remote.removeDataObserver(observer);
-                });
-
-                // clear all tile remotes
-                locationMap.clear();
 
                 // load parent location
                 final UnitConfig parentLocationConfig = Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId());
@@ -215,26 +214,19 @@ public class NightLightApp extends AbstractAppController {
 
                     final LocationRemote remote = Units.getUnit(locationUnitConfig, false, Units.LOCATION);
 
-                    // skip locations without power services.
-                    if(!remote.isServiceAvailable(ServiceType.POWER_STATE_SERVICE)) {
+                    // skip locations without colorable lights.
+                    if(!remote.isServiceAvailable(ServiceType.COLOR_STATE_SERVICE)) {
                         continue remoteLocationLoop;
                     }
 
-                    final Timeout nightModeTimeout;
-                    nightModeTimeout = new Timeout(10, TimeUnit.MINUTES) {
+                    final Timeout nightModeTimeout = new Timeout(10, TimeUnit.MINUTES) {
                         @Override
                         public void expired() throws InterruptedException {
                             update(remote, this);
                         }
                     };
 
-                    final RecurrenceEventFilter<Void> eventFilter = new RecurrenceEventFilter<Void>(1000) {
-                        @Override
-                        public void relay() throws Exception {
-                            update(remote, nightModeTimeout);
-                        }
-                    };
-                    locationMap.put(remote, (source, data) -> eventFilter.trigger());
+                    locationMap.put(remote, (source, data) -> update(remote, nightModeTimeout));
                 }
 
                 if (getActivationState().getValue() == ActivationState.State.ACTIVE) {
@@ -280,6 +272,8 @@ public class NightLightApp extends AbstractAppController {
     @Override
     protected void stop(final ActivationState activationState) {
         synchronized (locationMapLock) {
+
+            // remove observer
             locationMap.forEach((remote, observer) -> {
                 remote.removeDataObserver(observer);
                 try {
@@ -290,14 +284,17 @@ public class NightLightApp extends AbstractAppController {
                     ExceptionPrinter.printHistory("Could not remove observer from neighbor locations.", ex, LOGGER);
                 }
             });
-            for (Entry<Unit, ActionDescription> unitActionEntry : presentsActionLocationMap.entrySet()) {
-                unitActionEntry.getKey().cancelAction(unitActionEntry.getValue());
-            }
-            presentsActionLocationMap.clear();
 
-            for (Entry<Unit, ActionDescription> unitActionEntry : absenceActionLocationMap.entrySet()) {
-                unitActionEntry.getKey().cancelAction(unitActionEntry.getValue());
+            // cancel depending actions
+            for (Entry<Unit, RemoteAction> unitActionEntry : presentsActionLocationMap.entrySet()) {
+                unitActionEntry.getValue().cancel();
             }
+            for (Entry<Unit, RemoteAction> unitActionEntry : absenceActionLocationMap.entrySet()) {
+                unitActionEntry.getValue().cancel();
+            }
+
+            // clear actions list
+            presentsActionLocationMap.clear();
             absenceActionLocationMap.clear();
         }
     }
