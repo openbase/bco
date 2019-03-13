@@ -123,7 +123,7 @@ public class NightLightApp extends AbstractAppController {
                 case ABSENT:
 
                     // if ongoing action skip the update.
-                    if(absenceAction != null && absenceAction != null) {
+                    if(absenceAction != null && !absenceAction.isDone()) {
                         return;
                     }
 
