@@ -46,6 +46,7 @@ import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
+import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -522,23 +523,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 builder = ((ActionParameter) actionParameter).toBuilder();
             }
 
-            // validate and setup target unit
+            // validate target unit
             if (!builder.getServiceStateDescriptionBuilder().hasUnitId()) {
                 builder.getServiceStateDescriptionBuilder().setUnitId(getId());
             } else if (!builder.getServiceStateDescriptionBuilder().getUnitId().equals(getId())) {
-                logger.warn("Action is not applied to its correct target unit but will be forwarded...");
-                try {
-
-                    // todo release: is this a security risk?
-                    Units.getUnit(builder.getServiceStateDescriptionBuilder().getUnitId(), false).applyAction(actionParameter);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Action forwarding failed!", ex);
-                }
+                logger.warn("{} is not applied to {} which is not its correct TargetUnit {} and will be skipped..." , actionParameter, this, builder.getServiceStateDescriptionBuilder().getUnitId());
             }
 
-            // If this action was received from a remote instance, its authority can not be guaranteed.
+            // If this action was received unencrypted from a remote instance, its authority can not be guaranteed.
             // In this case we perform an unauthorized action.
             for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
                 if (stackTraceElement.getClassName().equals(RPCHelper.class.getName())) {
@@ -558,7 +550,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         try {
-            // todo release: is this really secure? this method can be called via rsb and no further authorization checks are performed.
             final ActionImpl action = new ActionImpl(actionDescription, this);
             try {
                 if (JPService.getProperty(JPUnitAllocation.class).getValue()) {
@@ -893,6 +884,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         // this should not cause any latency because new incoming actions are scheduled anyway.
                         scheduleTimeout.restart(Math.max(rescheduleTimeout, 50));
                     }
+                } catch (ShutdownInProgressException ex) {
+                    // skip reschedule when shutdown is initiated.
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
                 }
@@ -975,8 +968,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
                 final Builder actionDescriptionBuilder = actionDescription.toBuilder();
 
-                // clear auth fields
-                actionDescriptionBuilder.getActionInitiatorBuilder().clearAuthenticatedBy().clearAuthorizedBy();
+                // clear auth fields which are in the following recomputed by the given auth values.
+                actionDescriptionBuilder.getActionInitiatorBuilder().clear();
 
                 // if an authentication token is send replace the initiator in any case
                 if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
@@ -986,10 +979,29 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // setup auth fields
                 if (authPair.getAuthenticatedBy() != null) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
+
+                    // if not yet available, setup authenticated instance as action initiator via auth pair.
+                    if(!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
+                        actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthenticatedBy());
+                    }
                 }
                 if (authPair.getAuthorizedBy() != null) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
+
+                    // if not yet available, setup authorizing instance as action initiator via auth pair.
+                    if(!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
+                        actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthorizedBy());
+                    }
                 }
+
+                // if not yet available, setup other as initiator.
+                if(!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(User.OTHER);
+
+                    // recover initiator type
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
+                }
+
                 return internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();

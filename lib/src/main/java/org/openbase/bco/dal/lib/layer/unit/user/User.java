@@ -36,6 +36,8 @@ public interface User extends BaseUnit<UserData>, ActivityMultiStateOperationSer
 
     String TYPE_FIELD_USER_NAME = "user_name";
 
+    String OTHER = "other";
+
     default String getUserName() throws NotAvailableException {
         try {
             return getConfig().getUserConfig().getUserName();

@@ -37,6 +37,7 @@ import javafx.util.Pair;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
@@ -260,7 +261,7 @@ public class UnitAllocationPane extends AbstractFXController {
             try {
                 initiatorLabel = Registries.getUnitRegistry().getUnitConfigById(actionInitiator.getInitiatorId()).getUserConfig().getUserName();
             } catch (CouldNotPerformException e) {
-                initiatorLabel = "?";
+                initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" :"?");
             }
 
             this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";

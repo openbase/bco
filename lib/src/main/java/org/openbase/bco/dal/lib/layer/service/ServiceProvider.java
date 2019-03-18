@@ -51,7 +51,6 @@ public interface ServiceProvider<ST extends Message> {
      *
      * @return a future which gives feedback about the action execution state.
      */
-    @RPCMethod(legacy = true)
     Future<ActionDescription> applyAction(final ActionDescription actionDescription);
 
     @RPCMethod
@@ -75,6 +74,7 @@ public interface ServiceProvider<ST extends Message> {
      *
      * @return a future which gives feedback about the action execution state.
      */
+    @RPCMethod(legacy = true)
     default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
         try {
             final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build();

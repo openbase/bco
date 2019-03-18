@@ -24,10 +24,7 @@ package org.openbase.bco.dal.remote.detector;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotInitializedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
@@ -88,6 +85,8 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
                         return;
                     }
                     updatePresenceState(PresenceState.newBuilder().setValue(PresenceState.State.ABSENT));
+                } catch (ShutdownInProgressException ex) {
+                    // skip update on shutdown
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify absent by timer!", ex), logger);
                 }
