@@ -31,6 +31,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.ShutdownInProgressException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
@@ -140,6 +141,8 @@ public class NightLightApp extends AbstractAppController {
                     }
                     break;
             }
+        } catch (ShutdownInProgressException ex) {
+            // skip update when shutdown was initiated.
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not control light in "+location.getLabel("?")+" by night light!", ex, LOGGER);
         }
