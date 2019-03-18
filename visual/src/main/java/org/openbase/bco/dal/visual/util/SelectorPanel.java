@@ -194,7 +194,8 @@ public class SelectorPanel extends javax.swing.JPanel {
 
             try {
                 ArrayList<UnitConfigHolder> unitConfigHolderList = new ArrayList<>();
-                UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
+                final UnitTypeHolder selectedItem = (UnitTypeHolder) unitTypeComboBox.getSelectedItem();
+                UnitType selectedUnitType = (selectedItem.getType() == null ? UnitType.UNKNOWN : selectedItem.getType());
                 if (selectedUnitType == UnitType.UNKNOWN) {
                     if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
                         for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
