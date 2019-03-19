@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -37,11 +37,10 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.MessageObservable;
-import org.openbase.jul.communication.controller.RPCHelper;
-import org.openbase.bco.registry.lib.generator.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
@@ -69,7 +68,10 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -489,7 +491,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         try {
             if (getSessionManager().isLoggedIn()) {
                 try {
-                    UnitConfig user = Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserId());
+                    UnitConfig user = Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserClientPair().getUserId());
                     return LabelProcessor.getLabelByLanguage(user.getUserConfig().getLanguage(), getConfig().getLabel());
                 } catch (CouldNotPerformException ex) {
                     // as a backup use the first label as seen below
@@ -549,7 +551,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     public Future<ActionDescription> applyAction(ActionDescription actionDescription) {
 
         // validate action
-        if((actionDescription.getCancel() || actionDescription.getExtend()) != actionDescription.hasId()) {
+        if ((actionDescription.getCancel() || actionDescription.getExtend()) != actionDescription.hasId()) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException("New actions should not offer an id while action modification have to which is not the case!"));
         }
 

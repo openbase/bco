@@ -138,7 +138,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // validate that the action is available from unit data
         assertTrue("Unit data does not contain any action descriptions", colorableLightRemote.getData().getActionCount() > 0);
         // validate the initiator of the action
-        assertEquals("Unexpected action initiator", SessionManager.getInstance().getClientId(), remoteAction.getActionDescription().getActionInitiator().getInitiatorId());
+        assertEquals("Unexpected action initiator", SessionManager.getInstance().getUserClientPair().getClientId(), remoteAction.getActionDescription().getActionInitiator().getInitiatorId());
         // validate that the action is currently executing
         assertEquals("ActionState is not executing", ActionState.State.EXECUTING, remoteAction.getActionState());
         // validate that the power state is set
@@ -254,7 +254,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // set the power state with the admin user
         Builder builder = ActionDescriptionProcessor.generateActionDescriptionBuilder(PowerState.newBuilder().setValue(State.OFF).build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote);
-        builder.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
+        builder.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserClientPair().getUserId());
         AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(builder.build(), null);
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
         final RemoteAction secondAction = new RemoteAction(authenticatedValueFuture);
@@ -323,7 +323,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(6000));
         primaryActionParameter.setPriority(Priority.HIGH);
-        primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
+        primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserClientPair().getUserId());
         AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null);
 
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
@@ -390,7 +390,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(500));
         primaryActionParameter.setPriority(Priority.HIGH);
-        primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserId());
+        primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserClientPair().getUserId());
         AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null);
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
 

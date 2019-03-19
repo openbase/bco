@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -55,6 +55,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -63,10 +64,7 @@ import org.openbase.jul.extension.protobuf.BuilderSyncSetup;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.bco.registry.lib.generator.ScopeGenerator;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.iface.ScopeProvider;
 import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.pattern.Observer;
@@ -86,6 +84,7 @@ import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -96,7 +95,6 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
-import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
@@ -527,7 +525,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (!builder.getServiceStateDescriptionBuilder().hasUnitId()) {
                 builder.getServiceStateDescriptionBuilder().setUnitId(getId());
             } else if (!builder.getServiceStateDescriptionBuilder().getUnitId().equals(getId())) {
-                logger.warn("{} is not applied to {} which is not its correct TargetUnit {} and will be skipped..." , actionParameter, this, builder.getServiceStateDescriptionBuilder().getUnitId());
+                logger.warn("{} is not applied to {} which is not its correct TargetUnit {} and will be skipped...", actionParameter, this, builder.getServiceStateDescriptionBuilder().getUnitId());
             }
 
             // If this action was received unencrypted from a remote instance, its authority can not be guaranteed.
@@ -981,7 +979,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
 
                     // if not yet available, setup authenticated instance as action initiator via auth pair.
-                    if(!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
+                    if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
                         actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthenticatedBy());
                     }
                 }
@@ -989,13 +987,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
 
                     // if not yet available, setup authorizing instance as action initiator via auth pair.
-                    if(!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
+                    if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
                         actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthorizedBy());
                     }
                 }
 
                 // if not yet available, setup other as initiator.
-                if(!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
+                if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
                     actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(User.OTHER);
 
                     // recover initiator type
@@ -1468,26 +1466,22 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @SuppressWarnings("unchecked")
-    protected D filterDataForUser(DB dataBuilder, String userId) throws CouldNotPerformException {
+    protected D filterDataForUser(DB dataBuilder, UserClientPair userClientPair) throws CouldNotPerformException {
         try {
             // test if user or client is inside the admin group, if yes return the unfiltered data builder
-            if (userId != null) {
-                try {
-                    final UnitConfig adminGroup = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS);
-                    for (final String id : userId.split("@")) {
-                        for (final String memberId : adminGroup.getAuthorizationGroupConfig().getMemberIdList()) {
-                            if (id.equals(memberId)) {
-                                return (D) dataBuilder.build();
-                            }
-                        }
+            try {
+                final UnitConfig adminGroup = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS);
+                for (final String memberId : adminGroup.getAuthorizationGroupConfig().getMemberIdList()) {
+                    if (userClientPair.getUserId().equals(memberId) || userClientPair.getClientId().equals(memberId)) {
+                        return (D) dataBuilder.build();
                     }
-                } catch (CouldNotPerformException ex) {
-                    // admin group not available so just continue
                 }
+            } catch (CouldNotPerformException ex) {
+                // admin group not available so just continue
             }
 
             // no admin so test normal permissions
-            if (AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
+            if (AuthorizationHelper.canRead(getConfig(), userClientPair, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
                 // user has read permissions so send everything
                 return (D) dataBuilder.build();
             } else {

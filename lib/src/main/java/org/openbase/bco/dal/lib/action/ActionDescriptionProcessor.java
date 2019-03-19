@@ -52,12 +52,12 @@ import java.util.concurrent.TimeUnit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -450,10 +450,10 @@ public class ActionDescriptionProcessor {
     public static ActionInitiator.Builder detectActionInitiatorId(final ActionInitiator.Builder actionInitiatorBuilder, final boolean authorized) {
         // todo pleminoq: can this be performed at the controller via the discovered authentication data?
         if (authorized && SessionManager.getInstance().isLoggedIn()) {
-            if (SessionManager.getInstance().getUserId() != null) {
-                actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getUserId());
+            if (!SessionManager.getInstance().getUserClientPair().getUserId().isEmpty()) {
+                actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getUserClientPair().getUserId());
             } else {
-                actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getClientId());
+                actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getUserClientPair().getClientId());
             }
         } else {
             actionInitiatorBuilder.clearInitiatorId();

@@ -10,27 +10,26 @@ package org.openbase.bco.dal.visual;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
-import org.openbase.bco.dal.visual.util.LoginDialog;
-import java.lang.reflect.InvocationTargetException;
-import javax.swing.ImageIcon;
+
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
+import org.openbase.bco.dal.visual.util.LoginDialog;
 import org.openbase.bco.registry.lib.jp.JPBCOAutoLoginUser;
-import org.openbase.bco.authentication.lib.BCO;
-import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -41,8 +40,10 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class BCOVisualRemote extends javax.swing.JFrame {
@@ -86,9 +87,9 @@ public class BCOVisualRemote extends javax.swing.JFrame {
         if (SessionManager.getInstance().isLoggedIn()) {
             loginMenuItem.setText("Switch User");
             try {
-                String userId = SessionManager.getInstance().getUserId();
-                if (userId == null) {
-                    userId = SessionManager.getInstance().getClientId();
+                String userId = SessionManager.getInstance().getUserClientPair().getUserId();
+                if (userId.isEmpty()) {
+                    userId = SessionManager.getInstance().getUserClientPair().getClientId();
                 }
                 logoutMenuItem.setText("Logout User: " + Registries.getUnitRegistry().getUnitConfigById(userId).getUserConfig().getUserName());
             } catch (CouldNotPerformException ex) {
@@ -192,22 +193,22 @@ public class BCOVisualRemote extends javax.swing.JFrame {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(genericUnitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(statusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 905, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(genericUnitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(genericUnitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(statusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(genericUnitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(statusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -227,8 +228,8 @@ public class BCOVisualRemote extends javax.swing.JFrame {
     }//GEN-LAST:event_logoutMenuItemActionPerformed
 
     /**
-     *
      * @param args the command line arguments
+     *
      * @throws java.lang.InterruptedException
      * @throws java.lang.reflect.InvocationTargetException
      */

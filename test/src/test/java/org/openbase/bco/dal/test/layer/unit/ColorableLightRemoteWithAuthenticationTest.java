@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -97,7 +97,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
 
         if (adminToken == null) {
-            AuthenticationToken build = AuthenticationToken.newBuilder().setUserId(sessionManager.getUserId()).build();
+            AuthenticationToken build = AuthenticationToken.newBuilder().setUserId(sessionManager.getUserClientPair().getUserId()).build();
             AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(build, null);
             Future<AuthenticatedValue> authenticatedValueFuture = Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue);
             adminToken = AuthToken.newBuilder().setAuthenticationToken(new AuthenticatedValueFuture<>(authenticatedValueFuture, String.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager).get()).build();
@@ -242,13 +242,13 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         sessionManager.registerUser(userUnitConfig.getId(), password, false);
 
         // request authentication and authorization tokens for admin user
-        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationToken.newBuilder().setUserId(sessionManager.getUserId()).build(), null);
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationToken.newBuilder().setUserId(sessionManager.getUserClientPair().getUserId()).build(), null);
         final String authenticationToken = new AuthenticatedValueFuture<>(
                 Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
                 String.class,
                 authenticatedValue.getTicketAuthenticatorWrapper(),
                 sessionManager).get();
-        AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder().setUserId(sessionManager.getUserId());
+        AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder().setUserId(sessionManager.getUserClientPair().getUserId());
         AuthorizationToken.PermissionRule.Builder permissionRuleBuilder = authorizationToken.addPermissionRuleBuilder();
         permissionRuleBuilder.setUnitId(colorableLightRemote.getId());
         permissionRuleBuilder.getPermissionBuilder().setAccess(true).setRead(true).setWrite(false);
@@ -277,7 +277,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         PowerState.Builder powerState = PowerState.newBuilder().setValue(State.ON);
         ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
 
-        authenticatedValue = sessionManager.initializeRequest(actionDescription,token.build());
+        authenticatedValue = sessionManager.initializeRequest(actionDescription, token.build());
         AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
         Actions.waitForExecution(future);
         assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
