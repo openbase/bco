@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.plugin;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -35,6 +35,7 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
@@ -199,9 +200,10 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         // register at authenticator
         final LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder().setId(adminId);
         loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(ADMIN_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
+        final AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
 
         try {
-            CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
+            CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not register default administrator at authenticator");
         } catch (InterruptedException ex) {
