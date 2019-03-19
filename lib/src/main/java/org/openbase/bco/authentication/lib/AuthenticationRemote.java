@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,10 +28,12 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBRemoteServer;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
+import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
@@ -66,7 +68,9 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(
+                    ScopeTransformer.transform(JPService.getProperty(JPAuthenticationScope.class).getValue()),
+                    RSBSharedConnectionConfig.getParticipantConfig());
 
             serverWatchDog = new WatchDog(remoteServer, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {

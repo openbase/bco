@@ -10,19 +10,22 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -32,16 +35,16 @@ import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedRemoteClient
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.slf4j.LoggerFactory;
-import rsb.Scope;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData.Builder;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.slf4j.LoggerFactory;
 
 import static junit.framework.TestCase.assertTrue;
 
@@ -49,7 +52,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatedCommunicationTest.class);
 
-    private static final Scope SCOPE = new Scope("/test/authentication/communication");
+    private static final String SCOPE = "/test/authentication/communication";
 
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
@@ -73,7 +76,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
         loginCredentials.setId(USER_ID);
         loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(USER_PASSWORD), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
-        CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
+        AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
+        CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
     }
 
     @Before
@@ -159,15 +163,15 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         }
 
         @Override
-        protected UnitRegistryData filterDataForUser(UnitRegistryData.Builder dataBuilder, String userId) {
+        protected UnitRegistryData filterDataForUser(UnitRegistryData.Builder dataBuilder, UserClientPair userClientPair) {
             // remove all agent unit configs for which the user does not have direct read permissions
             for (int i = 0; i < dataBuilder.getAgentUnitConfigCount(); i++) {
-                if (!canRead(dataBuilder.getAgentUnitConfig(i), userId)) {
+                if (!canRead(dataBuilder.getAgentUnitConfig(i), userClientPair)) {
                     dataBuilder.removeAgentUnitConfig(i);
                     i--;
                 }
             }
-            if (userId == null) {
+            if (userClientPair == null) {
                 assertTrue(dataBuilder.build().getAgentUnitConfigCount() < 2);
             } else {
                 assertTrue(dataBuilder.build().getAgentUnitConfigCount() == 2);
@@ -175,8 +179,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
             return dataBuilder.build();
         }
 
-        private boolean canRead(final UnitConfig unitConfig, final String userId) {
-            if (userId == null || !userId.replace("@", "").equals(unitConfig.getPermissionConfig().getOwnerId())) {
+        private boolean canRead(final UnitConfig unitConfig, final UserClientPair userClientPair) {
+            if (userClientPair == null || !userClientPair.getClientId().equals(unitConfig.getPermissionConfig().getOwnerId())) {
                 return unitConfig.getPermissionConfig().getOtherPermission().getRead();
             } else {
                 return unitConfig.getPermissionConfig().getOwnerPermission().getRead() || unitConfig.getPermissionConfig().getOtherPermission().getRead();

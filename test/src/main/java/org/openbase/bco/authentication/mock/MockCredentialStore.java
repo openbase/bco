@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.mock;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -54,9 +54,9 @@ public class MockCredentialStore extends CredentialStore {
     public void init(String filename) throws InitializationException {
         super.init(filename);
 
-        this.setCredentials(ADMIN_ID, ADMIN_PASSWORD_HASH);
-        this.setCredentials(USER_ID, USER_PASSWORD_HASH);
-        this.setCredentials(SERVICE_SERVER_ID, SERVICE_SERVER_KEY_PAIR.getPublic().getEncoded());
+        this.addCredentials(ADMIN_ID, ADMIN_PASSWORD_HASH, true, true);
+        this.addCredentials(USER_ID, USER_PASSWORD_HASH, false, true);
+        this.addCredentials(SERVICE_SERVER_ID, SERVICE_SERVER_KEY_PAIR.getPublic().getEncoded(), false, false);
         try {
             this.setAdmin(ADMIN_ID, true);
         } catch (CouldNotPerformException ex) {

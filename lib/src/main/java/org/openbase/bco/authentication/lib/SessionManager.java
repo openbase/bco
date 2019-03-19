@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -559,7 +559,7 @@ public class SessionManager implements Shutdownable {
             matcher = pattern.matcher(cause.getMessage());
 
             if (matcher.find()) {
-                throw new SessionExpiredException();
+                throw new SessionExpiredException(matcher.group(1));
             }
 
             ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
@@ -658,6 +658,18 @@ public class SessionManager implements Shutdownable {
         }
     }
 
+    public synchronized String getCredentialHashFromLocalStore(String userId) throws CouldNotPerformException {
+        if (!this.isLoggedIn()) {
+            throw new CouldNotPerformException("Please log in first!");
+        }
+
+        return credentialStore.getEntry(userId).getCredentials().toStringUtf8();
+    }
+
+    public synchronized boolean hasCredentials() {
+        return !credentialStore.isEmpty();
+    }
+
     /**
      * Registers a client. Automatically generate a key pair and save the private key in the credential store of
      * the session manager.
@@ -674,7 +686,7 @@ public class SessionManager implements Shutdownable {
     }
 
     public synchronized boolean hasCredentialsForId(final String id) {
-        return this.credentialStore.hasEntry(id);
+        return this.credentialStore.hasEntry(id) || this.credentialStore.hasEntry("@" + id);
     }
 
     /**

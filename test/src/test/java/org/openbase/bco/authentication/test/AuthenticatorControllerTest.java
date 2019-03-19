@@ -10,31 +10,37 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import org.junit.*;
+import com.google.protobuf.ByteString;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler.TicketWrapperSessionKeyPair;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.bco.authentication.mock.MockCredentialStore;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.AuthenticatorType;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -69,32 +75,29 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         System.out.println("testCommunication");
 
         String userId = MockCredentialStore.USER_ID + "@";
-        byte[] userPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
+        final UserClientPair userClientPair = UserClientPair.newBuilder().setUserId(MockCredentialStore.USER_ID).build();
+        final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setCredentials(ByteString.copyFrom(MockCredentialStore.USER_PASSWORD_HASH)).setSymmetric(true).build();
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userClientPair).get();
 
         // handle KDC response on client side
-        List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
-        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-        byte[] clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+        TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userClientPair, loginCredentials, null, ticketSessionKeyWrapper);
 
-        // handle TGS request on server side
-        ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(clientTicketAuthenticatorWrapper).get();
+        // handle TGS request on server sidet
+        ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get();
 
         // handle TGS response on client side
-        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userId, clientTGSSessionKey, ticketSessionKeyWrapper);
-        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-        byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+        ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userClientPair, ticketWrapperSessionKeyPair.getSessionKey(), ticketSessionKeyWrapper);
 
         // init SS request on client side
-        clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
+        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(ticketWrapperSessionKeyPair.getSessionKey(), ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper());
 
         // handle SS request on server side
         TicketAuthenticatorWrapper serverTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().validateClientServerTicket(clientTicketAuthenticatorWrapper).get();
 
         // handle SS response on client side
-        AuthenticationClientHandler.handleServiceServerResponse(clientSSSessionKey, clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
+        AuthenticationClientHandler.handleServiceServerResponse(clientTicketAuthenticatorWrapper.toByteArray(), clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
     }
 
     /**
@@ -109,9 +112,9 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
 
-            String nonExistentUserId = "12abc-15123";
+            UserClientPair nonExistentUserId = UserClientPair.newBuilder().setUserId("12abc-15123").build();
 
-            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId + "@").get();
+            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId).get();
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }

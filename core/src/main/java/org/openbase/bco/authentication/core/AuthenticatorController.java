@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -37,10 +37,11 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBLocalServer;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -67,7 +68,7 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorController implements AuthenticationService, Launchable<Void>, VoidInitializable {
-
+    // todo release: validate name (AuthenticatorController vs. AuthenticationRemote)
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
@@ -120,7 +121,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(
+                    ScopeTransformer.transform(JPService.getProperty(JPAuthenticationScope.class).getValue()),
+                    RSBSharedConnectionConfig.getParticipantConfig());
 
             // register rpc methods.
             RPCHelper.registerInterface(AuthenticationService.class, this, server);

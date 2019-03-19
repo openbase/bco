@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -29,8 +29,9 @@ import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.slf4j.LoggerFactory;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertTrue;
 
@@ -65,7 +66,8 @@ public class InitialRegistrationTest extends AuthenticationTest {
         LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
         loginCredentials.setId(userId);
         loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
-        CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
+        AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
+        CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
 
         // test if login works afterwards
         SessionManager.getInstance().login(userId, password);

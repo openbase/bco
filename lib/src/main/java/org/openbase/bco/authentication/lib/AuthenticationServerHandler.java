@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -40,6 +40,9 @@ import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPai
 import org.openbase.type.timing.IntervalType.Interval;
 import org.openbase.type.timing.TimestampType.Timestamp;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -63,7 +66,12 @@ public class AuthenticationServerHandler {
      * @param validityTime                   the time in milliseconds from now how long the TGT is valid
      *
      * @return Returns wrapper class containing both the TGT and TGS session key
+     * <p>
+     * <<<<<<< HEAD
+     * =======
      *
+     * @throws NotAvailableException    Throws, if clientID was not found in database
+     *                                  >>>>>>> master
      * @throws CouldNotPerformException If the data for the remotes has not been synchronized yet.
      */
     public static TicketSessionKeyWrapper handleKDCRequest(final UserClientPair userClientPair, final LoginCredentials userCredentials, final LoginCredentials clientCredentials, final byte[] ticketGrantingServiceSecretKey, final long validityTime)
@@ -189,6 +197,8 @@ public class AuthenticationServerHandler {
         return new AuthenticationBaseData(authenticator.getUserClientPair(), clientServerTicket.getSessionKeyBytes().toByteArray(), ticketAuthenticatorWrapper.build());
     }
 
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("d.M.Y - H:m:s:S");
+
     public static void validateTicket(final TicketOrBuilder ticket, final AuthenticatorOrBuilder authenticator) throws RejectedException {
         // validate that client and ids in authenticator and ticket match
         if (!ticket.hasUserClientPair() || (ticket.getUserClientPair().getClientId().isEmpty() && ticket.getUserClientPair().getUserId().isEmpty())) {
@@ -204,14 +214,17 @@ public class AuthenticationServerHandler {
 
         // validate that the timestamp from the client request is inside the validation interval of the ticket
         if (!AuthenticationServerHandler.isTimestampInInterval(authenticator.getTimestamp(), ticket.getValidityPeriod())) {
-            throw new SessionExpiredException();
+            throw new SessionExpiredException("Request timestamp [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(authenticator.getTimestamp()))) + "]" +
+                    " is not within ticket validity period [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(ticket.getValidityPeriod().getBegin()))) + "]" +
+                    " - [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(ticket.getValidityPeriod().getEnd()))) + "]");
         }
 
         // validate that the timestamp does not differ to much from the time of the server
-        Timestamp currentTime = TimestampProcessor.getCurrentTimestamp();
+        final Timestamp currentTime = TimestampProcessor.getCurrentTimestamp();
         if (authenticator.getTimestamp().getTime() < (currentTime.getTime() - MAX_TIME_DIFF_SERVER_CLIENT) ||
                 authenticator.getTimestamp().getTime() > (currentTime.getTime() + MAX_TIME_DIFF_SERVER_CLIENT)) {
-            throw new SessionExpiredException();
+            throw new SessionExpiredException("Request timestamp [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(authenticator.getTimestamp()))) + "]" +
+                    "differs more than 2 minutes from server time [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(currentTime))) + "]");
         }
     }
 

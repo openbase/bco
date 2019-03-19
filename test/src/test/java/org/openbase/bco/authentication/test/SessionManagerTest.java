@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -37,9 +37,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
-import org.slf4j.LoggerFactory;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.TicketType.Ticket;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
@@ -68,7 +70,8 @@ public class SessionManagerTest extends AuthenticationTest {
             LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
             loginCredentials.setId("InitialUserId");
             loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
-            CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
+            AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
+            CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not register initial user!"), LOGGER);
         }
@@ -205,7 +208,7 @@ public class SessionManagerTest extends AuthenticationTest {
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
-        assertEquals(ticket.getClientId(), MockClientStore.ADMIN_ID + "@");
+        assertEquals(ticket.getUserClientPair().getUserId(), MockClientStore.ADMIN_ID);
 
         // register client
         manager.registerClient(MockClientStore.CLIENT_ID);
@@ -213,12 +216,13 @@ public class SessionManagerTest extends AuthenticationTest {
         // login client
         manager.login(MockClientStore.CLIENT_ID);
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
-        assertEquals(ticket.getClientId(), "@" + MockClientStore.CLIENT_ID);
+        assertEquals(ticket.getUserClientPair().getClientId(), MockClientStore.CLIENT_ID);
 
         // login admin (on the client)
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
-        assertEquals(MockClientStore.ADMIN_ID + "@" + MockClientStore.CLIENT_ID, ticket.getClientId());
+        assertEquals(MockClientStore.ADMIN_ID, ticket.getUserClientPair().getUserId());
+        assertEquals(MockClientStore.CLIENT_ID, ticket.getUserClientPair().getClientId());
 
         // logout admin
         manager.logout();
@@ -226,7 +230,7 @@ public class SessionManagerTest extends AuthenticationTest {
 
         // now client should be logged in again
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
-        assertEquals(ticket.getClientId(), "@" + MockClientStore.CLIENT_ID);
+        assertEquals(ticket.getUserClientPair().getClientId(), MockClientStore.CLIENT_ID);
 
         manager.shutdown();
     }
@@ -369,7 +373,7 @@ public class SessionManagerTest extends AuthenticationTest {
         final SyncObject loginSyncObject = new SyncObject("LoginSyncObject");
         final long maxWaitTime = 1000;
 
-        Observer<SessionManager, String> loginObserver = (SessionManager source, String data) -> {
+        Observer<SessionManager, UserClientPair> loginObserver = (SessionManager source, UserClientPair data) -> {
             synchronized (loginSyncObject) {
                 notificationCounter++;
                 loginSyncObject.notifyAll();
