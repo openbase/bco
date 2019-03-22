@@ -191,10 +191,10 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
         if (authenticationBaseData.getAuthenticationToken() != null) {
             return authenticationBaseData.getAuthenticationToken().getUserId();
         } else {
-            if (authenticationBaseData.getUserId().startsWith("@")) {
-                throw new CouldNotPerformException("Could not retrieve authenticated user because only client[" + authenticationBaseData.getUserId() + "] is logged in");
+            if (authenticationBaseData.getUserClientPair().getUserId().isEmpty()) {
+                throw new CouldNotPerformException("Could not retrieve authenticated user because only client[" + authenticationBaseData.getUserClientPair().getClientId() + "] is logged in");
             }
-            return authenticationBaseData.getUserId().split("@")[0];
+            return authenticationBaseData.getUserClientPair().getUserId();
         }
     }
 
@@ -209,7 +209,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, Boolean.class,
                 (connect, authenticationBaseData) -> {
                     final String userId = retrieveAuthenticatedUserId(authenticationBaseData);
-                    LOGGER.info("User[" + authenticationBaseData.getUserId() + "] connects[" + connect + "]...");
+                    LOGGER.info("User[" + authenticationBaseData.getUserClientPair().getUserId() + "] connects[" + connect + "]...");
 
                     if (connect) {
                         try {

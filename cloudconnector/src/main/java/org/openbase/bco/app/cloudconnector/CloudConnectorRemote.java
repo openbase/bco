@@ -203,7 +203,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
     public String generateDefaultAuthorizationToken() throws CouldNotPerformException {
         try {
             // retrieve the current user id
-            final String userId = SessionManager.getInstance().getUserId();
+            final String userId = SessionManager.getInstance().getUserClientPair().getUserId();
             // create a new token and set the user id
             final AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder().setUserId(userId);
             // generate a minimal set of units ids needed for the same access permissions as the user

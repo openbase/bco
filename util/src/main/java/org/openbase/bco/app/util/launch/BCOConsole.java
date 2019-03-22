@@ -172,7 +172,7 @@ public class BCOConsole {
                                     System.err.println("match failed!");
                                     continue;
                                 }
-                                sessionManager.changeCredentials(userId, oldPwd, newPwd);
+                                sessionManager.changePassword(userId, oldPwd, newPwd);
                                 break;
                             case "cloud connect":
                             case "2":
@@ -180,7 +180,7 @@ public class BCOConsole {
                                 System.out.println("For connecting your account with the bco cloud connector a new cloud user password is needed.");
                                 System.out.println("You need this password for example again to pair the google cloud with the bco cloud service.");
                                 System.out.println("Please choose a strong password for " +
-                                        LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(sessionManager.getUserId()).getLabel(), "?")
+                                        LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(sessionManager.getUserClientPair().getUserId()).getLabel(), "?")
                                         + " to protect the remote access of your home!");
                                 String cloudPwd = new String(console.readPassword("your new cloud password:"));
                                 String cloudPwdConfirm = new String(console.readPassword("confirm your new cloud password:"));
