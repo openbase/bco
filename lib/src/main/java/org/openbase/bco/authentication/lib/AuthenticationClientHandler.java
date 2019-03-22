@@ -146,6 +146,10 @@ public class AuthenticationClientHandler {
         return ticketAuthenticatorWrapper.build();
     }
 
+    public static TicketAuthenticatorWrapper initServiceServerRequest(final TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair) throws CouldNotPerformException {
+        return initServiceServerRequest(ticketWrapperSessionKeyPair.getSessionKey(), ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper());
+    }
+
     /**
      * Handles a ServiceServer response
      * Decrypts Authenticator of both last- and currentWrapper with ServiceServerSessionKey

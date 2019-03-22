@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.test;
 import org.junit.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.*;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -63,7 +64,8 @@ public class ServiceServerManagerTest extends AuthenticationTest {
         LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
         loginCredentials.setId(userId);
         loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
-        CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
+        final AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
+        CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
         SessionManager.getInstance().login(userId, password);
         
         TicketAuthenticatorWrapper request = SessionManager.getInstance().initializeServiceServerRequest();
