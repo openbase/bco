@@ -73,9 +73,12 @@
     <file url="file://$PROJECT_DIR$/module/jul" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/annotation" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/audio" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/communication" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/communication/controller" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/communication/default" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/communication/tcp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/exception" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/openhab" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/protobuf" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/com" charset="UTF-8" />
@@ -84,14 +87,12 @@
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/processing" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/scope" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/rsb/util" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/tcp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type/interface" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type/processing" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type/storage" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type/transform" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension/type/util" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/jul/extension/xml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/interface" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/pattern" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/pattern/controller" charset="UTF-8" />
@@ -99,6 +100,9 @@
     <file url="file://$PROJECT_DIR$/module/jul/pattern/launch" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/pattern/trigger" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/processing" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/processing/default" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/processing/json" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/processing/xml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/schedule" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/storage" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/visual" charset="UTF-8" />
