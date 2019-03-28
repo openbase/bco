@@ -30,7 +30,7 @@ eval mvn install \
         -Dlicense.skipCheckLicense=true \
         -Dmaven.license.skip=true \
         $@ $PV &&
-echo -e "\r=== ${APP_NAME} project launcher ${WHITE}installation${NC}" &&
-cp docker/bco-launcher $prefix/bin/ &&
+#echo -e "\r=== ${APP_NAME} project launcher ${WHITE}installation${NC}" &&
+#cp docker/bco-launcher $prefix/bin/ &&
 
 echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} installed to ${WHITE}${prefix}${NC}"

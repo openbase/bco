@@ -305,10 +305,10 @@
                 <version>1.6</version>
                 <executions>
                     <execution>
-                        <phase>install</phase>
+                        <!--phase>install</phase>
                         <goals>
                             <goal>jdeb</goal>
-                        </goals>
+                        </goals-->
                         <configuration>
                             <snapshotExpand>true</snapshotExpand>
                             <!-- expand "SNAPSHOT" to what is in the "USER" env variable -->
