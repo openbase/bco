@@ -1,1 +1,1 @@
-docs/README.md
+[Project Documentation](basecubeone.org)
