@@ -1,3 +1,3 @@
 # Base Cube One
 
-[Project Documentation](basecubeone.org)
+[Project Documentation](https://basecubeone.org)
