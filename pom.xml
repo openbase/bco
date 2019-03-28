@@ -103,40 +103,50 @@
                     <repositoryName>${build.appassembler.repo.name}</repositoryName>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.manager.util.launch.BCOLauncher</mainClass>
+                            <mainClass>org.openbase.bco.app.util.launch.BCOLauncher</mainClass>
                             <id>bco</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.manager.util.launch.BCOTestLauncher</mainClass>
+                            <mainClass>org.openbase.bco.app.util.launch.BCOTestLauncher</mainClass>
                             <id>bco-test</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.authentication.core.AuthenticatorLauncher</mainClass>
-                            <id>bco-authenticator</id>
+                            <mainClass>org.openbase.bco.app.util.launch.BCOInterfacePrinter</mainClass>
+                            <id>bco-print-interface-rsb</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>
-                                org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGeneratorLauncher
-                            </mainClass>
-                            <id>bco-binding-openhab-config-generator</id>
+                            <mainClass>org.openbase.bco.app.util.launch.BCOSystemValidator</mainClass>
+                            <id>bco-validate</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>
-                                org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABminConfigGenerator
-                            </mainClass>
-                            <id>bco-binding-openhab-habmin-zwave-config-updater</id>
+                            <mainClass>org.openbase.bco.app.util.launch.BCOTrainDataGeneratorLauncher</mainClass>
+                            <id>bco-generate-trainingdata</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.app.util.launch.BCOConsole</mainClass>
+                            <id>bco-console</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.app.util.launch.LogoPrinter</mainClass>
+                            <id>bco-logo</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
@@ -148,37 +158,9 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
-                        <program>
-                            <mainClass>org.openbase.bco.manager.util.launch.ManagerLauncher</mainClass>
-                            <id>bco-manager</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.manager.device.core.FallbackDeviceManagerLauncher</mainClass>
-                            <id>bco-manager-device-fallback</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
+                       <program>
                             <mainClass>org.openbase.bco.ontology.lib.OntologyManagerLauncher</mainClass>
                             <id>bco-ontology-manager</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.manager.util.launch.BCOBindingOpenhabLauncher</mainClass>
-                            <id>bco-openhab</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.manager.util.launch.BCOInterfacePrinter</mainClass>
-                            <id>bco-print-interface-rsb</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
@@ -233,13 +215,6 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.manager.scene.visual.SceneEditor</mainClass>
-                            <id>bco-scene-editor</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
                             <mainClass>org.openbase.bco.stage.Stage</mainClass>
                             <id>bco-stage</id>
                             <platforms>
@@ -249,13 +224,6 @@
                         <program>
                             <mainClass>org.openbase.bco.dal.task.BCOTaskServerLauncher</mainClass>
                             <id>bco-task-server</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.manager.util.launch.BCOSystemValidator</mainClass>
-                            <id>bco-validate</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
@@ -284,13 +252,6 @@
                         <program>
                             <mainClass>org.openbase.bco.dal.remote.BCORemote</mainClass>
                             <id>bco-remote</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.bcozy.BCOConsole</mainClass>
-                            <id>bco-console</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
