@@ -75,7 +75,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
-                <version>1.10</version>
+                <version>2.0.0</version>
                 <executions>
                     <execution>
                         <phase>install</phase>
@@ -98,9 +98,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <binFolder>${deb.prefix.bin}</binFolder>
+                    <!--binFolder>${deb.prefix.bin}</binFolder>
                     <repositoryLayout>flat</repositoryLayout>
-                    <repositoryName>${build.appassembler.repo.name}</repositoryName>
+                    <repositoryName>${build.appassembler.repo.name}</repositoryName-->
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.app.util.launch.BCOLauncher</mainClass>
