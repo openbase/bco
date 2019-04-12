@@ -74,7 +74,6 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
     public void testCommunication() throws Exception {
         System.out.println("testCommunication");
 
-        String userId = MockCredentialStore.USER_ID + "@";
         final UserClientPair userClientPair = UserClientPair.newBuilder().setUserId(MockCredentialStore.USER_ID).build();
         final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setCredentials(ByteString.copyFrom(MockCredentialStore.USER_PASSWORD_HASH)).setSymmetric(true).build();
 

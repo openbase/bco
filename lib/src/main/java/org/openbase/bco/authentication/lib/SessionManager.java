@@ -102,7 +102,7 @@ public class SessionManager implements Shutdownable {
     /**
      * Pair describing the currently logged in user and client.
      */
-    private UserClientPair.Builder userClientPair;
+    private final UserClientPair.Builder userClientPair;
     /**
      * Future of a task that renews the ticket of a user if he wants to stay logged in.
      */
@@ -129,6 +129,7 @@ public class SessionManager implements Shutdownable {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not register session manager shutdown hook", ex, LOGGER, LogLevel.WARN);
         }
+        this.userClientPair = UserClientPair.newBuilder();
         // create login observable
         this.loginObservable = new ObservableImpl<>(this);
         // add executor service so that it is not waited for notifications and so that they are done in parallel

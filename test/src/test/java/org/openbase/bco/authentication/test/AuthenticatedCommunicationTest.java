@@ -37,6 +37,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.LoginCredentialsType;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
@@ -73,9 +74,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     }
 
     private static void registerUser() throws Exception {
-        LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
+        LoginCredentialsType.LoginCredentials.Builder loginCredentials = LoginCredentialsType.LoginCredentials.newBuilder();
         loginCredentials.setId(USER_ID);
-        loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(USER_PASSWORD), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
+        loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(USER_PASSWORD), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
         AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
     }

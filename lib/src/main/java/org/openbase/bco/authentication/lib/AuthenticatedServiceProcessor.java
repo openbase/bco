@@ -146,6 +146,7 @@ public class AuthenticatedServiceProcessor {
                     RECEIVE message = null;
 
                     if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
+                        System.out.println("Internal class: " + internalClass.getName());
                         if (!Message.class.isAssignableFrom(internalClass)) {
                             throw new CouldNotPerformException("Authenticated value has a value but the method implemented by the server did not expect one!");
                         }
@@ -153,6 +154,7 @@ public class AuthenticatedServiceProcessor {
                         // so get the received message by calling parseFrom which is supported by every message
                         Method parseFrom = internalClass.getMethod("parseFrom", ByteString.class);
                         message = (RECEIVE) parseFrom.invoke(null, authenticatedValue.getValue());
+                        System.out.println("Extracted message: " + message);
                     }
 
                     // execute the action of the server

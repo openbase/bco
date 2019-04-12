@@ -104,10 +104,12 @@ public class EncryptionHelper {
      */
     public static byte[] hash(final String string) {
         try {
-            byte[] key = string.getBytes(StandardCharsets.UTF_8);
+            // NOTE: the charset has to match the copy of method below, see: https://github.com/openbase/jul/issues/56
+            byte[] key = string.getBytes(StandardCharsets.UTF_16);
             MessageDigest sha = MessageDigest.getInstance(HASH_ALGORITHM);
             key = sha.digest(key);
-            return Arrays.copyOf(key, 16);
+            // length of byte array has to match the symmetric key length for the symmetric algorithm
+            return Arrays.copyOf(key, SYMMETRIC_KEY_LENGTH / 8);
         } catch (NoSuchAlgorithmException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException("Hashing[" + string + "] failed!", EncryptionHelper.class, ex), LOGGER);
             return null;

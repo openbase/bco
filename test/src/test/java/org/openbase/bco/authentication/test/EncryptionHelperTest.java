@@ -83,7 +83,6 @@ public class EncryptionHelperTest {
         LOGGER.info("test symmetric encryption and decryption");
         String str = "test";
         byte[] key = EncryptionHelper.generateKey();
-//        byte[] iv = EncryptionHelper.createCiptherBlockChainingVector();
         ByteString encrypted = EncryptionHelper.encryptSymmetric(str, key);
         String decrypted = EncryptionHelper.decryptSymmetric(encrypted, key, String.class);
         assertEquals(str, decrypted);
