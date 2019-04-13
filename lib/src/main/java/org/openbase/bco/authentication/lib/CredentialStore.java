@@ -124,7 +124,9 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      */
     @Override
     protected void load(final LoginCredentialsCollection data, final Map<String, LoginCredentials> internalMap) {
-        data.getElementList().forEach((entry) -> internalMap.put(entry.getId(), entry));
+        for (LoginCredentials entry : data.getElementList()) {
+            internalMap.put(entry.getId(), entry);
+        }
     }
 
     /**
