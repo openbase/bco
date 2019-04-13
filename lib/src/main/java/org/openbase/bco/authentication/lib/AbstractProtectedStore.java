@@ -54,33 +54,6 @@ import java.util.*;
  */
 public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
 
-    /**
-     * Sets the permissions to UNIX 600 so only the owner has permission to read and to write to this protected file.
-     *
-     * @param file the file whose permissions are updated
-     *
-     * @throws CouldNotPerformException is thrown if the file could not be protected.
-     */
-    public static void protectFile(final File file) throws CouldNotPerformException {
-        try {
-            Set<PosixFilePermission> perms = new HashSet<>();
-            perms.add(PosixFilePermission.OWNER_READ);
-            perms.add(PosixFilePermission.OWNER_WRITE);
-            try {
-                Files.setPosixFilePermissions(file.toPath(), perms);
-            } catch (UnsupportedOperationException ex) {
-                // apply windows fallback
-                if (!file.setReadable(true, true)
-                        || !file.setWritable(true, true)
-                        || !file.setExecutable(true, true)) {
-                    throw new CouldNotPerformException("Could not protect " + file.getAbsolutePath(), ex);
-                }
-            }
-        } catch (IOException ex) {
-            throw new CouldNotPerformException("Could not protect " + file.getAbsolutePath(), ex);
-        }
-    }
-
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Map<String, DT> map;
@@ -260,4 +233,41 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
      * @return the data to be serialized
      */
     protected abstract SDT save(final Map<String, DT> internalMap);
+
+    /**
+     * Sets the permissions to UNIX 600 so only the owner has permission to read and to write to this protected file.
+     *
+     * @param file the file whose permissions are updated
+     *
+     * @throws CouldNotPerformException is thrown if the file could not be protected.
+     */
+    public static void protectFile(final File file) throws CouldNotPerformException {
+        try {
+
+
+            // test is class is supported on android
+            try {
+                PosixFilePermission.class.getSimpleName();
+            } catch (Throwable ex) {
+                LoggerFactory.getLogger(AbstractProtectedStore.class).warn(ex.getClass().getSimpleName() + ": Credential store can not be protected because of missing api support!");
+                return;
+            }
+
+            try {
+                Set<PosixFilePermission> perms = new HashSet<>();
+                perms.add(PosixFilePermission.OWNER_READ);
+                perms.add(PosixFilePermission.OWNER_WRITE);
+                Files.setPosixFilePermissions(file.toPath(), perms);
+            } catch (UnsupportedOperationException ex) {
+                // apply windows fallback
+                if (!file.setReadable(true, true)
+                        || !file.setWritable(true, true)
+                        || !file.setExecutable(true, true)) {
+                    throw new CouldNotPerformException("Could not protect " + file.getAbsolutePath(), ex);
+                }
+            }
+        } catch (IOException ex) {
+            throw new CouldNotPerformException("Could not protect " + file.getAbsolutePath(), ex);
+        }
+    }
 }
