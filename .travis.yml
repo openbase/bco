@@ -2,11 +2,6 @@ language: java
 
 dist: xenial
 
-branches:
-  except:
-      #- /^(?i:feature)-.*$/
-      #- /^(?i:release)-.*$/
-
 jdk:
   - openjdk11
   - openjdk-ea
@@ -41,17 +36,21 @@ deploy:
         repo: openbase/bco.dal
         tags: true
         jdk: openjdk11
+jobs:
+  include:
+    - stage: trigger downstream
+      jdk: openjdk11
+      script: |
+        echo "TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
+        if [[ ($TRAVIS_BRANCH == master) &&
+              ($TRAVIS_PULL_REQUEST == false) ]] ; then
+          curl -LO --retry 3 https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
 
-after_deploy:
-   - |
-       if [[ ($TRAVIS_BRANCH == master) &&
-             ($TRAVIS_PULL_REQUEST == false) ]] ; then
-         curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-         # trigger upstream projects
-         sh trigger-travis.sh openbase bco.device $TRAVIS_ACCESS_TOKEN
-         sh trigger-travis.sh openbase bco.bcozy $TRAVIS_ACCESS_TOKEN
-         sh trigger-travis.sh openbase bco.eveson $TRAVIS_ACCESS_TOKEN
-         sh trigger-travis.sh openbase bco.bcomfy $TRAVIS_ACCESS_TOKEN
-         sh trigger-travis.sh openbase bco.psc $TRAVIS_ACCESS_TOKEN
-         sh trigger-travis.sh openbase bco.ontology $TRAVIS_ACCESS_TOKEN
-       fi
+          # trigger upstream projects
+          sh trigger-travis.sh openbase bco.device $TRAVIS_ACCESS_TOKEN
+          sh trigger-travis.sh openbase bco.bcozy $TRAVIS_ACCESS_TOKEN
+          sh trigger-travis.sh openbase bco.eveson $TRAVIS_ACCESS_TOKEN
+          sh trigger-travis.sh openbase bco.bcomfy $TRAVIS_ACCESS_TOKEN
+          sh trigger-travis.sh openbase bco.psc $TRAVIS_ACCESS_TOKEN
+          sh trigger-travis.sh openbase bco.ontology $TRAVIS_ACCESS_TOKEN
+        fi
