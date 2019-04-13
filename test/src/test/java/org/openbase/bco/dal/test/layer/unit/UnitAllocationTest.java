@@ -26,21 +26,16 @@ import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
-import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
@@ -241,7 +236,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     public void testRescheduling() throws Exception {
         LOGGER.info("testRescheduling");
         final SessionManager sessionManager = new SessionManager();
-        sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
+        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
         // set the power state of the colorable lightue with the bco user
         final RemoteAction firstAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
@@ -285,6 +280,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         firstAction.cancel().get();
         firstAction.waitForActionState(ActionState.State.CANCELED);
     }
+
     /**
      * Test priorized action execution and low priorized rescheduling afterwards.
      *
@@ -318,7 +314,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // set the brightness state with the admin user to 50 for 500 ms
         final SessionManager sessionManager = new SessionManager();
-        sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
+        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
         final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(6000));
@@ -386,7 +382,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // set the brightness state with the admin user to 50 for 500 ms
         final SessionManager sessionManager = new SessionManager();
-        sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
+        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
         final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(500));
         primaryActionParameter.setPriority(Priority.HIGH);

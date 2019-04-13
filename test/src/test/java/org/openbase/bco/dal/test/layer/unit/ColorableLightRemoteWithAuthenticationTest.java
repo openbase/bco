@@ -94,7 +94,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
     @Before
     public void setUp() throws CouldNotPerformException, InterruptedException, ExecutionException {
-        sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
+        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
         if (adminToken == null) {
             AuthenticationToken build = AuthenticationToken.newBuilder().setUserId(sessionManager.getUserClientPair().getUserId()).build();
@@ -152,7 +152,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         // register client
         System.out.println("register client");
-        sessionManager.registerClient(registered.getId());
+        sessionManager.registerClient(registered.getId()).get();
 
         // logout admin
         System.out.println("logout admin");
@@ -160,7 +160,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         // login client
         System.out.println("login client");
-        sessionManager.login(registered.getId());
+        sessionManager.loginClient(registered.getId(), false);
 
         // make ticket invalid
         byte[] serviceServerSecretKey = AuthenticatedServerManager.getInstance().getServiceServerSecretKey();
@@ -239,7 +239,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.USER);
         userUnitConfig.getUserConfigBuilder().setFirstName("Murray").setLastName("the skull").setUserName(username);
         userUnitConfig = Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get().toBuilder();
-        sessionManager.registerUser(userUnitConfig.getId(), password, false);
+        sessionManager.registerUser(userUnitConfig.getId(), password, false).get();
 
         // request authentication and authorization tokens for admin user
         AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationToken.newBuilder().setUserId(sessionManager.getUserClientPair().getUserId()).build(), null);
@@ -260,7 +260,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
                 sessionManager).get());
 
         // login previously registered user
-        sessionManager.login(userUnitConfig.getId(), password);
+        sessionManager.loginUser(userUnitConfig.getId(), password, false);
 
         // try to set the power state which should fail
         try {

@@ -98,12 +98,12 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
             }
 
             if (userUnitConfig == null) {
-                throw new NotAvailableException("User for "+this+" " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()));
+                throw new NotAvailableException("User for " + this + " " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()));
             }
 
             final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(userUnitConfig.getId()).build();
             final SessionManager sessionManager = new SessionManager();
-            sessionManager.login(userUnitConfig.getId());
+            sessionManager.loginUser(userUnitConfig.getId(), true);
             final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null);
             return AuthToken.newBuilder().setAuthenticationToken(new AuthenticatedValueFuture<>(
                     Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
@@ -111,7 +111,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
                     authenticatedValue.getTicketAuthenticatorWrapper(),
                     sessionManager).get()).build();
         } catch (CouldNotPerformException | ExecutionException ex) {
-            throw new CouldNotPerformException("Could not create authentication token for "+this+" " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()), ex);
+            throw new CouldNotPerformException("Could not create authentication token for " + this + " " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()), ex);
         }
     }
 

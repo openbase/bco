@@ -1,5 +1,7 @@
 package org.openbase.bco.dal.visual.util;
 
+import com.google.protobuf.ByteString;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
@@ -7,6 +9,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
@@ -246,7 +249,14 @@ public class LoginDialog extends javax.swing.JFrame {
             statusLabel.setForeground(Color.BLACK);
             statusLabel.setText("Processing...");
             final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(userTextField.getText());
-            SessionManager.getInstance().login(userId, new String(passwordField.getPassword()), savePasswordCheckBox.isSelected(), savePasswordCheckBox.isSelected());
+            final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(userId)
+                    .setAdmin(false).setSymmetric(true).setCredentials(ByteString.copyFrom(EncryptionHelper.hash(new String(passwordField.getPassword())))).build();
+            SessionManager.getInstance().loginUser(userId, loginCredentials, savePasswordCheckBox.isSelected());
+
+            if (savePasswordCheckBox.isSelected()) {
+                SessionManager.getInstance().storeCredentials(userId, loginCredentials);
+            }
+
             if (savePasswordCheckBox.isSelected()) {
                 BCOLogin.setLocalAutoLoginUser(userId);
             }
