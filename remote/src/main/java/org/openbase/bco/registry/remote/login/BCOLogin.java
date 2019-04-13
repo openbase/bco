@@ -78,7 +78,7 @@ public class BCOLogin {
         }
 
         final UnitConfig bcoUser = Registries.getUnitRegistry(true).getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS);
-        SessionManager.getInstance().login(bcoUser.getId());
+        SessionManager.getInstance().loginClient(bcoUser.getId(), true);
     }
 
     /**
@@ -138,7 +138,7 @@ public class BCOLogin {
             throw new CouldNotPerformException("User[" + user + "] can not be used for auto login because its credentials are not stored in the local credential store.");
         }
 
-        SessionManager.getInstance().login(userId, true);
+        SessionManager.getInstance().loginUser(userId, true);
         setLocalAutoLoginUser(userId);
     }
 

@@ -36,7 +36,7 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
@@ -198,8 +198,9 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         }
 
         // register at authenticator
-        final LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder().setId(adminId);
-        loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(ADMIN_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
+        final LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder().setId(adminId);
+        loginCredentials.setSymmetric(true);
+        loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(ADMIN_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
         final AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
 
         try {
@@ -262,13 +263,20 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
     private void registerClientAtAuthenticator(final String clientId, final String adminId) throws CouldNotPerformException {
         // login as admin
         try {
-            SessionManager.getInstance().login(adminId, ADMIN_PASSWORD);
+            SessionManager.getInstance().loginUser(adminId, ADMIN_PASSWORD, false);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not login as the default admin to register the bco user at the authenticator");
         }
 
         // register bco user as a client at the authenticator
-        SessionManager.getInstance().registerClient(clientId);
+        try {
+            SessionManager.getInstance().registerClient(clientId).get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not register client " + clientId + " because of interruption", ex);
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not register client " + clientId, ex);
+        }
 
         // logout
         SessionManager.getInstance().logout();
