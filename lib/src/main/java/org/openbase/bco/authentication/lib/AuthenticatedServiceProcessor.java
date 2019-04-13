@@ -146,7 +146,6 @@ public class AuthenticatedServiceProcessor {
                     RECEIVE message = null;
 
                     if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
-                        System.out.println("Internal class: " + internalClass.getName());
                         if (!Message.class.isAssignableFrom(internalClass)) {
                             throw new CouldNotPerformException("Authenticated value has a value but the method implemented by the server did not expect one!");
                         }

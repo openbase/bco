@@ -147,7 +147,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 try {
-                    return filterDataForUser(dataBuilder, null);
+                    return filterDataForUser(dataBuilder, UserClientPair.getDefaultInstance());
                 } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Could not filter data builder for rights", ex);
                 }

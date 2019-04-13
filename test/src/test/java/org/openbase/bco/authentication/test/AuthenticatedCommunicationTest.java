@@ -172,7 +172,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
                     i--;
                 }
             }
-            if (userClientPair == null) {
+            if (userClientPair.getClientId().isEmpty() && userClientPair.getUserId().isEmpty()) {
                 assertTrue(dataBuilder.build().getAgentUnitConfigCount() < 2);
             } else {
                 assertTrue(dataBuilder.build().getAgentUnitConfigCount() == 2);
@@ -181,13 +181,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         }
 
         private boolean canRead(final UnitConfig unitConfig, final UserClientPair userClientPair) {
-            if (userClientPair == null) {
-                return unitConfig.getPermissionConfig().getOtherPermission().getRead();
-            }
-
-            final boolean matchesUser = userClientPair.getUserId().equals(unitConfig.getPermissionConfig().getOwnerId()) && !userClientPair.getUserId().isEmpty();
-            final boolean matchesClient = userClientPair.getClientId().equals(unitConfig.getPermissionConfig().getOwnerId()) && !userClientPair.getClientId().isEmpty();
-
+            final boolean matchesUser = !userClientPair.getUserId().isEmpty() && userClientPair.getUserId().equals(unitConfig.getPermissionConfig().getOwnerId());
+            final boolean matchesClient = !userClientPair.getClientId().isEmpty() && userClientPair.getClientId().equals(unitConfig.getPermissionConfig().getOwnerId());
             if (matchesUser || matchesClient) {
                 return unitConfig.getPermissionConfig().getOwnerPermission().getRead() || unitConfig.getPermissionConfig().getOtherPermission().getRead();
             }
