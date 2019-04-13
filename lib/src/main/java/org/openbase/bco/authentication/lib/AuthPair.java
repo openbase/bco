@@ -67,7 +67,7 @@ public class AuthPair {
      * @param authorizedBy                 the id of the user who authorize an action.
      */
     public AuthPair(final UserClientPair authenticationUserClientPair, final String authorizedBy) {
-        if (authenticationUserClientPair.hasUserId() && authenticationUserClientPair.getUserId().isEmpty()) {
+        if (!authenticationUserClientPair.getUserId().isEmpty()) {
             this.authenticatedBy = authenticationUserClientPair.getUserId();
         } else {
             this.authenticatedBy = authenticationUserClientPair.getClientId();
