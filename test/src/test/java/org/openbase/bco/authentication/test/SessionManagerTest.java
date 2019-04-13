@@ -100,7 +100,7 @@ public class SessionManagerTest extends AuthenticationTest {
         manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // register client
-        manager.registerUser("test_user2", "test_password", true);
+        manager.registerUser("test_user2", "test_password", true).get();
 
         manager.loginUser("test_user2", "test_password", false);
     }
@@ -175,7 +175,7 @@ public class SessionManagerTest extends AuthenticationTest {
         manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // register client
-        manager.registerClient(MockClientStore.CLIENT_ID);
+        manager.registerClient(MockClientStore.CLIENT_ID).get();
 
         // login client
         manager.loginClient(MockClientStore.CLIENT_ID, false);
@@ -187,7 +187,7 @@ public class SessionManagerTest extends AuthenticationTest {
         ExceptionPrinter.setBeQuit(Boolean.TRUE);
 
         try {
-            manager.registerClient(MockClientStore.ADMIN_ID);
+            manager.registerClient(MockClientStore.ADMIN_ID).get();
             fail("You should not be able to register the same client twice.");
         } catch (CouldNotPerformException ex) {
         } finally {
@@ -212,7 +212,7 @@ public class SessionManagerTest extends AuthenticationTest {
         assertEquals(ticket.getUserClientPair().getUserId(), MockClientStore.ADMIN_ID);
 
         // register client
-        manager.registerClient(MockClientStore.CLIENT_ID);
+        manager.registerClient(MockClientStore.CLIENT_ID).get();
 
         // login client
         manager.loginClient(MockClientStore.CLIENT_ID, false);
@@ -254,7 +254,7 @@ public class SessionManagerTest extends AuthenticationTest {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
 
             // remove himself
-            manager.removeUser(MockClientStore.ADMIN_ID);
+            manager.removeUser(MockClientStore.ADMIN_ID).get();
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
@@ -275,10 +275,10 @@ public class SessionManagerTest extends AuthenticationTest {
         manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // remove user
-        manager.removeUser(MockClientStore.USER_ID);
+        manager.removeUser(MockClientStore.USER_ID).get();
 
         // add for test consistency
-        manager.registerUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
+        manager.registerUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false).get();
     }
 
     /**
@@ -297,7 +297,7 @@ public class SessionManagerTest extends AuthenticationTest {
             manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
 
             // register client
-            manager.registerClient(MockClientStore.USER_ID);
+            manager.registerClient(MockClientStore.USER_ID).get();
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
@@ -317,9 +317,9 @@ public class SessionManagerTest extends AuthenticationTest {
         manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // register client
-        manager.registerUser("test_user", "test_password", false);
-        manager.setAdministrator("test_user", true);
-        manager.setAdministrator("test_user", false);
+        manager.registerUser("test_user", "test_password", false).get();
+        manager.setAdministrator("test_user", true).get();
+        manager.setAdministrator("test_user", false).get();
     }
 
     /**
@@ -338,7 +338,7 @@ public class SessionManagerTest extends AuthenticationTest {
             manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
 
             // register client
-            manager.setAdministrator(MockClientStore.USER_ID, true);
+            manager.setAdministrator(MockClientStore.USER_ID, true).get();
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }

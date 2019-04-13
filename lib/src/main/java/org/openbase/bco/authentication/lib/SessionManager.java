@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.security.KeyPair;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -614,51 +615,23 @@ public class SessionManager implements Shutdownable {
      *
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public synchronized void changePassword(final String userId, final String oldCredentials, final String newCredentials) throws CouldNotPerformException {
+    public synchronized Future<LoginCredentialsChange> changePassword(final String userId, final String oldCredentials, final String newCredentials) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
 
-        try {
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey, ticketAuthenticatorWrapper);
-            byte[] oldHash = EncryptionHelper.hash(oldCredentials);
-            byte[] newHash = EncryptionHelper.hash(newCredentials);
+        ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey, ticketAuthenticatorWrapper);
+        byte[] oldHash = EncryptionHelper.hash(oldCredentials);
+        byte[] newHash = EncryptionHelper.hash(newCredentials);
 
-            LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-                    .setId(userId)
-                    .setOldCredentials(EncryptionHelper.encryptSymmetric(oldHash, sessionKey))
-                    .setNewCredentials(EncryptionHelper.encryptSymmetric(newHash, sessionKey))
-                    .setSymmetric(true)
-                    .build();
+        LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
+                .setId(userId)
+                .setOldCredentials(EncryptionHelper.encryptSymmetric(oldHash, sessionKey))
+                .setNewCredentials(EncryptionHelper.encryptSymmetric(newHash, sessionKey))
+                .setSymmetric(true)
+                .build();
 
-            AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentialsChange, LoginCredentialsChange.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().changeCredentials(authenticatedValue)).get();
-        } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
-        } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Action was interrupted.", ex);
-        } catch (ExecutionException ex) {
-            Throwable cause = ex.getCause();
-
-            Pattern pattern = Pattern.compile("RejectedException: (.*)[\n\r]");
-            Matcher matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new RejectedException(matcher.group(1));
-            }
-
-            pattern = Pattern.compile("PermissionDeniedException: (.*)[\n\r]");
-            matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new PermissionDeniedException(matcher.group(1));
-            }
-
-            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Internal server error.", cause);
-        }
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentialsChange, LoginCredentialsChange.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().changeCredentials(authenticatedValue));
     }
 
     public synchronized String getCredentialHashFromLocalStore(String userId) throws CouldNotPerformException {
@@ -681,20 +654,20 @@ public class SessionManager implements Shutdownable {
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException if the client could not registered
      */
-    public synchronized void registerClient(final String clientId) throws CouldNotPerformException {
+    public synchronized Future registerClient(final String clientId) throws CouldNotPerformException {
         // generate key pair
         final KeyPair keyPair = EncryptionHelper.generateKeyPair();
-        // create credentials with public key and upload to authenticator
+        // create credentials with private key and store locally
         final LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder()
                 .setId(clientId)
-                .setCredentials(ByteString.copyFrom(keyPair.getPublic().getEncoded()))
+                .setCredentials(ByteString.copyFrom(keyPair.getPrivate().getEncoded()))
                 .setSymmetric(false)
                 .setAdmin(false);
-        // register at authenticator
-        this.internalRegister(loginCredentials.build());
-        // for client side storage exchange credentials with private key
-        loginCredentials.setCredentials(ByteString.copyFrom(keyPair.getPrivate().getEncoded()));
         this.credentialStore.addEntry(clientId, loginCredentials.build());
+        // create credentials with public key and upload to authenticator
+        loginCredentials.setCredentials(ByteString.copyFrom(keyPair.getPublic().getEncoded()));
+        // register at authenticator
+        return this.internalRegister(loginCredentials.build());
     }
 
     public synchronized boolean hasCredentialsForId(final String id) {
@@ -710,10 +683,10 @@ public class SessionManager implements Shutdownable {
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException if the user could not be registered
      */
-    public synchronized void registerUser(final String userId, final String password, final boolean isAdmin) throws CouldNotPerformException {
+    public synchronized Future<LoginCredentials> registerUser(final String userId, final String password, final boolean isAdmin) throws CouldNotPerformException {
         byte[] key = EncryptionHelper.hash(password);
         final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(userId).setAdmin(isAdmin).setSymmetric(true).setCredentials(ByteString.copyFrom(key)).build();
-        this.internalRegister(loginCredentials);
+        return this.internalRegister(loginCredentials);
     }
 
     /**
@@ -746,107 +719,29 @@ public class SessionManager implements Shutdownable {
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    private void internalRegister(final LoginCredentials loginCredentials) throws CouldNotPerformException {
+    private Future<LoginCredentials> internalRegister(final LoginCredentials loginCredentials) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
 
-        try {
-            AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentials, LoginCredentials.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().register(authenticatedValue)).get();
-        } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Action was interrupted.", ex);
-        } catch (ExecutionException ex) {
-            Throwable cause = ex.getCause();
-
-            Pattern pattern = Pattern.compile("RejectedException: (.*)[\n\r]");
-            Matcher matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new RejectedException(matcher.group(1));
-            }
-
-            pattern = Pattern.compile("PermissionDeniedException: (.*)[\n\r]");
-            matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new PermissionDeniedException(matcher.group(1));
-            }
-
-            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Internal server error.", cause);
-        }
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentials, LoginCredentials.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().register(authenticatedValue));
     }
 
-    public synchronized void removeUser(String id) throws CouldNotPerformException {
+    public synchronized Future<String> removeUser(String id) throws CouldNotPerformException {
         if (!this.isAdmin()) {
             throw new CouldNotPerformException("You have to be an admin to perform this action");
         }
 
-        try {
-            AuthenticatedServiceProcessor.requestAuthenticatedAction(id, String.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().removeUser(authenticatedValue)).get();
-        } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Action was interrupted.", ex);
-        } catch (ExecutionException ex) {
-            Throwable cause = ex.getCause();
-
-            Pattern pattern = Pattern.compile("RejectedException: (.*)[\n\r]");
-            Matcher matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new RejectedException(matcher.group(1));
-            }
-
-            pattern = Pattern.compile("PermissionDeniedException: (.*)[\n\r]");
-            matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new PermissionDeniedException(matcher.group(1));
-            }
-
-            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Internal server error.", cause);
-        }
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(id, String.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().removeUser(authenticatedValue));
     }
 
-    public synchronized void setAdministrator(final String id, boolean isAdmin) throws CouldNotPerformException {
+    public synchronized Future<LoginCredentials> setAdministrator(final String id, boolean isAdmin) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
 
         final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(id).setAdmin(isAdmin).build();
-        try {
-            AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentials, LoginCredentials.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().setAdministrator(authenticatedValue)).get();
-        } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Action was interrupted.", ex);
-        } catch (ExecutionException ex) {
-            Throwable cause = ex.getCause();
-
-            Pattern pattern = Pattern.compile("RejectedException: (.*)[\n\r]");
-            Matcher matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new RejectedException(matcher.group(1));
-            }
-
-            pattern = Pattern.compile("PermissionDeniedException: (.*)[\n\r]");
-            matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new PermissionDeniedException(matcher.group(1));
-            }
-
-            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Internal server error.", cause);
-        }
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(loginCredentials, LoginCredentials.class, this, authenticatedValue -> CachedAuthenticationRemote.getRemote().setAdministrator(authenticatedValue));
     }
 
     /**
