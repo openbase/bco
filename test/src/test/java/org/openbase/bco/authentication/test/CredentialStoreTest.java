@@ -32,6 +32,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 
+import java.security.KeyPair;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
 
@@ -74,35 +76,44 @@ public class CredentialStoreTest {
         String storeFileName = "credential_store.json";
 
         // create initial instance which has to create a new file
-        CredentialStore registry = new CredentialStore();
-        registry.init(storeFileName);
+        CredentialStore credentialStore = new CredentialStore();
+        credentialStore.init(storeFileName);
 
-        // add a client to this registry
-        String clientId = "tamino";
+        // add a user to this registry
+        String userId = "tamino";
         String password = "12345678";
-        registry.addCredentials(clientId, EncryptionHelper.hash(password), false, true);
+        credentialStore.addCredentials(userId, EncryptionHelper.hash(password), false, true);
+        // add a client to the registry
+        String clientIdPrivate = "clientPrivate";
+        String clientIdPublic = "clientPublic";
+        KeyPair keyPair = EncryptionHelper.generateKeyPair();
+        credentialStore.addCredentials(clientIdPrivate, keyPair.getPrivate().getEncoded(), false, false);
+        credentialStore.addCredentials(clientIdPublic, keyPair.getPublic().getEncoded(), false, false);
 
         // start a second registry which loads the file from the first one
-        CredentialStore loadingRegistry = new CredentialStore();
-        loadingRegistry.init(storeFileName);
-
+        CredentialStore loadingCredentialStore = new CredentialStore();
+        loadingCredentialStore.init(storeFileName);
+        
         // test if they produce the same result
         try {
-            byte[] passwordHash = loadingRegistry.getCredentials(clientId).toByteArray();
-            assertArrayEquals(registry.getCredentials(clientId).toByteArray(), passwordHash);
+            byte[] passwordHash = loadingCredentialStore.getCredentials(userId).toByteArray();
+            assertArrayEquals(credentialStore.getCredentials(userId).toByteArray(), passwordHash);
+
+            assertArrayEquals(keyPair.getPrivate().getEncoded(), loadingCredentialStore.getCredentials(clientIdPrivate).getCredentials().toByteArray());
+            assertArrayEquals(keyPair.getPublic().getEncoded(), loadingCredentialStore.getCredentials(clientIdPublic).getCredentials().toByteArray());
         } catch (NotAvailableException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
 
-        clientId = "123512";
+        userId = "123512";
         try {
-            loadingRegistry.getCredentials(clientId);
+            loadingCredentialStore.getCredentials(userId);
         } catch (NotAvailableException ex) {
             return;
         }
-        fail("NotAvailableException not thrown even though there is no user[" + clientId + "]");
+        fail("NotAvailableException not thrown even though there is no user[" + userId + "]");
 
-        registry.shutdown();
-        loadingRegistry.shutdown();
+        credentialStore.shutdown();
+        loadingCredentialStore.shutdown();
     }
 }

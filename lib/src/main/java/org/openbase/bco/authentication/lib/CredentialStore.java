@@ -23,11 +23,18 @@ package org.openbase.bco.authentication.lib;
  */
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Message;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFileProcessor;
 import org.openbase.type.domotic.authentication.LoginCredentialsCollectionType.LoginCredentialsCollection;
+import org.openbase.type.domotic.authentication.LoginCredentialsEncodedCollectionType.LoginCredentialsEncodedCollection;
+import org.openbase.type.domotic.authentication.LoginCredentialsEncodedCollectionType.LoginCredentialsEncodedCollection.Builder;
+import org.openbase.type.domotic.authentication.LoginCredentialsEncodedType.LoginCredentialsEncoded;
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
+import java.util.Base64;
 import java.util.Map;
 
 /**
@@ -43,7 +50,7 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
     public static final String SERVICE_SERVER_ID = "serviceServer";
 
     public CredentialStore() {
-        super(new ProtoBufFileProcessor<>(LoginCredentialsCollection.newBuilder()));
+        super(new ProtoBufFileProcessor(new CredentialEncodingTransformer()));
     }
 
     /**
@@ -115,7 +122,9 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      */
     @Override
     protected void load(final LoginCredentialsCollection data, final Map<String, LoginCredentials> internalMap) {
-        data.getLoginCredentialsList().forEach((entry) -> internalMap.put(entry.getId(), entry));
+        for (LoginCredentials loginCredentials : data.getLoginCredentialsList()) {
+            internalMap.put(loginCredentials.getId(), loginCredentials);
+        }
     }
 
     /**
@@ -127,7 +136,11 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      */
     @Override
     protected LoginCredentialsCollection save(final Map<String, LoginCredentials> internalMap) {
-        return LoginCredentialsCollection.newBuilder().addAllLoginCredentials(internalMap.values()).build();
+        LoginCredentialsCollection.Builder builder = LoginCredentialsCollection.newBuilder();
+        for (LoginCredentials value : internalMap.values()) {
+            builder.addLoginCredentials(value);
+        }
+        return builder.build();
     }
 
     /**
@@ -143,5 +156,49 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
             }
         }
         return adminCount;
+    }
+
+    public static LoginCredentialsEncoded encode(final LoginCredentials loginCredentials) {
+        LoginCredentialsEncoded.Builder encoded = LoginCredentialsEncoded.newBuilder();
+        encoded.setId(loginCredentials.getId());
+        encoded.setAdmin(loginCredentials.getAdmin());
+        encoded.setSymmetric(loginCredentials.getSymmetric());
+        encoded.setCredentials(Base64.getEncoder().encodeToString(loginCredentials.getCredentials().toByteArray()));
+        return encoded.build();
+    }
+
+    public static LoginCredentials decode(final LoginCredentialsEncoded loginCredentialsEncoded) {
+        LoginCredentials.Builder decoded = LoginCredentials.newBuilder();
+        decoded.setId(loginCredentialsEncoded.getId());
+        decoded.setAdmin(loginCredentialsEncoded.getAdmin());
+        decoded.setSymmetric(loginCredentialsEncoded.getSymmetric());
+        decoded.setCredentials(ByteString.copyFrom(Base64.getDecoder().decode(loginCredentialsEncoded.getCredentials())));
+        return decoded.build();
+    }
+
+    public static class CredentialEncodingTransformer implements ProtoBufFileProcessor.TypeToMessageTransformer<LoginCredentialsCollection, LoginCredentialsEncodedCollection, LoginCredentialsEncodedCollection.Builder> {
+
+        @Override
+        public Message transform(LoginCredentialsCollection type) {
+            LoginCredentialsEncodedCollection.Builder builder = LoginCredentialsEncodedCollection.newBuilder();
+            for (LoginCredentials loginCredentials : type.getLoginCredentialsList()) {
+                builder.addLoginCredentialsEncoded(encode(loginCredentials));
+            }
+            return builder.build();
+        }
+
+        @Override
+        public LoginCredentialsCollection transform(LoginCredentialsEncodedCollection message) throws CouldNotTransformException {
+            LoginCredentialsCollection.Builder builder = LoginCredentialsCollection.newBuilder();
+            for (LoginCredentialsEncoded encoded : message.getLoginCredentialsEncodedList()) {
+                builder.addLoginCredentials(decode(encoded));
+            }
+            return builder.build();
+        }
+
+        @Override
+        public Builder newBuilderForType() throws CouldNotPerformException {
+            return LoginCredentialsEncodedCollection.newBuilder();
+        }
     }
 }

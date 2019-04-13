@@ -398,7 +398,7 @@ public class SessionManager implements Shutdownable {
                 }
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not login");
+            throw new CouldNotPerformException("Could not login", ex);
         } catch (ExecutionException ex) {
             Throwable cause = ex.getCause();
 
