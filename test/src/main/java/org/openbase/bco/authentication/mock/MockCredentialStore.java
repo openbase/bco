@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.mock;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -26,8 +26,12 @@ import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 import java.security.KeyPair;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
@@ -42,11 +46,20 @@ public class MockCredentialStore extends CredentialStore {
     public static final String ADMIN_PASSWORD = "password";
     public static final byte[] ADMIN_PASSWORD_HASH = EncryptionHelper.hash(USER_PASSWORD);
 
-    public static final String CLIENT_ID = "client";
-
     public static final KeyPair SERVICE_SERVER_KEY_PAIR = EncryptionHelper.generateKeyPair();
 
-    public MockCredentialStore() throws InitializationException {
+    private static Map<String, LoginCredentials> entryMapCopy;
+    private static MockCredentialStore instance;
+
+    public static synchronized MockCredentialStore getInstance() {
+        if (instance == null) {
+            instance = new MockCredentialStore();
+        }
+
+        return instance;
+    }
+
+    private MockCredentialStore() {
         super();
     }
 
@@ -61,6 +74,18 @@ public class MockCredentialStore extends CredentialStore {
             this.setAdmin(ADMIN_ID, true);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
+        }
+
+        entryMapCopy = new HashMap<>(getEntryMap());
+    }
+
+    public void reset() {
+        for (final String key : new HashSet<>(getEntryMap().keySet())) {
+            removeEntry(key);
+        }
+
+        for (LoginCredentials value : entryMapCopy.values()) {
+            addEntry(value.getId(), value);
         }
     }
 }

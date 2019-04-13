@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -352,6 +352,7 @@ public class SessionManager implements Shutdownable {
         LoginCredentials userCredentials = null;
         LoginCredentials clientCredentials = null;
         if (isUser) {
+            LOGGER.warn("User {} will be logged in with credentials {}", isUser, loginCredentials);
             // user is logged in so the parameters are his credentials
             userCredentials = loginCredentials;
 
@@ -368,6 +369,9 @@ public class SessionManager implements Shutdownable {
             // request ticket granting ticket
             TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(getUserClientPair()).get();
             // handle response
+
+            LOGGER.warn("Pair {}", userClientPair);
+            LOGGER.warn("Decrypt with user {} and client {}", userCredentials, clientCredentials);
             TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(getUserClientPair(), userCredentials, clientCredentials, ticketSessionKeyWrapper);
 
             // request client server ticket

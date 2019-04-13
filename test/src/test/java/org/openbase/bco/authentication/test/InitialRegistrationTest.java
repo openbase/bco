@@ -31,6 +31,7 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertTrue;
@@ -63,9 +64,10 @@ public class InitialRegistrationTest extends AuthenticationTest {
         // register the initial user via session manager
         String userId = "First";
         String password = "random";
-        LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
+        LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder();
         loginCredentials.setId(userId);
-        loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
+        loginCredentials.setSymmetric(true);
+        loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
         AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
 

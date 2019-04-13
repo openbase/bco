@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -38,7 +38,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.openbase.type.domotic.authentication.TicketType.Ticket;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.slf4j.LoggerFactory;
@@ -67,9 +67,10 @@ public class SessionManagerTest extends AuthenticationTest {
 
         // register an initial user for the authenticator
         try {
-            LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
+            LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder();
             loginCredentials.setId("InitialUserId");
-            loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
+            loginCredentials.setSymmetric(true);
+            loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
             AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
             CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
@@ -260,20 +261,20 @@ public class SessionManagerTest extends AuthenticationTest {
     }
 
     /**
-     * Test if admin can remove himself.
-     * Should fail with CouldNotPerformException
+     * Test if an admin can remove another user.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception if something fails.
      */
     @Test(timeout = 5000)
     public void removeAdminOther() throws Exception {
-        System.out.println("removeAdminHimself");
-        SessionManager manager = new SessionManager(clientStore);
+        System.out.println("removeAdminOther");
+
+        final SessionManager manager = new SessionManager(clientStore);
 
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
-        // remove himself
+        // remove user
         manager.removeUser(MockClientStore.USER_ID);
 
         // add for test consistency

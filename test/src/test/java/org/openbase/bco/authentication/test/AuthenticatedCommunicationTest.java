@@ -76,6 +76,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static void registerUser() throws Exception {
         LoginCredentialsType.LoginCredentials.Builder loginCredentials = LoginCredentialsType.LoginCredentials.newBuilder();
         loginCredentials.setId(USER_ID);
+        loginCredentials.setSymmetric(true);
         loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(USER_PASSWORD), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
         AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();

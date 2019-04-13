@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -45,7 +46,7 @@ public class AuthenticationTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
-        authenticatorController = new AuthenticatorController(new MockCredentialStore(), serviceServerSecretKey);
+        authenticatorController = new AuthenticatorController(MockCredentialStore.getInstance(), serviceServerSecretKey);
         authenticatorController.init();
         authenticatorController.activate();
         authenticatorController.waitForActivation();
@@ -61,5 +62,11 @@ public class AuthenticationTest {
         }
         AuthenticatedServerManager.shutdown();
         SessionManager.getInstance().shutdown();
+    }
+
+    @After
+    public void afterTest() {
+        // reset credential store because it could have been changed in a test
+        MockCredentialStore.getInstance().reset();
     }
 }

@@ -75,7 +75,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         System.out.println("testCommunication");
 
         final UserClientPair userClientPair = UserClientPair.newBuilder().setUserId(MockCredentialStore.USER_ID).build();
-        final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setCredentials(ByteString.copyFrom(MockCredentialStore.USER_PASSWORD_HASH)).setSymmetric(true).build();
+        final LoginCredentials loginCredentials = MockCredentialStore.getInstance().getCredentials(MockCredentialStore.USER_ID);
 
         // handle KDC request on server side
         TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userClientPair).get();
@@ -83,7 +83,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         // handle KDC response on client side
         TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userClientPair, loginCredentials, null, ticketSessionKeyWrapper);
 
-        // handle TGS request on server sidet
+        // handle TGS request on server side
         ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get();
 
         // handle TGS response on client side
@@ -96,7 +96,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         TicketAuthenticatorWrapper serverTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().validateClientServerTicket(clientTicketAuthenticatorWrapper).get();
 
         // handle SS response on client side
-        AuthenticationClientHandler.handleServiceServerResponse(clientTicketAuthenticatorWrapper.toByteArray(), clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
+        AuthenticationClientHandler.handleServiceServerResponse(ticketWrapperSessionKeyPair.getSessionKey(), clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
     }
 
     /**
@@ -140,9 +140,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         System.out.println("testChangeCredentials");
 
         final UserClientPair userClientPair = UserClientPair.newBuilder().setUserId(MockCredentialStore.USER_ID).build();
-        final LoginCredentials currentCredentials = LoginCredentials.newBuilder().setId(MockCredentialStore.USER_ID)
-                .setCredentials(ByteString.copyFrom(MockCredentialStore.USER_PASSWORD_HASH))
-                .setSymmetric(true).build();
+        final LoginCredentials currentCredentials = MockCredentialStore.getInstance().getCredentials(MockCredentialStore.USER_ID);
         final LoginCredentials newCredentials = currentCredentials.toBuilder().setCredentials(ByteString.copyFrom(EncryptionHelper.hash("newPassword"))).build();
 
         // handle KDC request on server side
@@ -150,25 +148,21 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
 
         // handle KDC response on client side
         TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userClientPair, currentCredentials, null, ticketSessionKeyWrapper);
-//        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-//        byte[] clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
         // handle TGS request on server side
         ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get();
 
         // handle TGS response on client side
         ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userClientPair, ticketWrapperSessionKeyPair.getSessionKey(), ticketSessionKeyWrapper);
-//        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-//        byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         // init SS request on client side
         TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(ticketWrapperSessionKeyPair.getSessionKey(), ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper());
 
         LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
                 .setId(MockClientStore.USER_ID)
-                .setOldCredentials(ByteString.copyFrom(MockCredentialStore.USER_PASSWORD_HASH))
-                .setNewCredentials(ByteString.copyFrom(EncryptionHelper.hash("newPassword")))
-                .setSymmetric(true)
+                .setOldCredentials(currentCredentials.getCredentials())
+                .setNewCredentials(newCredentials.getCredentials())
+                .setSymmetric(newCredentials.getSymmetric())
                 .build();
 
         AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(EncryptionHelper.encryptSymmetric(loginCredentialsChange, ticketWrapperSessionKeyPair.getSessionKey()))
@@ -188,7 +182,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
 
         // Trying to change the admin's password with a normal user. This should not work.
         UserClientPair userClientPair = UserClientPair.newBuilder().setUserId(MockCredentialStore.USER_ID).build();
-        final LoginCredentials userCredentials = LoginCredentials.newBuilder().setSymmetric(true).setCredentials(ByteString.copyFrom(MockCredentialStore.USER_PASSWORD_HASH)).build();
+        final LoginCredentials userCredentials = MockCredentialStore.getInstance().getCredentials(MockCredentialStore.USER_ID);
 
         // handle KDC request on server side
         TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userClientPair).get();

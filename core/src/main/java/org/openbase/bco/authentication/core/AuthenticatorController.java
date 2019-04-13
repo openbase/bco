@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -33,11 +33,11 @@ import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBLocalServer;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -243,6 +243,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     clientCredentials = credentialStore.getCredentials(userClientPair.getClientId());
                 }
 
+                LOGGER.warn("Pair {}", userClientPair);
+                LOGGER.warn("Encrypt with user {} and client {}", userCredentials, clientCredentials);
+
                 // handle request
                 return AuthenticationServerHandler.handleKDCRequest(userClientPair, userCredentials, clientCredentials, ticketGrantingServiceSecretKey, ticketValidityTime);
             } catch (NotAvailableException ex) {
@@ -333,18 +336,18 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             final UserClientPair userClientPair = authenticationBaseData.getUserClientPair();
             // validate permissions to change credentials
             boolean isAdmin = credentialStore.isAdmin(userClientPair.getUserId());
+
             if (!isAdmin) {
                 // user is not admin, so verify that new credentials are either for logged in client or user
-                if (!userClientPair.getUserId().isEmpty() && !userClientPair.getUserId().equals(loginCredentialsChange.getId())) {
-                    if (!userClientPair.getClientId().isEmpty() && !userClientPair.getClientId().equals(loginCredentialsChange.getId())) {
-                        // invalid id so reject change
-                        throw new RejectedException("UserClientPair[" + userClientPair + "] cannot change password of user or client[" + loginCredentialsChange.getId() + "]");
-                    }
+                boolean userIdMatches = userClientPair.getUserId().equals(loginCredentialsChange.getId()) && !userClientPair.getUserId().isEmpty();
+                boolean clientIdMatches = userClientPair.getClientId().equals(loginCredentialsChange.getId()) && !userClientPair.getClientId().isEmpty();
+                if (!userIdMatches && !clientIdMatches) {
+                    // neither user id nor client id match so reject
+                    throw new RejectedException("UserClientPair[" + userClientPair + "] cannot change password of user or client[" + loginCredentialsChange.getId() + "]");
                 }
             }
 
-            // check that user is either an admin or provided the old credentials correctly
-            if (!isAdmin && credentialStore.getCredentials(loginCredentialsChange.getId()).getCredentials().equals(loginCredentialsChange.getOldCredentials())) {
+            if (!isAdmin && !credentialStore.getCredentials(loginCredentialsChange.getId()).getCredentials().equals(loginCredentialsChange.getOldCredentials())) {
                 throw new RejectedException("Old credentials do not match");
             }
 
@@ -376,8 +379,14 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     throw new RejectedException("Cannot register first user, id and/or new credentials empty");
                 }
 
-                // make sure first user is admin
-                final LoginCredentials adminCredentials = loginCredentials.toBuilder().setAdmin(true).build();
+                // create credentials for initial user by copying id and symmetric field
+                // making sure she/he is an admin and decrypting the credentials with the initial password
+                final LoginCredentials adminCredentials = LoginCredentials.newBuilder()
+                        .setId(loginCredentials.getId())
+                        .setAdmin(true)
+                        .setSymmetric(loginCredentials.getSymmetric())
+                        .setCredentials(ByteString.copyFrom(EncryptionHelper.decryptSymmetric(loginCredentials.getCredentials(), EncryptionHelper.hash(initialPassword), byte[].class)))
+                        .build();
                 // save credentials
                 credentialStore.addEntry(loginCredentials.getId(), adminCredentials);
 
@@ -397,6 +406,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 throw new CouldNotPerformException("You cannot register an existing user.");
             }
 
+            LOGGER.warn("Register with credentials:\n{}", loginCredentials);
+
             // register
             credentialStore.addEntry(loginCredentials.getId(), loginCredentials);
 
@@ -414,26 +425,23 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
      */
     @Override
     public Future<AuthenticatedValue> removeUser(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, getTicketValidator(), new InternalIdentifiedProcessable<String, Serializable>() {
-            @Override
-            public Serializable process(String id, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
-                // validate that either a user/client removes itself or an admin is responsible
-                if (credentialStore.isAdmin(authenticationBaseData.getUserClientPair().getUserId())) {
-                    // if admin should be removed make sure that it is not
-                    if (credentialStore.getAdminCount() <= 1) {
-                        throw new PermissionDeniedException("The last admin cannot remove itself");
-                    }
-                } else {
-                    // validate that non-admins only try to remove themselves
-                    if (!id.equals(authenticationBaseData.getUserClientPair().getUserId()) || !id.equals(authenticationBaseData.getUserClientPair().getClientId())) {
-                        throw new PermissionDeniedException("You are not allowed to perform this action");
-                    }
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, String.class, getTicketValidator(), (InternalIdentifiedProcessable<String, Serializable>) (idToBeRemoved, authenticationBaseData) -> {
+
+            // if the user which is logged in differs from the user to be removed the logged in user has to be an admin
+            if (!idToBeRemoved.equals(authenticationBaseData.getUserClientPair().getUserId())) {
+                if (!credentialStore.isAdmin(authenticationBaseData.getUserClientPair().getUserId())) {
+                    throw new PermissionDeniedException("You are not allowed to perform this action");
                 }
-
-                credentialStore.removeEntry(id);
-
-                return id;
             }
+
+            // make sure that if an admin is removed it it not the last one
+            if (credentialStore.isAdmin(idToBeRemoved) && credentialStore.getAdminCount() <= 1) {
+                throw new PermissionDeniedException("The last admin cannot remove itself");
+            }
+
+            // remove user and return id
+            credentialStore.removeEntry(idToBeRemoved);
+            return idToBeRemoved;
         }));
     }
 
@@ -446,25 +454,22 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
      */
     @Override
     public Future<AuthenticatedValue> setAdministrator(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, LoginCredentials.class, getTicketValidator(), new InternalIdentifiedProcessable<LoginCredentials, Serializable>() {
-            @Override
-            public Serializable process(LoginCredentials loginCredentials, AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
-                // only admins can change admin flags
-                if (!credentialStore.isAdmin(loginCredentials.getId())) {
-                    throw new PermissionDeniedException("You are not permitted to perform this action.");
-                }
-
-                // don't allow administrators to change administrator status of themselves
-                // this ensures that at least one admin will stay in the system
-                if (authenticationBaseData.getUserClientPair().getUserId().equals(loginCredentials.getId())) {
-                    throw new CouldNotPerformException("Admin status can only be revoked by another admin.");
-                }
-
-                // update admin flag
-                credentialStore.addEntry(loginCredentials.getId(), credentialStore.getCredentials(loginCredentials.getId()).toBuilder().setAdmin(loginCredentials.getAdmin()).build());
-
-                return loginCredentials;
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, LoginCredentials.class, getTicketValidator(), (InternalIdentifiedProcessable<LoginCredentials, Serializable>) (loginCredentials, authenticationBaseData) -> {
+            // only admins can change admin flags
+            if (!credentialStore.isAdmin(authenticationBaseData.getUserClientPair().getUserId())) {
+                throw new PermissionDeniedException("You are not permitted to perform this action.");
             }
+
+            // don't allow administrators to change administrator status of themselves
+            // this ensures that at least one admin will stay in the system
+            if (authenticationBaseData.getUserClientPair().getUserId().equals(loginCredentials.getId())) {
+                throw new CouldNotPerformException("Admin status can only be revoked by another admin.");
+            }
+
+            // update admin flag
+            credentialStore.addEntry(loginCredentials.getId(), credentialStore.getCredentials(loginCredentials.getId()).toBuilder().setAdmin(loginCredentials.getAdmin()).build());
+
+            return loginCredentials;
         }));
     }
 
