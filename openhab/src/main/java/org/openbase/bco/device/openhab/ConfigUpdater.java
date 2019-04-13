@@ -22,8 +22,8 @@ package org.openbase.bco.device.openhab;
  * #L%
  */
 
-import org.openbase.bco.device.openhab.registry.synchronizer.SynchronizationProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.device.openhab.registry.synchronizer.SynchronizationProcessor;
 import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -31,13 +31,13 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.configuration.EntryType.Entry;
 import org.openbase.type.configuration.EntryType.Entry.Builder;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +54,7 @@ public class ConfigUpdater {
     public static void main(String[] args) {
         try {
             Registries.waitForData();
-            SessionManager.getInstance().login(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin");
+            SessionManager.getInstance().loginUser(Registries.getUnitRegistry().getUserUnitIdByUserName("admin"), "admin", true);
 
             final Map<String, List<UnitConfig>> companyDeviceClassMap = new HashMap<>();
             for (final DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
