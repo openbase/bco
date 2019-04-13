@@ -30,6 +30,7 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
@@ -277,8 +278,8 @@ public class AuthorizationHelperTest {
                 .setOwnerPermission(RWX)
                 .setOtherPermission(NONE);
 
-        String user1 = USER_1 + "@" + CLIENT_1;
-        String user2 = USER_2 + "@" + CLIENT_1;
+        final UserClientPair userClientPair1 = UserClientPair.newBuilder().setUserId(USER_1).setClientId(CLIENT_1).build();
+        final UserClientPair userClientPair2 = UserClientPair.newBuilder().setUserId(USER_2).setClientId(CLIENT_1).build();
 
         // No permissions for devices, all permissions for owners: Owner has rights, others don't.
         PermissionConfig.MapFieldEntry.Builder groupsBuilder = PermissionConfig.MapFieldEntry.newBuilder()
@@ -286,12 +287,12 @@ public class AuthorizationHelperTest {
 
         configBuilder.addGroupPermission(0, groupsBuilder);
         UnitConfig unitConfig = unitConfigBuilder.build();
-        assertEquals(true, AuthorizationHelper.canRead(unitConfig, user1, groups, locations));
-        assertEquals(true, AuthorizationHelper.canWrite(unitConfig, user1, groups, locations));
-        assertEquals(true, AuthorizationHelper.canAccess(unitConfig, user1, groups, locations));
-        assertEquals(false, AuthorizationHelper.canRead(unitConfig, user2, groups, locations));
-        assertEquals(false, AuthorizationHelper.canWrite(unitConfig, user2, groups, locations));
-        assertEquals(false, AuthorizationHelper.canAccess(unitConfig, user2, groups, locations));
+        assertEquals(true, AuthorizationHelper.canRead(unitConfig, userClientPair1, groups, locations));
+        assertEquals(true, AuthorizationHelper.canWrite(unitConfig, userClientPair1, groups, locations));
+        assertEquals(true, AuthorizationHelper.canAccess(unitConfig, userClientPair1, groups, locations));
+        assertEquals(false, AuthorizationHelper.canRead(unitConfig, userClientPair2, groups, locations));
+        assertEquals(false, AuthorizationHelper.canWrite(unitConfig, userClientPair2, groups, locations));
+        assertEquals(false, AuthorizationHelper.canAccess(unitConfig, userClientPair2, groups, locations));
 
         // All permissions for devices, all permissions for owners: Owner still has rights, others too.
         groupsBuilder = PermissionConfig.MapFieldEntry.newBuilder()
@@ -299,13 +300,13 @@ public class AuthorizationHelperTest {
 
         configBuilder.setGroupPermission(0, groupsBuilder);
         unitConfig = unitConfigBuilder.build();
-        assertEquals(true, AuthorizationHelper.canRead(unitConfig, user1, groups, locations));
-        assertEquals(true, AuthorizationHelper.canWrite(unitConfig, user1, groups, locations));
-        assertEquals(true, AuthorizationHelper.canAccess(unitConfig, user1, groups, locations));
+        assertEquals(true, AuthorizationHelper.canRead(unitConfig, userClientPair1, groups, locations));
+        assertEquals(true, AuthorizationHelper.canWrite(unitConfig, userClientPair1, groups, locations));
+        assertEquals(true, AuthorizationHelper.canAccess(unitConfig, userClientPair1, groups, locations));
         System.out.println("-------------------------------------------------------------------------------------------");
-        assertEquals(true, AuthorizationHelper.canRead(unitConfig, user2, groups, locations));
-        assertEquals(true, AuthorizationHelper.canWrite(unitConfig, user2, groups, locations));
-        assertEquals(true, AuthorizationHelper.canAccess(unitConfig, user2, groups, locations));
+        assertEquals(true, AuthorizationHelper.canRead(unitConfig, userClientPair2, groups, locations));
+        assertEquals(true, AuthorizationHelper.canWrite(unitConfig, userClientPair2, groups, locations));
+        assertEquals(true, AuthorizationHelper.canAccess(unitConfig, userClientPair2, groups, locations));
     }
 
     @Test
