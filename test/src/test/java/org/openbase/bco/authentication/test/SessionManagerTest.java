@@ -242,7 +242,7 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000, expected = CouldNotPerformException.class)
+    @Test(timeout = 5000, expected = ExecutionException.class)
     public void removeAdminHimself() throws Exception {
         System.out.println("removeAdminHimself");
         SessionManager manager = new SessionManager(clientStore);
@@ -286,7 +286,7 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000, expected = CouldNotPerformException.class)
+    @Test(timeout = 5000, expected = ExecutionException.class)
     public void registerClientAsNonAdmin() throws Exception {
         System.out.println("registerClientAsNonAdmin");
         try {
@@ -327,7 +327,7 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000, expected = CouldNotPerformException.class)
+    @Test(timeout = 5000, expected = ExecutionException.class)
     public void setAdminAsNonAdmin() throws Exception {
         System.out.println("setAdminAsNonAdmin");
         try {
