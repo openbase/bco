@@ -23,13 +23,10 @@ package org.openbase.bco.app.util.launch;
  */
 
 import org.openbase.bco.app.cloudconnector.CloudConnectorRemote;
-import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.lib.CredentialStore;
+import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.DALRemote;
-import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -39,7 +36,6 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Console;
@@ -97,10 +93,10 @@ public class BCOConsole {
             loginLoop:
             while (!Thread.interrupted()) {
 
-                if(!sessionManager.isLoggedIn()) {
+                if (!sessionManager.isLoggedIn()) {
                     System.out.println("Login required");
                     try {
-                        sessionManager.login(Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: ")), new String(console.readPassword("password: ")));
+                        sessionManager.loginUser(Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: ")), new String(console.readPassword("password: ")), false);
                     } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory("Login not possible!", ex, System.err);
                         System.out.println("Please try again...");
@@ -172,7 +168,7 @@ public class BCOConsole {
                                     System.err.println("match failed!");
                                     continue;
                                 }
-                                sessionManager.changePassword(userId, oldPwd, newPwd);
+                                sessionManager.changePassword(userId, oldPwd, newPwd).get();
                                 break;
                             case "cloud connect":
                             case "2":
@@ -209,7 +205,7 @@ public class BCOConsole {
                                     System.err.println("match failed!");
                                     continue;
                                 }
-                                sessionManager.registerUser(Registries.getUnitRegistry().getUserUnitIdByUserName(newUser), newUserPwd, false);
+                                sessionManager.registerUser(Registries.getUnitRegistry().getUserUnitIdByUserName(newUser), newUserPwd, false).get();
                                 break;
                             case "cloud update token":
                             case "6":
@@ -265,7 +261,7 @@ public class BCOConsole {
     private void listUser(final Console console) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         final List<UnitConfig> userUnitConfigs = Registries.getUnitRegistry().getUnitConfigs(UnitType.USER);
         System.out.println("");
-        System.out.println(userUnitConfigs.size()+" user available");
+        System.out.println(userUnitConfigs.size() + " user available");
         System.out.println("");
 
         System.out.println();

@@ -31,24 +31,24 @@ import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,6 +87,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * {@inheritDoc}
      *
      * @param server {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -120,7 +121,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
 
             final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(cloudConnectorUser.getId()).build();
             final SessionManager sessionManager = new SessionManager();
-            sessionManager.login(cloudConnectorUser.getId());
+            sessionManager.loginUser(cloudConnectorUser.getId(), false);
             final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null);
             final String token = new AuthenticatedValueFuture<>(
                     Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
@@ -184,7 +185,9 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * the user id it contains is returned. Else the client part of the authenticated user id is removed.
      *
      * @param authenticationBaseData the data from which the user id is retrieved
+     *
      * @return the id of the authenticated user
+     *
      * @throws CouldNotPerformException if only a client is logged in but no user
      */
     private String retrieveAuthenticatedUserId(final AuthenticationBaseData authenticationBaseData) throws CouldNotPerformException {
@@ -202,6 +205,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -258,6 +262,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -323,6 +328,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -377,6 +383,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
