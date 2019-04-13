@@ -35,14 +35,15 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -153,36 +154,36 @@ public class AuthorizationWithTokenHelper {
             final ServiceType serviceType) throws CouldNotPerformException {
         try {
             // resolve the responsible user
-            String userId;
+            UserClientPair userClientPair;
             if (authenticationBaseData == null) {
                 // authentication data is not given so use null to check for other permissions
-                userId = null;
+                userClientPair = UserClientPair.getDefaultInstance();
             } else {
                 if (authenticationBaseData.getAuthenticationToken() != null) {
                     // authentication token is set so use it as the responsible user
-                    userId = authenticationBaseData.getAuthenticationToken().getUserId() + "@";
+                    userClientPair = UserClientPair.newBuilder().setUserId(authenticationBaseData.getAuthenticationToken().getUserId()).build();
                 } else {
                     // use the user that is authenticated for the request
-                    userId = authenticationBaseData.getUserId();
+                    userClientPair = authenticationBaseData.getUserClientPair();
                 }
             }
 
             // check if authenticated user has needed permissions
-            if (AuthorizationHelper.canDo(unitConfig, userId, unitRegistry.getAuthorizationGroupMap(), unitRegistry.getLocationMap(), permissionType)) {
-                // TODO: resolve correctly if the client is the one providing permissions and set as authorized by
-                // TODO: remove structure of userId@clientId and replace with two different strings
-                return new AuthPair(userId);
+            if (AuthorizationHelper.canDo(unitConfig, userClientPair.getUserId(), unitRegistry.getAuthorizationGroupMap(), unitRegistry.getLocationMap(), permissionType)) {
+                return new AuthPair(userClientPair, userClientPair.getUserId());
+            }
+            if (AuthorizationHelper.canDo(unitConfig, userClientPair.getClientId(), unitRegistry.getAuthorizationGroupMap(), unitRegistry.getLocationMap(), permissionType)) {
+                return new AuthPair(userClientPair, userClientPair.getClientId());
             }
 
             try {
                 // test if user is part of the admin group
-                if (userId != null) {
-                    final ProtocolStringList memberIdList = unitRegistry.getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList();
-                    for (final String id : userId.split("@")) {
-                        if (memberIdList.contains(id)) {
-                            return new AuthPair(userId);
-                        }
-                    }
+                final ProtocolStringList memberIdList = unitRegistry.getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList();
+                if (memberIdList.contains(userClientPair.getUserId())) {
+                    return new AuthPair(userClientPair, userClientPair.getUserId());
+                }
+                if (memberIdList.contains(userClientPair.getClientId())) {
+                    return new AuthPair(userClientPair, userClientPair.getClientId());
                 }
             } catch (NotAvailableException ex) {
                 // continue with the checks, admin group is not available
@@ -195,9 +196,17 @@ public class AuthorizationWithTokenHelper {
                 verifyAuthorizationToken(authorizationToken, unitRegistry);
 
                 // verify if the token grants the necessary permissions
-                return authorizedByToken(authorizationToken, userId, unitConfig, permissionType, unitRegistry, unitType, serviceType);
+                return authorizedByToken(authorizationToken, userClientPair, unitConfig, permissionType, unitRegistry, unitType, serviceType);
             }
-            throw new PermissionDeniedException("User[" + userId + "] " + permissionType.name().toLowerCase() + " permission denied!");
+            String userRepresentation = userClientPair.getUserId();
+            if (!userRepresentation.isEmpty()) {
+                userRepresentation += "@";
+            }
+            userRepresentation += userClientPair.getClientId();
+            if (userRepresentation.isEmpty()) {
+                userRepresentation = "Other";
+            }
+            throw new PermissionDeniedException("User[" + userRepresentation + "] " + permissionType.name().toLowerCase() + " permission denied!");
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not verify permissions for unit[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]", ex);
         }
@@ -205,14 +214,12 @@ public class AuthorizationWithTokenHelper {
 
     private static AuthPair authorizedByToken(
             final AuthorizationToken authorizationToken,
-            final String userId,
+            final UserClientPair userClientPair,
             final UnitConfig unitConfig,
             final PermissionType permissionType,
             final UnitRegistry unitRegistry,
             final UnitType unitType,
             final ServiceType serviceType) throws CouldNotPerformException {
-
-
         // verify if the token grants the necessary permissions
         final TemplateRegistry templateRegistry = CachedTemplateRegistryRemote.getRegistry();
         final Set<PermissionRule> grantingPermissionSet = new HashSet<>();
@@ -244,7 +251,7 @@ public class AuthorizationWithTokenHelper {
         }
 
         // build the auth pair
-        return new AuthPair(userId, authorizationToken.getUserId());
+        return new AuthPair(userClientPair, authorizationToken.getUserId());
     }
 
     private static boolean permitted(final UnitConfig unitConfig,

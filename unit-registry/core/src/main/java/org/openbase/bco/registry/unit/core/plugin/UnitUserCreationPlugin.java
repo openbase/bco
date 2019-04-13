@@ -182,9 +182,16 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
             if (bcoUserId.isEmpty()) {
                 throw new NotAvailableException("BCOUser");
             }
-            SessionManager.getInstance().login(bcoUserId);
+            SessionManager.getInstance().loginClient(bcoUserId, true);
         }
-        SessionManager.getInstance().registerClient(id);
+        try {
+            SessionManager.getInstance().registerClient(id).get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not register user " + id + " because of interruption", ex);
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not register user " + id, ex);
+        }
     }
 
     private static Permission RX_PERMISSION = Permission.newBuilder().setRead(true).setAccess(true).setWrite(false).build();

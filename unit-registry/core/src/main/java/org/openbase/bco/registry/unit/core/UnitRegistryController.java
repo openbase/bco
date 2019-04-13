@@ -60,12 +60,12 @@ import org.openbase.bco.registry.unit.lib.jp.*;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.storage.registry.consistency.TransformationFrameConsistencyHandler;
 import org.openbase.jul.pattern.ListFilter;
@@ -76,6 +76,7 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -519,7 +520,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig)  {
+    public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) {
         return GlobalCachedExecutorService.submit(() -> {
             UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).register(unitConfig);
             return result;
@@ -527,7 +528,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue)  {
+    public Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this, (unitConfig, authenticationBaseData) -> {
                     // find the location the unit will be placed at
                     final UnitConfig location;
@@ -557,7 +558,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             try {
                 return (UnitConfig) registry.getMessage(unitConfigId);
             } catch (CouldNotPerformException ex) {
-                throw new NotAvailableException("UnitConfigId", unitConfigId, new CouldNotPerformException("Lookup via "+registry.getName()+" of id [" + unitConfigId + "] failed!", ex));
+                throw new NotAvailableException("UnitConfigId", unitConfigId, new CouldNotPerformException("Lookup via " + registry.getName() + " of id [" + unitConfigId + "] failed!", ex));
             }
         }
         throw new NotAvailableException("UnitConfigId", unitConfigId, new CouldNotPerformException("None of the unit registries contains an entry with the id [" + unitConfigId + "]"));
@@ -611,7 +612,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Boolean containsUnitConfigById(final String unitConfigId)  {
+    public Boolean containsUnitConfigById(final String unitConfigId) {
         for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
             if (registry.contains(unitConfigId)) {
                 return true;
@@ -621,12 +622,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Boolean containsUnitConfig(final UnitConfig unitConfig)  {
+    public Boolean containsUnitConfig(final UnitConfig unitConfig) {
         return getUnitConfigRegistry(unitConfig.getUnitType()).contains(unitConfig);
     }
 
     @Override
-    public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig)  {
+    public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) {
         return GlobalCachedExecutorService.submit(() -> {
             UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).update(unitConfig);
             return result;
@@ -634,7 +635,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue)  {
+    public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this,
                 (unitConfig, authenticationBaseData) -> {
                     // verify write permissions for the old unit config
@@ -646,7 +647,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig)  {
+    public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) {
         return GlobalCachedExecutorService.submit(() -> {
             UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).remove(unitConfig);
             return result;
@@ -654,7 +655,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue)  {
+    public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UnitConfig.class, this,
                 (unitConfig, authenticationBaseData) -> {
                     // verify write permissions for the old unit config
@@ -720,7 +721,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Boolean isUnitConfigRegistryReadOnly()  {
+    public Boolean isUnitConfigRegistryReadOnly() {
         return unitConfigRegistryList.stream().anyMatch((unitConfigRegistry) -> (unitConfigRegistry.isReadOnly()));
     }
 
@@ -730,7 +731,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @return {@inheritDoc}
      */
     @Override
-    public Boolean isUnitConfigRegistryConsistent()  {
+    public Boolean isUnitConfigRegistryConsistent() {
         return unitConfigRegistryList.stream().anyMatch((unitConfigRegistry) -> (unitConfigRegistry.isConsistent()));
     }
 
@@ -740,7 +741,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @return
      */
     @Override
-    public Boolean isUnitGroupConfigRegistryReadOnly()  {
+    public Boolean isUnitGroupConfigRegistryReadOnly() {
         return unitGroupUnitConfigRegistry.isReadOnly();
     }
 
@@ -750,7 +751,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @return
      */
     @Override
-    public Boolean isUnitGroupConfigRegistryConsistent()  {
+    public Boolean isUnitGroupConfigRegistryConsistent() {
         return unitGroupUnitConfigRegistry.isConsistent();
     }
 
@@ -852,117 +853,117 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Boolean isDalUnitConfigRegistryReadOnly()  {
+    public Boolean isDalUnitConfigRegistryReadOnly() {
         return dalUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isUserUnitRegistryReadOnly()  {
+    public Boolean isUserUnitRegistryReadOnly() {
         return userUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isAuthorizationGroupUnitRegistryReadOnly()  {
+    public Boolean isAuthorizationGroupUnitRegistryReadOnly() {
         return authorizationGroupUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isDeviceUnitRegistryReadOnly()  {
+    public Boolean isDeviceUnitRegistryReadOnly() {
         return deviceUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isUnitGroupUnitRegistryReadOnly()  {
+    public Boolean isUnitGroupUnitRegistryReadOnly() {
         return unitGroupUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isLocationUnitRegistryReadOnly()  {
+    public Boolean isLocationUnitRegistryReadOnly() {
         return locationUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isConnectionUnitRegistryReadOnly()  {
+    public Boolean isConnectionUnitRegistryReadOnly() {
         return connectionUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isAgentUnitRegistryReadOnly()  {
+    public Boolean isAgentUnitRegistryReadOnly() {
         return agentUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isAppUnitRegistryReadOnly()  {
+    public Boolean isAppUnitRegistryReadOnly() {
         return appUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isSceneUnitRegistryReadOnly()  {
+    public Boolean isSceneUnitRegistryReadOnly() {
         return sceneUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isObjectUnitRegistryReadOnly()  {
+    public Boolean isObjectUnitRegistryReadOnly() {
         return objectUnitConfigRegistry.isReadOnly();
     }
 
     @Override
-    public Boolean isDalUnitConfigRegistryConsistent()  {
+    public Boolean isDalUnitConfigRegistryConsistent() {
         return dalUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isUserUnitRegistryConsistent()  {
+    public Boolean isUserUnitRegistryConsistent() {
         return userUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isAuthorizationGroupUnitRegistryConsistent()  {
+    public Boolean isAuthorizationGroupUnitRegistryConsistent() {
         return authorizationGroupUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isDeviceUnitRegistryConsistent()  {
+    public Boolean isDeviceUnitRegistryConsistent() {
         return deviceUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isUnitGroupUnitRegistryConsistent()  {
+    public Boolean isUnitGroupUnitRegistryConsistent() {
         return unitGroupUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isLocationUnitRegistryConsistent()  {
+    public Boolean isLocationUnitRegistryConsistent() {
         return locationUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isConnectionUnitRegistryConsistent()  {
+    public Boolean isConnectionUnitRegistryConsistent() {
         return connectionUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isAgentUnitRegistryConsistent()  {
+    public Boolean isAgentUnitRegistryConsistent() {
         return agentUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isAppUnitRegistryConsistent()  {
+    public Boolean isAppUnitRegistryConsistent() {
         return appUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isSceneUnitRegistryConsistent()  {
+    public Boolean isSceneUnitRegistryConsistent() {
         return sceneUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    public Boolean isObjectUnitRegistryConsistent()  {
+    public Boolean isObjectUnitRegistryConsistent() {
         return objectUnitConfigRegistry.isConsistent();
     }
 
     @Override
-    protected void registerRemoteRegistries()  {
+    protected void registerRemoteRegistries() {
     }
 
     @Override
@@ -978,11 +979,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    protected UnitRegistryData filterDataForUser(final UnitRegistryData.Builder dataBuilder, final String userId) throws CouldNotPerformException {
+    protected UnitRegistryData filterDataForUser(final UnitRegistryData.Builder dataBuilder, final UserClientPair userClientPair) throws CouldNotPerformException {
         // Create a filter which removes all unit configs from a list without read permissions to its location by the user
         final ListFilter<UnitConfig> readFilter = unitConfig -> {
             try {
-                return !AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
+                return !AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userClientPair, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
             } catch (CouldNotPerformException e) {
                 // if id could not resolved, than we filter the element.
                 return true;
@@ -991,7 +992,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         // Create a filter which removes unit ids if the user does not have access permissions for them
         final ListFilter<String> readFilterByUnitId = unitId -> {
             try {
-                return !AuthorizationHelper.canRead(getUnitConfigById(unitId), userId,
+                return !AuthorizationHelper.canRead(getUnitConfigById(unitId), userClientPair,
                         authorizationGroupUnitConfigRegistry.getEntryMap(),
                         locationUnitConfigRegistry.getEntryMap());
             } catch (CouldNotPerformException ex) {
@@ -1086,12 +1087,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
                     // validate that user in token matches the authenticated user, and when not available set it
                     if (authorizationToken.hasUserId() && !authorizationToken.getUserId().isEmpty()) {
-                        if (!authorizationToken.getUserId().equals(authenticationBaseData.getUserId().replace("@", ""))) {
+                        if (!authorizationToken.getUserId().equals(authenticationBaseData.getUserClientPair().getUserId())) {
                             //TODO: maybe this should be possible for admins
-                            throw new RejectedException("Authorized user[" + authenticationBaseData.getUserId() + "] cannot request a token for another user");
+                            throw new RejectedException("Authorized user[" + authenticationBaseData.getUserClientPair().getUserId() + "] cannot request a token for another user");
                         }
                     } else {
-                        authorizationToken.setUserId(authenticationBaseData.getUserId());
+                        authorizationToken.setUserId(authenticationBaseData.getAuthenticationToken().getUserId());
                     }
 
                     internalFuture = requestAuthorizationToken(authorizationToken.build());
@@ -1142,12 +1143,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
                     // validate that user in token matches the authenticated user, and when not available set it
                     if (authenticationToken.hasUserId() && !authenticationToken.getUserId().isEmpty()) {
-                        if (!authenticationToken.getUserId().equals(authenticationBaseData.getUserId().replace("@", ""))) {
+                        if (!authenticationToken.getUserId().equals(authenticationBaseData.getUserClientPair().getUserId())) {
                             //TODO: maybe this should be possible for admins
-                            throw new RejectedException("Authorized user[" + authenticationBaseData.getUserId() + "] cannot request a token for another user");
+                            throw new RejectedException("Authorized user[" + authenticationBaseData.getUserClientPair().getUserId() + "] cannot request a token for another user");
                         }
                     } else {
-                        authenticationToken.setUserId(authenticationBaseData.getUserId());
+                        authenticationToken.setUserId(authenticationBaseData.getUserClientPair().getUserId());
                     }
 
                     internalFuture = requestAuthenticationToken(authenticationToken.build());

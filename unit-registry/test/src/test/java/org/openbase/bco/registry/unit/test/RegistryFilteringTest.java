@@ -80,7 +80,7 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         userConfig.setLastName("Huxohl");
         userConfig.setUserName("LeChuck");
 
-        SessionManager.getInstance().login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
+        SessionManager.getInstance().loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
         try {
             Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get();
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
@@ -173,7 +173,7 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
     @Test(timeout = 10000)
     public void testRequestingAuthorizationToken() throws Exception {
         final String adminUserId = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId();
-        SessionManager.getInstance().login(adminUserId, UserCreationPlugin.ADMIN_PASSWORD);
+        SessionManager.getInstance().loginUser(adminUserId, UserCreationPlugin.ADMIN_PASSWORD, false);
 
         final AuthorizationToken.Builder authorizationToken = AuthorizationToken.newBuilder();
         authorizationToken.setUserId(adminUserId);

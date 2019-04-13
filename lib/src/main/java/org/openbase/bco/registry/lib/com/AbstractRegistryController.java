@@ -26,12 +26,12 @@ import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedControllerServer;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.communication.controller.jp.JPScope;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.pattern.ChangeListener;
@@ -44,6 +44,7 @@ import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.RegistryController;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.communication.ScopeType.Scope;
+import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -502,7 +503,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
 
     @Override
-    protected M filterDataForUser(MB dataBuilder, String userId) throws CouldNotPerformException {
+    protected M filterDataForUser(MB dataBuilder, final UserClientPair userClientPair) throws CouldNotPerformException {
         return (M) dataBuilder.build();
     }
 }
