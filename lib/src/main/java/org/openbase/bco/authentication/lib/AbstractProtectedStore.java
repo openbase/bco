@@ -248,8 +248,8 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
             // test is class is supported on android
             try {
                 PosixFilePermission.class.getSimpleName();
-            } catch (Exception ex) {
-                LoggerFactory.getLogger(AbstractProtectedStore.class).warn("Credential store can not be protected because of missing api support!");
+            } catch (Throwable ex) {
+                LoggerFactory.getLogger(AbstractProtectedStore.class).warn(ex.getClass().getSimpleName() + ": Credential store can not be protected because of missing api support!");
                 return;
             }
 
