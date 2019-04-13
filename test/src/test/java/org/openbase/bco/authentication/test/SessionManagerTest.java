@@ -97,12 +97,12 @@ public class SessionManagerTest extends AuthenticationTest {
         SessionManager manager = new SessionManager(clientStore);
 
         // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // register client
         manager.registerUser("test_user2", "test_password", true);
 
-        manager.login("test_user2", "test_password");
+        manager.loginUser("test_user2", "test_password", false);
     }
 
     /**
@@ -114,7 +114,7 @@ public class SessionManagerTest extends AuthenticationTest {
     public void loginUser() throws Exception {
         System.out.println("loginUser");
         SessionManager manager = new SessionManager(clientStore);
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
     }
 
     /**
@@ -126,8 +126,8 @@ public class SessionManagerTest extends AuthenticationTest {
     public void loginUserThenOtherUser() throws Exception {
         System.out.println("loginUserThenOtherUser");
         SessionManager manager = new SessionManager(clientStore);
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
-        manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
+        manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
     }
 
     /**
@@ -139,7 +139,7 @@ public class SessionManagerTest extends AuthenticationTest {
     public void isLoggedIn() throws Exception {
         System.out.println("isLoggedIn");
         SessionManager manager = new SessionManager(clientStore);
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // user should be authenticated
         assertEquals(true, manager.isLoggedIn());
@@ -154,7 +154,7 @@ public class SessionManagerTest extends AuthenticationTest {
     public void logout() throws Exception {
         System.out.println("logout");
         SessionManager manager = new SessionManager(clientStore);
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         manager.logout();
         assertEquals(null, manager.getTicketAuthenticatorWrapper());
@@ -172,16 +172,16 @@ public class SessionManagerTest extends AuthenticationTest {
         SessionManager manager = new SessionManager(clientStore);
 
         // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // register client
         manager.registerClient(MockClientStore.CLIENT_ID);
 
         // login client
-        manager.login(MockClientStore.CLIENT_ID);
+        manager.loginClient(MockClientStore.CLIENT_ID, false);
 
         // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // register same client should result in Exception
         ExceptionPrinter.setBeQuit(Boolean.TRUE);
@@ -207,7 +207,7 @@ public class SessionManagerTest extends AuthenticationTest {
         Ticket ticket;
 
         // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
         assertEquals(ticket.getUserClientPair().getUserId(), MockClientStore.ADMIN_ID);
 
@@ -215,12 +215,12 @@ public class SessionManagerTest extends AuthenticationTest {
         manager.registerClient(MockClientStore.CLIENT_ID);
 
         // login client
-        manager.login(MockClientStore.CLIENT_ID);
+        manager.loginClient(MockClientStore.CLIENT_ID, false);
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
         assertEquals(ticket.getUserClientPair().getClientId(), MockClientStore.CLIENT_ID);
 
         // login admin (on the client)
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
         assertEquals(MockClientStore.ADMIN_ID, ticket.getUserClientPair().getUserId());
         assertEquals(MockClientStore.CLIENT_ID, ticket.getUserClientPair().getClientId());
@@ -248,7 +248,7 @@ public class SessionManagerTest extends AuthenticationTest {
         SessionManager manager = new SessionManager(clientStore);
 
         // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
@@ -272,7 +272,7 @@ public class SessionManagerTest extends AuthenticationTest {
         final SessionManager manager = new SessionManager(clientStore);
 
         // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // remove user
         manager.removeUser(MockClientStore.USER_ID);
@@ -294,7 +294,7 @@ public class SessionManagerTest extends AuthenticationTest {
             SessionManager manager = new SessionManager(clientStore);
 
             // login admin
-            manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
+            manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
 
             // register client
             manager.registerClient(MockClientStore.USER_ID);
@@ -314,7 +314,7 @@ public class SessionManagerTest extends AuthenticationTest {
         SessionManager manager = new SessionManager(clientStore);
 
         // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         // register client
         manager.registerUser("test_user", "test_password", false);
@@ -335,7 +335,7 @@ public class SessionManagerTest extends AuthenticationTest {
             SessionManager manager = new SessionManager(clientStore);
 
             // login admin
-            manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
+            manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
 
             // register client
             manager.setAdministrator(MockClientStore.USER_ID, true);
@@ -355,7 +355,7 @@ public class SessionManagerTest extends AuthenticationTest {
         SessionManager manager = new SessionManager(clientStore);
 
         // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
         assertEquals(manager.isAdmin(), true);
     }
@@ -384,7 +384,7 @@ public class SessionManagerTest extends AuthenticationTest {
         SessionManager sessionManager = new SessionManager();
         sessionManager.addLoginObserver(loginObserver);
 
-        sessionManager.login(MockCredentialStore.ADMIN_ID, MockCredentialStore.ADMIN_PASSWORD);
+        sessionManager.loginUser(MockCredentialStore.ADMIN_ID, MockCredentialStore.ADMIN_PASSWORD, false);
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
@@ -392,7 +392,7 @@ public class SessionManagerTest extends AuthenticationTest {
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        sessionManager.login(MockCredentialStore.USER_ID, MockCredentialStore.USER_PASSWORD);
+        sessionManager.loginUser(MockCredentialStore.USER_ID, MockCredentialStore.USER_PASSWORD, false);
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }

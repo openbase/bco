@@ -243,9 +243,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     clientCredentials = credentialStore.getCredentials(userClientPair.getClientId());
                 }
 
-                LOGGER.warn("Pair {}", userClientPair);
-                LOGGER.warn("Encrypt with user {} and client {}", userCredentials, clientCredentials);
-
                 // handle request
                 return AuthenticationServerHandler.handleKDCRequest(userClientPair, userCredentials, clientCredentials, ticketGrantingServiceSecretKey, ticketValidityTime);
             } catch (NotAvailableException ex) {
@@ -405,8 +402,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             if (credentialStore.hasEntry(loginCredentials.getId())) {
                 throw new CouldNotPerformException("You cannot register an existing user.");
             }
-
-            LOGGER.warn("Register with credentials:\n{}", loginCredentials);
 
             // register
             credentialStore.addEntry(loginCredentials.getId(), loginCredentials);

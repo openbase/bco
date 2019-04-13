@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -36,7 +36,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.LoginCredentialsType;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -136,7 +135,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         assertTrue(!remoteService.getData().getAgentUnitConfigList().contains(userAgentConfig.build()));
 
         LOGGER.info("Login!");
-        SessionManager.getInstance().login(USER_ID, USER_PASSWORD);
+        SessionManager.getInstance().loginUser(USER_ID, USER_PASSWORD, false);
         LOGGER.info("Synchronize remote...");
         remoteService.requestData().get();
         LOGGER.info("Synchronizing remote finished!");
@@ -182,11 +181,17 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         }
 
         private boolean canRead(final UnitConfig unitConfig, final UserClientPair userClientPair) {
-            if (userClientPair == null || !userClientPair.getClientId().equals(unitConfig.getPermissionConfig().getOwnerId())) {
+            if (userClientPair == null) {
                 return unitConfig.getPermissionConfig().getOtherPermission().getRead();
-            } else {
+            }
+
+            final boolean matchesUser = userClientPair.getUserId().equals(unitConfig.getPermissionConfig().getOwnerId()) && !userClientPair.getUserId().isEmpty();
+            final boolean matchesClient = userClientPair.getClientId().equals(unitConfig.getPermissionConfig().getOwnerId()) && !userClientPair.getClientId().isEmpty();
+
+            if (matchesUser || matchesClient) {
                 return unitConfig.getPermissionConfig().getOwnerPermission().getRead() || unitConfig.getPermissionConfig().getOtherPermission().getRead();
             }
+            return unitConfig.getPermissionConfig().getOtherPermission().getRead();
         }
 
         @Override

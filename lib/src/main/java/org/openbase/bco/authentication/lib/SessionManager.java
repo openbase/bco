@@ -51,7 +51,6 @@ import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPai
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -218,88 +217,89 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * Perform a login for a given userId and password.
+     * Login a user. If a client is already logged in the user will be logged in on top of the client.
+     * This method only works if the credentials for the user are stored by the session manager. To do this
+     * have a look at {@link #storeCredentials(String, LoginCredentials)}.
      *
-     * @param userId   identifier of the user
-     * @param password password of the user
+     * @param id           the id of the user to be logged in.
+     * @param stayLoggedIn if the ticket of the user is automatically extended before it expires.
      *
-     * @throws CouldNotPerformException if the user could not be logged in using the password
+     * @throws CouldNotPerformException if logging in fails.
      */
-    public synchronized void login(final String userId, final String password) throws CouldNotPerformException {
-        login(userId, password, false);
-    }
-
-    public synchronized void loginClient(final String clientId, final String credentialsUTF8) throws CouldNotPerformException {
-        internalLogin(clientId, LoginCredentials.newBuilder().setCredentials(ByteString.copyFrom(credentialsUTF8, StandardCharsets.UTF_8)).setSymmetric(false).build(), true, false);
-    }
-
-    /**
-     * Perform a login for a given userId and password.
-     *
-     * @param userId       identifier of the user
-     * @param password     password of the user
-     * @param stayLoggedIn flag determining if the session should automatically be renewed before it times out
-     *
-     * @throws CouldNotPerformException if the user could not be logged in with the given password
-     */
-    public synchronized void login(final String userId, final String password, final boolean stayLoggedIn) throws CouldNotPerformException {
-        login(userId, password, stayLoggedIn, false);
+    public synchronized void loginUser(final String id, final boolean stayLoggedIn) throws CouldNotPerformException {
+        loginUser(id, credentialStore.getCredentials(id), stayLoggedIn);
     }
 
     /**
-     * Perform a login for a given userId and password.
+     * Login a user with a password. The password is hashed and used for symmetric encryption.
+     * If a client is already logged in the user will be logged in on top of the client.
      *
-     * @param userId           identifier of the user
-     * @param password         password of the user
-     * @param stayLoggedIn     flag determining if the session should automatically be renewed before it times out
-     * @param rememberPassword flag determining if the users password should be saved in the credential store. If this is
-     *                         done the user can afterwards login just using his id.
+     * @param id           the id of the user to be logged in.
+     * @param password     the password used as credentials.
+     * @param stayLoggedIn if the ticket of the user is automatically extended before it expires.
      *
-     * @throws CouldNotPerformException if the user could not be logged in with the given password
+     * @throws CouldNotPerformException if logging in fails.
      */
-    public synchronized void login(final String userId, final String password, final boolean stayLoggedIn, final boolean rememberPassword) throws CouldNotPerformException {
-        final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(userId).setCredentials(ByteString.copyFrom(EncryptionHelper.hash(password))).setSymmetric(true).build();
-        if (rememberPassword) {
-            credentialStore.addEntry(userId, loginCredentials);
-        }
-        internalLogin(userId, loginCredentials, stayLoggedIn, true);
+    public synchronized void loginUser(final String id, final String password, final boolean stayLoggedIn) throws CouldNotPerformException {
+        final LoginCredentials credentials = LoginCredentials.newBuilder().setId(id).setSymmetric(true)
+                .setCredentials(ByteString.copyFrom(EncryptionHelper.hash(password))).build();
+        loginUser(id, credentials, stayLoggedIn);
     }
 
     /**
-     * Perform a login for a given user or client by id.
+     * Login a user. If a client is already logged in the user will be logged in on top of the client.
      *
-     * @param clientIdOrUserId identifier of the user or client
+     * @param id           the id of the user to be logged in.
+     * @param credentials  the credentials of the user.
+     * @param stayLoggedIn if the ticket of the user is automatically extended before it expires.
      *
-     * @throws NotAvailableException    if no entry for an according client or user could be found in the store
-     * @throws CouldNotPerformException if logging in failed
+     * @throws CouldNotPerformException if logging in fails.
      */
-    public synchronized void login(final String clientIdOrUserId) throws CouldNotPerformException, NotAvailableException {
-        login(clientIdOrUserId, false);
+    public synchronized void loginUser(final String id, final LoginCredentials credentials, final boolean stayLoggedIn) throws CouldNotPerformException {
+        internalLogin(id, credentials, stayLoggedIn, true);
     }
 
     /**
-     * Perform a login for a given user or client by id.
+     * Login a client. If a user is already logged in the user will be logged out.
+     * This method only works if the credentials for the client are stored by the session manager. To do this
+     * have a look at {@link #storeCredentials(String, LoginCredentials)}.
      *
-     * @param clientIdOrUserId identifier of the user or client
-     * @param stayLoggedIn     flag determining if the session should be automatically renewed. This is only necessary for users
-     *                         because its default behaviour for clients.
+     * @param id           the id of the client to be logged in.
+     * @param stayLoggedIn if the ticket of the client is automatically extended before it expires.
      *
-     * @throws NotAvailableException    if no entry for an according client or user could be found in the store
-     * @throws CouldNotPerformException if logging in failed
+     * @throws CouldNotPerformException if logging in fails.
      */
-    public synchronized void login(final String clientIdOrUserId, final boolean stayLoggedIn) throws CouldNotPerformException, NotAvailableException {
-        boolean isUser;
-        LoginCredentials credentials;
-        if (credentialStore.hasEntry(clientIdOrUserId)) {
-            isUser = true;
-            credentials = credentialStore.getCredentials(clientIdOrUserId);
-        } else if (credentialStore.hasEntry("@" + clientIdOrUserId)) {
-            isUser = false;
-            credentials = credentialStore.getCredentials("@" + clientIdOrUserId);
-        } else {
-            throw new NotAvailableException("User or client with id[" + clientIdOrUserId + "]");
-        }
-        this.internalLogin(clientIdOrUserId, credentials, stayLoggedIn, isUser);
+    public synchronized void loginClient(final String id, final boolean stayLoggedIn) throws CouldNotPerformException {
+        loginClient(id, credentialStore.getCredentials(id), stayLoggedIn);
+    }
+
+    /**
+     * Login a client with a password. The password is hashed and used for symmetric encryption.
+     * If a user is already logged in the user will be logged out.
+     *
+     * @param id           the id of the client to be logged in.
+     * @param password     the password used as credentials.
+     * @param stayLoggedIn if the ticket of the client is automatically extended before it expires.
+     *
+     * @throws CouldNotPerformException if logging in fails.
+     */
+    public synchronized void loginClient(final String id, final String password, final boolean stayLoggedIn) throws CouldNotPerformException {
+        final LoginCredentials credentials = LoginCredentials.newBuilder().setId(id).setSymmetric(true)
+                .setCredentials(ByteString.copyFrom(EncryptionHelper.hash(password))).build();
+        loginClient(id, credentials, stayLoggedIn);
+    }
+
+    /**
+     * Login a client. If a user is already logged in the user will be logged out.
+     *
+     * @param id           the id of the client to be logged in.
+     * @param credentials  the credentials of the client.
+     * @param stayLoggedIn if the ticket of the client is automatically extended before it expires.
+     *
+     * @throws CouldNotPerformException if logging in fails.
+     */
+    public synchronized void loginClient(final String id, final LoginCredentials credentials, final boolean stayLoggedIn) throws CouldNotPerformException {
+        internalLogin(id, credentials, stayLoggedIn, false);
     }
 
     /**
@@ -352,7 +352,6 @@ public class SessionManager implements Shutdownable {
         LoginCredentials userCredentials = null;
         LoginCredentials clientCredentials = null;
         if (isUser) {
-            LOGGER.warn("User {} will be logged in with credentials {}", isUser, loginCredentials);
             // user is logged in so the parameters are his credentials
             userCredentials = loginCredentials;
 
@@ -370,8 +369,6 @@ public class SessionManager implements Shutdownable {
             TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(getUserClientPair()).get();
             // handle response
 
-            LOGGER.warn("Pair {}", userClientPair);
-            LOGGER.warn("Decrypt with user {} and client {}", userCredentials, clientCredentials);
             TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(getUserClientPair(), userCredentials, clientCredentials, ticketSessionKeyWrapper);
 
             // request client server ticket
@@ -426,8 +423,9 @@ public class SessionManager implements Shutdownable {
      * If a user is logged in his id will be cleared and if a client was also logged in the client will be logged in again.
      */
     public synchronized void logout() {
+        boolean stayLoggedIn = ticketRenewalTask != null && !ticketRenewalTask.isDone();
         // cancel ticket renewal task
-        if (ticketRenewalTask != null && !ticketRenewalTask.isDone()) {
+        if (stayLoggedIn) {
             ticketRenewalTask.cancel(true);
         }
 
@@ -442,7 +440,7 @@ public class SessionManager implements Shutdownable {
             // if a client was logged in additionally, log him in again
             if (!userClientPair.getClientId().isEmpty()) {
                 try {
-                    login(userClientPair.getClientId());
+                    loginClient(userClientPair.getClientId(), stayLoggedIn);
                     // return because the login notifies observer already
                     return;
                 } catch (CouldNotPerformException ex) {
@@ -590,11 +588,11 @@ public class SessionManager implements Shutdownable {
             if (!userClientPair.getUserId().isEmpty() && credentialStore.hasEntry(userClientPair.getUserId())) {
                 // if user was save in store log him in again, this is valid because logout will login a client
                 // if a user was logged in at a client
-                login(userClientPair.getUserId(), stayLoggedIn);
+                loginUser(userClientPair.getUserId(), stayLoggedIn);
             } else {
                 // user was not logged in so login the client again if possible
                 if (!userClientPair.getClientId().isEmpty() && credentialStore.hasEntry(userClientPair.getClientId())) {
-                    login(userClientPair.getClientId(), stayLoggedIn);
+                    loginClient(userClientPair.getClientId(), stayLoggedIn);
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -684,10 +682,19 @@ public class SessionManager implements Shutdownable {
      * @throws org.openbase.jul.exception.CouldNotPerformException if the client could not registered
      */
     public synchronized void registerClient(final String clientId) throws CouldNotPerformException {
+        // generate key pair
         final KeyPair keyPair = EncryptionHelper.generateKeyPair();
-        final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(clientId).setCredentials(ByteString.copyFrom(keyPair.getPublic().getEncoded())).setSymmetric(false).setAdmin(false).build();
-        this.internalRegister(loginCredentials);
-        this.credentialStore.addEntry(clientId, loginCredentials);
+        // create credentials with public key and upload to authenticator
+        final LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder()
+                .setId(clientId)
+                .setCredentials(ByteString.copyFrom(keyPair.getPublic().getEncoded()))
+                .setSymmetric(false)
+                .setAdmin(false);
+        // register at authenticator
+        this.internalRegister(loginCredentials.build());
+        // for client side storage exchange credentials with private key
+        loginCredentials.setCredentials(ByteString.copyFrom(keyPair.getPrivate().getEncoded()));
+        this.credentialStore.addEntry(clientId, loginCredentials.build());
     }
 
     public synchronized boolean hasCredentialsForId(final String id) {
@@ -707,6 +714,26 @@ public class SessionManager implements Shutdownable {
         byte[] key = EncryptionHelper.hash(password);
         final LoginCredentials loginCredentials = LoginCredentials.newBuilder().setId(userId).setAdmin(isAdmin).setSymmetric(true).setCredentials(ByteString.copyFrom(key)).build();
         this.internalRegister(loginCredentials);
+    }
+
+    /**
+     * Add credentials to the session manager store. This will only succeed if the user/client
+     * for which credentials are added is currently logged in.
+     *
+     * @param id               the id of the user/client for whom credentials are stored.
+     * @param loginCredentials the credentials to be stored.
+     */
+    public synchronized void storeCredentials(final String id, final LoginCredentials loginCredentials) throws CouldNotPerformException {
+        if (isLoggedIn()) {
+            boolean userIdMatches = id.equals(userClientPair.getUserId()) && !userClientPair.getUserId().isEmpty();
+            boolean clientIdMatches = id.equals(userClientPair.getClientId()) && !userClientPair.getClientId().isEmpty();
+            if (userIdMatches || clientIdMatches) {
+                credentialStore.addCredentials(id, loginCredentials.getCredentials().toByteArray(), loginCredentials.getAdmin(), loginCredentials.getSymmetric());
+                return;
+            }
+        }
+
+        throw new CouldNotPerformException("Cannot store credentials for a user who is not logged in!");
     }
 
     /**

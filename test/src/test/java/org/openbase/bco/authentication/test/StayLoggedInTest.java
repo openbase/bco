@@ -71,7 +71,7 @@ public class StayLoggedInTest extends AuthenticationTest {
         // create a new session manager
         SessionManager sessionManager = new SessionManager();
         // login with stay logged in activated
-        sessionManager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, true);
+        sessionManager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, true);
         // wait longer than the session timeout
         Thread.sleep(SESSION_TIMEOUT + 200);
         // perform a request
@@ -79,7 +79,7 @@ public class StayLoggedInTest extends AuthenticationTest {
         CachedAuthenticationRemote.getRemote().validateClientServerTicket(wrapper).get();
 
         // login as a different user without staying logged in
-        sessionManager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
+        sessionManager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
         // wait longer than the session timeout
         Thread.sleep(SESSION_TIMEOUT + 200);
         // perform a request

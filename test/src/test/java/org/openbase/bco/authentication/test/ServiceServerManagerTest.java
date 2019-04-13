@@ -70,7 +70,7 @@ public class ServiceServerManagerTest extends AuthenticationTest {
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
 
 
-        SessionManager.getInstance().login(userId, password);
+        SessionManager.getInstance().loginUser(userId, password, false);
         
         TicketAuthenticatorWrapper request = SessionManager.getInstance().initializeServiceServerRequest();
         TicketAuthenticatorWrapper response = AuthenticatedServerManager.getInstance().verifyClientServerTicket(request).getTicketAuthenticatorWrapper();

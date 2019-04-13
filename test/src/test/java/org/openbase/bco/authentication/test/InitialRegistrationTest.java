@@ -72,7 +72,7 @@ public class InitialRegistrationTest extends AuthenticationTest {
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
 
         // test if login works afterwards
-        SessionManager.getInstance().login(userId, password);
+        SessionManager.getInstance().loginUser(userId, password, false);
         assertTrue("User is not logged in", SessionManager.getInstance().isLoggedIn());
     }
 }

@@ -296,10 +296,9 @@ public class EncryptionHelper {
                     return (T) objectInputStream.readObject();
                 }
             }
-        } catch (NoSuchAlgorithmException | ClassNotFoundException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | InvalidKeySpecException ex) {
-            new FatalImplementationErrorException("Decryption of [" + encryptedObject + "] failed", EncryptionHelper.class, ex);
-            return null;
-        } catch (IOException | BadPaddingException | ClassCastException ex) {
+        } catch (NoSuchAlgorithmException | ClassNotFoundException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException ex) {
+            throw new FatalImplementationErrorException("Decryption of [" + encryptedObject + "] failed", EncryptionHelper.class, ex);
+        } catch (IOException | BadPaddingException | ClassCastException | InvalidKeyException ex) {
             throw new CouldNotPerformException("Could not decrypt byte array to object of type[" + encryptedClass.getName() + "]", ex);
         }
     }
