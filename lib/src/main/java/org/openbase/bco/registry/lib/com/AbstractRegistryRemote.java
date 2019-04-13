@@ -105,9 +105,9 @@ public abstract class AbstractRegistryRemote<M extends Message> extends Abstract
     @Override
     public void shutdown() {
         super.shutdown();
-        remoteRegistries.stream().forEach((remoteRegistry) -> {
+        for (RemoteRegistry remoteRegistry : remoteRegistries) {
             remoteRegistry.shutdown();
-        });
+        }
     }
 
     /**
