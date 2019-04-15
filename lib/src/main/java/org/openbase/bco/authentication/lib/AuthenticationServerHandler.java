@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AuthenticationServerHandler {
 
-    public static final long MAX_TIME_DIFF_SERVER_CLIENT = TimeUnit.MINUTES.toNanos(2);
+    public static final long MAX_TIME_DIFF_SERVER_CLIENT = TimeUnit.MINUTES.toMillis(2);
 
     /**
      * Handles a Key Distribution Center (KDC) login request
@@ -221,8 +221,8 @@ public class AuthenticationServerHandler {
 
         // validate that the timestamp does not differ to much from the time of the server
         final Timestamp currentTime = TimestampProcessor.getCurrentTimestamp();
-        if (authenticator.getTimestamp().getTime() < (currentTime.getTime() - MAX_TIME_DIFF_SERVER_CLIENT) ||
-                authenticator.getTimestamp().getTime() > (currentTime.getTime() + MAX_TIME_DIFF_SERVER_CLIENT)) {
+        if (authenticator.getTimestamp().getTime() < (currentTime.getTime() - TimeUnit.MILLISECONDS.toMicros(MAX_TIME_DIFF_SERVER_CLIENT)) ||
+                authenticator.getTimestamp().getTime() > (currentTime.getTime() + TimeUnit.MILLISECONDS.toMicros(MAX_TIME_DIFF_SERVER_CLIENT))) {
             throw new SessionExpiredException("Request timestamp [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(authenticator.getTimestamp()))) + "]" +
                     "differs more than 2 minutes from server time [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(currentTime))) + "]");
         }
@@ -241,17 +241,17 @@ public class AuthenticationServerHandler {
     }
 
     /**
-     * Generate an interval which begins now and has an end times 15 minutes from now.
+     * Generate an interval which begins now minus acceptable time drift and has an end times of 15 minutes plus acceptable time drift from now.
      *
-     * @param validityTime the time in milli seconds how long  the interval should go from now
+     * @param validityTime the time in milli seconds how long the interval should go from now
      *
      * @return the above described interval
      */
     public static Interval getValidityInterval(final long validityTime) {
         long currentTime = System.currentTimeMillis();
         Interval.Builder validityInterval = Interval.newBuilder();
-        validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
-        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + validityTime));
+        validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime - MAX_TIME_DIFF_SERVER_CLIENT));
+        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + validityTime + MAX_TIME_DIFF_SERVER_CLIENT));
         return validityInterval.build();
     }
 }
