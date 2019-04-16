@@ -59,13 +59,13 @@ jobs:
       script: skip  # skip tests
       deploy:
       - provider: script
-        script: ${AUTO_DEPLOY} && .travis/deploy.sh
+        script: .travis/deploy.sh
         skip_cleanup: true
         on:
             repo: ${REPO_ID}
             branch: master
       - provider: script
-        script: ${AUTO_DEPLOY} && .travis/deploy.sh
+        script: .travis/deploy.sh
         skip_cleanup: true
         on:
             repo: ${REPO_ID}
