@@ -275,7 +275,7 @@ public class AuthenticatedServiceProcessor {
          *
          * @return data comprising all authentication and authorization information.
          *
-         * @throws if the ticket could not be validated.
+         * @throws CouldNotPerformException if the ticket could not be validated.
          */
         AuthenticationBaseData verifyClientServerTicket(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
     }
