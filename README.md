@@ -1,1 +1,3 @@
-docs/README.md
+# Base Cube One
+
+[Project Documentation](https://basecubeone.org)
