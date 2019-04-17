@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.lib;
 
 import com.google.protobuf.ByteString;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
@@ -50,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AuthenticationServerHandler {
 
-    public static final long MAX_TIME_DIFF_SERVER_CLIENT = TimeUnit.MINUTES.toMillis(2);
+    public static final long MAX_TIME_DIFF_SERVER_CLIENT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(1) : TimeUnit.MINUTES.toMillis(2);
 
     /**
      * Handles a Key Distribution Center (KDC) login request

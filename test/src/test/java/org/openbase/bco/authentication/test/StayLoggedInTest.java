@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.test;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
@@ -73,7 +74,7 @@ public class StayLoggedInTest extends AuthenticationTest {
         // login with stay logged in activated
         sessionManager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, true);
         // wait longer than the session timeout
-        Thread.sleep(SESSION_TIMEOUT + 200);
+        Thread.sleep(SESSION_TIMEOUT + AuthenticationServerHandler.MAX_TIME_DIFF_SERVER_CLIENT + 200);
         // perform a request
         TicketAuthenticatorWrapper wrapper = sessionManager.initializeServiceServerRequest();
         CachedAuthenticationRemote.getRemote().validateClientServerTicket(wrapper).get();
@@ -81,7 +82,7 @@ public class StayLoggedInTest extends AuthenticationTest {
         // login as a different user without staying logged in
         sessionManager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
         // wait longer than the session timeout
-        Thread.sleep(SESSION_TIMEOUT + 200);
+        Thread.sleep(SESSION_TIMEOUT + AuthenticationServerHandler.MAX_TIME_DIFF_SERVER_CLIENT + 200);
         // perform a request
         wrapper = sessionManager.initializeServiceServerRequest();
         try {
