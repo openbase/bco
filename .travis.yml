@@ -9,9 +9,8 @@ jdk:
 
 matrix:
   allow_failures:
-  - jdk:
-    - openjdk8
-    - openjdk-ea
+  - jdk: openjdk8
+  - jdk: openjdk-ea
 
 cache:
   directories:
