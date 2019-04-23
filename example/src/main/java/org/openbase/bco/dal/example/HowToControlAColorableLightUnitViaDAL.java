@@ -24,13 +24,17 @@ package org.openbase.bco.dal.example;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.vision.HSBColorType.HSBColor;
+
+import java.util.concurrent.*;
 
 /**
  *
@@ -51,21 +55,30 @@ public class HowToControlAColorableLightUnitViaDAL {
 
         final ColorableLightRemote testLight;
         try {
-            
+
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
 
-            LOGGER.info("request the first light unit with the alias \"ColorableLight-0\"");
+            LOGGER.info("authenticate current session...");
+            BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
 
-            testLight = Units.getUnitByAlias("ColorableLight-0", true, Units.LIGHT_COLORABLE);
+            LOGGER.info("request light unit with alias \"ColorableLight-7\"");
+
+            testLight = Units.getUnitByAlias("ColorableLight-7", true, Units.LIGHT_COLORABLE);
 
             LOGGER.info("switch the light on");
-            testLight.setPowerState(PowerState.State.ON);
+            Future<ActionDescription> actionFuture = testLight.setPowerState(PowerState.State.ON);
+
+            LOGGER.info("wait until action is done...");
+            actionFuture.get(5, TimeUnit.SECONDS);
 
             LOGGER.info("switch light color to red");
-            testLight.setColor(HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build());
+            actionFuture = testLight.setColor(HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build());
 
-        } catch (CouldNotPerformException ex) {
+            LOGGER.info("wait until action is done...");
+            actionFuture.get(5, TimeUnit.SECONDS);
+
+        } catch (CouldNotPerformException | ExecutionException | TimeoutException | CancellationException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
     }

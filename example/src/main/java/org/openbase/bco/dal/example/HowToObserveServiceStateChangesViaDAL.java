@@ -22,10 +22,12 @@ package org.openbase.bco.dal.example;
  * #L%
  */
 import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -52,9 +54,12 @@ public class HowToObserveServiceStateChangesViaDAL {
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
 
+            LOGGER.info("authenticate current session...");
+            BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
+
             LOGGER.info("register observer on all Service[" + serviceType.name() + "] compatible units...");
             for (UnitConfigType.UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByServices(serviceType)) {
-                Units.getUnit(unitConfig, false).addDataObserver((source, data) -> {
+                Units.getUnit(unitConfig, false).addDataObserver(ServiceTempus.CURRENT, (source, data) -> {
                     LOGGER.info("Got Event[" + data + "] of " + source);
                 });
             }

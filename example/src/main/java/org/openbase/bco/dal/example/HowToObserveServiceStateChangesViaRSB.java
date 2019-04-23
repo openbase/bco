@@ -75,7 +75,7 @@ public class HowToObserveServiceStateChangesViaRSB {
             final RemoteServer unitRegistryRemoteServer = Factory.getInstance().createRemoteServer("/registry/unit/ctrl");
             unitRegistryRemoteServer.activate();
 
-            LOGGER.info("request unit confis...");
+            LOGGER.info("request unit configs...");
             final UnitRegistryData unitRegistryData = (UnitRegistryData) unitRegistryRemoteServer.call("requestStatus").getData();
 
             // request and iterate over all unit configs
