@@ -260,7 +260,7 @@ public class BCOVisualRemote extends javax.swing.JFrame {
         JPService.registerProperty(JPProviderControlMode.class);
         JPService.parseAndExitOnError(args);
 
-        BCOLogin.autoLogin(true);
+        BCOLogin.getSession().autoLogin(true);
 
         /* Create and display the form */
         java.awt.EventQueue.invokeAndWait(() -> {

@@ -87,7 +87,7 @@ public class UnitSelectionPane extends AbstractFXController {
 
         try {
             Registries.waitForData();
-            BCOLogin.loginBCOUser();
+            BCOLogin.getSession().loginBCOUser();
             Registries.getTemplateRegistry(false).addDataObserver(dataObserver);
             Registries.getUnitRegistry(false).addDataObserver(dataObserver);
         } catch (CouldNotPerformException ex) {

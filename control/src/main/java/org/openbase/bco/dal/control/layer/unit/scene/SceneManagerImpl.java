@@ -64,7 +64,7 @@ public class SceneManagerImpl implements SceneManager, Launchable<Void>, VoidIni
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        BCOLogin.loginBCOUser();
+        BCOLogin.getSession().loginBCOUser();
         sceneControllerRegistry.activate();
         sceneRegistrySynchronizer.activate();
     }

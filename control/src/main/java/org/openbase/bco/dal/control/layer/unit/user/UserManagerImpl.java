@@ -78,7 +78,7 @@ public class UserManagerImpl implements UserManager, Launchable<Void>, VoidIniti
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        BCOLogin.loginBCOUser();
+        BCOLogin.getSession().loginBCOUser();
 
         userControllerRegistry.activate();
         authorizationGroupControllerRegistry.activate();

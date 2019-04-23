@@ -258,7 +258,7 @@ public class LoginDialog extends javax.swing.JFrame {
             }
 
             if (savePasswordCheckBox.isSelected()) {
-                BCOLogin.setLocalAutoLoginUser(userId);
+                BCOLogin.getSession().setLocalAutoLoginUser(userId);
             }
             statusLabel.setForeground(Color.GREEN.darker().darker().darker());
             statusLabel.setText("Login Successful");

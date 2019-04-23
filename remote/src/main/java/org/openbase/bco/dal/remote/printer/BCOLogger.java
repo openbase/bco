@@ -74,7 +74,7 @@ public class BCOLogger extends UnitStatePrinter {
         LOGGER.info("Start " + APP_NAME + "...");
 
         try {
-            BCOLogin.autoLogin(true);
+            BCOLogin.getSession().autoLogin(true);
             new BCOLogger().init();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
