@@ -62,7 +62,7 @@ public class BCOTrainDataGeneratorLauncher {
         BCO.printLogo();
         JPService.registerProperty(JPProviderControlMode.class, true);
 
-        BCOLogin.autoLogin(true);
+        BCOLogin.getSession().autoLogin(true);
 
         try {
 
