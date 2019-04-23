@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.lib;
 import com.google.protobuf.ByteString;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler.TicketWrapperSessionKeyPair;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
+import org.openbase.bco.authentication.lib.iface.Session;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
@@ -62,7 +63,7 @@ import java.util.regex.Pattern;
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
-public class SessionManager implements Shutdownable {
+public class SessionManager implements Shutdownable, Session {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
     private static final String STORE_FILENAME = "client_credential_store.json";
@@ -218,29 +219,28 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * Login a user. If a client is already logged in the user will be logged in on top of the client.
-     * This method only works if the credentials for the user are stored by the session manager. To do this
-     * have a look at {@link #storeCredentials(String, LoginCredentials)}.
+     * {@inheritDoc}
      *
-     * @param id           the id of the user to be logged in.
-     * @param stayLoggedIn if the ticket of the user is automatically extended before it expires.
+     * @param id           {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
      *
-     * @throws CouldNotPerformException if logging in fails.
+     * @throws CouldNotPerformException {@inheritDoc}
      */
+    @Override
     public synchronized void loginUser(final String id, final boolean stayLoggedIn) throws CouldNotPerformException {
         loginUser(id, credentialStore.getCredentials(id), stayLoggedIn);
     }
 
     /**
-     * Login a user with a password. The password is hashed and used for symmetric encryption.
-     * If a client is already logged in the user will be logged in on top of the client.
+     * {@inheritDoc}
      *
-     * @param id           the id of the user to be logged in.
-     * @param password     the password used as credentials.
-     * @param stayLoggedIn if the ticket of the user is automatically extended before it expires.
+     * @param id           {@inheritDoc}
+     * @param password     {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
      *
-     * @throws CouldNotPerformException if logging in fails.
+     * @throws CouldNotPerformException {@inheritDoc}
      */
+    @Override
     public synchronized void loginUser(final String id, final String password, final boolean stayLoggedIn) throws CouldNotPerformException {
         final LoginCredentials credentials = LoginCredentials.newBuilder().setId(id).setSymmetric(true)
                 .setCredentials(ByteString.copyFrom(EncryptionHelper.hash(password))).build();
@@ -248,42 +248,42 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * Login a user. If a client is already logged in the user will be logged in on top of the client.
+     * {@inheritDoc}
      *
-     * @param id           the id of the user to be logged in.
-     * @param credentials  the credentials of the user.
-     * @param stayLoggedIn if the ticket of the user is automatically extended before it expires.
+     * @param id           {@inheritDoc}
+     * @param credentials  {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
      *
-     * @throws CouldNotPerformException if logging in fails.
+     * @throws CouldNotPerformException {@inheritDoc}
      */
+    @Override
     public synchronized void loginUser(final String id, final LoginCredentials credentials, final boolean stayLoggedIn) throws CouldNotPerformException {
         internalLogin(id, credentials, stayLoggedIn, true);
     }
 
     /**
-     * Login a client. If a user is already logged in the user will be logged out.
-     * This method only works if the credentials for the client are stored by the session manager. To do this
-     * have a look at {@link #storeCredentials(String, LoginCredentials)}.
+     * {@inheritDoc}
      *
-     * @param id           the id of the client to be logged in.
-     * @param stayLoggedIn if the ticket of the client is automatically extended before it expires.
+     * @param id           {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
      *
-     * @throws CouldNotPerformException if logging in fails.
+     * @throws CouldNotPerformException {@inheritDoc}
      */
+    @Override
     public synchronized void loginClient(final String id, final boolean stayLoggedIn) throws CouldNotPerformException {
         loginClient(id, credentialStore.getCredentials(id), stayLoggedIn);
     }
 
     /**
-     * Login a client with a password. The password is hashed and used for symmetric encryption.
-     * If a user is already logged in the user will be logged out.
+     * {@inheritDoc}
      *
-     * @param id           the id of the client to be logged in.
-     * @param password     the password used as credentials.
-     * @param stayLoggedIn if the ticket of the client is automatically extended before it expires.
+     * @param id           {@inheritDoc}
+     * @param password     {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
      *
-     * @throws CouldNotPerformException if logging in fails.
+     * @throws CouldNotPerformException {@inheritDoc}
      */
+    @Override
     public synchronized void loginClient(final String id, final String password, final boolean stayLoggedIn) throws CouldNotPerformException {
         final LoginCredentials credentials = LoginCredentials.newBuilder().setId(id).setSymmetric(true)
                 .setCredentials(ByteString.copyFrom(EncryptionHelper.hash(password))).build();
@@ -291,14 +291,15 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * Login a client. If a user is already logged in the user will be logged out.
+     * {@inheritDoc}
      *
-     * @param id           the id of the client to be logged in.
-     * @param credentials  the credentials of the client.
-     * @param stayLoggedIn if the ticket of the client is automatically extended before it expires.
+     * @param id           {@inheritDoc}
+     * @param credentials  {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
      *
-     * @throws CouldNotPerformException if logging in fails.
+     * @throws CouldNotPerformException {@inheritDoc}
      */
+    @Override
     public synchronized void loginClient(final String id, final LoginCredentials credentials, final boolean stayLoggedIn) throws CouldNotPerformException {
         internalLogin(id, credentials, stayLoggedIn, false);
     }
@@ -308,6 +309,8 @@ public class SessionManager implements Shutdownable {
      *
      * @param id               Identifier of the user or client
      * @param loginCredentials credentials of the user/client to be logged in.
+     * @param stayLoggedIn     flag to keep the user logged in and to auto extend the session if needed.
+     * @param isUser           defines if the given id refers to a user or a client account.
      *
      * @return Returns true if login successful
      *
@@ -420,9 +423,9 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * Logout by canceling the ticket renewal task and clearing the ticket and session key.
-     * If a user is logged in his id will be cleared and if a client was also logged in the client will be logged in again.
+     * {@inheritDoc}
      */
+    @Override
     public synchronized void logout() {
         boolean stayLoggedIn = ticketRenewalTask != null && !ticketRenewalTask.isDone();
         // cancel ticket renewal task
@@ -488,20 +491,21 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * determines if a user is logged in.
-     * does not validate ClientServerTicket and SessionKey
+     * {@inheritDoc}
      *
-     * @return Returns true if logged in otherwise false
+     * @return {@inheritDoc}
      */
+    @Override
     public boolean isLoggedIn() {
         return this.ticketAuthenticatorWrapper != null && this.sessionKey != null;
     }
 
     /**
-     * Determines whether the currently logged in user is an admin.
+     * {@inheritDoc}
      *
-     * @return True if the user is an admin, false if not.
+     * @return {@inheritDoc}
      */
+    @Override
     public synchronized boolean isAdmin() {
         if (!this.isLoggedIn()) {
             return false;
@@ -572,10 +576,11 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * Logout and re-login what is possible while skipping notifications.
+     * {@inheritDoc}
      *
-     * @throws CouldNotPerformException if logging in again fails
+     * @throws CouldNotPerformException {@inheritDoc}
      */
+    @Override
     public synchronized void reLogin() throws CouldNotPerformException {
         // skip notifications
         skipNotification = true;
@@ -690,12 +695,12 @@ public class SessionManager implements Shutdownable {
     }
 
     /**
-     * Add credentials to the session manager store. This will only succeed if the user/client
-     * for which credentials are added is currently logged in.
+     * {@inheritDoc}
      *
-     * @param id               the id of the user/client for whom credentials are stored.
-     * @param loginCredentials the credentials to be stored.
+     * @param id               {@inheritDoc}
+     * @param loginCredentials {@inheritDoc}
      */
+    @Override
     public synchronized void storeCredentials(final String id, final LoginCredentials loginCredentials) throws CouldNotPerformException {
         if (isLoggedIn()) {
             boolean userIdMatches = id.equals(userClientPair.getUserId()) && !userClientPair.getUserId().isEmpty();
@@ -761,6 +766,9 @@ public class SessionManager implements Shutdownable {
         loginObservable.removeObserver(observer);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void shutdown() {
         completeLogout();
