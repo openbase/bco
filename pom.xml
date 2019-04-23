@@ -208,7 +208,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.registry.editor.RegistryEditor</mainClass>
+                            <mainClass>org.openbase.bco.registry.editor.RegistryEditorLauncher</mainClass>
                             <id>bco-registry-editor</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -252,6 +252,13 @@
                         <program>
                             <mainClass>org.openbase.bco.dal.remote.BCORemote</mainClass>
                             <id>bco-remote</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.dal.visual.action.BCOActionInspectorLauncher</mainClass>
+                            <id>bco-action-inspector</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
