@@ -157,6 +157,11 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
+            <artifactId>bco.app.influxdb.connector</artifactId>
+            <version>${dependency.bco.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
             <artifactId>bco.dal.test</artifactId>
             <version>${dependency.bco.dal.version}</version>
             <scope>test</scope>
