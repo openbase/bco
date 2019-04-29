@@ -211,7 +211,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
 
         // set the color of the light
-        final HSBColor hsb = HSBColor.newBuilder().setBrightness(100).setHue(12).setSaturation(100).build();
+        final HSBColor hsb = HSBColor.newBuilder().setBrightness(1.0d).setHue(12).setSaturation(1.0d).build();
         final RemoteAction secondAction = new RemoteAction(colorableLightRemote.setColor(hsb, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         secondAction.waitForExecution();
 
@@ -304,19 +304,19 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         secondaryActionParameter.addCategory(Category.ECONOMY);
         secondaryActionParameter.setSchedulable(true);
         secondaryActionParameter.setInterruptible(true);
-        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(90, secondaryActionParameter.build()));
+        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(0.90d, secondaryActionParameter.build()));
         secondaryAction.waitForExecution();
 
         assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
         assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
         // validate that brightness value was set
-        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        assertEquals(0.90d, colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
 
         // set the brightness state with the admin user to 50 for 500 ms
         final SessionManager sessionManager = new SessionManager();
         sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
-        final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
+        final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(0.5d).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(6000));
         primaryActionParameter.setPriority(Priority.HIGH);
         primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserClientPair().getUserId());
@@ -331,7 +331,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(primaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
         assertEquals(ActionState.State.EXECUTING, primaryAction.getActionState());
         // validate that light brightness was adjusted to 50 percent
-        assertEquals(50, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        assertEquals(0.5d, colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
         // validate that previous action became scheduled
         assertEquals(ActionState.State.SCHEDULED, secondaryAction.getActionState());
 
@@ -350,7 +350,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
         assertEquals(ActionState.State.FINISHED, primaryAction.getActionState());
         // validate that color value was set
-        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        assertEquals(0.9d, colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
 
         // cancel remaining action for the next test
         secondaryAction.cancel().get();
@@ -378,12 +378,12 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
         assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
         // validate that brightness value was set
-        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        assertEquals(0.9d, colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
 
         // set the brightness state with the admin user to 50 for 500 ms
         final SessionManager sessionManager = new SessionManager();
         sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
-        final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(50).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
+        final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(0.5d).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(500));
         primaryActionParameter.setPriority(Priority.HIGH);
         primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserClientPair().getUserId());
@@ -398,7 +398,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(ActionState.State.EXECUTING, primaryAction.getActionState());
 
         // validate that light brightness was adjusted to 50 percent
-        assertEquals(50, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        assertEquals(0.5d, colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
 
         // validate that previous action became scheduled
         assertEquals(ActionState.State.SCHEDULED, secondaryAction.getActionState());
@@ -418,7 +418,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
         assertEquals(ActionState.State.FINISHED, primaryAction.getActionState());
         // validate that color value was set
-        assertEquals(90, colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        assertEquals(0.9d, colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
 
         // cancel remaining action for the next test
         secondaryAction.cancel().get();

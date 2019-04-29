@@ -78,19 +78,19 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetBatteryLevel() throws Exception {
         try {
             System.out.println("getBatteryLevel");
-            double level = 34.0;
+            double level = 0.34d;
             BatteryState state = TimestampProcessor.updateTimestampWithCurrentTime(BatteryState.newBuilder().setLevel(level)).build();
             deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId()).applyDataUpdate(state, ServiceType.BATTERY_STATE_SERVICE);
             batteryRemote.requestData().get();
-            assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
+            assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.001);
             assertEquals("The battery state has not been updated according to the level!", BatteryState.State.OK, batteryRemote.getData().getBatteryState().getValue());
 
             BatteryState lastState = batteryRemote.getBatteryState();
-            level = 9.5;
+            level = 0.095d;
             state = TimestampProcessor.updateTimestampWithCurrentTime(BatteryState.newBuilder().setLevel(level).setValue(State.CRITICAL)).build();
             deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId()).applyDataUpdate(state, ServiceType.BATTERY_STATE_SERVICE);
             batteryRemote.requestData().get();
-            assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
+            assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.001);
             assertEquals("The battery state value has not been updated correctly!", state.getValue(), batteryRemote.getData().getBatteryState().getValue());
             assertEquals("The last battery state has not been updated correctly!", lastState, batteryRemote.getData().getBatteryStateLast());
         } catch (Exception ex) {

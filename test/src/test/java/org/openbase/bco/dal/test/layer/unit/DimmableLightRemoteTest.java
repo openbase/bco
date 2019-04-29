@@ -116,10 +116,10 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
-        Double brightness = 66d;
+        Double brightness = 0.66d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
         Actions.waitForExecution(dimmableLightRemote.setBrightnessState(brightnessState));
-        assertEquals("Brightness has not been set in time!", brightness, dimmableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        assertEquals("Brightness has not been set in time!", brightness, dimmableLightRemote.getBrightnessState().getBrightness(), 0.001);
     }
 
     /**
@@ -131,7 +131,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
 
-        final Double brightness = 70.0d;
+        final Double brightness = 0.70d;
         final BrightnessState.Builder brightnessStateBuilder = BrightnessState.newBuilder().setBrightness(brightness);
         brightnessStateBuilder.setTimestamp(TimestampProcessor.getCurrentTimestamp());
         final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(brightnessStateBuilder.build(), ServiceType.BRIGHTNESS_STATE_SERVICE, dimmableLightRemote);
@@ -143,6 +143,6 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyDataUpdate(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE);
         dimmableLightRemote.requestData().get();
-        assertEquals("Brightness has not been set in time!", brightnessState.getBrightness(), dimmableLightRemote.getBrightnessState().getBrightness(), 0.1);
+        assertEquals("Brightness has not been set in time!", brightnessState.getBrightness(), dimmableLightRemote.getBrightnessState().getBrightness(), 0.001);
     }
 }
