@@ -77,7 +77,7 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final DeviceControllerFactory deviceControllerFactory, final boolean autoLogin) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             if(autoLogin) {
-                BCOLogin.loginBCOUser();
+                BCOLogin.getSession().loginBCOUser();
             }
             DeviceManagerImpl.instance = this;
 

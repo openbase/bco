@@ -24,14 +24,21 @@ package org.openbase.bco.dal.example;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  *
@@ -51,26 +58,34 @@ public class HowToActivateASceneViaDAL {
 
         final SceneRemote testScene;
         try {
-
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
 
-            LOGGER.info("print all scenes");
-            for (UnitConfig sceneUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.SCENE)) {
-                LOGGER.info("found scene: " + sceneUnitConfig.getLabel());
-            }
+            LOGGER.info("authenticate current session...");
+            BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
 
-            LOGGER.info("request the first scene with the label \"WatchingTV\"");
-            if (Units.getUnitsByLabel("WatchingTV", false).isEmpty()) {
-                LOGGER.info("scene not found in your setup!");
+            final List<UnitConfig> sceneUnitConfigList = Registries.getUnitRegistry().getUnitConfigs(UnitType.SCENE);
+
+            if(sceneUnitConfigList.isEmpty()) {
+                LOGGER.warn("No scenes available in your current setup! Please create a new one in order to activate it!");
                 return;
             }
-            testScene = Units.getUnitsByLabel("WatchingTV", true, Units.SCENE).get(0);
+
+            LOGGER.info("print all scenes");
+            for (UnitConfig sceneUnitConfig : sceneUnitConfigList) {
+                LOGGER.info("found Scene[{}] with Alias[{}]", LabelProcessor.getBestMatch(sceneUnitConfig.getLabel()), sceneUnitConfig.getAlias(0));
+            }
+
+            LOGGER.info("request a specific scene via its alias \"Scene-9\"");
+            testScene = Units.getUnitByAlias("Scene-9", true, Units.SCENE);
 
             LOGGER.info("activate the scene");
-            testScene.setActivationState(ActivationState.State.ACTIVE);
+            final Future<ActionDescription> actionFuture = testScene.setActivationState(State.ACTIVE);
 
-        } catch (CouldNotPerformException ex) {
+            LOGGER.info("wait until action is done...");
+            actionFuture.get(5, TimeUnit.SECONDS);
+
+        } catch (CouldNotPerformException | ExecutionException | TimeoutException | CancellationException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
     }

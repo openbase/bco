@@ -65,7 +65,7 @@ public class AgentManagerImpl implements AgentManager, Launchable<Void>, VoidIni
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        BCOLogin.loginBCOUser();
+        BCOLogin.getSession().loginBCOUser();
         agentControllerRegistry.activate();
         agentRegistrySynchronizer.activate();
     }

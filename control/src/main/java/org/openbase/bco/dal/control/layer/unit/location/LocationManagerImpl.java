@@ -91,7 +91,7 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        BCOLogin.loginBCOUser();
+        BCOLogin.getSession().loginBCOUser();
         locationControllerRegistry.activate();
         connectionControllerRegistry.activate();
         unitGroupControllerRegistry.activate();

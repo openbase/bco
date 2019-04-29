@@ -23,9 +23,11 @@ package org.openbase.bco.dal.example;
  */
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -36,9 +38,12 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  * This howto shows how to observe reed contact units at one specific location.
  *
  * Note: This howto requires a running bco platform provided by your network.
- * Note: Please avoid hardcoding location \"scopes\" and \"labels\" because those can be dynamically changed by the end user even during runtime.
+ * Note: Please avoid hardcoding location \"scopes\" and \"labels\" because those can be dynamically changed by the end users during runtime.
  * Note: The command-line tool \"bco-query Location\" will help you to get a list of available locations and there ids in your setup.
  *
+ *
+ * bco-test --provider-control
+ * bco-visual-remote --provider-control
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
@@ -52,12 +57,15 @@ public class HowToObserveLocationSpecificReedContactsViaDAL {
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
 
+            LOGGER.info("authenticate current session...");
+            BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
+
             // choose your location where the reed contacts are placed in.
             final String locationId = Registries.getUnitRegistry().getRootLocationConfig().getId();
 
-            LOGGER.info("register observer on all reed contacts...");
+            LOGGER.info("register observer on all reed contacts to get informed about current data changes...");
             for (UnitConfig reedContactUnitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.REED_CONTACT, locationId)) {
-                Units.getUnit(reedContactUnitConfig, false, Units.REED_CONTACT).addDataObserver((source, data) -> {
+                Units.getUnit(reedContactUnitConfig, false, Units.REED_CONTACT).addDataObserver(ServiceTempus.CURRENT, (source, data) -> {
                     LOGGER.info(source + " changed to " + data.getContactState().getValue().name());
                 });
             }

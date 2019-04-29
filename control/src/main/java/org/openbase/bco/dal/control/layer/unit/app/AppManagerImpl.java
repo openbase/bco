@@ -69,7 +69,7 @@ public class AppManagerImpl implements AppManager, Launchable<Void>, VoidInitial
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        BCOLogin.loginBCOUser();
+        BCOLogin.getSession().loginBCOUser();
         appControllerRegistry.activate();
         appRegistrySynchronizer.activate();
     }
