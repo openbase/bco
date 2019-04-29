@@ -32,12 +32,12 @@ import org.openbase.type.domotic.state.SmokeStateType.SmokeState.State;
  */
 public class SmokeStateDecimalTypeTransformer implements ServiceStateCommandTransformer<SmokeState, DecimalType> {
 
-    //TODO: check if the values from openhab match this transofrmation
+    //TODO: check if the values from openhab match this transformation
     @Override
     public SmokeState transform(final DecimalType decimalType) throws CouldNotTransformException {
         SmokeState.Builder smokeState = SmokeState.newBuilder();
         try {
-            smokeState.setSmokeLevel(decimalType.doubleValue());
+            smokeState.setSmokeLevel(decimalType.doubleValue() / 100d);
             if (decimalType.intValue() == 0) {
                 smokeState.setValue(State.NO_SMOKE);
             } else if (decimalType.intValue() < 20) {
@@ -53,6 +53,6 @@ public class SmokeStateDecimalTypeTransformer implements ServiceStateCommandTran
 
     @Override
     public DecimalType transform(final SmokeState smokeState) {
-        return new DecimalType(smokeState.getSmokeLevel());
+        return new DecimalType(smokeState.getSmokeLevel() * 100d);
     }
 }

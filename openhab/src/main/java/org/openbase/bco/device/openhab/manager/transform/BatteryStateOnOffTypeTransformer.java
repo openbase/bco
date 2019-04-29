@@ -40,9 +40,9 @@ public class BatteryStateOnOffTypeTransformer implements ServiceStateCommandTran
     public BatteryState transform(final OnOffType command) throws CouldNotTransformException, TypeNotSupportedException {
         switch (command) {
             case OFF:
-                return BatteryState.newBuilder().setValue(State.OK).setLevel(100).build();
+                return BatteryState.newBuilder().setValue(State.OK).setLevel(1).build();
             case ON:
-                return BatteryState.newBuilder().setValue(State.CRITICAL).setLevel(5).build();
+                return BatteryState.newBuilder().setValue(State.CRITICAL).setLevel(0.05).build();
             default:
                 throw new TypeNotSupportedException("OnOffType[" + command + "]");
         }

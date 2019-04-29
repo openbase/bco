@@ -29,11 +29,11 @@ public class BlindStatePercentTypeTransformer implements ServiceStateCommandTran
 
     @Override
     public BlindState transform(final PercentType decimalType) {
-        return BlindState.newBuilder().setOpeningRatio(decimalType.doubleValue()).build();
+        return BlindState.newBuilder().setOpeningRatio(decimalType.doubleValue() / 100d).build();
     }
 
     @Override
     public PercentType transform(final BlindState blindState) {
-        return new PercentType((int) blindState.getOpeningRatio());
+        return new PercentType((int) (blindState.getOpeningRatio() * 100d));
     }
 }

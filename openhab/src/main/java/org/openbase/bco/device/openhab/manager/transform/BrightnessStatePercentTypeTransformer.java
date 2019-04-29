@@ -41,7 +41,7 @@ public class BrightnessStatePercentTypeTransformer implements ServiceStateComman
     @Override
     public BrightnessState transform(final PercentType percentType) {
         Builder state = BrightnessState.newBuilder();
-        state.setBrightness(percentType.doubleValue());
+        state.setBrightness(percentType.doubleValue() / 100d);
         return state.build();
     }
 
@@ -54,6 +54,6 @@ public class BrightnessStatePercentTypeTransformer implements ServiceStateComman
      */
     @Override
     public PercentType transform(BrightnessState brightnessState) {
-        return new PercentType((int) brightnessState.getBrightness());
+        return new PercentType((int) (brightnessState.getBrightness() * 100d));
     }
 }

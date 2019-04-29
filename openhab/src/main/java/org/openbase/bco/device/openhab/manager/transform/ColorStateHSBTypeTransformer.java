@@ -40,8 +40,8 @@ public class ColorStateHSBTypeTransformer implements ServiceStateCommandTransfor
             colorState.getColorBuilder().setType(Type.HSB);
             HSBColor.Builder hsbColor = colorState.getColorBuilder().getHsbColorBuilder();
             hsbColor.setHue(hsbType.getHue().doubleValue());
-            hsbColor.setSaturation(hsbType.getSaturation().doubleValue());
-            hsbColor.setBrightness(hsbType.getBrightness().doubleValue());
+            hsbColor.setSaturation(hsbType.getSaturation().doubleValue() / 100d);
+            hsbColor.setBrightness(hsbType.getBrightness().doubleValue() / 100d);
             return colorState.build();
         } catch (Exception ex) {
             throw new CouldNotTransformException("Could not transform " + HSBType.class.getName() + " to " + ColorState.class.getName() + "!", ex);
@@ -58,8 +58,8 @@ public class ColorStateHSBTypeTransformer implements ServiceStateCommandTransfor
                 hsbColor = colorState.getColor().getHsbColor();
             }
             DecimalType hue = new DecimalType(hsbColor.getHue());
-            PercentType saturation = new PercentType((int) hsbColor.getSaturation());
-            PercentType brightness = new PercentType((int) hsbColor.getBrightness());
+            PercentType saturation = new PercentType((int) (hsbColor.getSaturation() * 100d));
+            PercentType brightness = new PercentType((int) (hsbColor.getBrightness() * 100d));
             return new HSBType(hue, saturation, brightness);
         } catch (Exception ex) {
             throw new CouldNotTransformException("Could not transform " + ColorState.class.getName() + " to " + HSBType.class.getName() + "!", ex);
