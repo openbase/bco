@@ -21,12 +21,16 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.schedule.WatchDog.ServiceState;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.state.BlindStateType.BlindState.Builder;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE;
 
@@ -41,24 +45,22 @@ public interface BlindStateProviderService extends ProviderService {
         return (BlindState) getServiceProvider().getServiceState(BLIND_STATE_SERVICE);
     }
 
-    static void verifyBlindState(final BlindState blindState) throws VerificationFailedException {
+    static BlindState verifyBlindState(final BlindState blindState) throws VerificationFailedException {
         try {
+            final Builder builder = blindState.toBuilder();
             if (!(blindState.hasValue() || blindState.hasOpeningRatio())) {
                 throw new VerificationFailedException("MovementState or OpeningRatio not available!", new InvalidStateException(blindState.toString()));
             }
 
-            if (blindState.hasOpeningRatio() && blindState.getOpeningRatio() < 0) {
-                throw new VerificationFailedException("Opening ratio of blind state out of range with value[" + blindState.getOpeningRatio() + "]!", new InvalidStateException(blindState.toString()));
+            if (blindState.hasOpeningRatio()) {
+                builder.setOpeningRatio(ProviderService.oldValueNormalization(builder.getOpeningRatio(), 100));
+                OperationService.verifyValueRange("openingRatio", builder.getOpeningRatio(), 0, 1);
             }
 
             if (blindState.hasValue()) {
-                switch (blindState.getValue()) {
-                    case UNKNOWN:
-                        throw new VerificationFailedException("MovementState unknown!", new InvalidStateException(blindState.toString()));
-                    default:
-                        break;
-                }
+                Services.verifyServiceState(blindState);
             }
+            return builder.build();
         } catch (final CouldNotPerformException ex) {
             throw new VerificationFailedException("BlindState not valid!", ex);
         }

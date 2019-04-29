@@ -70,16 +70,17 @@ public interface ColorStateProviderService extends ProviderService {
     }
 
     static Color verifyColor(final Color color) throws VerificationFailedException {
-        if (color.hasHsbColor()) {
-            verifyHsbColor(color.getHsbColor());
-            if (!color.hasType()) {
-                return color.toBuilder().setType(Type.HSB).build();
+        final Color.Builder colorBuilder = color.toBuilder();
+        if (colorBuilder.hasHsbColor()) {
+            verifyHsbColor(colorBuilder.getHsbColorBuilder());
+            if (!colorBuilder.hasType()) {
+                colorBuilder.setType(Type.HSB).build();
             }
-        } else if (color.hasRgbColor()) {
-            verifyRgbColor(color.getRgbColor());
-            if (color.getType() == Color.Type.RGB) {
+        } else if (colorBuilder.hasRgbColor()) {
+            verifyRgbColor(colorBuilder.getRgbColorBuilder());
+            if (colorBuilder.getType() == Color.Type.RGB) {
                 try {
-                    return color.toBuilder().setHsbColor(HSBColorToRGBColorTransformer.transform(color.getRgbColor())).setType(Type.HSB).build();
+                    colorBuilder.setHsbColor(HSBColorToRGBColorTransformer.transform(colorBuilder.getRgbColor())).setType(Type.HSB).build();
                 } catch (CouldNotTransformException ex) {
                     throw new VerificationFailedException("Could not transform RGB to HSV color!", ex);
                 }
@@ -87,16 +88,18 @@ public interface ColorStateProviderService extends ProviderService {
         } else {
             throw new VerificationFailedException("Could not detect color type!");
         }
-        return color;
+        return colorBuilder.build();
     }
 
-    static void verifyHsbColor(final HSBColor hsbColor) throws VerificationFailedException {
+    static void verifyHsbColor(final HSBColor.Builder hsbColor) throws VerificationFailedException {
         OperationService.verifyValueRange("hue", hsbColor.getHue(), 0, 360);
-        OperationService.verifyValueRange("saturation", hsbColor.getSaturation(), 0, 100);
-        OperationService.verifyValueRange("brightness", hsbColor.getBrightness(), 0, 100);
+        hsbColor.setSaturation(ProviderService.oldValueNormalization(hsbColor.getSaturation(), 100d));
+        OperationService.verifyValueRange("saturation", hsbColor.getSaturation(), 0, 1d);
+        hsbColor.setBrightness(ProviderService.oldValueNormalization(hsbColor.getBrightness(), 100d));
+        OperationService.verifyValueRange("brightness", hsbColor.getBrightness(), 0, 1d);
     }
 
-    static void verifyRgbColor(final RGBColor rgbColor) throws VerificationFailedException {
+    static void verifyRgbColor(final RGBColor.Builder rgbColor) throws VerificationFailedException {
         OperationService.verifyValueRange("red", rgbColor.getRed(), 0, 255);
         OperationService.verifyValueRange("green", rgbColor.getGreen(), 0, 255);
         OperationService.verifyValueRange("blue", rgbColor.getBlue(), 0, 255);

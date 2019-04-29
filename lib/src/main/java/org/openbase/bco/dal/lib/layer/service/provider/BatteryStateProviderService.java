@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
@@ -43,33 +44,31 @@ public interface BatteryStateProviderService extends ProviderService {
     }
 
     static BatteryState verifyBatteryState(BatteryState batteryState) throws VerificationFailedException {
-        batteryState = revalidate(batteryState);
-        Services.verifyServiceState(batteryState);
-        return batteryState;
+        final Builder builder = batteryState.toBuilder();
+        revalidate(builder);
+        Services.verifyServiceState(builder);
+        return builder.build();
     }
 
-    static BatteryState revalidate(BatteryState batteryState) {
-        if (batteryState.hasLevel()) {
-            final Builder batteryStateBuilder = batteryState.toBuilder();
-            if (batteryState.getLevel() <= 5) {
-                batteryStateBuilder.setValue(BatteryState.State.INSUFFICIENT);
-            } else if (batteryState.getLevel() <= 15) {
-                batteryStateBuilder.setValue(BatteryState.State.CRITICAL);
+    static void revalidate(BatteryState.Builder builder) throws VerificationFailedException {
+        if (builder.hasLevel()) {
+            builder.setLevel(ProviderService.oldValueNormalization(builder.getLevel(), 100));
+            OperationService.verifyValueRange("batterylevel", builder.getLevel(), 0, 1d);
+            if (builder.getLevel() <= 0.05d) {
+                builder.setValue(BatteryState.State.INSUFFICIENT);
+            } else if (builder.getLevel() <= 0.15d) {
+                builder.setValue(BatteryState.State.CRITICAL);
             } else {
-                batteryStateBuilder.setValue(BatteryState.State.OK);
+                builder.setValue(BatteryState.State.OK);
             }
-            return batteryStateBuilder.build();
-        } else if (!batteryState.hasLevel() && batteryState.getValue() != BatteryState.State.UNKNOWN) {
-            final Builder batteryStateBuilder = batteryState.toBuilder();
-            if(batteryState.getValue() == BatteryState.State.INSUFFICIENT) {
-                batteryStateBuilder.setLevel(5);
-            }else if(batteryState.getValue() == BatteryState.State.CRITICAL) {
-                batteryStateBuilder.setLevel(15);
-            }else if(batteryState.getValue() == State.OK) {
-                batteryStateBuilder.setLevel(100);
+        } else if (!builder.hasLevel() && builder.getValue() != BatteryState.State.UNKNOWN) {
+            if(builder.getValue() == BatteryState.State.INSUFFICIENT) {
+                builder.setLevel(0.05d);
+            }else if(builder.getValue() == BatteryState.State.CRITICAL) {
+                builder.setLevel(0.15d);
+            }else if(builder.getValue() == State.OK) {
+                builder.setLevel(1.0d);
             }
-            return batteryStateBuilder.build();
         }
-        return batteryState;
     }
 }

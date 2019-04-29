@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -45,5 +46,13 @@ public interface ProviderService extends Service {
      */
     static String getUpdateMethodName(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
         return UPDATE_METHOD_PREFIX + "StateProvider";
+    }
+
+    static double oldValueNormalization(final double value, final double oldMaxValue) {
+        if(value > 1d) {
+            LoggerFactory.getLogger(ProviderService.class).warn("Outdated value found which will be normalized!");
+            return value / oldMaxValue;
+        }
+        return value;
     }
 }

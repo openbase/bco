@@ -476,7 +476,7 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static void verifyServiceState(final Message serviceState) throws VerificationFailedException {
+    public static void verifyServiceState(final MessageOrBuilder serviceState) throws VerificationFailedException {
 
         if (serviceState == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceState"));

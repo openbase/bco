@@ -27,8 +27,10 @@ import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState.Builder;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
+import org.slf4j.LoggerFactory;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
 
@@ -42,16 +44,19 @@ public interface BrightnessStateProviderService extends ProviderService {
         return (BrightnessState) getServiceProvider().getServiceState(BRIGHTNESS_STATE_SERVICE);
     }
 
-    static void verifyBrightnessState(final BrightnessState brightnessState) throws VerificationFailedException {
-        switch (brightnessState.getBrightnessDataUnit()) {
+    static BrightnessState verifyBrightnessState(final BrightnessState brightnessState) throws VerificationFailedException {
+        final Builder builder = brightnessState.toBuilder();
+        switch (builder.getBrightnessDataUnit()) {
             case PERCENT:
-                OperationService.verifyValueRange("brightness", brightnessState.getBrightness(), 0, 100);
+                builder.setBrightness(ProviderService.oldValueNormalization(builder.getBrightness(), 100));
+                OperationService.verifyValueRange("brightness", builder.getBrightness(), 0, 1);
                 break;
             case UNKNOWN:
                 throw new VerificationFailedException("BrightnessState data unit unknown!");
             default:
                 break;
         }
+        return builder.build();
     }
 
     static PowerState toPowerState(final BrightnessState brightnessState) {

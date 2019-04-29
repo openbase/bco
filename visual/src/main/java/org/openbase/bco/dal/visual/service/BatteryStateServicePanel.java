@@ -108,7 +108,7 @@ public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateP
     @Override
     protected void updateDynamicComponents() {
         try {
-            batteryLevelBar.setValue((int) getProviderService().getBatteryState().getLevel());
+            batteryLevelBar.setValue((int) getProviderService().getBatteryState().getLevel() * 100);
             batteryLevelBar.setString("Battery Level = " + batteryLevelBar.getValue() + "%");
             switch (getProviderService().getBatteryState().getValue()) {
                 case OK:

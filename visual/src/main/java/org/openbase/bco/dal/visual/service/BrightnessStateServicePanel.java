@@ -155,7 +155,7 @@ public class BrightnessStateServicePanel extends AbstractServicePanel<Brightness
 
     private void brightnessSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_brightnessSliderStateChanged
         try {
-            notifyActionProcessing(getOperationService().setBrightnessState(BrightnessState.newBuilder().setBrightness((double) brightnessSlider.getValue()).build()));
+            notifyActionProcessing(getOperationService().setBrightnessState(BrightnessState.newBuilder().setBrightness(((double) brightnessSlider.getValue()) / 100).build()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set brightness value!", ex), logger);
         }
@@ -174,7 +174,7 @@ public class BrightnessStateServicePanel extends AbstractServicePanel<Brightness
     protected void updateDynamicComponents() {
         if (hasOperationService()) {
             try {
-                brightnessBar.setValue((int) getProviderService().getBrightnessState().getBrightness());
+                brightnessBar.setValue((int) (getProviderService().getBrightnessState().getBrightness() * 100d));
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
@@ -185,7 +185,7 @@ public class BrightnessStateServicePanel extends AbstractServicePanel<Brightness
 
         if (hasProviderService()) {
             try {
-                Double brightness = getProviderService().getBrightnessState().getBrightness();
+                double brightness = getProviderService().getBrightnessState().getBrightness();
 
                 if (brightness < 0) {
                     brightnessLevelLabel.setForeground(Color.WHITE);
@@ -194,13 +194,13 @@ public class BrightnessStateServicePanel extends AbstractServicePanel<Brightness
                     return;
                 }
 
-                if (brightness < 50.0) {
+                if (brightness < 0.5) {
                     brightnessLevelLabel.setForeground(Color.WHITE);
                 } else {
                     brightnessLevelLabel.setForeground(Color.BLACK);
                 }
-                brightnessLevelLabelPanel.setBackground(Color.getHSBColor(0, 0, (float) (brightness / 100.0)));
-                brightnessLevelLabel.setText(numberFormat.format(getProviderService().getBrightnessState().getBrightness()) + "%");
+                brightnessLevelLabelPanel.setBackground(Color.getHSBColor(0, 0, (float) brightness));
+                brightnessLevelLabel.setText(numberFormat.format(getProviderService().getBrightnessState().getBrightness() * 100) + "%");
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
             }

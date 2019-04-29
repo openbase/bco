@@ -177,7 +177,7 @@ public class BlindStateServicePanel extends AbstractServicePanel<BlindStateProvi
     @Override
     protected void updateDynamicComponents() {
         try {
-            openingRatioBar.setValue((int) getProviderService().getBlindState().getOpeningRatio());
+            openingRatioBar.setValue((int) getProviderService().getBlindState().getOpeningRatio() * 100);
             openingRatioBar.setString("Opening Ratio = " + openingRatioBar.getValue() + "%");
             switch (getProviderService().getBlindState().getValue()) {
                 case UP:

@@ -44,7 +44,7 @@ import org.openbase.type.vision.RGBColorType.RGBColor;
 public interface ColorStateOperationService extends OperationService, ColorStateProviderService {
 
     String NEUTRAL_WHITE_KEY = "NEUTRAL_WHITE";
-    HSBColor DEFAULT_NEUTRAL_WHITE = HSBColor.newBuilder().setHue(0).setSaturation(0).setBrightness(80).build();
+    HSBColor DEFAULT_NEUTRAL_WHITE = HSBColor.newBuilder().setHue(0).setSaturation(0).setBrightness(0.8).build();
     Color DEFAULT_NEUTRAL_WHITE_COLOR = Color.newBuilder().setType(Type.HSB).setHsbColor(DEFAULT_NEUTRAL_WHITE).build();
 
     @RPCMethod(legacy = true)
