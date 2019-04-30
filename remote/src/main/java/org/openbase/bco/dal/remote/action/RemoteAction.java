@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -535,7 +535,7 @@ public class RemoteAction implements Action {
                     executionSync.notifyAll();
 
                     // inform about action extension
-                    if(actionExtended) {
+                    if (actionExtended) {
                         synchronized (extensionSync) {
                             extensionSync.notifyAll();
                         }
@@ -627,7 +627,35 @@ public class RemoteAction implements Action {
         }
     }
 
+    /**
+     * This method blocks until the action is executing.
+     * Depending of your execution priority and emphasis category the execution can be delayed for a longer term.
+     * <p>
+     * Note: This can really take some time in case the execution target unit can not directly be allocated.
+     *
+     * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     */
     public void waitForExecution() throws CouldNotPerformException, InterruptedException {
+        waitForExecution(0L, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * This method blocks until the action is executing.
+     * Depending of your execution priority and emphasis category the execution can be delayed for a longer term.
+     * <p>
+     * Note: This can really take some time in case the execution target unit can not directly be allocated.
+     *
+     * @param timeout  the maximal time to wait for the execution.
+     * @param timeUnit the time unit of the timeout.
+     *
+     * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
+     * @throws TimeoutException is thrown in case the timeout is reached.
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     */
+    public void waitForExecution(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final long timestamp = System.currentTimeMillis();
+
         waitForSubmission();
         try {
             if (actionDescription.getIntermediary()) {
@@ -648,7 +676,18 @@ public class RemoteAction implements Action {
                     throw new CouldNotPerformException("Action is done [" + actionDescription + "] but state was never executed");
                 }
 
-                executionSync.wait();
+                // handle waiting without a timeout.
+                if(timeout == 0L) {
+                    executionSync.wait(0L);
+                    continue;
+                }
+
+                // handle waiting with timeout
+                final long timeToWait = timeUnit.toMillis(timeout) - (System.currentTimeMillis() - timestamp);
+                if(timeToWait < 0) {
+                    throw new org.openbase.jul.exception.TimeoutException();
+                }
+                executionSync.wait(timeToWait);
             }
         }
     }

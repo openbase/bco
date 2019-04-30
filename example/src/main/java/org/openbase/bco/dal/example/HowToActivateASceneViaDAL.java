@@ -21,6 +21,7 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -80,12 +81,12 @@ public class HowToActivateASceneViaDAL {
             testScene = Units.getUnitByAlias("Scene-9", true, Units.SCENE);
 
             LOGGER.info("activate the scene");
+
             final Future<ActionDescription> actionFuture = testScene.setActivationState(State.ACTIVE);
 
             LOGGER.info("wait until action is done...");
-            actionFuture.get(5, TimeUnit.SECONDS);
-
-        } catch (CouldNotPerformException | ExecutionException | TimeoutException | CancellationException ex) {
+            new RemoteAction(actionFuture).waitForExecution();
+        } catch (CouldNotPerformException | CancellationException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
     }

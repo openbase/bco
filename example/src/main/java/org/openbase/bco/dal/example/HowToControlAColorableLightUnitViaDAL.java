@@ -21,6 +21,7 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
@@ -29,6 +30,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
@@ -67,18 +69,18 @@ public class HowToControlAColorableLightUnitViaDAL {
             testLight = Units.getUnitByAlias("ColorableLight-7", true, Units.LIGHT_COLORABLE);
 
             LOGGER.info("switch the light on");
-            Future<ActionDescription> actionFuture = testLight.setPowerState(PowerState.State.ON);
+            Future<ActionDescription> actionFuture = testLight.setPowerState(State.ON);
 
             LOGGER.info("wait until action is done...");
-            actionFuture.get(5, TimeUnit.SECONDS);
+            new RemoteAction(actionFuture).waitForExecution(5, TimeUnit.SECONDS);
 
             LOGGER.info("switch light color to red");
-            actionFuture = testLight.setColor(HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build());
+            actionFuture = testLight.setColor(HSBColor.newBuilder().setHue(0).setSaturation(1.0).setBrightness(1.0).build());
 
             LOGGER.info("wait until action is done...");
-            actionFuture.get(5, TimeUnit.SECONDS);
+            new RemoteAction(actionFuture).waitForExecution(5, TimeUnit.SECONDS);
 
-        } catch (CouldNotPerformException | ExecutionException | TimeoutException | CancellationException ex) {
+        } catch (CouldNotPerformException | CancellationException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
     }
