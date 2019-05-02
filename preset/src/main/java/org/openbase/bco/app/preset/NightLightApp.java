@@ -63,7 +63,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class NightLightApp extends AbstractAppController {
 
-    public static final HSBColor COLOR_ORANGE = HSBColor.newBuilder().setHue(30).setSaturation(100).setBrightness(20).build();
+    public static final HSBColor COLOR_ORANGE = HSBColor.newBuilder().setHue(30d).setSaturation(1.0d).setBrightness(0.20d).build();
     private static final Logger LOGGER = LoggerFactory.getLogger(NightLightApp.class);
     private static final String META_CONFIG_KEY_EXCLUDE_LOCATION = "EXCLUDE_LOCATION";
 
@@ -149,9 +149,9 @@ public class NightLightApp extends AbstractAppController {
     }
 
     private static boolean isColorReached(final HSBColor hsbColorA, final HSBColor hsbColorB) {
-        return withinMargin(hsbColorA.getHue(), hsbColorB.getHue(), 10)
-                && withinMargin(hsbColorA.getSaturation(), hsbColorB.getSaturation(), 5)
-                && withinMargin(hsbColorA.getBrightness(), hsbColorB.getBrightness(), 5);
+        return withinMargin(hsbColorA.getHue(), hsbColorB.getHue(), 10d)
+                && withinMargin(hsbColorA.getSaturation(), hsbColorB.getSaturation(), 0.05d)
+                && withinMargin(hsbColorA.getBrightness(), hsbColorB.getBrightness(), 0.05d);
     }
 
     private static boolean withinMargin(double a, double b, double margin) {
