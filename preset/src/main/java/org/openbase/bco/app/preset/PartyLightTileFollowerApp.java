@@ -76,11 +76,11 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
         super.shutdown();
     }
 
-    private double brightness = 50;
+    private double brightness = 0.50d;
     private HSBColor[] colors = {
-            HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(brightness).build(),
-            HSBColor.newBuilder().setHue(290).setSaturation(100).setBrightness(brightness).build(),
-            HSBColor.newBuilder().setHue(30).setSaturation(100).setBrightness(brightness).build(),};
+            HSBColor.newBuilder().setHue(0d).setSaturation(1.0d).setBrightness(brightness).build(),
+            HSBColor.newBuilder().setHue(290d).setSaturation(1.0d).setBrightness(brightness).build(),
+            HSBColor.newBuilder().setHue(30d).setSaturation(1.0d).setBrightness(brightness).build(),};
 
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {

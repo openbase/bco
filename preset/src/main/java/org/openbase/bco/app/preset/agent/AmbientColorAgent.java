@@ -45,6 +45,7 @@ import org.openbase.type.vision.HSBColorType.HSBColor;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
+@Deprecated
 public class AmbientColorAgent extends AbstractAgentController {
 
 //    List<HSVColorType.HSVColor> colorList = new ArrayList<>();

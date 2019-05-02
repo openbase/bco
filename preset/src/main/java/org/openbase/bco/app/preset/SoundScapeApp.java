@@ -41,6 +41,7 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Deprecated
 public class SoundScapeApp extends AbstractAppController {
 
     private enum SoundScape {

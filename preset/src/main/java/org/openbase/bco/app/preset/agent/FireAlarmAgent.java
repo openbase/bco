@@ -33,6 +33,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.state.BlindStateType.BlindState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -87,7 +88,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
 //                ColorState.newBuilder().setColor(color)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
         taskActionDescriptionBlinds =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
                 ServiceType.BLIND_STATE_SERVICE,
-                BlindState.newBuilder().setOpeningRatio(100)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+                BlindState.newBuilder().setOpeningRatio(1d).setValue(State.UP)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
     }
 
     @Override
