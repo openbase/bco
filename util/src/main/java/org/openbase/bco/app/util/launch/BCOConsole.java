@@ -24,9 +24,12 @@ package org.openbase.bco.app.util.launch;
 
 import org.openbase.bco.app.cloudconnector.CloudConnectorRemote;
 import org.openbase.bco.authentication.lib.BCO;
+import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.iface.Session;
 import org.openbase.bco.dal.remote.DALRemote;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -134,6 +137,12 @@ public class BCOConsole {
                     System.out.print("please type a command or its number and press enter: ");
                     try {
                         final String command = console.readLine();
+
+                        // check if session is closed
+                        if(command == null) {
+                            break loginLoop;
+                        }
+
                         System.out.println();
                         switch (command) {
                             case "?":
@@ -168,7 +177,16 @@ public class BCOConsole {
                                     System.err.println("match failed!");
                                     continue;
                                 }
-                                sessionManager.changePassword(userId, oldPwd, newPwd).get();
+
+                                if(CachedAuthenticationRemote.getRemote().hasUser(userId).get(5, TimeUnit.SECONDS)){
+                                    sessionManager.changePassword(userId, oldPwd, newPwd).get(1, TimeUnit.MINUTES);
+                                }else {
+                                    // final UnitConfig adminAuthenticationGroup = Registries.getUnitRegistry().get;
+                                    // final boolean admin = adminAuthenticationGroup.getAuthorizationGroupConfig().getMemberIdList().contains(userId);
+                                    final boolean admin = false;
+                                    sessionManager.registerUser(userId, newPwd, admin).get(1, TimeUnit.MINUTES);
+                                }
+
                                 break;
                             case "cloud connect":
                             case "2":
@@ -197,7 +215,34 @@ public class BCOConsole {
                                 break;
                             case "register user":
                             case "5":
-                                String newUser = console.readLine("user: ");
+
+                                final UnitConfig.Builder userUnitConfigBuilder = UnitConfig.newBuilder().setUnitType(UnitType.USER);
+                                boolean adminFlag = false;
+                                while (true) {
+
+                                    userUnitConfigBuilder.getUserConfigBuilder().setUserName(console.readLine("username: "));
+                                    userUnitConfigBuilder.getUserConfigBuilder().setFirstName(console.readLine("forename: "));
+                                    userUnitConfigBuilder.getUserConfigBuilder().setLastName(console.readLine("surname: "));
+                                    userUnitConfigBuilder.getUserConfigBuilder().setEmail(console.readLine("email: "));
+                                    userUnitConfigBuilder.getUserConfigBuilder().setOccupant(parseConfirmation(console.readLine("is this user an occupant? ")));
+                                    adminFlag = SessionManager.getInstance().isAdmin() && parseConfirmation(console.readLine("should this user get admin privileges?: "));
+                                    System.out.println();
+                                    System.out.println("=============================================");
+                                    System.out.println("username: " + userUnitConfigBuilder.getUserConfig().getUserName());
+                                    System.out.println("forename: " + userUnitConfigBuilder.getUserConfig().getFirstName());
+                                    System.out.println("surname: " + userUnitConfigBuilder.getUserConfig().getLastName());
+                                    System.out.println("email: " + userUnitConfigBuilder.getUserConfig().getEmail());
+                                    System.out.println("occupant: " + (userUnitConfigBuilder.getUserConfig().getOccupant() ? "yes": "no"));
+                                    System.out.println("admin: " + (adminFlag ? "yes": "no"));
+                                    System.out.println("=============================================");
+                                    System.out.println();
+
+                                    if(parseConfirmation(console.readLine("please confirm the entered data: "))) {
+                                        break;
+                                    }
+                                    System.out.println("ok, let`s try again...");
+                                }
+
                                 String newUserPwd = new String(console.readPassword("new password: "));
                                 String newUserPwdConfirm = new String(console.readPassword("confirm new password: "));
                                 System.out.println();
@@ -205,7 +250,10 @@ public class BCOConsole {
                                     System.err.println("match failed!");
                                     continue;
                                 }
-                                sessionManager.registerUser(Registries.getUnitRegistry().getUserUnitIdByUserName(newUser), newUserPwd, false).get();
+
+
+                                UnitConfig userUnitConfig = Registries.getUnitRegistry().registerUnitConfig(userUnitConfigBuilder.build()).get(1, TimeUnit.MINUTES);
+                                sessionManager.registerUser(userUnitConfig.getId(), newUserPwd, adminFlag).get();
                                 break;
                             case "cloud update token":
                             case "6":
@@ -269,6 +317,12 @@ public class BCOConsole {
             System.out.println(userUnitConfig.getUserConfig().getUserName());
         }
         System.out.println();
+    }
+
+    private boolean parseConfirmation(final String userInput) {
+        return userInput.equalsIgnoreCase("y") ||
+                userInput.equalsIgnoreCase("z") ||
+                userInput.equalsIgnoreCase("yes");
     }
 
     public static void main(String[] args) {
