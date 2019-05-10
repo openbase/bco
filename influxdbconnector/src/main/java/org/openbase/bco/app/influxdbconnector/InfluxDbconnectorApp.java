@@ -10,12 +10,12 @@ package org.openbase.bco.app.influxdbconnector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,6 +27,7 @@ import com.google.protobuf.Message;
 import okhttp3.OkHttpClient;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
+import org.influxdb.InfluxDBIOException;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Pong;
 import org.influxdb.dto.Query;
@@ -52,6 +53,7 @@ import org.openbase.type.domotic.unit.UnitConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,46 +74,82 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private Integer batchTime;
     private Integer batchLimit;
     private CustomUnitPool customUnitPool;
+    private String retentionPolicyDuration;
+    private String retentionPolicyName;
     private Observer<ServiceStateProvider<Message>, Message> unitStateObserver;
     private static final Integer READ_TIMEOUT = 60;
     private static final Integer WRITE_TIMEOUT = 60;
     private static final Integer CONNECT_TIMOUT = 40;
+    private static final Integer REPLICATION_FACTOR = 1;
+    private static final Integer MAX_TIMEOUT = 300000;
+    private static final Boolean DEFAULT_RETENTION_POLICY = true;
+    private static final Integer ADDITIONAL_TIMEOUT = 60000;
+    private Integer databaseTimeout = 60000;
 
 
     public InfluxDbconnectorApp() throws InstantiationException {
 
 
-
     }
 
+
     @Override
-    protected ActionDescription execute(ActivationState activationState) throws CouldNotPerformException {
-        try {
-            databaseUrl = generateVariablePool().getValue("INFLUXDB_URL");
-            databaseName = generateVariablePool().getValue("INFLUXDB_NAME");
-            batchTime = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_TIME"));
-            batchLimit = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_LIMIT"));
-        } catch (NotAvailableException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
+    public UnitConfigType.UnitConfig applyConfigUpdate(UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        config = super.applyConfigUpdate(config);
+
+        databaseUrl = generateVariablePool().getValue("INFLUXDB_URL");
+        databaseName = generateVariablePool().getValue("INFLUXDB_NAME");
+        batchTime = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_TIME"));
+        batchLimit = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_LIMIT"));
+        retentionPolicyDuration = generateVariablePool().getValue("INFLUXDB_RETENTION_POLICY_DURATION");
+        retentionPolicyName = generateVariablePool().getValue("INFLUXDB_RETENTION_POLICY_NAME");
+
+        return config;
+    }
 
 
+    @Override
+    protected ActionDescription execute(ActivationState activationState) {
 
         task = GlobalCachedExecutorService.submit(() -> {
-            logger.info("execute influx db connector");
-            try {
-                if (initiateDatabase()) {
+            logger.debug("Execute influx db connector");
+            boolean dbInitiated = false;
 
-                    customUnitPool = new CustomUnitPool();
+            while (!dbInitiated) {
+                try {
+                    connectToDatabase();
+                    dbInitiated = checkConnection();
+                } catch (CouldNotPerformException ex) {
+                    logger.warn("Could not reach influxdb server. Try again in " + databaseTimeout / 1000 + " seconds!");
+                    ExceptionPrinter.printHistory(ex, logger);
 
-                    unitStateObserver = (source, data) -> saveInDB((Unit) source.getServiceProvider(), source.getServiceType(), data);
-
-
-                    init();
+                    try {
+                        Thread.sleep(databaseTimeout);
+                        if (databaseTimeout < MAX_TIMEOUT) databaseTimeout += ADDITIONAL_TIMEOUT;
+                    } catch (InterruptedException exc) {
+                        ExceptionPrinter.printHistory(exc, logger);
+                        Thread.currentThread().interrupt(); // set interrupt flag
+                    }
                 }
 
-            } catch (InstantiationException | InitializationException | InterruptedException ex) {
+
+            }
+            initiateDatabase();
+
+
+            try {
+
+                customUnitPool = new CustomUnitPool();
+
+                unitStateObserver = (source, data) -> saveInDB((Unit) source.getServiceProvider(), source.getServiceType(), data);
+
+
+                init();
+            } catch (InitializationException | InstantiationException ex) {
                 ExceptionPrinter.printHistory(ex, logger);
+            } catch (InterruptedException ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+                Thread.currentThread().interrupt(); // set interrupt flag
             }
 
         });
@@ -166,8 +204,8 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     .addField("unitId", unit.getId())
                     .addField("unitType", unit.getUnitType().name().toLowerCase());
 
-
             for (Map.Entry<String, String> entry : stateValuesMap.entrySet()) {
+                // detect numbers with regex
                 if (entry.getValue().matches("-?\\d+(\\.\\d+)?")) {
                     builder.addField(entry.getKey(), Double.valueOf(entry.getValue()));
 
@@ -248,29 +286,44 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         return stateValues;
     }
 
+    private boolean checkConnection() throws CouldNotPerformException {
 
-    private boolean initiateDatabase() {
-        logger.info("Initiate influxDB");
+        try {
+            Pong response = influxDB.ping();
+
+            if (response.getVersion().equalsIgnoreCase("unknown")) {
+                throw new InitializationException(InfluxDB.class, new CouldNotPerformException("Could not reach influxdb database server!"));
+            }
+            logger.debug("Connected to Influxdb at " + databaseUrl);
+        } catch (InfluxDBIOException ex) {
+            throw new CouldNotPerformException("Could not reach database server!", ex);
+
+
+        }
+        return true;
+    }
+
+    private void connectToDatabase() {
+        logger.debug("Connect to influxDB");
         OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient().newBuilder()
                 .connectTimeout(CONNECT_TIMOUT, TimeUnit.SECONDS)
                 .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
                 .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS);
         influxDB = InfluxDBFactory.connect(databaseUrl, okHttpClientBuilder);
-        influxDB.setLogLevel(InfluxDB.LogLevel.BASIC);
+        // influxDB.setLogLevel(InfluxDB.LogLevel.BASIC);
+
+    }
+
+
+    private void initiateDatabase() {
+
         if (!influxDB.describeDatabases().contains(databaseName)) {
             influxDB.query(new Query("CREATE DATABASE " + databaseName, ""));
         }
         influxDB.createRetentionPolicy(
-                "defaultPolicy", databaseName, "90d", 1, true);
+                retentionPolicyName, databaseName, retentionPolicyDuration, REPLICATION_FACTOR, DEFAULT_RETENTION_POLICY);
         influxDB.enableBatch(batchLimit, batchTime, TimeUnit.MILLISECONDS);
-        influxDB.setRetentionPolicy("defaultPolicy");
+        influxDB.setRetentionPolicy(retentionPolicyName);
         influxDB.setDatabase(databaseName);
-        Pong response = influxDB.ping();
-        if (response.getVersion().equalsIgnoreCase("unknown")) {
-            logger.error("Error pinging influxdb server");
-            return false;
-        }
-        logger.info("Connected to Influxdb at " + databaseUrl);
-        return true;
     }
 }
