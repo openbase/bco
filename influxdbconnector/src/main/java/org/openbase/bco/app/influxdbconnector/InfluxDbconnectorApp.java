@@ -120,7 +120,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     connectToDatabase();
                     dbInitiated = checkConnection();
                 } catch (CouldNotPerformException ex) {
-                    logger.warn("Could not reach influxdb server. Try again in " + databaseTimeout / 1000 + " seconds!");
+                    logger.warn("Could not reach influxdb server at " + databaseUrl + ". Try again in " + databaseTimeout / 1000 + " seconds!");
                     ExceptionPrinter.printHistory(ex, logger);
 
                     try {
@@ -292,11 +292,11 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             Pong response = influxDB.ping();
 
             if (response.getVersion().equalsIgnoreCase("unknown")) {
-                throw new InitializationException(InfluxDB.class, new CouldNotPerformException("Could not reach influxdb database server at " + databaseUrl +"!"));
+                throw new InitializationException(InfluxDB.class, new CouldNotPerformException("Could not reach influxdb database server at " + databaseUrl + "!"));
             }
             logger.debug("Connected to Influxdb at " + databaseUrl);
         } catch (InfluxDBIOException ex) {
-            throw new CouldNotPerformException("Could not reach database server at " + databaseUrl +"!", ex);
+            throw new CouldNotPerformException("Could not reach database server at " + databaseUrl + "!", ex);
 
 
         }
