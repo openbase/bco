@@ -31,10 +31,7 @@ import org.openbase.bco.device.openhab.registry.OpenHABConfigSynchronizerLaunche
 import org.openbase.bco.device.openhab.sitemap.OpenHABSitemapSynchronizerLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBThreadPooling;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
+import org.openbase.jul.extension.rsb.com.jp.*;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDeviceManager> {
@@ -50,6 +47,7 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
         JPService.registerProperty(JPCredentialsDirectory.class);
         JPService.registerProperty(JPRSBHost.class);
         JPService.registerProperty(JPRSBPort.class);
+        JPService.registerProperty(JPRSBLegacyMode.class);
         JPService.registerProperty(JPRSBTransport.class);
         JPService.registerProperty(JPUnitAllocation.class);
         JPService.registerProperty(JPRSBThreadPooling.class);
