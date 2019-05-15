@@ -22,15 +22,18 @@ package org.openbase.bco.app.influxdbconnector;
  * #L%
  */
 
+
+import org.influxdata.client.WriteApi;
+import org.influxdata.client.write.Point;
+import org.influxdata.client.domain.BucketRetentionRules;
+import org.influxdata.client.InfluxDBClient;
+import org.influxdata.client.InfluxDBClientFactory;
+import org.influxdata.client.QueryApi;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import okhttp3.OkHttpClient;
-import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
-import org.influxdb.InfluxDBIOException;
-import org.influxdb.dto.Point;
-import org.influxdb.dto.Pong;
-import org.influxdb.dto.Query;
+import org.influxdata.client.domain.WritePrecision;
+import org.influxdata.client.domain.Bucket;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -53,7 +56,9 @@ import org.openbase.type.domotic.unit.UnitConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.ConnectException;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,11 +75,11 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private Future task;
     private String databaseUrl;
     private String databaseName;
-    private InfluxDB influxDB;
+    private InfluxDBClient influxDBClient;
     private Integer batchTime;
     private Integer batchLimit;
     private CustomUnitPool customUnitPool;
-    private String retentionPolicyDuration;
+    private Integer retentionPolicyDuration;
     private String retentionPolicyName;
     private Observer<ServiceStateProvider<Message>, Message> unitStateObserver;
     private static final Integer READ_TIMEOUT = 60;
@@ -84,7 +89,10 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private static final Integer MAX_TIMEOUT = 300000;
     private static final Boolean DEFAULT_RETENTION_POLICY = true;
     private static final Integer ADDITIONAL_TIMEOUT = 60000;
+    private static final String ORG = "openbase";
     private Integer databaseTimeout = 60000;
+    private Bucket bucket;
+    private char[] token = "L8Z1fNDp5F2dvGbDkgyUgIeqYwi5ot54sCWR5WnCNK9NC5ur-SKYjTCfNSsEIGPeVPxtAtR7quLlsZpjkGYtbA==".toCharArray();
 
 
     public InfluxDbconnectorApp() throws InstantiationException {
@@ -101,7 +109,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         databaseName = generateVariablePool().getValue("INFLUXDB_NAME");
         batchTime = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_TIME"));
         batchLimit = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_LIMIT"));
-        retentionPolicyDuration = generateVariablePool().getValue("INFLUXDB_RETENTION_POLICY_DURATION");
+        retentionPolicyDuration = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_RETENTION_POLICY_DURATION"));
         retentionPolicyName = generateVariablePool().getValue("INFLUXDB_RETENTION_POLICY_NAME");
 
         return config;
@@ -112,13 +120,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected ActionDescription execute(ActivationState activationState) {
 
         task = GlobalCachedExecutorService.submit(() -> {
-            logger.debug("Execute influx db connector");
-            boolean dbInitiated = false;
+            logger.info("Execute influx db connector");
+            boolean dbConnected = false;
 
-            while (!dbInitiated) {
+            while (!dbConnected) {
                 try {
                     connectToDatabase();
-                    dbInitiated = checkConnection();
+                    dbConnected = checkConnection();
                 } catch (CouldNotPerformException ex) {
                     logger.warn("Could not reach influxdb server at " + databaseUrl + ". Try again in " + databaseTimeout / 1000 + " seconds!");
                     ExceptionPrinter.printHistory(ex, logger);
@@ -134,7 +142,24 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
 
             }
-            initiateDatabase();
+            boolean foundBucket = false;
+            while (!foundBucket) {
+                try {
+                    foundBucket = getDatabaseBucket();
+
+                } catch (CouldNotPerformException ex) {
+                    logger.warn("Could not get bucket. Try again in " + databaseTimeout / 1000 + " seconds!");
+
+                    ExceptionPrinter.printHistory(ex, logger);
+                    try {
+                        Thread.sleep(databaseTimeout);
+                    } catch (InterruptedException exc) {
+                        ExceptionPrinter.printHistory(exc, logger);
+                        Thread.currentThread().interrupt(); // set interrupt flag                    }
+
+                    }
+                }
+            }
 
 
             try {
@@ -198,23 +223,27 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 initiator = "system";
             }
             Map<String, String> stateValuesMap = resolveStateValueToMap(serviceState);
-            Point.Builder builder = Point.measurement(serviceType.toString().toLowerCase()).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+
+            Point point = Point.measurement(serviceType.toString().toLowerCase())
                     .addField("alias", unit.getConfig().getAlias(0))
                     .addField("initiator", initiator)
                     .addField("unitId", unit.getId())
-                    .addField("unitType", unit.getUnitType().name().toLowerCase());
+                    .addField("unitType", unit.getUnitType().name().toLowerCase())
+                    .time(Instant.now().toEpochMilli(), WritePrecision.MS);
+
+
+
 
             for (Map.Entry<String, String> entry : stateValuesMap.entrySet()) {
                 // detect numbers with regex
                 if (entry.getValue().matches("-?\\d+(\\.\\d+)?")) {
-                    builder.addField(entry.getKey(), Double.valueOf(entry.getValue()));
+                    point.addField(entry.getKey(), Double.valueOf(entry.getValue()));
 
                 } else {
-                    builder.addField(entry.getKey(), entry.getValue());
+                    point.addField(entry.getKey(), entry.getValue());
                 }
             }
-            Point point = builder.build();
-            influxDB.write(point);
+            influxDBClient.getWriteApi().writePoint(databaseName, ORG, point);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not saveInDB " + serviceType.name() + " of " + unit, ex, logger);
         }
@@ -288,42 +317,31 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
     private boolean checkConnection() throws CouldNotPerformException {
 
-        try {
-            Pong response = influxDB.ping();
-
-            if (response.getVersion().equalsIgnoreCase("unknown")) {
-                throw new InitializationException(InfluxDB.class, new CouldNotPerformException("Could not reach influxdb database server at " + databaseUrl + "!"));
-            }
-            logger.debug("Connected to Influxdb at " + databaseUrl);
-        } catch (InfluxDBIOException ex) {
-            throw new CouldNotPerformException("Could not reach database server at " + databaseUrl + "!", ex);
-
+        if (influxDBClient.health().getStatus().getValue() != "pass") {
+            throw new CouldNotPerformException("Could not connect to database server at " + databaseUrl + "!");
 
         }
+        logger.info("Connected to Influxdb at " + databaseUrl);
+
         return true;
-    }
 
-    private void connectToDatabase() {
-        logger.debug("Connect to influxDB");
-        OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient().newBuilder()
-                .connectTimeout(CONNECT_TIMOUT, TimeUnit.SECONDS)
-                .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS);
-        influxDB = InfluxDBFactory.connect(databaseUrl, okHttpClientBuilder);
-        // influxDB.setLogLevel(InfluxDB.LogLevel.BASIC);
 
     }
 
+    private void connectToDatabase() throws CouldNotPerformException {
+        logger.info(" Try to connect to influxDB at " + databaseUrl);
+        influxDBClient = InfluxDBClientFactory
+                .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
+    }
 
-    private void initiateDatabase() {
 
-        if (!influxDB.describeDatabases().contains(databaseName)) {
-            influxDB.query(new Query("CREATE DATABASE " + databaseName, ""));
-        }
-        influxDB.createRetentionPolicy(
-                retentionPolicyName, databaseName, retentionPolicyDuration, REPLICATION_FACTOR, DEFAULT_RETENTION_POLICY);
-        influxDB.enableBatch(batchLimit, batchTime, TimeUnit.MILLISECONDS);
-        influxDB.setRetentionPolicy(retentionPolicyName);
-        influxDB.setDatabase(databaseName);
+    private boolean getDatabaseBucket() throws CouldNotPerformException {
+        logger.info("Get bucket " + databaseName);
+        bucket = influxDBClient.getBucketsApi().findBucketByName(databaseName);
+        if (bucket != null) return true;
+
+        throw new CouldNotPerformException("Could not get bucket " + databaseName + "!");
+
+
     }
 }
