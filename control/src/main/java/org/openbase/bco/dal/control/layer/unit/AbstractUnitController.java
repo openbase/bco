@@ -78,6 +78,7 @@ import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
@@ -532,7 +533,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // In this case we perform an unauthorized action.
             for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
                 if (stackTraceElement.getClassName().equals(RPCHelper.class.getName())) {
-                    return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
+                    logger.info("incomming unauthorized action: "+ builder.toString());
+                    builder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
+                    final ActionDescription build = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build();
+                    logger.info("set human as executor out of legacy reasons: "+ builder.toString());
+                    return applyUnauthorizedAction(build);
                 }
             }
             return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
@@ -712,7 +717,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (executingAction == null) {
                 logger.error("{} seems not to be valid and was excluded from execution of {}.", actionToSchedule, this);
             }
-            logger.trace("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+            if(JPService.verboseMode()) {
+                logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+            } else {
+                logger.trace("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+            }
         }
 
         return FutureProcessor.completedFuture(actionToSchedule.getActionDescription());
