@@ -41,9 +41,12 @@ import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 public interface EmphasisStateOperationService extends OperationService, EmphasisStateProviderService {
 
     /* THIS WILL LATER BE USED TO COMPUTE THE AREA OF EACH EMPHASIS CATEGORY WHEN REPRESENTED WITHIN A TRIANGLE. */
-    public static final double EMPHASIS_TRIANGLE_TOTAL_AREA = 1;
-    public static final double EMPHASIS_TRIANGLE_OUTER_LINE = 1 / Math.sqrt(Math.sqrt(3) / 4);
-    public static final double EMPHASIS_TRIANGLE_HEIGHT = (EMPHASIS_TRIANGLE_OUTER_LINE * Math.sqrt(3)) / 2;
+    double EMPHASIS_TRIANGLE_TOTAL_AREA = 1d;
+    double EMPHASIS_TRIANGLE_OUTER_LINE = 1d / Math.sqrt(Math.sqrt(3d) / 4d);
+    double EMPHASIS_TRIANGLE_OUTER_LINE_HALF = EMPHASIS_TRIANGLE_OUTER_LINE / 2d;
+
+    double EMPHASIS_TRIANGLE_HEIGHT = (EMPHASIS_TRIANGLE_OUTER_LINE * Math.sqrt(3d)) / 2d;
+    double EMPHASIS_TRIANGLE_HEIGHT_HALF = EMPHASIS_TRIANGLE_HEIGHT / 2d;
 
     /**
      * Method sets the emphasis state of this unit.
