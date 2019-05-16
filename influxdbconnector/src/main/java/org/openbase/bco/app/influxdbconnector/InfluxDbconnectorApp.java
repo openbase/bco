@@ -52,6 +52,7 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +100,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         batchTime = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_TIME"));
         batchLimit = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_LIMIT"));
         databaseUrl = generateVariablePool().getValue("INFLUXDB_URL");
-        token = (generateVariablePool().getValue("INFLUXDB_TOKEN")).toCharArray();
+        token = generateVariablePool().getValue("INFLUXDB_TOKEN").toCharArray();
         org = generateVariablePool().getValue("INFLUXDB_ORG");
         return config;
     }
@@ -109,7 +110,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected ActionDescription execute(ActivationState activationState) {
 
         task = GlobalCachedExecutorService.submit(() -> {
-            logger.debug("Execute influx db connector");
+            logger.info("Execute influx db connector");
             boolean dbConnected = false;
 
             while (!dbConnected) {
@@ -216,20 +217,22 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     .addTag("alias", unit.getConfig().getAlias(0))
                     .addTag("initiator", initiator)
                     .addTag("unitId", unit.getId())
-                    .addTag("unitType", unit.getUnitType().name().toLowerCase())
-                    .time(Instant.now().toEpochMilli(), WritePrecision.MS);
+                    .addTag("unitType", unit.getUnitType().name().toLowerCase());
 
-
+            Integer values = 0;
             for (Map.Entry<String, String> entry : stateValuesMap.entrySet()) {
                 // detect numbers with regex
                 if (entry.getValue().matches("-?\\d+(\\.\\d+)?")) {
+                    values++;
                     point.addField(entry.getKey(), Double.valueOf(entry.getValue()));
 
                 } else {
                     point.addTag(entry.getKey(), entry.getValue());
                 }
             }
-            writeApi.writePoint(bucketName, org, point);
+            if (values > 0) {
+                writeApi.writePoint(bucketName, org, point);
+            }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not saveInDB " + serviceType.name() + " of " + unit, ex, logger);
         }
@@ -310,13 +313,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         WriteOptions writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build();
         writeApi = influxDBClient.getWriteApi(writeoptions);
         writeApi.listenEvents(WriteSuccessEvent.class, event -> {
-            logger.debug("Successfully wrote data into db");
+            logger.info("Successfully wrote data into db");
         });
         writeApi.listenEvents(WriteErrorEvent.class, event -> {
             Throwable exception = event.getThrowable();
             logger.warn(exception.getMessage());
         });
-        logger.debug("Connected to Influxdb at " + databaseUrl);
+        logger.info("Connected to Influxdb at " + databaseUrl);
 
         return true;
 
@@ -324,14 +327,14 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     }
 
     private void connectToDatabase() {
-        logger.debug(" Try to connect to influxDB at " + databaseUrl);
+        logger.info(" Try to connect to influxDB at " + databaseUrl);
         influxDBClient = InfluxDBClientFactory
                 .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
     }
 
 
     private boolean getDatabaseBucket() throws CouldNotPerformException {
-        logger.debug("Get bucket " + bucketName);
+        logger.info("Get bucket " + bucketName);
         bucket = influxDBClient.getBucketsApi().findBucketByName(bucketName);
         if (bucket != null) return true;
 
