@@ -110,7 +110,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected ActionDescription execute(ActivationState activationState) {
 
         task = GlobalCachedExecutorService.submit(() -> {
-            logger.info("Execute influx db connector");
+            logger.debug("Execute influx db connector");
             boolean dbConnected = false;
 
             while (!dbConnected) {
@@ -313,13 +313,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         WriteOptions writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build();
         writeApi = influxDBClient.getWriteApi(writeoptions);
         writeApi.listenEvents(WriteSuccessEvent.class, event -> {
-            logger.info("Successfully wrote data into db");
+            logger.debug("Successfully wrote data into db");
         });
         writeApi.listenEvents(WriteErrorEvent.class, event -> {
             Throwable exception = event.getThrowable();
             logger.warn(exception.getMessage());
         });
-        logger.info("Connected to Influxdb at " + databaseUrl);
+        logger.debug("Connected to Influxdb at " + databaseUrl);
 
         return true;
 
@@ -327,14 +327,14 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     }
 
     private void connectToDatabase() {
-        logger.info(" Try to connect to influxDB at " + databaseUrl);
+        logger.debug(" Try to connect to influxDB at " + databaseUrl);
         influxDBClient = InfluxDBClientFactory
                 .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
     }
 
 
     private boolean getDatabaseBucket() throws CouldNotPerformException {
-        logger.info("Get bucket " + bucketName);
+        logger.debug("Get bucket " + bucketName);
         bucket = influxDBClient.getBucketsApi().findBucketByName(bucketName);
         if (bucket != null) return true;
 
