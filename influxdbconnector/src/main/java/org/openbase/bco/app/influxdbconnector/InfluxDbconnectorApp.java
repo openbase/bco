@@ -29,6 +29,8 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.influxdata.client.domain.WritePrecision;
 import org.influxdata.client.domain.Bucket;
+import org.influxdata.client.write.events.WriteErrorEvent;
+import org.influxdata.client.write.events.WriteSuccessEvent;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -53,20 +55,18 @@ import org.slf4j.LoggerFactory;
 
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.sql.Timestamp;
 
 import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 
 public class InfluxDbconnectorApp extends AbstractAppController {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
 
     private static final Integer READ_TIMEOUT = 60;
     private static final Integer WRITE_TIMEOUT = 60;
@@ -102,11 +102,8 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         batchTime = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_TIME"));
         batchLimit = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_LIMIT"));
         databaseUrl = generateVariablePool().getValue("INFLUXDB_URL");
-        // every token ends with == , can't save == in Metaconfig so quickfix
-        token = (generateVariablePool().getValue("INFLUXDB_TOKEN") + "==").toCharArray();
+        token = (generateVariablePool().getValue("INFLUXDB_TOKEN")).toCharArray();
         org = generateVariablePool().getValue("INFLUXDB_ORG");
-
-
         return config;
     }
 
@@ -218,12 +215,11 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 initiator = "system";
             }
             Map<String, String> stateValuesMap = resolveStateValueToMap(serviceState);
-
             Point point = Point.measurement(serviceType.toString().toLowerCase())
-                    .addField("alias", unit.getConfig().getAlias(0))
-                    .addField("initiator", initiator)
-                    .addField("unitId", unit.getId())
-                    .addField("unitType", unit.getUnitType().name().toLowerCase())
+                    .addTag("alias", unit.getConfig().getAlias(0))
+                    .addTag("initiator", initiator)
+                    .addTag("unitId", unit.getId())
+                    .addTag("unitType", unit.getUnitType().name().toLowerCase())
                     .time(Instant.now().toEpochMilli(), WritePrecision.MS);
 
 
@@ -309,7 +305,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     }
 
     private boolean checkConnection() throws CouldNotPerformException {
-
         if (influxDBClient.health().getStatus().getValue() != "pass") {
             throw new CouldNotPerformException("Could not connect to database server at " + databaseUrl + "!");
 
@@ -317,6 +312,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         // initiate WriteApi
         WriteOptions writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build();
         writeApi = influxDBClient.getWriteApi(writeoptions);
+        writeApi.listenEvents(WriteSuccessEvent.class, event -> {
+            logger.debug("Successfully wrote data into db");
+        });
+        writeApi.listenEvents(WriteErrorEvent.class, event -> {
+            Throwable exception = event.getThrowable();
+            logger.warn(exception.getMessage());
+        });
         logger.debug("Connected to Influxdb at " + databaseUrl);
 
         return true;
