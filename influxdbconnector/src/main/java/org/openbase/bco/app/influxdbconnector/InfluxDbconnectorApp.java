@@ -325,15 +325,8 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
     private void connectToDatabase() {
         logger.debug(" Try to connect to influxDB at " + databaseUrl);
-        try{
         influxDBClient = InfluxDBClientFactory
                 .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + 1 + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
-        logger.debug("ddd");
-        }
-        catch (Exception ex){
-            logger.debug(ex.getMessage());
-        }
-        logger.debug("done");
     }
 
 
