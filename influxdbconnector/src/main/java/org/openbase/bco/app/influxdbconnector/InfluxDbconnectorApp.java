@@ -52,15 +52,12 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import java.sql.Timestamp;
 
 import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 
@@ -112,7 +109,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected ActionDescription execute(ActivationState activationState) {
 
         task = GlobalCachedExecutorService.submit(() -> {
-            logger.debug("Execute influx db connector");
+            logger.info("Execute influx db connector");
             boolean dbConnected = false;
 
             while (!dbConnected) {
@@ -229,7 +226,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     point.addField(entry.getKey(), Double.valueOf(entry.getValue()));
 
                 } else {
-                    point.addField(entry.getKey(), entry.getValue());
+                    point.addTag(entry.getKey(), entry.getValue());
                 }
             }
             writeApi.writePoint(bucketName, org, point);
@@ -313,13 +310,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         WriteOptions writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build();
         writeApi = influxDBClient.getWriteApi(writeoptions);
         writeApi.listenEvents(WriteSuccessEvent.class, event -> {
-            logger.debug("Successfully wrote data into db");
+            logger.info("Successfully wrote data into db");
         });
         writeApi.listenEvents(WriteErrorEvent.class, event -> {
             Throwable exception = event.getThrowable();
             logger.warn(exception.getMessage());
         });
-        logger.debug("Connected to Influxdb at " + databaseUrl);
+        logger.info("Connected to Influxdb at " + databaseUrl);
 
         return true;
 
@@ -327,14 +324,21 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     }
 
     private void connectToDatabase() {
-        logger.debug(" Try to connect to influxDB at " + databaseUrl);
+        logger.info(" Try to connect to influxDB at " + databaseUrl);
+        try{
         influxDBClient = InfluxDBClientFactory
-                .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
+                .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + 1 + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
+        logger.info("ddd");
+        }
+        catch (Exception ex){
+            logger.info(ex.getMessage());
+        }
+        logger.info("done");
     }
 
 
     private boolean getDatabaseBucket() throws CouldNotPerformException {
-        logger.debug("Get bucket " + bucketName);
+        logger.info("Get bucket " + bucketName);
         bucket = influxDBClient.getBucketsApi().findBucketByName(bucketName);
         if (bucket != null) return true;
 
