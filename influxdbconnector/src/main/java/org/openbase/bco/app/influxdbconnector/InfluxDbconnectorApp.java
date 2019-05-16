@@ -25,10 +25,8 @@ package org.openbase.bco.app.influxdbconnector;
 
 import org.influxdata.client.*;
 import org.influxdata.client.write.Point;
-import org.influxdata.client.domain.BucketRetentionRules;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import okhttp3.OkHttpClient;
 import org.influxdata.client.domain.WritePrecision;
 import org.influxdata.client.domain.Bucket;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
@@ -69,6 +67,16 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+
+    private static final Integer READ_TIMEOUT = 60;
+    private static final Integer WRITE_TIMEOUT = 60;
+    private static final Integer CONNECT_TIMOUT = 40;
+    private static final Integer MAX_TIMEOUT = 300000;
+    private static final Integer ADDITIONAL_TIMEOUT = 60000;
+    private WriteApi writeApi;
+    private Integer databaseTimeout = 60000;
+    private Bucket bucket;
+    private char[] token;
     private Future task;
     private String databaseUrl;
     private String bucketName;
@@ -77,16 +85,8 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private Integer batchLimit;
     private CustomUnitPool customUnitPool;
     private Observer<ServiceStateProvider<Message>, Message> unitStateObserver;
-    private static final Integer READ_TIMEOUT = 60;
-    private static final Integer WRITE_TIMEOUT = 60;
-    private static final Integer CONNECT_TIMOUT = 40;
-    private static final Integer MAX_TIMEOUT = 300000;
-    private static final Integer ADDITIONAL_TIMEOUT = 60000;
-    private static final String ORG = "openbase";
-    private WriteApi writeApi;
-    private Integer databaseTimeout = 60000;
-    private Bucket bucket;
-    private char[] token;
+    private String org;
+
 
     public InfluxDbconnectorApp() throws InstantiationException {
 
@@ -98,11 +98,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     public UnitConfigType.UnitConfig applyConfigUpdate(UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
         config = super.applyConfigUpdate(config);
 
-        databaseUrl = generateVariablePool().getValue("INFLUXDB_URL");
         bucketName = generateVariablePool().getValue("INFLUXDB_BUCKET");
         batchTime = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_TIME"));
         batchLimit = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_LIMIT"));
-        token = generateVariablePool().getValue("INFLUXDB_TOKEN").toCharArray();
+        databaseUrl = generateVariablePool().getValue("INFLUXDB_URL");
+        // every token ends with == , can't save == in Metaconfig so quickfix
+        token = (generateVariablePool().getValue("INFLUXDB_TOKEN") + "==").toCharArray();
+        org = generateVariablePool().getValue("INFLUXDB_ORG");
 
 
         return config;
@@ -113,7 +115,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected ActionDescription execute(ActivationState activationState) {
 
         task = GlobalCachedExecutorService.submit(() -> {
-            logger.info("Execute influx db connector");
+            logger.debug("Execute influx db connector");
             boolean dbConnected = false;
 
             while (!dbConnected) {
@@ -234,7 +236,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     point.addField(entry.getKey(), entry.getValue());
                 }
             }
-            writeApi.writePoint(bucketName, ORG, point);
+            writeApi.writePoint(bucketName, org, point);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not saveInDB " + serviceType.name() + " of " + unit, ex, logger);
         }
@@ -315,7 +317,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         // initiate WriteApi
         WriteOptions writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build();
         writeApi = influxDBClient.getWriteApi(writeoptions);
-
         logger.debug("Connected to Influxdb at " + databaseUrl);
 
         return true;
