@@ -42,6 +42,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -58,7 +59,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 
@@ -123,74 +127,74 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected ActionDescription execute(ActivationState activationState) {
 
         task = GlobalCachedExecutorService.submit(() -> {
+
             try {
                 logger.debug("Execute influx db connector");
-                boolean dbConnected = false;
 
-                while (!dbConnected) {
+                // connect to db
+                while (!task.isCancelled()) {
                     try {
                         connectToDatabase();
-                        dbConnected = checkConnection();
-                    } catch (CouldNotPerformException ex) {
-                        logger.warn("Could not reach influxdb server at " + databaseUrl + ". Try again in " + databaseTimeout / 1000 + " seconds!");
-                        ExceptionPrinter.printHistory(ex, logger);
-
-                        try {
-                            Thread.sleep(databaseTimeout);
-                            if (databaseTimeout < MAX_TIMEOUT) databaseTimeout += ADDITIONAL_TIMEOUT;
-                        } catch (InterruptedException exc) {
-                            return;
+                        if (checkConnection()) {
+                            break;
                         }
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not reach influxdb server at " + databaseUrl + ". Try again in " + databaseTimeout / 1000 + " seconds!", ex, logger, LogLevel.WARN);
+                        Thread.sleep(databaseTimeout);
+                        if (databaseTimeout < MAX_TIMEOUT) databaseTimeout += ADDITIONAL_TIMEOUT;
                     }
-
-
                 }
-                boolean foundBucket = false;
-                while (!foundBucket) {
-                    try {
-                        foundBucket = getDatabaseBucket();
 
+                // lookup bucked
+                while (!task.isCancelled()) {
+                    try {
+                        // check if bucked found
+                        if (getDatabaseBucket()) {
+                            break;
+                        }
                     } catch (CouldNotPerformException ex) {
                         logger.warn("Could not get bucket. Try again in " + databaseTimeout / 1000 + " seconds!");
 
                         ExceptionPrinter.printHistory(ex, logger);
-                        try {
-                            Thread.sleep(databaseTimeout);
-                        } catch (InterruptedException exc) {
-                            return;
-                        }
+                        Thread.sleep(databaseTimeout);
                     }
                 }
 
-
                 try {
-
-
                     init();
                 } catch (InitializationException ex) {
                     ExceptionPrinter.printHistory(ex, logger);
-                } catch (InterruptedException ex) {
-                    return;
                 }
-
-            } finally {
-
-                customUnitPool.removeObserver(unitStateObserver);
-                try {
-                    influxDBClient.close();
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
-                }
+            } catch (InterruptedException ex) {
+                // finish task because its canceled.
             }
+
         });
         return activationState.getResponsibleAction();
     }
 
     @Override
     protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        if (task != null && !task.isDone()) {
-            task.cancel(true);
-        }
+
+            // finish task
+            if (task != null && !task.isDone()) {
+                task.cancel(true);
+                try {
+                    task.get(5, TimeUnit.SECONDS);
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+
+            // deregister
+            customUnitPool.removeObserver(unitStateObserver);
+            try {
+                if(influxDBClient != null) {
+                    influxDBClient.close();
+                }
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
+            }
     }
 
     public void init() throws InitializationException, InterruptedException {
