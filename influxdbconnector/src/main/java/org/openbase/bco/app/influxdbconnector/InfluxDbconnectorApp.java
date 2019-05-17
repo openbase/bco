@@ -217,7 +217,9 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     .addTag("alias", unit.getConfig().getAlias(0))
                     .addTag("initiator", initiator)
                     .addTag("unitId", unit.getId())
-                    .addTag("unitType", unit.getUnitType().name().toLowerCase());
+                    .addTag("unitType", unit.getUnitType().name().toLowerCase())
+                    .addTag("locationId", unit.getParentLocationConfig().getId())
+                    .addTag("locationAlias", unit.getParentLocationConfig().getAlias(0));
 
             Integer values = 0;
             for (Map.Entry<String, String> entry : stateValuesMap.entrySet()) {
