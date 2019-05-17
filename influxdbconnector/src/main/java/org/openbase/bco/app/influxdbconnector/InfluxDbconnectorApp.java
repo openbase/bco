@@ -81,12 +81,15 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private InfluxDBClient influxDBClient;
     private Integer batchTime;
     private Integer batchLimit;
-    private CustomUnitPool customUnitPool;
-    private Observer<ServiceStateProvider<Message>, Message> unitStateObserver;
+    private final CustomUnitPool customUnitPool;
+    private final Observer<ServiceStateProvider<Message>, Message> unitStateObserver;
     private String org;
 
 
     public InfluxDbconnectorApp() throws InstantiationException {
+        customUnitPool = new CustomUnitPool();
+
+        unitStateObserver = (source, data) -> saveInDB((Unit) source.getServiceProvider(), source.getServiceType(), data);
 
 
     }
@@ -125,8 +128,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                         Thread.sleep(databaseTimeout);
                         if (databaseTimeout < MAX_TIMEOUT) databaseTimeout += ADDITIONAL_TIMEOUT;
                     } catch (InterruptedException exc) {
-                        ExceptionPrinter.printHistory(exc, logger);
-                        Thread.currentThread().interrupt(); // set interrupt flag
+                        return;
                     }
                 }
 
@@ -144,9 +146,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     try {
                         Thread.sleep(databaseTimeout);
                     } catch (InterruptedException exc) {
-                        ExceptionPrinter.printHistory(exc, logger);
-                        Thread.currentThread().interrupt(); // set interrupt flag                    }
-
+                        return;
                     }
                 }
             }
@@ -154,17 +154,12 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
             try {
 
-                customUnitPool = new CustomUnitPool();
-
-                unitStateObserver = (source, data) -> saveInDB((Unit) source.getServiceProvider(), source.getServiceType(), data);
-
 
                 init();
             } catch (InitializationException | InstantiationException ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             } catch (InterruptedException ex) {
-                ExceptionPrinter.printHistory(ex, logger);
-                Thread.currentThread().interrupt(); // set interrupt flag
+                return;
             }
 
         });
@@ -174,7 +169,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     @Override
     protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         if (task != null && !task.isDone()) {
-            task.cancel(false);
+            task.cancel(true);
         }
     }
 
