@@ -71,6 +71,19 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private static final Integer CONNECT_TIMOUT = 40;
     private static final Integer MAX_TIMEOUT = 300000;
     private static final Integer ADDITIONAL_TIMEOUT = 60000;
+    private static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
+    private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
+    private static final String INFLUXDB_BATCH_TIME = "INFLUXDB_BATCH_TIME";
+    private static final String INFLUXDB_BATCH_TIME_DEFAULT = "1000";
+    private static final String INFLUXDB_BATCH_LIMIT = "INFLUXDB_BATCH_LIMIT";
+    private static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
+    private static final String INFLUXDB_URL = "INFLUXDB_URL";
+    private static final String INFLUXDB_URL_DEFAULT = "http://localhost:9999";
+    private static final String INFLUXDB_ORG = "INFLUXDB_ORG";
+    private static final String INFLUXDB_ORG_DEFAULT = "openbase";
+    private static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
+
+
     private WriteApi writeApi;
     private Integer databaseTimeout = 60000;
     private Bucket bucket;
@@ -87,11 +100,8 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
 
     public InfluxDbconnectorApp() throws InstantiationException {
-        customUnitPool = new CustomUnitPool();
-
-        unitStateObserver = (source, data) -> saveInDB((Unit) source.getServiceProvider(), source.getServiceType(), data);
-
-
+        this.customUnitPool = new CustomUnitPool();
+        this.unitStateObserver = (source, data) -> saveInDB((Unit) source.getServiceProvider(), source.getServiceType(), data);
     }
 
 
@@ -99,12 +109,12 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     public UnitConfigType.UnitConfig applyConfigUpdate(UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
         config = super.applyConfigUpdate(config);
 
-        bucketName = generateVariablePool().getValue("INFLUXDB_BUCKET");
-        batchTime = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_TIME"));
-        batchLimit = Integer.valueOf(generateVariablePool().getValue("INFLUXDB_BATCH_LIMIT"));
-        databaseUrl = generateVariablePool().getValue("INFLUXDB_URL");
-        token = generateVariablePool().getValue("INFLUXDB_TOKEN").toCharArray();
-        org = generateVariablePool().getValue("INFLUXDB_ORG");
+        bucketName = generateVariablePool().getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
+        batchTime = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT));
+        batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
+        databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
+        token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
+        org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
         return config;
     }
 
@@ -113,55 +123,65 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected ActionDescription execute(ActivationState activationState) {
 
         task = GlobalCachedExecutorService.submit(() -> {
-            logger.debug("Execute influx db connector");
-            boolean dbConnected = false;
-
-            while (!dbConnected) {
-                try {
-                    connectToDatabase();
-                    dbConnected = checkConnection();
-                } catch (CouldNotPerformException ex) {
-                    logger.warn("Could not reach influxdb server at " + databaseUrl + ". Try again in " + databaseTimeout / 1000 + " seconds!");
-                    ExceptionPrinter.printHistory(ex, logger);
-
-                    try {
-                        Thread.sleep(databaseTimeout);
-                        if (databaseTimeout < MAX_TIMEOUT) databaseTimeout += ADDITIONAL_TIMEOUT;
-                    } catch (InterruptedException exc) {
-                        return;
-                    }
-                }
-
-
-            }
-            boolean foundBucket = false;
-            while (!foundBucket) {
-                try {
-                    foundBucket = getDatabaseBucket();
-
-                } catch (CouldNotPerformException ex) {
-                    logger.warn("Could not get bucket. Try again in " + databaseTimeout / 1000 + " seconds!");
-
-                    ExceptionPrinter.printHistory(ex, logger);
-                    try {
-                        Thread.sleep(databaseTimeout);
-                    } catch (InterruptedException exc) {
-                        return;
-                    }
-                }
-            }
-
-
             try {
+                logger.debug("Execute influx db connector");
+                boolean dbConnected = false;
+
+                while (!dbConnected) {
+                    try {
+                        connectToDatabase();
+                        dbConnected = checkConnection();
+                    } catch (CouldNotPerformException ex) {
+                        logger.warn("Could not reach influxdb server at " + databaseUrl + ". Try again in " + databaseTimeout / 1000 + " seconds!");
+                        ExceptionPrinter.printHistory(ex, logger);
+
+                        try {
+                            Thread.sleep(databaseTimeout);
+                            if (databaseTimeout < MAX_TIMEOUT) databaseTimeout += ADDITIONAL_TIMEOUT;
+                        } catch (InterruptedException exc) {
+                            return;
+                        }
+                    }
 
 
-                init();
-            } catch (InitializationException | InstantiationException ex) {
-                ExceptionPrinter.printHistory(ex, logger);
-            } catch (InterruptedException ex) {
-                return;
+                }
+                boolean foundBucket = false;
+                while (!foundBucket) {
+                    try {
+                        foundBucket = getDatabaseBucket();
+
+                    } catch (CouldNotPerformException ex) {
+                        logger.warn("Could not get bucket. Try again in " + databaseTimeout / 1000 + " seconds!");
+
+                        ExceptionPrinter.printHistory(ex, logger);
+                        try {
+                            Thread.sleep(databaseTimeout);
+                        } catch (InterruptedException exc) {
+                            return;
+                        }
+                    }
+                }
+
+
+                try {
+
+
+                    init();
+                } catch (InitializationException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                } catch (InterruptedException ex) {
+                    return;
+                }
+
+            } finally {
+
+                customUnitPool.removeObserver(unitStateObserver);
+                try {
+                    influxDBClient.close();
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
+                }
             }
-
         });
         return activationState.getResponsibleAction();
     }
