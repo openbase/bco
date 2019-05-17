@@ -228,13 +228,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 initiator = "system";
             }
             Map<String, String> stateValuesMap = resolveStateValueToMap(serviceState);
-            Point point = Point.measurement(serviceType.toString().toLowerCase())
+            Point point = Point.measurement(serviceType.name().toLowerCase())
                     .addTag("alias", unit.getConfig().getAlias(0))
                     .addTag("initiator", initiator)
-                    .addTag("unitId", unit.getId())
-                    .addTag("unitType", unit.getUnitType().name().toLowerCase())
-                    .addTag("locationId", unit.getParentLocationConfig().getId())
-                    .addTag("locationAlias", unit.getParentLocationConfig().getAlias(0));
+                    .addTag("unit_id", unit.getId())
+                    .addTag("unit_type", unit.getUnitType().name().toLowerCase())
+                    .addTag("location_id", unit.getParentLocationConfig().getId())
+                    .addTag("location_alias", unit.getParentLocationConfig().getAlias(0));
 
             Integer values = 0;
             for (Map.Entry<String, String> entry : stateValuesMap.entrySet()) {
