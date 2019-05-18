@@ -37,6 +37,26 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
  */
 public interface EmphasisStateProviderService extends ProviderService {
 
+    /* THIS WILL LATER BE USED TO COMPUTE THE AREA OF EACH EMPHASIS CATEGORY WHEN REPRESENTED WITHIN A TRIANGLE. */
+    double EMPHASIS_TRIANGLE_TOTAL_AREA = 1d;
+    double EMPHASIS_TRIANGLE_OUTER_LINE = 1d / Math.sqrt(Math.sqrt(3d) / 4d);
+    double EMPHASIS_TRIANGLE_OUTER_LINE_HALF = EMPHASIS_TRIANGLE_OUTER_LINE / 2d;
+
+    double EMPHASIS_TRIANGLE_HEIGHT = (EMPHASIS_TRIANGLE_OUTER_LINE * Math.sqrt(3d)) / 2d;
+    double EMPHASIS_TRIANGLE_HEIGHT_HALF = EMPHASIS_TRIANGLE_HEIGHT / 2d;
+
+    static double computeComfortTriangleArea(final double x, final double y) {
+        return Math.max(0d, Math.min(1d, 0.5d * Math.abs((x * EMPHASIS_TRIANGLE_HEIGHT) - (y * EMPHASIS_TRIANGLE_OUTER_LINE_HALF))));
+    }
+
+    static double computeEconomyTriangleArea(final double x, final double y) {
+        return Math.max(0d, Math.min(1d, 0.5d * Math.abs(((EMPHASIS_TRIANGLE_OUTER_LINE - x) * (EMPHASIS_TRIANGLE_HEIGHT -y)) - ((EMPHASIS_TRIANGLE_OUTER_LINE_HALF - x) * (-y)))));
+    }
+
+    static double computeSecurityTriangleArea(final double x, final double y) {
+        return Math.max(0d, Math.min(1d, 0.5d * Math.abs(EMPHASIS_TRIANGLE_OUTER_LINE * y)));
+    }
+
     @RPCMethod(legacy = true)
     default EmphasisState getEmphasisState() throws NotAvailableException {
         return (EmphasisState) getServiceProvider().getServiceState(EMPHASIS_STATE_SERVICE);
