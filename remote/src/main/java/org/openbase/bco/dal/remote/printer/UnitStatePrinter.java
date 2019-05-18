@@ -36,6 +36,8 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.DefaultInitializable;
+import org.openbase.jul.iface.Initializable;
+import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.consumer.Consumer;
@@ -48,9 +50,11 @@ import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-public class UnitStatePrinter implements DefaultInitializable {
+public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig>>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitStatePrinter.class);
 
@@ -59,32 +63,40 @@ public class UnitStatePrinter implements DefaultInitializable {
     private final PrintStream printStream;
     private final Consumer<String> outputConsumer;
     private boolean headerPrinted = false;
+    private boolean active = false;
 
-    public UnitStatePrinter(final PrintStream printStream, final Filter<UnitConfig>... filters) throws InstantiationException {
+    public UnitStatePrinter(final PrintStream printStream) throws InstantiationException {
         try {
             this.outputConsumer = null;
             this.printStream = printStream;
-            this.customUnitPool = new CustomUnitPool(filters);
+            this.customUnitPool = new CustomUnitPool();
             this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    public UnitStatePrinter(final Consumer<String> outputConsumer, final Filter<UnitConfig>... filters) throws InstantiationException {
+    public UnitStatePrinter(final Consumer<String> outputConsumer) throws InstantiationException {
         try {
             this.outputConsumer = outputConsumer;
             this.printStream = null;
-            this.customUnitPool = new CustomUnitPool(filters);
+            this.customUnitPool = new CustomUnitPool();
             this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
+    public void init(final Filter<UnitConfig>... filters) throws InitializationException, InterruptedException {
+        init(Arrays.asList(filters));
+    }
+
     @Override
-    public void init() throws InitializationException, InterruptedException {
+    public void init(final Collection<Filter<UnitConfig>> filters) throws InitializationException, InterruptedException {
         try {
+            customUnitPool.init(filters);
+            customUnitPool.addObserver(unitStateObserver);
+
             // print initial unit states
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
                 final UnitRemote<?> unit = Units.getUnit(unitConfig, true);
@@ -101,9 +113,6 @@ public class UnitStatePrinter implements DefaultInitializable {
                     ExceptionPrinter.printHistory("Could not print " + unit, ex, LOGGER);
                 }
             }
-
-            customUnitPool.init();
-            customUnitPool.addObserver(unitStateObserver);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -157,5 +166,22 @@ public class UnitStatePrinter implements DefaultInitializable {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not print " + serviceType.name() + " of " + unit, ex, LOGGER);
         }
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        customUnitPool.activate();
+        active = true;
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        active = false;
+        customUnitPool.deactivate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
     }
 }

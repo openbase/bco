@@ -53,7 +53,7 @@ public class BCOLogger extends UnitStatePrinter {
         UnitModelPrinter.printStaticRelations(getModelPrintStream());
     }
 
-    public static void main(String[] args) throws InstantiationException, InterruptedException, InitializationException {
+    public static void main(String[] args) throws CouldNotPerformException, InterruptedException, InitializationException {
 
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
@@ -75,8 +75,10 @@ public class BCOLogger extends UnitStatePrinter {
 
         try {
             BCOLogin.getSession().autoLogin(true);
-            new BCOLogger().init();
-        } catch (InitializationException ex) {
+            final BCOLogger bcoLogger = new BCOLogger();
+            bcoLogger.init();
+            bcoLogger.activate();
+        } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         }
         LOGGER.info(APP_NAME + " successfully started.");

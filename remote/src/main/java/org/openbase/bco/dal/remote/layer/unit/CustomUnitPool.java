@@ -34,7 +34,10 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
+import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.DefaultInitializable;
+import org.openbase.jul.iface.Manageable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -54,7 +57,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class CustomUnitPool implements DefaultInitializable {
+public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomUnitPool.class);
 
@@ -65,14 +68,11 @@ public class CustomUnitPool implements DefaultInitializable {
     private final ProtobufListDiff<String, UnitConfig, Builder> unitConfigDiff;
     private final Set<Filter<UnitConfig>> filterSet;
     private final ObservableImpl<ServiceStateProvider<Message>, Message> unitDataObservable;
+    private transient boolean active;
 
-    public CustomUnitPool(final Collection<Filter<UnitConfig>> filters) throws InstantiationException {
-        this(filters.toArray(new Filter[filters.size()]));
-    }
-
-    public CustomUnitPool(final Filter<UnitConfig>... filters) throws InstantiationException {
+    public CustomUnitPool() throws InstantiationException {
         try {
-            this.filterSet = new HashSet<>(Arrays.asList(filters));
+            this.filterSet = new HashSet<>();
             this.filterSet.add(UnitFilters.DISABELED_UNIT_FILTER);
             this.unitConfigDiff = new ProtobufListDiff<>();
             this.unitRemoteRegistry = new RemoteControllerRegistry<>();
@@ -93,19 +93,51 @@ public class CustomUnitPool implements DefaultInitializable {
         }
     }
 
+    /**
+     * This filter initialization is optional.
+     * Method sets a new filter set for the custom pool.
+     * If the pool is already active, then the filter is directly applied.
+     * If you call this method twice, only the latest filter set is used.
+     *
+     * @param filters this set of filters can be used to limit the number of unit to observer. No filter means every unit is observed by this pool.
+     * @throws InitializationException is throw if the initialization fails.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public void init(final Filter<UnitConfig>... filters) throws InitializationException, InterruptedException {
+        init(Arrays.asList(filters));
+    }
+
+    /**
+     * This filter initialization is optional.
+     * Method sets a new filter set for the custom pool.
+     * If the pool is already active, then the filter is directly applied.
+     * If you call this method twice, only the latest filter set is used.
+     *
+     * @param filters this set of filters can be used to limit the number of unit to observer. No filter means every unit is observed by this pool.
+     * @throws InitializationException is throw if the initialization fails.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
     @Override
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            Registries.getUnitRegistry().addDataObserver(unitRegistryDataObserver);
-            if (Registries.getUnitRegistry().isDataAvailable()) {
-                sync();
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
+    public void init(final Collection<Filter<UnitConfig>> filters) throws InitializationException, InterruptedException {
+        filterSet.clear();
+        filterSet.add(UnitFilters.DISABELED_UNIT_FILTER);
+        filterSet.addAll(filters);
+        if (active) {
+            sync();
         }
     }
 
     private void sync() throws InterruptedException {
+
+        // skip if registry is not ready yet.
+        try {
+            if(!Registries.getUnitRegistry().isDataAvailable()) {
+                return;
+            }
+        } catch (NotAvailableException e) {
+            return;
+        }
+
         try {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
             unitConfigDiff.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
@@ -158,6 +190,7 @@ public class CustomUnitPool implements DefaultInitializable {
         try {
             final UnitRemote<?> unitRemote = Units.getUnit(unitId, false);
             unitRemoteRegistry.register(unitRemote);
+            // todo: validate this, why not directly using the data observer?
             for (ServiceType serviceType : unitRemote.getAvailableServiceTypes()) {
                 unitRemote.addServiceStateObserver(serviceType, unitDataObserver);
             }
@@ -207,5 +240,42 @@ public class CustomUnitPool implements DefaultInitializable {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+        try {
+            // add observer
+            Registries.getUnitRegistry().addDataObserver(unitRegistryDataObserver);
+
+            // trigger initial sync
+            if (Registries.getUnitRegistry().isDataAvailable()) {
+                sync();
+            }
+        } finally {
+            UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
+        }
+        active = true;
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+        try {
+            active = false;
+            Registries.getUnitRegistry().removeDataObserver(unitRegistryDataObserver);
+            // deregister all observed units
+            for (UnitConfig unitConfig : unitConfigDiff.getOriginalMessages().getMessages()) {
+                removeUnitRemote(unitConfig.getId());
+            }
+        } finally {
+            UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
     }
 }
