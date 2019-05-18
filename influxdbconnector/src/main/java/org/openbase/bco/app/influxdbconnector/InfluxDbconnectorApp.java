@@ -10,12 +10,12 @@ package org.openbase.bco.app.influxdbconnector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -160,8 +160,9 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     }
                 }
 
+                // start observation
                 try {
-                    init();
+                    startObservation();
                 } catch (InitializationException ex) {
                     ExceptionPrinter.printHistory(ex, logger);
                 }
@@ -188,6 +189,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
             // deregister
             customUnitPool.removeObserver(unitStateObserver);
+            customUnitPool.deactivate();
             try {
                 if(influxDBClient != null) {
                     influxDBClient.close();
@@ -197,8 +199,12 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             }
     }
 
-    public void init() throws InitializationException, InterruptedException {
+    public void startObservation() throws InitializationException, InterruptedException {
         try {
+            // setup pool
+            customUnitPool.addObserver(unitStateObserver);
+            customUnitPool.activate();
+
             for (UnitConfigType.UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
                 final UnitRemote<?> unit = Units.getUnit(unitConfig, true);
 
@@ -214,9 +220,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     ExceptionPrinter.printHistory("Could not saveInDB " + unit, ex, logger);
                 }
             }
-
-            customUnitPool.init();
-            customUnitPool.addObserver(unitStateObserver);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
