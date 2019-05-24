@@ -551,8 +551,12 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     public Future<ActionDescription> applyAction(ActionDescription actionDescription) {
 
         // validate action
-        if ((actionDescription.getCancel() || actionDescription.getExtend()) != actionDescription.hasId()) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException("New actions should not offer an id while action modification have to which is not the case!"));
+        if ((actionDescription.getCancel() || actionDescription.getExtend()) && !actionDescription.hasId()) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException("Action Id is required when an action is extended or canceled!"));
+        }
+
+        if ((!actionDescription.getCancel() && !actionDescription.getExtend()) && actionDescription.hasId()) {
+            logger.warn("New action offers an id and will be overwritten by controller!");
         }
 
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), authenticatedValue -> applyActionAuthenticated(authenticatedValue));
