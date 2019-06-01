@@ -148,43 +148,51 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             logger.info("Thing has no location defined so it will be added at the root location");
         }
 
-        // update label according to thing
-        //TODO: load language via bco default config if implemented.
-        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.getDefault(), thingDTO.label);
-        // check if label is already taken
-        for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(thingDTO.label, locationId, false)) {
-            // only check if a device has the same label
-            if (config.getUnitType() == UnitType.DEVICE) {
-                if (!config.getDeviceConfig().getDeviceClassId().equalsIgnoreCase(deviceClass.getId())) {
-                    // device with same label exists but has a different device class, so try to register it without a label
-                    unitConfig.clearLabel();
-                    break;
-                }
-
-                // device with same location, label and class exists so check if it is already connected to a thing
-                final MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider(config.getAlias(0) + "MetaConfig", config.getMetaConfig());
-                try {
-                    final String thingUID = metaConfigVariableProvider.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY);
-
-                    if (thingDTO.UID.equals(thingUID)) {
-                        logger.warn("skip registration because thing {} is already registered as device ", thingDTO.UID, LabelProcessor.getBestMatch(config.getLabel(), "?"));
-                        return;
+        String labelSuffix = "";
+        int iterration = 2;
+        validateLabelLoop : while (true) {
+            // update label according to thing
+            //TODO: load language via bco default config if implemented.
+            //
+            LabelProcessor.addLabel(unitConfig.getLabelBuilder().clear(), Locale.getDefault(), thingDTO.label + labelSuffix);
+            // check if label is already taken
+            for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(thingDTO.label, locationId, false)) {
+                // only check if a device has the same label
+                if (config.getUnitType() == UnitType.DEVICE) {
+                    if (!config.getDeviceConfig().getDeviceClassId().equalsIgnoreCase(deviceClass.getId())) {
+                        // device with same label exists but has a different device class, so try to register without suffix
+                        labelSuffix  = " " + iterration++;
+                        continue validateLabelLoop;
                     }
-                    // same class, label and location but meta config entry differs so the collision has to be resolved by setting a new label.
-                    unitConfig.clearLabel();
-                    break;
 
-                } catch (NotAvailableException ex) {
-                    // thing matches to device but the meta config entry is missing so add it
-                    final Builder builder = config.toBuilder();
-                    builder.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
+                    // device with same location, label and class exists so check if it is already connected to a thing
+                    final MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider(config.getAlias(0) + "MetaConfig", config.getMetaConfig());
                     try {
-                        Registries.getUnitRegistry().updateUnitConfig(builder.build()).get();
-                    } catch (ExecutionException e) {
-                        throw new CouldNotPerformException("Could not update OPENHAB_THING_UID_KEY in device " + config.getAlias(0));
+                        final String thingUID = metaConfigVariableProvider.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY);
+
+                        if (thingDTO.UID.equals(thingUID)) {
+                            logger.warn("skip registration because thing {} is already registered as device ", thingDTO.UID, LabelProcessor.getBestMatch(config.getLabel(), "?"));
+                            return;
+                        }
+                        // same class, label and location but meta config entry differs so the collision has to be resolved by setting a new label.
+                        labelSuffix  = " " + iterration++;
+                        continue validateLabelLoop;
+
+                    } catch (NotAvailableException ex) {
+                        // thing matches to device but the meta config entry is missing so add it and exit method.
+                        final Builder builder = config.toBuilder();
+                        builder.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
+                        try {
+                            Registries.getUnitRegistry().updateUnitConfig(builder.build()).get();
+                            return;
+                        } catch (ExecutionException e) {
+                            throw new CouldNotPerformException("Could not update OPENHAB_THING_UID_KEY in device " + config.getAlias(0));
+                        }
                     }
                 }
             }
+            // no collision found, so continue...
+            break validateLabelLoop;
         }
 
         // add thing uid to meta config to have a mapping between thing and device
