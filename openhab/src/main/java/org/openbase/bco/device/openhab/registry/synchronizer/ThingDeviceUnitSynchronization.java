@@ -154,9 +154,11 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             // update label according to thing
             //TODO: load language via bco default config if implemented.
             //
-            LabelProcessor.addLabel(unitConfig.getLabelBuilder().clear(), Locale.getDefault(), thingDTO.label + labelSuffix);
+            String unitLabel = thingDTO.label + labelSuffix;
+
+            LabelProcessor.addLabel(unitConfig.getLabelBuilder().clear(), Locale.getDefault(), unitLabel);
             // check if label is already taken
-            for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(thingDTO.label, locationId, false)) {
+            for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(unitLabel, locationId, false)) {
                 // only check if a device has the same label
                 if (config.getUnitType() == UnitType.DEVICE) {
                     if (!config.getDeviceConfig().getDeviceClassId().equalsIgnoreCase(deviceClass.getId())) {
