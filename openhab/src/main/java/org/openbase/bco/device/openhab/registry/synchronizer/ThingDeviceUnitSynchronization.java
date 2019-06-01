@@ -30,6 +30,8 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
@@ -45,6 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Synchronization for things not managed by the bco binding.
@@ -72,7 +76,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
             final UnitConfig.Builder deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(updatedThing).toBuilder();
 
             if (SynchronizationProcessor.updateUnitToThing(updatedThing, deviceUnitConfig)) {
-                Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build());
+                Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get(30, TimeUnit.SECONDS);
                 // disabled because it seems to cause an deadlock
                 //try {
                 //    Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
@@ -81,7 +85,9 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
                 //}
             }
         } catch (NotAvailableException ex) {
-            logger.warn("Unit for thing {} not available", identifiableEnrichedThingDTO.getDTO().UID);
+            ExceptionPrinter.printHistory("Unit for thing "+identifiableEnrichedThingDTO.getDTO().UID+" not available", ex, logger, LogLevel.WARN);
+        } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
+            ExceptionPrinter.printHistory("Unit for thing "+identifiableEnrichedThingDTO.getDTO().UID+" can not be updated!", ex, logger, LogLevel.WARN);
         }
     }
 
@@ -143,8 +149,8 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         }
 
         // update label according to thing
-        //TODO: which language to use
-        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, thingDTO.label);
+        //TODO: load language via bco default config if implemented.
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.getDefault(), thingDTO.label);
         // check if label is already taken
         for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(thingDTO.label, locationId, false)) {
             // only check if a device has the same label
@@ -159,9 +165,15 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
                 final MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider(config.getAlias(0) + "MetaConfig", config.getMetaConfig());
                 try {
                     final String thingUID = metaConfigVariableProvider.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY);
-                    // same class, label and location but meta config entry differs
-                    // else it should have matched before calling this method so print an error
-                    logger.error("Could not register device for thing {}. Device {} has the same class, location and label but corresponds to the different thins {}", thingDTO.UID, config.getAlias(0), thingUID);
+
+                    if (thingDTO.UID.equals(thingUID)) {
+                        logger.warn("skip registration because thing {} is already registered as device ", thingDTO.UID, LabelProcessor.getBestMatch(config.getLabel(), "?"));
+                        return;
+                    }
+                    // same class, label and location but meta config entry differs so the collision has to be resolved by setting a new label.
+                    unitConfig.clearLabel();
+                    break;
+
                 } catch (NotAvailableException ex) {
                     // thing matches to device but the meta config entry is missing so add it
                     final Builder builder = config.toBuilder();
