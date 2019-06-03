@@ -10,12 +10,12 @@ package org.openbase.bco.app.influxdbconnector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,7 +27,6 @@ import org.influxdata.client.*;
 import org.influxdata.client.write.Point;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import org.influxdata.client.domain.WritePrecision;
 import org.influxdata.client.domain.Bucket;
 import org.influxdata.client.write.events.WriteErrorEvent;
 import org.influxdata.client.write.events.WriteSuccessEvent;
@@ -54,15 +53,12 @@ import org.openbase.type.domotic.unit.UnitConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 
@@ -177,26 +173,26 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     @Override
     protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
 
-            // finish task
-            if (task != null && !task.isDone()) {
-                task.cancel(true);
-                try {
-                    task.get(5, TimeUnit.SECONDS);
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
-                }
-            }
-
-            // deregister
-            customUnitPool.removeObserver(unitStateObserver);
-            customUnitPool.deactivate();
+        // finish task
+        if (task != null && !task.isDone()) {
+            task.cancel(true);
             try {
-                if(influxDBClient != null) {
-                    influxDBClient.close();
-                }
+                task.get(5, TimeUnit.SECONDS);
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
+                ExceptionPrinter.printHistory(ex, logger);
             }
+        }
+
+        // deregister
+        customUnitPool.removeObserver(unitStateObserver);
+        customUnitPool.deactivate();
+        try {
+            if (influxDBClient != null) {
+                influxDBClient.close();
+            }
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
+        }
     }
 
     public void startObservation() throws InitializationException, InterruptedException {
@@ -321,6 +317,10 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     continue;
                 default:
                     break;
+            }
+            if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
+                String finalStateValue = stateValue;
+                stateValue = String.valueOf(fieldDescriptor.getEnumType().getValues().stream().filter(val -> val.getName().equals(finalStateValue)).findFirst().get().getNumber());
             }
 
             stateValues.put(fieldDescriptor.getName(), stateValue.toLowerCase());
