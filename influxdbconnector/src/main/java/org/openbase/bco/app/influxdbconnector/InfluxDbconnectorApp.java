@@ -27,7 +27,6 @@ import org.influxdata.client.*;
 import org.influxdata.client.write.Point;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import org.influxdata.client.domain.WritePrecision;
 import org.influxdata.client.domain.Bucket;
 import org.influxdata.client.write.events.WriteErrorEvent;
 import org.influxdata.client.write.events.WriteSuccessEvent;
@@ -54,15 +53,12 @@ import org.openbase.type.domotic.unit.UnitConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 
@@ -322,11 +318,9 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 default:
                     break;
             }
-            if (stateType.equals("enum")) {
+            if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
                 String finalStateValue = stateValue;
                 stateValue = String.valueOf(fieldDescriptor.getEnumType().getValues().stream().filter(val -> val.getName().equals(finalStateValue)).findFirst().get().getNumber());
-
-
             }
 
             stateValues.put(fieldDescriptor.getName(), stateValue.toLowerCase());
