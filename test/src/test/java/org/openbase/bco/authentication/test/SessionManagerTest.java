@@ -304,6 +304,43 @@ public class SessionManagerTest extends AuthenticationTest {
     }
 
     /**
+     * Test if a user can change her/his password and login with the new password.
+     *
+     * @throws java.lang.Exception if an exception occurs.
+     */
+    @Test(timeout = 5000)
+    public void testChangingPassword() throws Exception {
+        System.out.println("testChangingPassword");
+
+        // setup test values
+        final String userId = "userWithChangedPassword";
+        final String firstPassword = "first";
+        final String secondPassword = "second";
+
+        // create session manager
+        final SessionManager manager = new SessionManager(clientStore);
+
+        // login admin
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
+
+        // register new user
+        manager.registerUser(userId, firstPassword, false).get();
+        // logout admin
+        manager.logout();
+
+        // login new user
+        manager.loginUser(userId, firstPassword, false);
+        // change password of new user
+        manager.changePassword(userId, firstPassword, secondPassword).get();
+
+        // logout user
+        manager.logout();
+        // login again with new password
+        manager.loginUser(userId, secondPassword, false);
+    }
+
+
+    /**
      * Test of SessionManager.login() for client.
      *
      * @throws java.lang.Exception

@@ -631,8 +631,8 @@ public class SessionManager implements Shutdownable, Session {
 
         LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
                 .setId(userId)
-                .setOldCredentials(EncryptionHelper.encryptSymmetric(oldHash, sessionKey))
-                .setNewCredentials(EncryptionHelper.encryptSymmetric(newHash, sessionKey))
+                .setOldCredentials(ByteString.copyFrom(oldHash))
+                .setNewCredentials(ByteString.copyFrom(newHash))
                 .setSymmetric(true)
                 .build();
 
