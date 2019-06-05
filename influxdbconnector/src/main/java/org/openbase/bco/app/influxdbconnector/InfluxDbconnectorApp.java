@@ -42,14 +42,17 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceDescriptionType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.timing.TimestampType.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -210,7 +213,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                         if (serviceDescription.getPattern() != ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER) {
                             continue;
                         }
-                        saveInDB(unit, serviceDescription.getServiceType(), Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), ServiceTempusTypeType.ServiceTempusType.ServiceTempus.CURRENT, unit));
+                        saveInDB(unit, serviceDescription.getServiceType());
                     }
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not saveInDB " + unit, ex, logger);
@@ -221,7 +224,20 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         }
     }
 
-    private void saveInDB(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Message serviceState) {
+
+
+    private void storeServiceState(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
+        final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit);
+        final Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.LAST, unit);
+
+        final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MICROSECONDS) - 1l;
+        TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MICROSECONDS );
+    }
+
+    private void saveInDB(final Unit<?> unit, final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, final Message serviceState) {
+
+        // todo setup timestamp in data point.
+
         try {
             String initiator;
             try {
