@@ -27,10 +27,8 @@ import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.unit.UnitFilters;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
@@ -100,8 +98,9 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
      * If you call this method twice, only the latest filter set is used.
      *
      * @param filters this set of filters can be used to limit the number of unit to observer. No filter means every unit is observed by this pool.
+     *
      * @throws InitializationException is throw if the initialization fails.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException    is thrown if the thread was externally interrupted.
      */
     public void init(final Filter<UnitConfig>... filters) throws InitializationException, InterruptedException {
         init(Arrays.asList(filters));
@@ -114,8 +113,9 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
      * If you call this method twice, only the latest filter set is used.
      *
      * @param filters this set of filters can be used to limit the number of unit to observer. No filter means every unit is observed by this pool.
+     *
      * @throws InitializationException is throw if the initialization fails.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException    is thrown if the thread was externally interrupted.
      */
     @Override
     public void init(final Collection<Filter<UnitConfig>> filters) throws InitializationException, InterruptedException {
@@ -131,7 +131,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
         // skip if registry is not ready yet.
         try {
-            if(!Registries.getUnitRegistry().isDataAvailable()) {
+            if (!Registries.getUnitRegistry().isDataAvailable()) {
                 return;
             }
         } catch (NotAvailableException e) {
@@ -264,7 +264,14 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
         UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
         try {
             active = false;
-            Registries.getUnitRegistry().removeDataObserver(unitRegistryDataObserver);
+            try {
+                Registries.getUnitRegistry().removeDataObserver(unitRegistryDataObserver);
+            } catch (NotAvailableException ex) {
+                if (ExceptionProcessor.getInitialCause(ex) instanceof ShutdownInProgressException) {
+                    // in case the shutdown was initiated the data observer will be removed anyway.
+                }
+                ExceptionPrinter.printHistory("Could not remove data observer from unit registry!", ex, LOGGER);
+            }
             // deregister all observed units
             for (UnitConfig unitConfig : unitConfigDiff.getOriginalMessages().getMessages()) {
                 removeUnitRemote(unitConfig.getId());
