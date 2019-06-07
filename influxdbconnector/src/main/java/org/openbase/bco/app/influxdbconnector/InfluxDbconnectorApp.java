@@ -279,9 +279,9 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             storeServiceState(unit, serviceType, lastServiceState);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(
-                    "UnitType[" + unit.getUnitType().toString() + "]" +
-                            "ServiceType[" + serviceType.toString() + "]" +
-                            "CurrentServiceState[" + currentServiceState.toString() + "]" +
+                    "UnitType[" + unit.getUnitType().toString() + "] " +
+                            "ServiceType[" + serviceType.toString() + "] " +
+                            "CurrentServiceState[" + currentServiceState.toString() + "] " +
                             "LastServiceState[" + lastServiceState.toString() + "]"
                     , ex, logger, LogLevel.WARN);
 
