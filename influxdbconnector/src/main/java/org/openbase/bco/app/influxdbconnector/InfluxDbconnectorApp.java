@@ -46,6 +46,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceDescriptionType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
@@ -86,6 +87,12 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     private static final String INFLUXDB_ORG_DEFAULT = "openbase";
     private static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
+    private static final Integer HEARTBEAT_PERIOD = 1;
+    private static final TimeUnit HEARTBEAT_TIME_UNIT = TimeUnit.SECONDS;
+    private static final Integer HEARTBEAT_INITIAL_DELAY = 0;
+    private static final Integer HEARTBEAT_VALUE = 1;
+    private static final String HEARTBEAT_MEASUREMENT = "heartbeat";
+    private static final String HEARTBEAT_FIELD = "alive";
 
 
     private WriteApi writeApi;
@@ -93,6 +100,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private Bucket bucket;
     private char[] token;
     private Future task;
+    private Future heartbeat;
     private String databaseUrl;
     private String bucketName;
     private InfluxDBClient influxDBClient;
@@ -105,7 +113,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
     public InfluxDbconnectorApp() throws InstantiationException {
         this.customUnitPool = new CustomUnitPool();
-        this.unitStateObserver = (source, data) -> storeServiceState((Unit) source.getServiceProvider(), source.getServiceType(), data);
+        this.unitStateObserver = (source, data) -> storeServiceState((Unit) source.getServiceProvider(), source.getServiceType());
     }
 
 
@@ -117,7 +125,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         batchTime = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT));
         batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
         databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
-        token = "L8Z1fNDp5F2dvGbDkgyUgIeqYwi5ot54sCWR5WnCNK9NC5ur-SKYjTCfNSsEIGPeVPxtAtR7quLlsZpjkGYtbA==".toCharArray();
+        token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
         org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
         return config;
     }
@@ -129,7 +137,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         task = GlobalCachedExecutorService.submit(() -> {
 
             try {
-                logger.debug("Execute influx db connector");
+                logger.info("Execute influx db connector");
 
                 // connect to db
                 connectToDatabase();
@@ -169,8 +177,22 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             } catch (InterruptedException ex) {
                 // finish task because its canceled.
             }
+            try {
+                heartbeat = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
+                    // logger.info("write heartbeat");
+                    Point point = Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_VALUE);
+                    writeApi.writePoint(bucketName, org, point);
+
+
+                }, HEARTBEAT_INITIAL_DELAY, HEARTBEAT_PERIOD, HEARTBEAT_TIME_UNIT);
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory("Could not write heartbeat!", ex, logger, LogLevel.WARN);
+            }
+
 
         });
+
+
         return activationState.getResponsibleAction();
     }
 
@@ -178,8 +200,18 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
 
         // finish task
+        logger.info("finish task");
         if (task != null && !task.isDone()) {
             task.cancel(true);
+            try {
+                task.get(5, TimeUnit.SECONDS);
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+            }
+        }
+        logger.info("finish heartbeat");
+        if (heartbeat != null && !heartbeat.isDone()) {
+            heartbeat.cancel(true);
             try {
                 task.get(5, TimeUnit.SECONDS);
             } catch (Exception ex) {
@@ -199,6 +231,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         }
     }
 
+
     public void startObservation() throws InitializationException, InterruptedException {
         try {
             // setup pool
@@ -217,7 +250,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                         storeServiceState(unit, serviceDescription.getServiceType());
                     }
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not saveInDB " + unit, ex, logger);
+                    ExceptionPrinter.printHistory("Could not store service state " + unit, ex, logger);
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -227,26 +260,43 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
 
     private void storeServiceState(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
-        final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.CURRENT);
-        final Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST);
 
-        final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MICROSECONDS) - 1l;
-        TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MICROSECONDS);
-        storeServiceState(unit, serviceType, currentServiceState);
-        storeServiceState(unit, serviceType, lastServiceState);
 
+        final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
+        final Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
+
+        try {
+            final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MILLISECONDS) - 1l;
+            if (String.valueOf(serviceStateTimestamp).length() == 13) {
+            } else {
+                throw new CouldNotPerformException("Timestamp wrong: " + unit.getUnitType().toString() + " | " + serviceType.toString() + " | " + serviceStateTimestamp);
+            }
+            TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MILLISECONDS);
+            storeServiceState(unit, serviceType, currentServiceState);
+            try {
+                storeServiceState(unit, serviceType, lastServiceState);
+            } catch (NotAvailableException ex) {
+                logger.warn("\nUnitType: " + unit.getUnitType().toString() + "\n" +
+                        "ServiceType: " + serviceType.toString() + "\n" +
+                        "CurrentServiceState: " + currentServiceState.toString() + "\n" +
+                        "LastServiceState: " + lastServiceState.toString() + "\n" +
+                        "LastServiceState: " + ex);
+            }
+        } catch (NotAvailableException ex) {
+
+            logger.warn("\nUnitType: " + unit.getUnitType().toString() + "\n" +
+                    "ServiceType: " + serviceType.toString() + "\n" +
+                    "CurrentServiceState: " + currentServiceState.toString() + "\n" +
+                    "LastServiceState: " + lastServiceState.toString() + "\n" +
+                    "CurrentServiceState: " + ex);
+        }
     }
 
     private void storeServiceState(final Unit<?> unit, final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, final Message serviceState) throws NotAvailableException {
 
-        // todo setup timestamp in data point.
-        final long timestamp;
-        try {
-            timestamp = TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS);
-        } catch (NotAvailableException e) {
-            throw new NotAvailableException("timestamp");
 
-        }
+        final long timestamp = TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS);
+
 
         try {
             String initiator;
@@ -279,10 +329,11 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 }
             }
             if (values > 0) {
+
                 writeApi.writePoint(bucketName, org, point);
             }
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not saveInDB " + serviceType.name() + " of " + unit, ex, logger);
+            ExceptionPrinter.printHistory("Could not store service state " + serviceType.name() + " of " + unit, ex, logger);
         }
     }
 
@@ -356,7 +407,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         return stateValues;
     }
 
-    private boolean checkConnection() throws CouldNotPerformException {
+    private void checkConnection() throws CouldNotPerformException {
         if (influxDBClient.health().getStatus().getValue() != "pass") {
             throw new CouldNotPerformException("Could not connect to database server at " + databaseUrl + "!");
 
@@ -365,15 +416,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         WriteOptions writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build();
         writeApi = influxDBClient.getWriteApi(writeoptions);
         writeApi.listenEvents(WriteSuccessEvent.class, event -> {
-            logger.debug("Successfully wrote data into db");
+            logger.info("Successfully wrote data into db");
         });
         writeApi.listenEvents(WriteErrorEvent.class, event -> {
             Throwable exception = event.getThrowable();
             logger.warn(exception.getMessage());
         });
-        logger.debug("Connected to Influxdb at " + databaseUrl);
-
-        return true;
+        logger.info("Connected to Influxdb at " + databaseUrl);
 
 
     }
@@ -386,14 +435,14 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
         }
-        logger.debug(" Try to connect to influxDB at " + databaseUrl);
+        logger.info(" Try to connect to influxDB at " + databaseUrl);
         influxDBClient = InfluxDBClientFactory
                 .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
     }
 
 
     private void getDatabaseBucket() throws NotAvailableException {
-        logger.debug("Get bucket " + bucketName);
+        logger.info("Get bucket " + bucketName);
         bucket = influxDBClient.getBucketsApi().findBucketByName(bucketName);
         if (bucket == null) {
             throw new NotAvailableException("bucket", bucketName);
