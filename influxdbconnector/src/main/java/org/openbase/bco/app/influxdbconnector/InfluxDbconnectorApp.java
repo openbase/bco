@@ -125,7 +125,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         batchTime = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT));
         batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
         databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
-        token = "L8Z1fNDp5F2dvGbDkgyUgIeqYwi5ot54sCWR5WnCNK9NC5ur-SKYjTCfNSsEIGPeVPxtAtR7quLlsZpjkGYtbA==".toCharArray();
+        token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
         org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
         return config;
     }
@@ -268,7 +268,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         try {
             final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MILLISECONDS) - 1l;
             if (String.valueOf(serviceStateTimestamp).length() != 13) {
-                throw new CouldNotPerformException("Timestamp wrong: " + unit.getUnitType().toString() + " | " + serviceType.toString() + " | " + serviceStateTimestamp);
+                throw new InvalidStateException("Timestamp wrong (ms): " + unit.getUnitType().toString() + " | " + serviceType.toString() + " | " + serviceStateTimestamp);
             }
 
 
@@ -298,10 +298,14 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
     }
 
-    private void storeServiceState(final Unit<?> unit, final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, final Message serviceState) throws NotAvailableException {
+    private void storeServiceState(final Unit<?> unit, final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, final Message serviceState) throws InvalidStateException {
 
 
         final long timestamp = TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS);
+        //Todo: remove when bug  is fixed
+        if (String.valueOf(timestamp).length() != 13) {
+            throw new InvalidStateException("Timestamp wrong (ms): " + unit.getUnitType().toString() + " | " + serviceType.toString() + " | " + timestamp);
+        }
 
 
         try {
