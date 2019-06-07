@@ -22,6 +22,7 @@ package org.openbase.bco.dal.control.layer.unit.connection;
  * #L%
  */
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
@@ -294,7 +295,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setDoorState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getDoorStateBuilder().setValue(doorState), logger).build());
+            dataBuilder.getInternalBuilder().setDoorState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getDoorStateBuilder().setValue(doorState), TimeUnit.MICROSECONDS, logger).build());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
         }
@@ -347,7 +348,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setWindowState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getWindowStateBuilder().setValue(windowState), logger).build());
+            dataBuilder.getInternalBuilder().setWindowState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getWindowStateBuilder().setValue(windowState), TimeUnit.MICROSECONDS, logger).build());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
         }
