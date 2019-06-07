@@ -10,6 +10,9 @@ import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.dal.DimmerDataType.DimmerData;
 
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
+
 /*
  * #%L
  * BCO DAL Control
@@ -31,8 +34,8 @@ import org.openbase.type.domotic.unit.dal.DimmerDataType.DimmerData;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DimmerController extends AbstractDALUnitController<DimmerData, DimmerData.Builder> implements Dimmer {
@@ -51,11 +54,39 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     protected void applyCustomDataUpdate(DimmerData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case BRIGHTNESS_STATE_SERVICE:
-                if (internalBuilder.getBrightnessState().getBrightness() == 0) {
+
+                updateLastWithCurrentState(POWER_STATE_SERVICE, internalBuilder);
+
+                // sync power state
+                if (internalBuilder.getBrightnessState().getBrightness() == 0d) {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.OFF);
                 } else {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
                 }
+
+                copyResponsibleAction(BRIGHTNESS_STATE_SERVICE, POWER_STATE_SERVICE, internalBuilder);
+
+                break;
+            case POWER_STATE_SERVICE:
+
+                updateLastWithCurrentState(BRIGHTNESS_STATE_SERVICE, internalBuilder);
+
+                // sync brightness and color state.
+                switch (internalBuilder.getPowerState().getValue()) {
+                    case ON:
+                        if (internalBuilder.getBrightnessStateBuilder().getBrightness() == 0d) {
+                            internalBuilder.getBrightnessStateBuilder().setBrightness(1d);
+                        }
+                        break;
+                    case OFF:
+                        internalBuilder.getBrightnessStateBuilder().setBrightness(0d);
+                        break;
+                    default:
+                        break;
+                }
+
+                copyResponsibleAction(POWER_STATE_SERVICE, BRIGHTNESS_STATE_SERVICE, internalBuilder);
+
                 break;
         }
     }

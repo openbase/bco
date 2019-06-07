@@ -164,7 +164,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                 final HSBColor hsbColor = internalBuilder.getColorState().getColor().getHsbColor();
                 internalBuilder.getBrightnessStateBuilder().setBrightness(hsbColor.getBrightness());
 
-                if (hsbColor.getBrightness() == 0) {
+                if (hsbColor.getBrightness() == 0d) {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.OFF);
                 } else {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
@@ -183,7 +183,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                 internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().setBrightness(internalBuilder.getBrightnessState().getBrightness());
 
                 // sync power state
-                if (internalBuilder.getBrightnessState().getBrightness() == 0) {
+                if (internalBuilder.getBrightnessState().getBrightness() == 0d) {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.OFF);
                 } else {
                     internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
@@ -201,16 +201,16 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                 // sync brightness and color state.
                 switch (internalBuilder.getPowerState().getValue()) {
                     case ON:
-                        if(internalBuilder.getBrightnessStateBuilder().getBrightness() == 0) {
-                            internalBuilder.getBrightnessStateBuilder().setBrightness(0);
+                        if (internalBuilder.getBrightnessStateBuilder().getBrightness() == 0d) {
+                            internalBuilder.getBrightnessStateBuilder().setBrightness(1d);
                         }
-                        if(internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().getBrightness() == 0) {
-                            internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().setBrightness(0);
+                        if (internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().getBrightness() == 0d) {
+                            internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().setBrightness(1d);
                         }
                         break;
                     case OFF:
-                        internalBuilder.getBrightnessStateBuilder().setBrightness(0);
-                        internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().setBrightness(0);
+                        internalBuilder.getBrightnessStateBuilder().setBrightness(0d);
+                        internalBuilder.getColorStateBuilder().getColorBuilder().getHsbColorBuilder().setBrightness(0d);
                         break;
                     default:
                         break;
