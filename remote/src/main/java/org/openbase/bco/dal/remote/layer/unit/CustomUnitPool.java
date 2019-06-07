@@ -267,11 +267,10 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
             try {
                 Registries.getUnitRegistry().removeDataObserver(unitRegistryDataObserver);
             } catch (NotAvailableException ex) {
-                if (ExceptionProcessor.getInitialCause(ex) instanceof ShutdownInProgressException) {
-                    // in case the shutdown was initiated the data observer will be removed anyway.
-                }
-                ExceptionPrinter.printHistory("Could not remove data observer from unit registry!", ex, LOGGER);
+                // if the registry is not available an observer deregistration is not required.
+                // This can for example be the case when the unit registry has already been terminated during the shutdown progress.
             }
+
             // deregister all observed units
             for (UnitConfig unitConfig : unitConfigDiff.getOriginalMessages().getMessages()) {
                 removeUnitRemote(unitConfig.getId());
