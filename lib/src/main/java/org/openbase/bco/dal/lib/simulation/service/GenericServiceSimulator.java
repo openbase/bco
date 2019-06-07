@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.simulation.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -34,7 +35,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
+ * <p>
  * This generic simulator detects the available service values the service provides any tries to apply those states in random order.
  */
 public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Message> {
@@ -43,7 +44,8 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Mess
      * Creates a new service simulator to control the given unit.
      *
      * @param unitController the controller to simulate.
-     * @param serviceType the service type to simulate.
+     * @param serviceType    the service type to simulate.
+     *
      * @throws InstantiationException is thrown in case the current thread was externally interrupted.
      */
     public GenericServiceSimulator(final UnitController unitController, final ServiceType serviceType) throws InstantiationException {
@@ -59,6 +61,7 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Mess
      * Method detects the service states of the given service type.
      *
      * @param serviceType the type of the service states.
+     *
      * @throws CouldNotPerformException is thrown if the detection fails.
      */
     private void detectAndRegisterServiceStates(final ServiceType serviceType) throws CouldNotPerformException {
@@ -77,7 +80,7 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Mess
                     MultiException.push(this, ex, exceptionStack);
                 }
             });
-            MultiException.checkAndThrow(() ->"Could not generate all service values!", exceptionStack);
+            MultiException.checkAndThrow(() -> "Could not generate all service values!", exceptionStack);
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory(serviceType.name() + " does not provide any service states.", ex, LOGGER, LogLevel.DEBUG);
         } catch (CouldNotPerformException ex) {
