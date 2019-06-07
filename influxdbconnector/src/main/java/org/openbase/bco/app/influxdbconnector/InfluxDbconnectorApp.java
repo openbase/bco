@@ -76,6 +76,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private static final Integer CONNECT_TIMOUT = 40;
     private static final Integer MAX_TIMEOUT = 300000;
     private static final Integer ADDITIONAL_TIMEOUT = 60000;
+    private static final Integer DATABASE_TIMEOUT_DEFAULT = 60000;
     private static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
     private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
     private static final String INFLUXDB_BATCH_TIME = "INFLUXDB_BATCH_TIME";
@@ -96,7 +97,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
 
     private WriteApi writeApi;
-    private Integer databaseTimeout = 60000;
+    private Integer databaseTimeout = DATABASE_TIMEOUT_DEFAULT;
     private Bucket bucket;
     private char[] token;
     private Future task;
