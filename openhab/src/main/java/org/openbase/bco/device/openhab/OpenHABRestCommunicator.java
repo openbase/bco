@@ -37,6 +37,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -58,12 +59,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class OpenHABRestCommunicator implements Shutdownable {
-
-    //TODO: parse from java properties
-    public static final String OPENHAB_IP = "localhost";
-    public static final String PORT = "8080";
 
     public static final String SEPARATOR = "/";
     public static final String REST_TARGET = "rest";
@@ -110,7 +108,6 @@ public class OpenHABRestCommunicator implements Shutdownable {
             final Client client = ClientBuilder.newClient();
             final URI openHABRestURI = JPService.getProperty(JPOpenHABURI.class).getValue().resolve(SEPARATOR + REST_TARGET);
             this.baseWebTarget = client.target(openHABRestURI);
-
 
             this.gson = new GsonBuilder().create();
             this.jsonParser = new JsonParser();
@@ -164,7 +161,7 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             if (sseEventSource == null) {
                 final WebTarget webTarget = baseWebTarget.path(EVENTS_TARGET);
-                sseEventSource = SseEventSource.target(webTarget).build();
+                sseEventSource = SseEventSource.target(webTarget).reconnectingEvery(30, TimeUnit.SECONDS).build();
 
                 try {
                     LOGGER.info("Wait for openHAB...");
@@ -188,6 +185,8 @@ public class OpenHABRestCommunicator implements Shutdownable {
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify listeners on topic[" + topicRegex + "]", ex), LOGGER);
                 }
+            }, ex -> {
+                ExceptionPrinter.printHistory("Openhab connection error detected!", ex, LOGGER, LogLevel.WARN);
             });
         }
     }
