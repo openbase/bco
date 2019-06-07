@@ -54,7 +54,6 @@ import org.openbase.type.domotic.service.ServiceTempusTypeType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType;
-import org.openbase.type.timing.TimestampType.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +136,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         task = GlobalCachedExecutorService.submit(() -> {
 
             try {
-                logger.info("Execute influx db connector");
+                logger.debug("Execute influx db connector");
 
                 // connect to db
                 connectToDatabase();
@@ -179,7 +178,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             }
             try {
                 heartbeat = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
-                    // logger.info("write heartbeat");
+                    // logger.debug("write heartbeat");
                     Point point = Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_VALUE);
                     writeApi.writePoint(bucketName, org, point);
 
@@ -200,7 +199,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
 
         // finish task
-        logger.info("finish task");
+        logger.debug("finish task");
         if (task != null && !task.isDone()) {
             task.cancel(true);
             try {
@@ -209,7 +208,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         }
-        logger.info("finish heartbeat");
+        logger.debug("finish heartbeat");
         if (heartbeat != null && !heartbeat.isDone()) {
             heartbeat.cancel(true);
             try {
@@ -416,13 +415,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         WriteOptions writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build();
         writeApi = influxDBClient.getWriteApi(writeoptions);
         writeApi.listenEvents(WriteSuccessEvent.class, event -> {
-            logger.info("Successfully wrote data into db");
+            logger.debug("Successfully wrote data into db");
         });
         writeApi.listenEvents(WriteErrorEvent.class, event -> {
             Throwable exception = event.getThrowable();
             logger.warn(exception.getMessage());
         });
-        logger.info("Connected to Influxdb at " + databaseUrl);
+        logger.debug("Connected to Influxdb at " + databaseUrl);
 
 
     }
@@ -435,14 +434,14 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
         }
-        logger.info(" Try to connect to influxDB at " + databaseUrl);
+        logger.debug(" Try to connect to influxDB at " + databaseUrl);
         influxDBClient = InfluxDBClientFactory
                 .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
     }
 
 
     private void getDatabaseBucket() throws NotAvailableException {
-        logger.info("Get bucket " + bucketName);
+        logger.debug("Get bucket " + bucketName);
         bucket = influxDBClient.getBucketsApi().findBucketByName(bucketName);
         if (bucket == null) {
             throw new NotAvailableException("bucket", bucketName);
