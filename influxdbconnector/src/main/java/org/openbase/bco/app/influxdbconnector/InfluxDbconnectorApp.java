@@ -54,7 +54,6 @@ import org.openbase.type.domotic.service.ServiceTempusTypeType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType;
-import org.openbase.type.timing.TimestampType.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +73,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private static final Integer READ_TIMEOUT = 60;
     private static final Integer WRITE_TIMEOUT = 60;
     private static final Integer CONNECT_TIMOUT = 40;
-    private static final Integer MAX_TIMEOUT = 300000;
+    private static final long  MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(5);;
     private static final Integer ADDITIONAL_TIMEOUT = 60000;
     private static final Integer DATABASE_TIMEOUT_DEFAULT = 60000;
     private static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
@@ -88,10 +87,10 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     private static final String INFLUXDB_ORG_DEFAULT = "openbase";
     private static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
-    private static final Integer HEARTBEAT_PERIOD = 1;
-    private static final TimeUnit HEARTBEAT_TIME_UNIT = TimeUnit.SECONDS;
+    private static final long HEARTBEAT_PERIOD = TimeUnit.MINUTES.toMillis(15);
     private static final Integer HEARTBEAT_INITIAL_DELAY = 0;
-    private static final Integer HEARTBEAT_VALUE = 1;
+    private static final Integer HEARTBEAT_ONLINE_VALUE = 1;
+    private static final Integer HEARTBEAT_OFFLINE_VALUE = 0;
     private static final String HEARTBEAT_MEASUREMENT = "heartbeat";
     private static final String HEARTBEAT_FIELD = "alive";
 
@@ -179,18 +178,23 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 // finish task because its canceled.
             }
             try {
+
+                // write initial heartbeat
+                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE));
+                Thread.sleep(1);
+                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE));
+
                 heartbeat = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
                     // logger.debug("write heartbeat");
-                    Point point = Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_VALUE);
-                    writeApi.writePoint(bucketName, org, point);
+                    writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE));
 
 
-                }, HEARTBEAT_INITIAL_DELAY, HEARTBEAT_PERIOD, HEARTBEAT_TIME_UNIT);
+                }, HEARTBEAT_INITIAL_DELAY, HEARTBEAT_PERIOD, TimeUnit.MILLISECONDS);
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory("Could not write heartbeat!", ex, logger, LogLevel.WARN);
             }
 
-
+            return null;
         });
 
 
@@ -219,6 +223,11 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         }
+
+        // write final heartbeat
+        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE));
+        Thread.sleep(1);
+        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE));
 
         // deregister
         customUnitPool.removeObserver(unitStateObserver);
