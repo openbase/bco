@@ -52,10 +52,13 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.dal.LightDataType.LightData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -203,6 +206,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
                 final Object serviceState;
 
+                // compute current service state
                 try {
                     final AbstractServiceRemote serviceRemote = getServiceRemote(serviceType);
                     /* When the locationRemote is active and a config update occurs the serviceRemoteManager clears
@@ -228,6 +232,15 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                     continue;
                 }
 
+                // copy current into last service state if possible
+                try {
+                    final Message newLastState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, builder);
+                    Services.invokeServiceMethod(serviceType, ServicePattern.OPERATION, ServiceTempus.LAST, builder, newLastState);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new NotSupportedException("Could not store last service state. Field[" + serviceType.name().toLowerCase().replace("_service", "") + "Last] is missing in protobuf type " + dataClass + "!", this, ex), LOGGER);
+                }
+
+                // store new current state
                 try {
                     Services.invokeOperationServiceMethod(serviceType, builder, serviceState);
                 } catch (CouldNotPerformException ex) {
@@ -565,6 +578,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             for (final Remote<D> remote : serviceRemoteMap.values()) {
+                // todo: split timeout
                 remote.waitForData(timeout, timeUnit);
             }
         }
