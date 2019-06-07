@@ -33,8 +33,6 @@ import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
  */
 public class BrightnessStateServiceSimulator extends AbstractScheduledServiceSimulator<BrightnessState> {
 
-    public static final int MAX_BRIGHTNESS = 100;
-
     /**
      * Creates a new custom unit simulator.
      * @param unitController the unit to simulate.
@@ -51,6 +49,6 @@ public class BrightnessStateServiceSimulator extends AbstractScheduledServiceSim
      */
     @Override
     protected BrightnessState getNextServiceState() throws NotAvailableException {
-        return BrightnessState.newBuilder().setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).setBrightness(RANDOM.nextInt(MAX_BRIGHTNESS)).build();
+        return BrightnessState.newBuilder().setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).setBrightness(RANDOM.nextDouble()).build();
     }
 }

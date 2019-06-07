@@ -34,8 +34,8 @@ import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
  */
 public class BatteryStateServiceSimulator extends AbstractScheduledServiceSimulator<BatteryState> {
 
-    public static final int MAX_BATTERY_LEVEL = 100;
-    public static final int MIN_BATTERY_LEVEL = 0;
+    public static final double MAX_BATTERY_LEVEL = 1d;
+    public static final double MIN_BATTERY_LEVEL = 0;
 
     private final BatteryState.Builder simulatedBatteryState;
 
@@ -47,14 +47,14 @@ public class BatteryStateServiceSimulator extends AbstractScheduledServiceSimula
     public BatteryStateServiceSimulator(final UnitController unitController) {
         super(unitController, ServiceType.BATTERY_STATE_SERVICE);
         this.simulatedBatteryState = BatteryState.newBuilder();
-        this.simulatedBatteryState.setLevel(RANDOM.nextInt(MAX_BATTERY_LEVEL));
+        this.simulatedBatteryState.setLevel(RANDOM.nextDouble());
     }
 
     private BatteryState getSimulatedBatteryState() {
         if (simulatedBatteryState.getLevel() <= 0) {
             simulatedBatteryState.setLevel(MAX_BATTERY_LEVEL);
         }
-        simulatedBatteryState.setLevel(Math.max(MIN_BATTERY_LEVEL, simulatedBatteryState.getLevel() - (RANDOM.nextInt(2))));
+        simulatedBatteryState.setLevel(Math.max(MIN_BATTERY_LEVEL, simulatedBatteryState.getLevel() - (RANDOM.nextDouble() * 0.02d)));
         return simulatedBatteryState.build();
     }
 

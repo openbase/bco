@@ -53,8 +53,8 @@ public class ColorStateServiceSimulator extends AbstractScheduledServiceSimulato
     @Override
     protected ColorState getNextServiceState() throws NotAvailableException {
         return ColorState.newBuilder().setColor(Color.newBuilder().setHsbColor(HSBColorType.HSBColor.newBuilder()
-                .setBrightness(RANDOM.nextInt(100))
-                .setSaturation(RANDOM.nextInt(100))
+                .setBrightness(RANDOM.nextDouble())
+                .setSaturation(RANDOM.nextDouble())
                 .setHue(RANDOM.nextInt(360)).build()).build()).build();
     }
 }

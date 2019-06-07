@@ -34,9 +34,9 @@ import org.openbase.type.domotic.state.BlindStateType.BlindState;
  */
 public class BlindStateServiceSimulator extends AbstractScheduledServiceSimulator<BlindState> {
 
-    public static final int MIN_OPENING_RATIO = 0;
-    public static final int MAX_OPENING_RATIO = 100;
-    public static final int OPENING_RATIO_STEP = 10;
+    public static final double MIN_OPENING_RATIO = 0d;
+    public static final double MAX_OPENING_RATIO = 1d;
+    public static final double OPENING_RATIO_STEP = 0.1d;
 
     private final BlindState.Builder simulatedBlindState;
 
@@ -49,7 +49,7 @@ public class BlindStateServiceSimulator extends AbstractScheduledServiceSimulato
         super(unitController, ServiceType.BLIND_STATE_SERVICE);
         this.simulatedBlindState = BlindState.newBuilder();
         this.simulatedBlindState.setValue(BlindState.State.STOP);
-        this.simulatedBlindState.setOpeningRatio(100);
+        this.simulatedBlindState.setOpeningRatio(1d);
     }
 
     private BlindState getSimulatedBlindState() {
