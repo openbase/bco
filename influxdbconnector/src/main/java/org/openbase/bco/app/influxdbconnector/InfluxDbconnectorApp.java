@@ -263,7 +263,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
 
         final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
-        final Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
+        Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
 
         try {
             final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MILLISECONDS) - 1l;
@@ -272,7 +272,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             }
 
 
-            TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MILLISECONDS);
+            lastServiceState = TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MILLISECONDS);
             storeServiceState(unit, serviceType, currentServiceState);
             try {
                 storeServiceState(unit, serviceType, lastServiceState);
