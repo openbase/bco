@@ -276,24 +276,14 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
             lastServiceState = TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MILLISECONDS);
             storeServiceState(unit, serviceType, currentServiceState);
-            try {
-                storeServiceState(unit, serviceType, lastServiceState);
-            } catch (NotAvailableException ex) {
-                logger.warn("\nUnitType: " + unit.getUnitType().toString() + "\n" +
-                        "ServiceType: " + serviceType.toString() + "\n" +
-                        "CurrentServiceState: " + currentServiceState.toString() + "\n" +
-                        "LastServiceState: " + lastServiceState.toString() + "\n" +
-                        "LastServiceState: " + ex);
-
-
-            }
-        } catch (NotAvailableException ex) {
-
-            logger.warn("\nUnitType: " + unit.getUnitType().toString() + "\n" +
-                    "ServiceType: " + serviceType.toString() + "\n" +
-                    "CurrentServiceState: " + currentServiceState.toString() + "\n" +
-                    "LastServiceState: " + lastServiceState.toString() + "\n" +
-                    "CurrentServiceState: " + ex);
+            storeServiceState(unit, serviceType, lastServiceState);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(
+                    "UnitType[" + unit.getUnitType().toString() + "] " +
+                            "ServiceType[" + serviceType.toString() + "] " +
+                            "CurrentServiceState[" + currentServiceState.toString() + "] " +
+                            "LastServiceState[" + lastServiceState.toString() + "]"
+                    , ex, logger, LogLevel.WARN);
 
         }
 
