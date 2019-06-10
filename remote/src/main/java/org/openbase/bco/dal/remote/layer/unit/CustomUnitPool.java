@@ -144,12 +144,12 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
             try {
 
                 // handle new units
-                for (Entry<String, IdentifiableMessage<String, UnitConfig, Builder>> entry : unitConfigDiff.getNewMessageMap().entrySet()) {
+                unitLoop : for (Entry<String, IdentifiableMessage<String, UnitConfig, Builder>> entry : unitConfigDiff.getNewMessageMap().entrySet()) {
 
                     // apply unit filter
                     for (Filter<UnitConfig> filter : filterSet) {
                         if (filter.match(entry.getValue().getMessage())) {
-                            continue;
+                            continue unitLoop;
                         }
                     }
                     addUnitRemote(entry.getKey());
