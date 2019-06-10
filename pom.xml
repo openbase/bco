@@ -449,6 +449,11 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
+            <artifactId>bco.device.openhab</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
             <artifactId>bco.registry.util</artifactId>
             <version>${project.version}</version>
         </dependency>
