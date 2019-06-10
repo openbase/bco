@@ -29,6 +29,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Timeout;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -45,12 +46,13 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
     public final static String META_CONFIG_AUTO_RESET_BUTTON_STATE = "AUTO_RESET_BUTTON_STATE";
 
     public static final long DEAULT_TRIGGER_TIMEOUT = 300;
-    public static final ButtonState BUTTON_STATE_RELEASED = ButtonState.newBuilder().setValue(State.RELEASED).build();
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
+
+    private ButtonState buttonDataToReset;
 
     /**
      * Timeout implementation for trigger mode
@@ -58,8 +60,8 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
     private final Timeout triggerResetTimeout = new Timeout(DEAULT_TRIGGER_TIMEOUT) {
         @Override
         public void expired() {
-            try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
-                dataBuilder.getInternalBuilder().setButtonState(BUTTON_STATE_RELEASED);
+            try {
+                applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(buttonDataToReset.toBuilder().setValue(State.RELEASED)), ServiceType.BUTTON_STATE_SERVICE);
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not reset button state!", ex), logger);
             }
@@ -80,6 +82,7 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
                         if (Boolean.parseBoolean(generateVariablePool().getValue(META_CONFIG_AUTO_RESET_BUTTON_STATE))) {
                             try {
                                 triggerResetTimeout.restart();
+                                buttonDataToReset = internalBuilder.getButtonState();
                             } catch (CouldNotPerformException ex) {
                                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not trigger auto reset!", ex), logger);
                             }

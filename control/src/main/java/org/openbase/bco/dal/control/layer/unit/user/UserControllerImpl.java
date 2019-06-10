@@ -197,7 +197,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                     internalBuilder.getPresenceStateBuilder().setValue(State.PRESENT);
                 }
 
-                copyResponsibleAction(USER_TRANSIT_STATE_SERVICE, PRESENCE_STATE_SERVICE, internalBuilder);
+                copyResponsibleAction(LOCAL_POSITION_STATE_SERVICE, PRESENCE_STATE_SERVICE, internalBuilder);
                 break;
         }
     }

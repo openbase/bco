@@ -104,9 +104,9 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
             this.presenceDetector.addDataObserver(new Observer<DataProvider<PresenceState>, PresenceState>() {
                 @Override
                 public void update(DataProvider<PresenceState> source, PresenceState data) throws Exception {
-                    try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+                    try {
                         LocationManagerImpl.LOGGER.debug("Set " + this + " presence to [" + data.getValue() + "]");
-                        dataBuilder.getInternalBuilder().setPresenceState(data);
+                        applyDataUpdate(data, ServiceType.PRESENCE_STATE_SERVICE);
                     } catch (CouldNotPerformException ex) {
                         throw new CouldNotPerformException("Could not apply presence state change!", ex);
                     }
@@ -126,13 +126,11 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
         }
         super.init(unitConfig);
 
-        // do not notify because not activated yet
-        try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this, false)) {
-            dataBuilder.getInternalBuilder().setStandbyState(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build());
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply initial standby service states!", ex), LocationManagerImpl.LOGGER, LogLevel.WARN);
+        try {
+            applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING)), ServiceType.STANDBY_STATE_SERVICE);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply initial standby service state!", ex), LocationManagerImpl.LOGGER, LogLevel.WARN);
         }
-
         presenceDetector.init(this);
     }
 

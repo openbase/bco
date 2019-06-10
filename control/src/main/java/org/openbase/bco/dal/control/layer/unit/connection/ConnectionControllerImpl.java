@@ -21,6 +21,7 @@ package org.openbase.bco.dal.control.layer.unit.connection;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -58,7 +59,6 @@ import org.openbase.type.domotic.unit.connection.ConnectionConfigType.Connection
 import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ConnectionControllerImpl extends AbstractBaseUnitController<ConnectionData, ConnectionData.Builder> implements ConnectionController {
@@ -238,12 +238,8 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                     break;
             }
         } catch (CouldNotPerformException ex) {
-            try {
-                if (!JPService.getProperty(JPBenchmarkMode.class).getValue()) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
-                }
-            } catch (JPNotAvailableException exx) {
-                // ignore
+            if (!JPService.getValue(JPBenchmarkMode.class, false)) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
             }
         }
     }
@@ -294,10 +290,10 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
             throw new CouldNotPerformException("Could not update door state", ex);
         }
 
-        try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setDoorState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getDoorStateBuilder().setValue(doorState), TimeUnit.MICROSECONDS, logger).build());
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply brightness data change!", ex);
+        try {
+            applyDataUpdate(TimestampProcessor.updateTimestamp(timestamp, DoorState.newBuilder().setValue(doorState), TimeUnit.MICROSECONDS, logger), ServiceType.DOOR_STATE_SERVICE);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply new door state!", ex);
         }
     }
 
@@ -347,15 +343,15 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
             throw new CouldNotPerformException("Could not update door state", ex);
         }
 
-        try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setWindowState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getWindowStateBuilder().setValue(windowState), TimeUnit.MICROSECONDS, logger).build());
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply brightness data change!", ex);
+        try {
+            applyDataUpdate(TimestampProcessor.updateTimestamp(timestamp, WindowState.newBuilder().setValue(windowState), TimeUnit.MICROSECONDS, logger), ServiceType.WINDOW_STATE_SERVICE);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply new window state!", ex);
         }
     }
 
     private void updatePassageState() throws CouldNotPerformException {
-        //TODO: passageState itself has to be designed first
+        // passage does not offer any states to update.
     }
 
     public ConnectionType getConnectionType() throws NotAvailableException {
@@ -363,12 +359,6 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
             throw new NotAvailableException("ConnectionConfig.Type");
         }
         return getConfig().getConnectionConfig().getConnectionType();
-    }
-
-    public void verifyConnectionState(ConnectionType connectionType) throws VerificationFailedException, NotAvailableException {
-        if (getConnectionType() != connectionType) {
-            throw new VerificationFailedException("ConnectionType verification failed. Connection [" + getConfig().getId() + "] has type [" + getConfig().getConnectionConfig().getConnectionType().name() + "] and not [" + connectionType.name() + "]");
-        }
     }
 
     protected List<UnitConfig> getAggregatedUnitConfigList() throws NotAvailableException {
@@ -389,6 +379,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
             if (!UnitConfigProcessor.isEnabled(unitConfig)) {
                 continue;
             }
+
             unitConfigList.add(unitConfig);
         }
         return unitConfigList;

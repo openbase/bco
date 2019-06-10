@@ -25,6 +25,7 @@ package org.openbase.bco.dal.control.layer.unit.scene;
 import org.openbase.bco.authentication.lib.AuthPair;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
@@ -56,6 +57,7 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.MapFieldEntry;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState.State;
+import org.openbase.type.domotic.state.DoorStateType.DoorState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
@@ -138,20 +140,26 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                             // stop disabled, so scene can be reactivated because it will never be active but still possilble required actions are executed.
                             // stop();
 
-                            try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-                                final Builder internalBuilder = dataBuilder.getInternalBuilder();
-                                // move current state to last
-                                internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
-                                // update current state to deactivate and set timestamp
-                                final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
-                                activationStateBuilder.setValue(ActivationState.State.INACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
-                                // update latest value occurrence map of current state
-                                for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
-                                    if (builder.getKey() == activationStateBuilder.getValue()) {
-                                        builder.setValue(activationStateBuilder.getTimestamp());
-                                        break;
-                                    }
-                                }
+                            // replaced by applyDataUpdate(). Cleanup when working.
+//                            try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+//                                final Builder internalBuilder = dataBuilder.getInternalBuilder();
+//                                // move current state to last
+//                                internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
+//                                // update current state to deactivate and set timestamp
+//                                final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
+//                                activationStateBuilder.setValue(ActivationState.State.INACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
+//                                // update latest value occurrence map of current state
+//                                for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
+//                                    if (builder.getKey() == activationStateBuilder.getValue()) {
+//                                        builder.setValue(activationStateBuilder.getTimestamp());
+//                                        break;
+//                                    }
+//                                }
+//                            }
+                            try {
+                                applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE)), ServiceType.ACTIVATION_STATE_SERVICE);
+                            } catch (CouldNotPerformException ex) {
+                                throw new CouldNotPerformException("Could not apply new scene state!", ex);
                             }
                         }
                     }
@@ -240,28 +248,28 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         super.deactivate();
     }
 
-    @Override
-    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
-
-        // verify that the service type matches
-        if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
-            throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
-        }
-
-        // verify and prepare action description and retrieve the service state
-        final ActivationState.Builder activationState = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
-        activationState.setResponsibleAction(actionDescriptionBuilder.build());
-        TimestampProcessor.updateTimestampWithCurrentTime(activationState);
-
-        updateTransactionId();
-
-        // publish new state as requested
-        try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setActivationStateRequested(activationState);
-        }
-
-        return activationStateOperationService.setActivationState(activationState.build()).get();
-    }
+//    @Override
+//    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
+//
+//        // verify that the service type matches
+//        if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
+//            throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
+//        }
+//
+//        // verify and prepare action description and retrieve the service state
+//        final ActivationState.Builder activationState = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
+//        activationState.setResponsibleAction(actionDescriptionBuilder.build());
+//        TimestampProcessor.updateTimestampWithCurrentTime(activationState);
+//
+//        updateTransactionId();
+//
+//        // publish new state as requested
+//        try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+//            dataBuilder.getInternalBuilder().setActivationStateRequested(activationState);
+//        }
+//
+//        return activationStateOperationService.setActivationState(activationState.build()).get();
+//    }
 
     private void stop() {
         requiredActionPool.stop();
