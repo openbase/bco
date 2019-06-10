@@ -98,9 +98,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!--binFolder>${deb.prefix.bin}</binFolder>
+                    <binFolder>${deb.prefix.bin}</binFolder>
                     <repositoryLayout>flat</repositoryLayout>
-                    <repositoryName>${build.appassembler.repo.name}</repositoryName-->
+                    <repositoryName>${build.appassembler.repo.name}</repositoryName>
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.app.util.launch.BCOLauncher</mainClass>
@@ -215,7 +215,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.stage.Stage</mainClass>
+                            <mainClass>org.openbase.bco.stage.StageLauncher</mainClass>
                             <id>bco-stage</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -263,20 +263,86 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
+                        <program>
+                            <mainClass>org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher</mainClass>
+                            <id>bco-manager-device-openhab</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
                     </programs>
                     <copyConfigurationDirectory>true</copyConfigurationDirectory>
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>jdeb</artifactId>
-                <groupId>org.vafer</groupId>
-                <version>1.6</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <!--phase>install</phase>
+                        <id>build-first</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>   
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">                        
+                                    <mainClass>org.openbase.bco.app.util.launch.BCOLauncher</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>bco-${project.version}</finalName>
+                            <dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                            <filters>
+                                <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                    <exclude>META-INF/*.SF</exclude>
+                                    <exclude>META-INF/*.DSA</exclude>
+                                    <exclude>META-INF/*.RSA</exclude>
+                                </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-second</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>   
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">                        
+                                    <mainClass>org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>bco-manager-device-openhab-${project.version}</finalName>
+                            <dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                            <filters>
+                                <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                    <exclude>META-INF/*.SF</exclude>
+                                    <exclude>META-INF/*.DSA</exclude>
+                                    <exclude>META-INF/*.RSA</exclude>
+                                </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>jdeb</artifactId>
+                <groupId>org.vafer</groupId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
                         <goals>
                             <goal>jdeb</goal>
-                        </goals-->
+                        </goals>
                         <configuration>
                             <snapshotExpand>true</snapshotExpand>
                             <!-- expand "SNAPSHOT" to what is in the "USER" env variable -->
