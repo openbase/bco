@@ -142,7 +142,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 connectToDatabase();
                 while (!task.isCancelled()) {
                     try {
-                        checkConnection();
+                        verifyConnection();
                         break;
 
                     } catch (CouldNotPerformException ex) {
@@ -193,8 +193,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
                             .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
                             .time(System.currentTimeMillis(), WritePrecision.MS));
-                    ;
-
 
                 }, HEARTBEAT_INITIAL_DELAY, HEARTBEAT_PERIOD, TimeUnit.MILLISECONDS);
             } catch (NotAvailableException ex) {
@@ -229,26 +227,21 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             }
         }
 
-        // write final heartbeat
-        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
-                .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
-                .time(System.currentTimeMillis(), WritePrecision.MS));
-        ;
-        Thread.sleep(1);
-        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
-                .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
-                .time(System.currentTimeMillis(), WritePrecision.MS));
+        if(isConnected()) {
+            // write final heartbeat if connection is established.
+            writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                    .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
+                    .time(System.currentTimeMillis(), WritePrecision.MS));
+            Thread.sleep(1);
+            writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                    .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
+                    .time(System.currentTimeMillis(), WritePrecision.MS));
+        }
 
         // deregister
         customUnitPool.removeObserver(unitStateObserver);
         customUnitPool.deactivate();
-        try {
-            if (influxDBClient != null) {
-                influxDBClient.close();
-            }
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
-        }
+        disconnectDatabase();
     }
 
 
@@ -328,7 +321,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     .addTag("location_id", unit.getParentLocationConfig().getId())
                     .addTag("location_alias", unit.getParentLocationConfig().getAlias(0))
                     .time(timestamp, WritePrecision.MS);
-
 
             Integer values = 0;
             for (Map.Entry<String, String> entry : stateValuesMap.entrySet()) {
@@ -424,11 +416,35 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         return stateValues;
     }
 
-    private void checkConnection() throws CouldNotPerformException {
-        if (influxDBClient.health().getStatus().getValue() != "pass") {
-            throw new CouldNotPerformException("Could not connect to database server at " + databaseUrl + "!");
-
+    /**
+     * Method checks if the connection is established.
+     *
+     * @return true if the connection to influx db is established, otherwise false.
+     */
+    private boolean isConnected() {
+        try {
+            verifyConnection();
+        } catch (VerificationFailedException ex) {
+            return false;
         }
+        return true;
+    }
+
+    /**
+     * Method verifies the connection state.
+     *
+     * @throws VerificationFailedException is thrown if the connection is not established.
+     */
+    private void verifyConnection() throws VerificationFailedException {
+
+        if (influxDBClient == null) {
+            throw new VerificationFailedException("Influx db connection has never been initiated.");
+        }
+
+        if (influxDBClient.health().getStatus().getValue() != "pass") {
+            throw new VerificationFailedException("Could not connect to database server at " + databaseUrl + "!");
+        }
+
         // initiate WriteApi
         WriteOptions writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build();
         writeApi = influxDBClient.getWriteApi(writeoptions);
@@ -455,6 +471,19 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
     }
 
+    private void disconnectDatabase() {
+        try {
+            if (influxDBClient != null) {
+                if (writeApi != null) {
+                    writeApi.flush();
+                }
+                influxDBClient.close();
+                writeApi = null;
+            }
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
+        }
+    }
 
     private void getDatabaseBucket() throws NotAvailableException {
         logger.debug("Get bucket " + bucketName);
