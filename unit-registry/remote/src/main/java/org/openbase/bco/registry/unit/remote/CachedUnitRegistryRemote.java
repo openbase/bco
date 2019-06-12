@@ -26,6 +26,8 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.iface.Shutdownable.ShutdownDaemon;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,15 +49,20 @@ public class CachedUnitRegistryRemote {
     private static UnitRegistryRemote registryRemote;
     private static boolean shutdown = false;
 
+    /**
+     * Setup shutdown hook
+     */
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            @Override
-            public void run() {
+        try {
+            Shutdownable.registerShutdownHook(() -> {
                 shutdown = true;
                 shutdown();
+            });
+        } catch (CouldNotPerformException ex) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not register shutdown hook!", ex, LOGGER);
             }
-        });
+        }
     }
 
     /**
