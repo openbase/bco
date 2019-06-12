@@ -117,7 +117,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         this.unitStateObserver = (source, data) -> storeServiceState((Unit) source.getServiceProvider(), source.getServiceType());
     }
 
-
     @Override
     public UnitConfigType.UnitConfig applyConfigUpdate(UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
         config = super.applyConfigUpdate(config);
@@ -130,7 +129,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
         return config;
     }
-
 
     @Override
     protected ActionDescription execute(ActivationState activationState) {
@@ -205,8 +203,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
             return null;
         });
-
-
         return activationState.getResponsibleAction();
     }
 
@@ -242,7 +238,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
                 .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
                 .time(System.currentTimeMillis(), WritePrecision.MS));
-        
+
         // deregister
         customUnitPool.removeObserver(unitStateObserver);
         customUnitPool.deactivate();
@@ -284,8 +280,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
 
     private void storeServiceState(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
-
-
         final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
         Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
 
@@ -295,7 +289,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             if (String.valueOf(serviceStateTimestamp).length() != 13) {
                 throw new InvalidStateException("Timestamp wrong (ms): " + unit.getUnitType().toString() + " | " + serviceType.toString() + " | " + serviceStateTimestamp);
             }
-
 
             lastServiceState = TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MILLISECONDS);
             storeServiceState(unit, serviceType, currentServiceState);
@@ -307,21 +300,16 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                             "CurrentServiceState[" + currentServiceState.toString() + "] " +
                             "LastServiceState[" + lastServiceState.toString() + "]"
                     , ex, logger, LogLevel.WARN);
-
         }
-
-
     }
 
     private void storeServiceState(final Unit<?> unit, final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, final Message serviceState) throws InvalidStateException {
-
 
         final long timestamp = TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS);
         //Todo: Remove when openbase/bco.dal#149 is solved
         if (String.valueOf(timestamp).length() != 13) {
             throw new InvalidStateException("Timestamp wrong (ms): " + unit.getUnitType().toString() + " | " + serviceType.toString() + " | " + timestamp);
         }
-
 
         try {
             String initiator;
@@ -358,9 +346,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 point.addTag("label_" + entry.getKey(), entry.getValue(0));
             }
 
-
             if (values > 0) {
-
                 writeApi.writePoint(bucketName, org, point);
             }
         } catch (CouldNotPerformException ex) {
@@ -454,8 +440,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             logger.warn(exception.getMessage());
         });
         logger.debug("Connected to Influxdb at " + databaseUrl);
-
-
     }
 
     private void connectToDatabase() {
@@ -478,7 +462,5 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         if (bucket == null) {
             throw new NotAvailableException("bucket", bucketName);
         }
-
-
     }
 }
