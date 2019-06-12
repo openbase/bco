@@ -15,7 +15,7 @@ package org.openbase.bco.app.influxdbconnector;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -182,13 +182,19 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
                 // write initial heartbeat
                 logger.debug("initial heartbeat");
-                        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE).time(System.currentTimeMillis(), WritePrecision.MS));
-                        Thread.sleep(1);
-                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE).time(System.currentTimeMillis(), WritePrecision.MS));
+                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                        .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
+                        .time(System.currentTimeMillis(), WritePrecision.MS));
+                Thread.sleep(1);
+                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                        .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
+                        .time(System.currentTimeMillis(), WritePrecision.MS));
 
                 heartbeat = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
                     logger.debug("write heartbeat");
-                    writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE).time(System.currentTimeMillis(), WritePrecision.MS));
+                    writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                            .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
+                            .time(System.currentTimeMillis(), WritePrecision.MS));
                     ;
 
 
@@ -228,12 +234,15 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         }
 
         // write final heartbeat
-        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE).time(System.currentTimeMillis(), WritePrecision.MS));
+        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
+                .time(System.currentTimeMillis(), WritePrecision.MS));
         ;
         Thread.sleep(1);
-        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE).time(System.currentTimeMillis(), WritePrecision.MS));
-        ;
-
+        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
+                .time(System.currentTimeMillis(), WritePrecision.MS));
+        
         // deregister
         customUnitPool.removeObserver(unitStateObserver);
         customUnitPool.deactivate();
@@ -345,8 +354,8 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 }
             }
             List<LabelType.Label.MapFieldEntry> entryList = unit.getConfig().getLabel().getEntryList();
-            for (LabelType.Label.MapFieldEntry entry: entryList) {
-                point.addTag("label_"+ entry.getKey(), entry.getValue(0));
+            for (LabelType.Label.MapFieldEntry entry : entryList) {
+                point.addTag("label_" + entry.getKey(), entry.getValue(0));
             }
 
 
