@@ -23,11 +23,9 @@ package org.openbase.bco.authentication.lib;
  */
 
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.ShutdownInProgressException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.iface.Shutdownable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,11 +40,20 @@ public class CachedAuthenticationRemote {
     private static AuthenticationRemote authenticationRemote;
     private static boolean shutdown = false;
 
+    /**
+     * Setup shutdown hook
+     */
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            shutdown = true;
-            shutdown();
-        }));
+        try {
+            Shutdownable.registerShutdownHook(() -> {
+                shutdown = true;
+                shutdown();
+            });
+        } catch (CouldNotPerformException ex) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not register shutdown hook!", ex, LOGGER);
+            }
+        }
     }
 
     /**
