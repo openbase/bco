@@ -54,6 +54,7 @@ import org.openbase.type.domotic.service.ServiceTempusTypeType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.language.LabelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private static final Integer READ_TIMEOUT = 60;
     private static final Integer WRITE_TIMEOUT = 60;
     private static final Integer CONNECT_TIMOUT = 40;
-    private static final long  MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(5);;
+    private static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
     private static final Integer ADDITIONAL_TIMEOUT = 60000;
     private static final Integer DATABASE_TIMEOUT_DEFAULT = 60000;
     private static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
@@ -180,13 +181,21 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             try {
 
                 // write initial heartbeat
-                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE));
+                logger.debug("initial heartbeat");
+                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                        .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
+                        .time(System.currentTimeMillis(), WritePrecision.MS));
                 Thread.sleep(1);
-                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE));
+                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                        .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
+                        .time(System.currentTimeMillis(), WritePrecision.MS));
 
                 heartbeat = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
-                    // logger.debug("write heartbeat");
-                    writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE));
+                    logger.debug("write heartbeat");
+                    writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                            .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
+                            .time(System.currentTimeMillis(), WritePrecision.MS));
+                    ;
 
 
                 }, HEARTBEAT_INITIAL_DELAY, HEARTBEAT_PERIOD, TimeUnit.MILLISECONDS);
@@ -225,10 +234,15 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         }
 
         // write final heartbeat
-        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE));
+        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
+                .time(System.currentTimeMillis(), WritePrecision.MS));
+        ;
         Thread.sleep(1);
-        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT).addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE));
-
+        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
+                .time(System.currentTimeMillis(), WritePrecision.MS));
+        
         // deregister
         customUnitPool.removeObserver(unitStateObserver);
         customUnitPool.deactivate();
@@ -339,6 +353,12 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     point.addTag(entry.getKey(), entry.getValue());
                 }
             }
+            List<LabelType.Label.MapFieldEntry> entryList = unit.getConfig().getLabel().getEntryList();
+            for (LabelType.Label.MapFieldEntry entry : entryList) {
+                point.addTag("label_" + entry.getKey(), entry.getValue(0));
+            }
+
+
             if (values > 0) {
 
                 writeApi.writePoint(bucketName, org, point);
