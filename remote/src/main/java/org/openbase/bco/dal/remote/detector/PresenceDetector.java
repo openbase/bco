@@ -25,10 +25,7 @@ package org.openbase.bco.dal.remote.detector;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
-import org.openbase.bco.dal.lib.layer.unit.location.LocationController;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
@@ -48,8 +45,6 @@ import org.openbase.type.domotic.state.DoorStateType.DoorState;
 import org.openbase.type.domotic.state.WindowStateType.WindowState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
-import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
-import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig.TileType;
 import org.slf4j.Logger;
@@ -74,19 +69,19 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final PresenceState.Builder presenceState;
+    private final PresenceState.Builder presenceStateBuilder;
     private final Timeout presenceTimeout;
     private final Observer<DataProvider<LocationData>, LocationData> locationDataObserver;
     private Location location;
     private final ObservableImpl<DataProvider<PresenceState>, PresenceState> presenceStateObservable;
-    private final CustomUnitPool buttomUnitPool;
+    private final CustomUnitPool buttonUnitPool;
     private final CustomUnitPool connectionUnitPool;
 
     private boolean active;
 
     public PresenceDetector() throws InstantiationException {
         try {
-            this.presenceState = PresenceState.newBuilder();
+            this.presenceStateBuilder = PresenceState.newBuilder();
             this.active = false;
             this.presenceStateObservable = new ObservableImpl<>(this);
             this.presenceTimeout = new Timeout(PRESENCE_TIMEOUT) {
@@ -118,10 +113,10 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
                 updateMotionState(data.getMotionState());
             };
 
-            this.buttomUnitPool = new CustomUnitPool();
+            this.buttonUnitPool = new CustomUnitPool();
             this.connectionUnitPool = new CustomUnitPool();
 
-            this.buttomUnitPool.addObserver((source, data) -> PresenceDetector.this.updateButtonState((ButtonState) data));
+            this.buttonUnitPool.addObserver((source, data) -> PresenceDetector.this.updateButtonState((ButtonState) data));
 
             this.connectionUnitPool.addObserver((source, data) -> {
                 switch (source.getServiceType()) {
@@ -136,7 +131,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
                         break;
 
                     default:
-                        logger.warn("Invalid connection service update received: "+ source.getServiceType().name());
+                        logger.warn("Invalid connection service update received: " + source.getServiceType().name() + " from " + source + " pool:" + connectionUnitPool.isActive());
                 }
             });
 
@@ -149,7 +144,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
     public void init(final Location location) throws InitializationException, InterruptedException {
         try {
             this.location = location;
-            buttomUnitPool.init(
+            buttonUnitPool.init(
                     unitConfig -> unitConfig.getUnitType() != UnitType.BUTTON,
                     unitConfig -> {
                         try {
@@ -163,6 +158,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
 
             if ((location.getConfig().getLocationConfig().getLocationType() == LocationType.TILE)) {
                 connectionUnitPool.init(
+                    unitConfig -> unitConfig.getUnitType() != UnitType.CONNECTION,
                     unitConfig -> {
                         try {
                             return !unitConfig.getConnectionConfig().getTileIdList().contains(location.getId());
@@ -199,7 +195,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
         active = true;
         location.addDataObserver(locationDataObserver);
 
-        buttomUnitPool.activate();
+        buttonUnitPool.activate();
 
         if ((location.getConfig().getLocationConfig().getLocationType() == LocationType.TILE)) {
             connectionUnitPool.activate();
@@ -219,7 +215,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
             // can be null if never initialized or initialization failed
             location.removeDataObserver(locationDataObserver);
         }
-        buttomUnitPool.deactivate();
+        buttonUnitPool.deactivate();
         if ((location.getConfig().getLocationConfig().getLocationType() == LocationType.TILE)) {
             connectionUnitPool.deactivate();
         }
@@ -237,38 +233,36 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
-        buttomUnitPool.shutdown();
+        buttonUnitPool.shutdown();
         connectionUnitPool.shutdown();
     }
 
     private synchronized void updatePresenceState(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {
-        // TODO?
-        // so wird das timeout durch das erste present setzten des detectors selbst nochmal restarted...
-        // vorher nach motion state filtern (inklusive lastMotion) und wenn gleich das presence update skippen?
-        // update Timestemp and reset timer
-        if (presenceState.getValue() == PresenceState.State.PRESENT && this.presenceState.getTimestamp() != presenceState.getTimestamp()) {
+
+        // update timestamp and reset timer
+        if (presenceState.getValue() == PresenceState.State.PRESENT && presenceStateBuilder.getTimestamp().getTime() != presenceState.getTimestamp().getTime()) {
             presenceTimeout.restart();
-            this.presenceState.getTimestampBuilder().setTime(Math.max(this.presenceState.getTimestamp().getTime(), presenceState.getTimestamp().getTime()));
+            presenceStateBuilder.getTimestampBuilder().setTime(Math.max(presenceStateBuilder.getTimestamp().getTime(), presenceState.getTimestamp().getTime()));
         }
 
         // filter non state changes
-        if (this.presenceState.getValue() == presenceState.getValue()) {
+        if (presenceStateBuilder.getValue() == presenceState.getValue()) {
             return;
         }
 
         // update value
-        TimestampProcessor.updateTimestampWithCurrentTime(this.presenceState, logger);
-        this.presenceState.setValue(presenceState.getValue());
+        TimestampProcessor.updateTimestampWithCurrentTime(presenceStateBuilder, logger);
+        presenceStateBuilder.setValue(presenceState.getValue());
 
         // notify
         try {
-            presenceStateObservable.notifyObservers(this.presenceState.build());
+            presenceStateObservable.notifyObservers(this.presenceStateBuilder.build());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update MotionState!", ex), logger, LogLevel.ERROR);
         }
     }
 
-    private synchronized void updateMotionState(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
+    private void updateMotionState(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
 
         // Filter rush motion predictions.
         if (motionState.getValue() == MotionState.State.NO_MOTION) {
@@ -280,7 +274,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
         }
     }
 
-    private synchronized void updateButtonState(final ButtonStateOrBuilder buttonState) throws CouldNotPerformException {
+    private void updateButtonState(final ButtonStateOrBuilder buttonState) throws CouldNotPerformException {
         switch (buttonState.getValue()) {
             case PRESSED:
             case RELEASED:
@@ -293,7 +287,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
         }
     }
 
-    private synchronized void updateDoorState(final DoorState doorState) throws CouldNotPerformException {
+    private void updateDoorState(final DoorState doorState) throws CouldNotPerformException {
         switch (doorState.getValue()) {
             case OPEN:
                 updatePresenceState(TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder().setValue(State.PRESENT).setResponsibleAction(doorState.getResponsibleAction()).build()));
@@ -305,7 +299,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
         }
     }
 
-    private synchronized void updateWindowState(final WindowState windowState) throws CouldNotPerformException {
+    private void updateWindowState(final WindowState windowState) throws CouldNotPerformException {
         switch (windowState.getValue()) {
             case OPEN:
             case TILTED:
