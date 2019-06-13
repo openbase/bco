@@ -21,6 +21,7 @@ package org.openbase.bco.dal.visual.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Message;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +41,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemote> {
+public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemote<Message>> {
 
     private final ObservableImpl<Object, String> removedObservable;
     private String mapId;

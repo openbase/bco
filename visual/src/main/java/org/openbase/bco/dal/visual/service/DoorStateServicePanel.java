@@ -28,8 +28,21 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.StringProcessor;
 import java.awt.Color;
+import java.text.DateFormat;
+import java.util.Date;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
+import org.openbase.type.domotic.action.ActionDescriptionType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.DoorStateType;
 
 /**
  *
@@ -37,6 +50,8 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
  */
 public class DoorStateServicePanel extends AbstractServicePanel<DoorStateProviderService, ConsumerService, OperationService> {
 
+    private final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM);
+    
     /**
      * Creates new form BrightnessService
      *
@@ -44,6 +59,16 @@ public class DoorStateServicePanel extends AbstractServicePanel<DoorStateProvide
      */
     public DoorStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
+        
+        final ComboBoxModel model = new DefaultComboBoxModel<>(DoorStateType.DoorState.State.values());
+        doorStateComboBox.setModel(model);
+
+        try {
+            doorStateComboBox.setVisible(JPService.getProperty(JPProviderControlMode.class).getValue());
+        } catch (JPNotAvailableException ex) {
+            doorStateComboBox.setVisible(false);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+        }
     }
 
     /**
@@ -55,6 +80,9 @@ public class DoorStateServicePanel extends AbstractServicePanel<DoorStateProvide
 
         standbyStatePanel = new javax.swing.JPanel();
         doorStatusLabel = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        lastEventLabel = new javax.swing.JLabel();
+        doorStateComboBox = new javax.swing.JComboBox<>();
 
         standbyStatePanel.setBackground(new java.awt.Color(204, 204, 204));
         standbyStatePanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 5, true));
@@ -77,33 +105,80 @@ public class DoorStateServicePanel extends AbstractServicePanel<DoorStateProvide
             .addComponent(doorStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
         );
 
+        jLabel1.setText("Last Event:");
+
+        lastEventLabel.setText("N/A");
+
+        doorStateComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        doorStateComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                doorStateComboBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(standbyStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(standbyStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(doorStateComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lastEventLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(standbyStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(lastEventLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(doorStateComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void doorStateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doorStateComboBoxActionPerformed
+        // filter external updateds.
+        if (!doorStateComboBox.isEnabled()) {
+            return;
+        }
+
+        try {
+            DoorStateType.DoorState doorState = DoorStateType.DoorState.newBuilder().setValue((DoorStateType.DoorState.State) doorStateComboBox.getSelectedItem()).build();
+            ActionDescriptionType.ActionDescription action = ActionDescriptionProcessor.generateActionDescriptionBuilder(doorState, ServiceType.DOOR_STATE_SERVICE, getUnitRemote()).build();
+            notifyActionProcessing(getUnitRemote().applyAction(action));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+        }
+    }//GEN-LAST:event_doorStateComboBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> doorStateComboBox;
     private javax.swing.JLabel doorStatusLabel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel lastEventLabel;
     private javax.swing.JPanel standbyStatePanel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void updateDynamicComponents() {
         try {
+            if (getProviderService().getDoorState() == null) {
+                setEnabled(false);
+                return;
+            } else {
+                setEnabled(true);
+            }
             switch (getProviderService().getDoorState().getValue()) {
                 case OPEN:
                 case IN_BETWEEN:
@@ -122,6 +197,21 @@ public class DoorStateServicePanel extends AbstractServicePanel<DoorStateProvide
                     throw new InvalidStateException("State[" + getProviderService().getDoorState().getValue() + "] is unknown.");
             }
             doorStatusLabel.setText("Current DoorState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getDoorState().getValue().name()));
+        
+            doorStateComboBox.setEnabled(false);
+            doorStateComboBox.setSelectedItem(getProviderService().getDoorState().getValue());
+            doorStateComboBox.setEnabled(true);
+
+            try {
+                try {
+                    lastEventLabel.setText(dateFormat.format(new Date(TimestampJavaTimeTransform.transform(getProviderService().getDoorState().getTimestamp()))));
+                } catch (NotAvailableException ex) {
+                    lastEventLabel.setText("Never");
+                }
+            } catch (Exception ex) {
+                lastEventLabel.setText("N/A");
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: [" + getProviderService().getDoorState().getTimestamp().getTime() + "]!", ex), logger, LogLevel.ERROR);
+            }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

@@ -22,13 +22,13 @@ package org.openbase.bco.dal.visual.unit;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.visual.swing.layout.LayoutGenerator;
@@ -46,14 +46,14 @@ import java.util.*;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends javax.swing.JPanel {
+public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote<Message>> extends javax.swing.JPanel {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(GenericUnitCollectionPanel.class);
 
     private final Map<String, GenericUnitPanel<RS>> unitPanelMap;
     private final SyncObject unitPanelMapLock = new SyncObject("UnitPanelMapLock");
     private final Observer<Object, String> removedObserver;
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify                     
     private javax.swing.JPanel contentPanel;
     private javax.swing.JScrollPane contentScrollPane;
 
@@ -250,5 +250,5 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
                         .addComponent(contentScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration                   
 }

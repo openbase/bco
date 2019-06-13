@@ -45,7 +45,6 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.visual.swing.layout.LayoutGenerator;
-import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -58,12 +57,13 @@ import java.util.*;
 import java.util.List;
 
 import static org.openbase.bco.dal.visual.service.AbstractServicePanel.SERVICE_PANEL_SUFFIX;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 
 /**
  * @param <RS>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteView<RS> {
+public class GenericUnitPanel<RS extends AbstractUnitRemote<Message>> extends UnitRemoteView<RS> {
 
     private final Observer<DataProvider<UnitConfig>, UnitConfig> unitConfigObserver;
     private final Observer<Remote, ConnectionState.State> connectionStateObserver;
@@ -205,7 +205,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 }
             }
 
-            UnitRemote unitRemote = setUnitRemote(unitConfig);
+            UnitRemote<Message> unitRemote = setUnitRemote(unitConfig);
             unitRemote.addConnectionStateObserver(connectionStateObserver);
             updateConnectionState(unitRemote.getConnectionState());
             if (autoRemove) {
@@ -215,54 +215,56 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             JPanel servicePanel;
             HashMap<ServiceType, AbstractServicePanel> servicePanelMap = new HashMap<>();
 
-            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            for (ServiceDescription serviceDescription : unitRemote.getAvailableServiceDescriptions()) {
+                            
+                
                 try {
                     // filter by service type
                     // in case the service type is unknown, all services are loaded, in case the service type is defined only this type will be loaded and all other types are filtered.
-                    if (serviceType != ServiceType.UNKNOWN && serviceConfig.getServiceDescription().getServiceType() != serviceType) {
+                    if (serviceType != ServiceType.UNKNOWN && serviceDescription.getServiceType() != serviceType) {
                         continue;
                     }
 
                     // skip consumer
-                    if (serviceConfig.getServiceDescription().getPattern().equals(ServicePattern.CONSUMER)) {
+                    if (serviceDescription.getPattern().equals(ServicePattern.CONSUMER)) {
                         continue;
                     }
 
                     // check if service type is already selected.
-                    if (!servicePanelMap.containsKey(serviceConfig.getServiceDescription().getServiceType())) {
+                    if (!servicePanelMap.containsKey(serviceDescription.getServiceType())) {
                         try {
                             servicePanel = new JPanel();
-                            servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToPascalCase(serviceConfig.getServiceDescription().getServiceType().name()) + " " + ScopeProcessor.generateStringRep(unitConfig.getScope())));
-                            AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceDescription().getServiceType()), getRemoteService());
+                            servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToPascalCase(serviceDescription.getServiceType().name()) + " " + ScopeProcessor.generateStringRep(unitConfig.getScope())));
+                            AbstractServicePanel abstractServicePanel = instantiatServicePanel(loadServicePanelClass(serviceDescription.getServiceType()), getRemoteService());
                             abstractServicePanel.setUnitId(unitConfig.getId());
-                            abstractServicePanel.setServiceType(serviceConfig.getServiceDescription().getServiceType());
+                            abstractServicePanel.setServiceType(serviceDescription.getServiceType());
                             servicePanel.add(abstractServicePanel);
-                            servicePanelMap.put(serviceConfig.getServiceDescription().getServiceType(), abstractServicePanel);
+                            servicePanelMap.put(serviceDescription.getServiceType(), abstractServicePanel);
                             componentList.add(servicePanel);
                         } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceDescription().getServiceType().name() + "]", ex), logger, LogLevel.ERROR);
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceDescription.getServiceType().name() + "]", ex), logger, LogLevel.ERROR);
                         }
                     }
 
                     // bind service
-                    if (!servicePanelMap.containsKey(serviceConfig.getServiceDescription().getServiceType())) {
-                        logger.error("Skip Service[" + serviceConfig.getServiceDescription().getServiceType() + "] binding because no related service panel registered!");
+                    if (!servicePanelMap.containsKey(serviceDescription.getServiceType())) {
+                        logger.error("Skip Service[" + serviceDescription.getServiceType() + "] binding because no related service panel registered!");
                         continue;
                     }
-                    servicePanelMap.get(serviceConfig.getServiceDescription().getServiceType()).bindServiceConfig(serviceConfig);
+                    servicePanelMap.get(serviceDescription.getServiceType()).bindServiceConfig(serviceDescription);
                 } catch (CouldNotPerformException | NullPointerException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not configure service panel for ServiceType[" + serviceConfig.getServiceDescription().getServiceType().name() + "]", ex), logger, LogLevel.ERROR);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not configure service panel for ServiceType[" + serviceDescription.getServiceType().name() + "]", ex), logger, LogLevel.ERROR);
                 }
             }
             Set<ServiceType> serviceTypeSet = new HashSet<>();
-            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (!serviceTypeSet.contains(serviceConfig.getServiceDescription().getServiceType())) {
-                    serviceTypeSet.add(serviceConfig.getServiceDescription().getServiceType());
-                    if (!servicePanelMap.containsKey(serviceConfig.getServiceDescription().getServiceType())) {
-                        logger.error("Skip Service[" + serviceConfig.getServiceDescription().getServiceType() + "] activation because no related service panel registered!");
+            for (ServiceDescription serviceDescription : unitRemote.getAvailableServiceDescriptions()) {
+                if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
+                    serviceTypeSet.add(serviceDescription.getServiceType());
+                    if (!servicePanelMap.containsKey(serviceDescription.getServiceType())) {
+                        logger.error("Skip Service[" + serviceDescription.getServiceType() + "] activation because no related service panel registered!");
                         continue;
                     }
-                    servicePanelMap.get(serviceConfig.getServiceDescription().getServiceType()).initObserver();
+                    servicePanelMap.get(serviceDescription.getServiceType()).initObserver();
                 }
             }
 
@@ -299,10 +301,10 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
         }
     }
 
-    private AbstractServicePanel instantiatServicePanel(final ServiceConfig serviceConfig, Class<? extends AbstractServicePanel> servicePanelClass, AbstractUnitRemote unitRemote) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    private AbstractServicePanel instantiatServicePanel(Class<? extends AbstractServicePanel> servicePanelClass, AbstractUnitRemote unitRemote) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             AbstractServicePanel instance = servicePanelClass.newInstance();
-            instance.init(unitRemote, serviceConfig);
+            instance.init(unitRemote);
             return instance;
         } catch (NullPointerException | InstantiationException | CouldNotPerformException | IllegalAccessException ex) {
             throw new org.openbase.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);

@@ -100,32 +100,5 @@ public class PassageStateServicePanel extends AbstractServicePanel<PassageStateP
 
     @Override
     protected void updateDynamicComponents() {
-        try {
-        if (getProviderService().getPassageState() == null) {
-            setEnabled(false);
-            return;
-        } else {
-            setEnabled(true);
-        }
-//            switch (getProviderService().getPassageState().getValue()) {
-//                case OPEN:
-//                    passageStatusLabel.setForeground(Color.BLACK);
-//                    standbyStatePanel.setBackground(Color.GREEN.darker());
-//                    break;
-//                case CLOSED:
-//                    passageStatusLabel.setForeground(Color.BLACK);
-//                    standbyStatePanel.setBackground(Color.LIGHT_GRAY);
-//                    break;
-//                case UNKNOWN:
-//                    passageStatusLabel.setForeground(Color.BLACK);
-//                    standbyStatePanel.setBackground(Color.ORANGE.darker());
-//                    break;
-//                default:
-//                    throw new InvalidStateException("State[" + getProviderService().getPassageState().getValue() + "] is unknown.");
-//            }
-//            passageStatusLabel.setText("Current PassageState = " + StringProcessor.transformUpperCaseToPascalCase(getProviderService().getPassageState().getValue().name()));
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-        }
     }
 }

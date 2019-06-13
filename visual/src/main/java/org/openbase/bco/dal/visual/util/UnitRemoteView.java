@@ -41,7 +41,7 @@ import org.openbase.type.communication.ScopeType.Scope;
  * @param <RS>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<DataProvider<Message>, Message>, Shutdownable {
+public abstract class UnitRemoteView<RS extends AbstractUnitRemote<Message>> extends javax.swing.JPanel implements Observer<DataProvider<Message>, Message>, Shutdownable {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
