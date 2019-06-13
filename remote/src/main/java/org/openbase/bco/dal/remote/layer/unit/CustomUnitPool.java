@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.layer.unit;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitFilters;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -48,11 +49,8 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>> {
@@ -119,16 +117,20 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
      */
     @Override
     public void init(final Collection<Filter<UnitConfig>> filters) throws InitializationException, InterruptedException {
-        filterSet.clear();
-        filterSet.add(UnitFilters.DISABELED_UNIT_FILTER);
-        filterSet.addAll(filters);
-        if (active) {
-            sync();
+        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+        try {
+            filterSet.clear();
+            filterSet.add(UnitFilters.DISABELED_UNIT_FILTER);
+            filterSet.addAll(filters);
+            if (active) {
+                sync();
+            }
+        } finally {
+            UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
         }
     }
 
     private void sync() throws InterruptedException {
-
         // skip if registry is not ready yet.
         try {
             if (!Registries.getUnitRegistry().isDataAvailable()) {
@@ -140,11 +142,12 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
         try {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
-            unitConfigDiff.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
             try {
+                unitConfigDiff.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
 
                 // handle new units
-                unitLoop : for (Entry<String, IdentifiableMessage<String, UnitConfig, Builder>> entry : unitConfigDiff.getNewMessageMap().entrySet()) {
+                unitLoop:
+                for (Entry<String, IdentifiableMessage<String, UnitConfig, Builder>> entry : unitConfigDiff.getNewMessageMap().entrySet()) {
 
                     // apply unit filter
                     for (Filter<UnitConfig> filter : filterSet) {
@@ -178,6 +181,20 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
                         removeUnitRemote(entry.getKey());
                     }
                 }
+
+                // validate already registered units
+                unitLoop:
+                for (Unit<?> unit : new ArrayList<>(unitRemoteRegistry.getEntries())) {
+
+                    // apply unit filter
+                    for (Filter<UnitConfig> filter : filterSet) {
+                        if (filter.match(unit.getConfig())) {
+                            removeUnitRemote(unit.getId());
+                            continue unitLoop;
+                        }
+                    }
+                }
+
             } finally {
                 UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
             }
@@ -188,6 +205,11 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
     private void addUnitRemote(final String unitId) throws InterruptedException {
         try {
+
+            if (!isActive()) {
+                new FatalImplementationErrorException("unid remote registered but pool was never activated!", this);
+            }
+
             final UnitRemote<?> unitRemote = Units.getUnit(unitId, false);
             unitRemoteRegistry.register(unitRemote);
             // todo: validate this, why not directly using the data observer?
@@ -246,8 +268,16 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
     public void activate() throws CouldNotPerformException, InterruptedException {
         UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
         try {
+
+            // skip run if already active
+            if (isActive()) {
+                return;
+            }
+
             // add observer
             Registries.getUnitRegistry().addDataObserver(unitRegistryDataObserver);
+
+            active = true;
 
             // trigger initial sync
             if (Registries.getUnitRegistry().isDataAvailable()) {
@@ -256,7 +286,6 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
         } finally {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
         }
-        active = true;
     }
 
     @Override
@@ -272,8 +301,8 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
             }
 
             // deregister all observed units
-            for (UnitConfig unitConfig : unitConfigDiff.getOriginalMessages().getMessages()) {
-                removeUnitRemote(unitConfig.getId());
+            for (String unitId : new ArrayList<>(unitRemoteRegistry.getEntryMap().keySet())) {
+                removeUnitRemote(unitId);
             }
         } finally {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
@@ -283,5 +312,9 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
     @Override
     public boolean isActive() {
         return active;
+    }
+
+    public List<UnitRemote<? extends Message>> getInternalUnitList() {
+        return unitRemoteRegistry.getEntries();
     }
 }
