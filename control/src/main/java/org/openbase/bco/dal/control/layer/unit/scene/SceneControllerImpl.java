@@ -248,28 +248,28 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         super.deactivate();
     }
 
-//    @Override
-//    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
-//
-//        // verify that the service type matches
-//        if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
-//            throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
-//        }
-//
-//        // verify and prepare action description and retrieve the service state
-//        final ActivationState.Builder activationState = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
-//        activationState.setResponsibleAction(actionDescriptionBuilder.build());
-//        TimestampProcessor.updateTimestampWithCurrentTime(activationState);
-//
-//        updateTransactionId();
-//
-//        // publish new state as requested
-//        try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-//            dataBuilder.getInternalBuilder().setActivationStateRequested(activationState);
-//        }
-//
-//        return activationStateOperationService.setActivationState(activationState.build()).get();
-//    }
+    @Override
+    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
+
+        // verify that the service type matches
+        if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
+            throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
+        }
+
+        // verify and prepare action description and retrieve the service state
+        final ActivationState.Builder activationStateBuilder = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
+        activationStateBuilder.setResponsibleAction(actionDescriptionBuilder.build());
+        TimestampProcessor.updateTimestampWithCurrentTime(activationStateBuilder);
+
+        updateTransactionId();
+
+        // publish new state as requested
+        try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setActivationStateRequested(activationStateBuilder);
+        }
+
+        return activationStateOperationService.setActivationState(activationStateBuilder.build()).get();
+    }
 
     private void stop() {
         requiredActionPool.stop();
