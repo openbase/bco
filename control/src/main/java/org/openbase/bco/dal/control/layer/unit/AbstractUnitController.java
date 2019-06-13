@@ -1323,11 +1323,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             Message targetServiceState = (Message) Services.invokeServiceMethod(targetServiceType, PROVIDER, ServiceTempus.CURRENT, builder);
             targetServiceState = Services.setResponsibleAction(Services.getResponsibleAction(sourceServiceState), targetServiceState);
 
+            // copy timestamp
+            targetServiceState = TimestampProcessor.copyTimestamp(sourceServiceState, targetServiceState);
+
             // copy state
             Services.invokeOperationServiceMethod(targetServiceType, builder, targetServiceState);
-
-            // copy timestamp
-            TimestampProcessor.copyTimestamp(sourceServiceState, targetServiceState);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not copy responsible action!", ex, logger);
         }
