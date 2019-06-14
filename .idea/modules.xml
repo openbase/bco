@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/cloudconnector/bco.app.cloud.connector.iml" filepath="$PROJECT_DIR$/module/bco.app/cloudconnector/bco.app.cloud.connector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.app/influxdbconnector/bco.app.influxdb.connector.iml" filepath="$PROJECT_DIR$/module/bco.app/influxdbconnector/bco.app.influxdb.connector.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/manager/bco.app.manager.iml" filepath="$PROJECT_DIR$/module/bco.app/manager/bco.app.manager.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/preset/bco.app.preset.iml" filepath="$PROJECT_DIR$/module/bco.app/preset/bco.app.preset.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/test/bco.app.test.iml" filepath="$PROJECT_DIR$/module/bco.app/test/bco.app.test.iml" />

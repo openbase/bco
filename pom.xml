@@ -331,6 +331,32 @@
                             </filters>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>build-third</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.openbase.bco.app.util.launch.BCOTestLauncher</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>bco-test-${project.version}</finalName>
+                            <dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -339,7 +365,7 @@
                 <version>1.7</version>
                 <executions>
                     <execution>
-                        <phase>install</phase>
+<!--                        <phase>install</phase>-->
                         <goals>
                             <goal>jdeb</goal>
                         </goals>

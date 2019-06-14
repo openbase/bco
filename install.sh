@@ -21,7 +21,7 @@ echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
 mvn clean --quiet $@ &&
 echo -e "=== ${APP_NAME} project ${WHITE}installation${NC}" &&
 eval mvn install \
-        -DassembleDirectory=${prefix} \
+       # -DassembleDirectory=${prefix} \
         -DskipTests=true \
         -Dmaven.test.skip=true \
         -Dlicense.skipAddThirdParty=true \

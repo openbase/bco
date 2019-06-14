@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding" addBOMForNewFiles="with NO BOM">
+  <component name="Encoding">
     <file url="file://$PROJECT_DIR$/../bco.dal" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../bco.dal/control" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../bco.dal/example" charset="UTF-8" />
@@ -13,6 +13,7 @@
     <file url="file://$PROJECT_DIR$/../bco.device/openhab" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app/cloudconnector" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.app/influxdbconnector" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app/manager" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app/preset" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app/test" charset="UTF-8" />
