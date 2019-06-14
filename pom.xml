@@ -359,99 +359,99 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>jdeb</artifactId>
-                <groupId>org.vafer</groupId>
-                <version>1.7</version>
-                <executions>
-                    <execution>
+<!--            <plugin>-->
+<!--                <artifactId>jdeb</artifactId>-->
+<!--                <groupId>org.vafer</groupId>-->
+<!--                <version>1.7</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
 <!--                        <phase>install</phase>-->
-                        <goals>
-                            <goal>jdeb</goal>
-                        </goals>
-                        <configuration>
-                            <snapshotExpand>true</snapshotExpand>
-                            <!-- expand "SNAPSHOT" to what is in the "USER" env variable -->
-                            <snapshotEnv />
-                            <verbose>true</verbose>
-                            <controlDir>${basedir}/src/main/deb/control</controlDir>
-                            <dataSet>
+<!--                        <goals>-->
+<!--                            <goal>jdeb</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <snapshotExpand>true</snapshotExpand>-->
+<!--                            &lt;!&ndash; expand "SNAPSHOT" to what is in the "USER" env variable &ndash;&gt;-->
+<!--                            <snapshotEnv />-->
+<!--                            <verbose>true</verbose>-->
+<!--                            <controlDir>${basedir}/src/main/deb/control</controlDir>-->
+<!--                            <dataSet>-->
 
-                                <!--&lt;!&ndash; Install Daemon&ndash;&gt;-->
-                                <!--<data>-->
-                                <!--<src>${basedir}/src/deb/init.d</src>-->
-                                <!--<type>directory</type>-->
-                                <!--<mapper>-->
-                                <!--<type>perm</type>-->
-                                <!--<prefix>/etc/init.d</prefix>-->
-                                <!--<user>loader</user>-->
-                                <!--<group>loader</group>-->
-                                <!--</mapper>-->
-                                <!--</data>-->
+<!--                                &lt;!&ndash;&lt;!&ndash; Install Daemon&ndash;&gt;&ndash;&gt;-->
+<!--                                &lt;!&ndash;<data>&ndash;&gt;-->
+<!--                                &lt;!&ndash;<src>${basedir}/src/deb/init.d</src>&ndash;&gt;-->
+<!--                                &lt;!&ndash;<type>directory</type>&ndash;&gt;-->
+<!--                                &lt;!&ndash;<mapper>&ndash;&gt;-->
+<!--                                &lt;!&ndash;<type>perm</type>&ndash;&gt;-->
+<!--                                &lt;!&ndash;<prefix>/etc/init.d</prefix>&ndash;&gt;-->
+<!--                                &lt;!&ndash;<user>loader</user>&ndash;&gt;-->
+<!--                                &lt;!&ndash;<group>loader</group>&ndash;&gt;-->
+<!--                                &lt;!&ndash;</mapper>&ndash;&gt;-->
+<!--                                &lt;!&ndash;</data>&ndash;&gt;-->
 
-                                <!-- Copy Deps-->
-                                <data>
-                                    <src>${build.appassembler}/${build.appassembler.repo.name}</src>
-                                    <type>directory</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/${deb.prefix.lib}</prefix>
-                                        <user>loader</user>
-                                        <group>loader</group>
-                                    </mapper>
-                                </data>
+<!--                                &lt;!&ndash; Copy Deps&ndash;&gt;-->
+<!--                                <data>-->
+<!--                                    <src>${build.appassembler}/${build.appassembler.repo.name}</src>-->
+<!--                                    <type>directory</type>-->
+<!--                                    <mapper>-->
+<!--                                        <type>perm</type>-->
+<!--                                        <prefix>/${deb.prefix.lib}</prefix>-->
+<!--                                        <user>loader</user>-->
+<!--                                        <group>loader</group>-->
+<!--                                    </mapper>-->
+<!--                                </data>-->
 
 
-                                <!-- Copy Bins-->
-                                <data>
-                                    <src>${build.appassembler}/${deb.prefix.bin}</src>
-                                    <type>directory</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/${deb.prefix.bin}</prefix>
-                                        <user>loader</user>
-                                        <group>loader</group>
-                                        <filemode>755</filemode>
-                                    </mapper>
-                                </data>
+<!--                                &lt;!&ndash; Copy Bins&ndash;&gt;-->
+<!--                                <data>-->
+<!--                                    <src>${build.appassembler}/${deb.prefix.bin}</src>-->
+<!--                                    <type>directory</type>-->
+<!--                                    <mapper>-->
+<!--                                        <type>perm</type>-->
+<!--                                        <prefix>/${deb.prefix.bin}</prefix>-->
+<!--                                        <user>loader</user>-->
+<!--                                        <group>loader</group>-->
+<!--                                        <filemode>755</filemode>-->
+<!--                                    </mapper>-->
+<!--                                </data>-->
 
-                                <!-- Create Config/Template Folders-->
-                                <data>
-                                    <type>template</type>
-                                    <paths>
-                                        <path>etc/${project.artifactId}</path>
-                                        <path>${deb.prefix.share}</path>
-                                        <!--path>var/lib/${project.artifactId}</path-->
-                                        <path>var/log/${project.artifactId}</path>
-                                        <!--path>var/run/${project.artifactId}</path-->
-                                    </paths>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <user>loader</user>
-                                        <group>loader</group>
-                                    </mapper>
-                                </data>
+<!--                                &lt;!&ndash; Create Config/Template Folders&ndash;&gt;-->
+<!--                                <data>-->
+<!--                                    <type>template</type>-->
+<!--                                    <paths>-->
+<!--                                        <path>etc/${project.artifactId}</path>-->
+<!--                                        <path>${deb.prefix.share}</path>-->
+<!--                                        &lt;!&ndash;path>var/lib/${project.artifactId}</path&ndash;&gt;-->
+<!--                                        <path>var/log/${project.artifactId}</path>-->
+<!--                                        &lt;!&ndash;path>var/run/${project.artifactId}</path&ndash;&gt;-->
+<!--                                    </paths>-->
+<!--                                    <mapper>-->
+<!--                                        <type>perm</type>-->
+<!--                                        <user>loader</user>-->
+<!--                                        <group>loader</group>-->
+<!--                                    </mapper>-->
+<!--                                </data>-->
 
-                                <!-- Copy Templates-->
-                                <data>
-                                    <src>${project.basedir}/src/main/template/db.tar.gz</src>
-                                    <type>archive</type>
-                                    <!--<includes>...</includes>-->
-                                    <!--<excludes>...</excludes>-->
-                                    <mapper>
-                                        <type>perm</type>
-                                        <strip>1</strip>
-                                        <prefix>${deb.prefix.share}/template/db</prefix>
-                                        <user>root</user>
-                                        <group>root</group>
-                                        <!--<filemode>600</filemode>-->
-                                    </mapper>
-                                </data>
-                            </dataSet>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--                                &lt;!&ndash; Copy Templates&ndash;&gt;-->
+<!--                                <data>-->
+<!--                                    <src>${project.basedir}/src/main/template/db.tar.gz</src>-->
+<!--                                    <type>archive</type>-->
+<!--                                    &lt;!&ndash;<includes>...</includes>&ndash;&gt;-->
+<!--                                    &lt;!&ndash;<excludes>...</excludes>&ndash;&gt;-->
+<!--                                    <mapper>-->
+<!--                                        <type>perm</type>-->
+<!--                                        <strip>1</strip>-->
+<!--                                        <prefix>${deb.prefix.share}/template/db</prefix>-->
+<!--                                        <user>root</user>-->
+<!--                                        <group>root</group>-->
+<!--                                        &lt;!&ndash;<filemode>600</filemode>&ndash;&gt;-->
+<!--                                    </mapper>-->
+<!--                                </data>-->
+<!--                            </dataSet>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
