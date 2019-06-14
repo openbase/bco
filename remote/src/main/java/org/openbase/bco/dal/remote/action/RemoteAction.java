@@ -100,6 +100,10 @@ public class RemoteAction implements Action {
         this(actionFuture, null, null);
     }
 
+    public RemoteAction(final ActionParameter actionParameter) throws InstantiationException, InterruptedException {
+        this(null, actionParameter, null, null);
+    }
+
     public RemoteAction(final Unit<?> executorUnit, final ActionParameter actionParameter) throws InstantiationException, InterruptedException {
         this(executorUnit, actionParameter, null, null);
     }
@@ -159,7 +163,9 @@ public class RemoteAction implements Action {
         this.actionDescriptionObservable = new ObservableImpl<>(this);
         try {
             // setup initiator
-            this.actionParameterBuilder.getActionInitiatorBuilder().setInitiatorId(executorUnit.getId());
+            if (executorUnit != null) {
+                this.actionParameterBuilder.getActionInitiatorBuilder().setInitiatorId(executorUnit.getId());
+            }
 
             // prepare target unit
             this.targetUnit = Units.getUnit(actionParameter.getServiceStateDescription().getUnitId(), false);
@@ -650,7 +656,7 @@ public class RemoteAction implements Action {
      * @param timeUnit the time unit of the timeout.
      *
      * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
-     * @throws TimeoutException is thrown in case the timeout is reached.
+     * @throws TimeoutException         is thrown in case the timeout is reached.
      * @throws InterruptedException     is thrown in case the thread was externally interrupted.
      */
     public void waitForExecution(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
@@ -677,14 +683,14 @@ public class RemoteAction implements Action {
                 }
 
                 // handle waiting without a timeout.
-                if(timeout == 0L) {
+                if (timeout == 0L) {
                     executionSync.wait(0L);
                     continue;
                 }
 
                 // handle waiting with timeout
                 final long timeToWait = timeUnit.toMillis(timeout) - (System.currentTimeMillis() - timestamp);
-                if(timeToWait < 0) {
+                if (timeToWait < 0) {
                     throw new org.openbase.jul.exception.TimeoutException();
                 }
                 executionSync.wait(timeToWait);
