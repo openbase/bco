@@ -278,11 +278,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
         try {
             final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MILLISECONDS) - 1l;
-            //Todo: Remove when openbase/bco.dal#149 is solved
-            if (String.valueOf(serviceStateTimestamp).length() != 13) {
-                throw new InvalidStateException("Timestamp wrong (ms): " + unit.getUnitType().toString() + " | " + serviceType.toString() + " | " + serviceStateTimestamp);
-            }
-
             lastServiceState = TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MILLISECONDS);
             storeServiceState(unit, serviceType, currentServiceState);
             storeServiceState(unit, serviceType, lastServiceState);
@@ -299,11 +294,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private void storeServiceState(final Unit<?> unit, final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, final Message serviceState) throws InvalidStateException {
 
         final long timestamp = TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS);
-        //Todo: Remove when openbase/bco.dal#149 is solved
-        if (String.valueOf(timestamp).length() != 13) {
-            throw new InvalidStateException("Timestamp wrong (ms): " + unit.getUnitType().toString() + " | " + serviceType.toString() + " | " + timestamp);
-        }
-
         try {
             String initiator;
             try {
