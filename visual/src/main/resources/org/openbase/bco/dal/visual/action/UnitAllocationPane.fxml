@@ -18,37 +18,35 @@
                </BorderPane.margin>
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding></HBox>
+               </padding>
+            </HBox>
          </top>
          <center>
-            <ScrollPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="BOTTOM_CENTER">
+            <ScrollPane BorderPane.alignment="BOTTOM_CENTER" fitToHeight="true" fitToWidth="true">
               <content>
-                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
-                     <children>
-                          <TableView fx:id="actionTable" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-463.0" AnchorPane.topAnchor="0.0">
-                              <columns>
-                                  <TableColumn fx:id="positionColumn" text="Pos" visible="false" />
-                                  <TableColumn fx:id="actionStateColumn" maxWidth="500.0" prefWidth="90.0" text="Actionstate" />
-                              <TableColumn fx:id="executionTimeColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Executiontime" />
-                              <TableColumn fx:id="lastExtensionColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="LastExtension" visible="false" />
-                              <TableColumn fx:id="lifetimeColumn" prefWidth="75.0" text="Lifetime" />
-                              <TableColumn fx:id="priorityColumn" maxWidth="300.0" prefWidth="70.0" text="Priority" />
-                              <TableColumn fx:id="categoryColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Category" />
-                              <TableColumn fx:id="initiatorColumn" maxWidth="1000.0" prefWidth="200.0" text="Initiator" />
-                              <TableColumn fx:id="interruptibleColumn" maxWidth="1000.0" text="Interruptible" visible="false" />
-                              <TableColumn fx:id="validColumn" maxWidth="75.0" text="Valid" visible="true" />
-                              <TableColumn fx:id="runningColumn" maxWidth="75.0" text="Running" visible="true" />
-                              <TableColumn fx:id="expiredColumn" maxWidth="75.0" text="Expired" visible="true" />
-                              <TableColumn fx:id="doneColumn" maxWidth="75.0" text="Done" visible="true" />
-                              <TableColumn fx:id="schedulableColumn" maxWidth="1000.0" text="Schedulable" visible="false" />
-                                  <TableColumn fx:id="serviceStateColumn" maxWidth="1.7976931348623157E308" prefWidth="500.0" text="Servicestate" />
-                              <TableColumn fx:id="descriptionColumn" prefWidth="300.0" text="Description" visible="false" />
-                              <TableColumn fx:id="timestampColumn" text="Timestamp" visible="false" />
-                                  <TableColumn fx:id="actionIdColumn" minWidth="0.0" prefWidth="100.0" text="ID" visible="false" />
-                              </columns>
-                          </TableView>
-                     </children>
-                  </AnchorPane>
+
+                  <TableView fx:id="actionTable" editable="true" maxHeight="Infinity" maxWidth="Infinity" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" >
+                      <columns>
+                          <TableColumn fx:id="positionColumn" text="Pos" visible="false" />
+                          <TableColumn fx:id="actionStateColumn" maxWidth="500.0" prefWidth="90.0" text="Actionstate" />
+                          <TableColumn fx:id="executionTimeColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Executiontime" />
+                          <TableColumn fx:id="lastExtensionColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="LastExtension" visible="false" />
+                          <TableColumn fx:id="lifetimeColumn" prefWidth="75.0" text="Lifetime" />
+                          <TableColumn fx:id="priorityColumn" maxWidth="300.0" prefWidth="70.0" text="Priority" />
+                          <TableColumn fx:id="categoryColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Category" />
+                          <TableColumn fx:id="initiatorColumn" maxWidth="1000.0" prefWidth="200.0" text="Initiator" />
+                          <TableColumn fx:id="interruptibleColumn" maxWidth="1000.0" text="Interruptible" visible="false" />
+                          <TableColumn fx:id="validColumn" maxWidth="75.0" text="Valid" visible="true" />
+                          <TableColumn fx:id="runningColumn" maxWidth="75.0" text="Running" visible="true" />
+                          <TableColumn fx:id="expiredColumn" maxWidth="75.0" text="Expired" visible="true" />
+                          <TableColumn fx:id="doneColumn" maxWidth="75.0" text="Done" visible="true" />
+                          <TableColumn fx:id="schedulableColumn" maxWidth="1000.0" text="Schedulable" visible="false" />
+                          <TableColumn fx:id="serviceStateColumn" maxWidth="1.7976931348623157E308" prefWidth="500.0" text="Servicestate" />
+                          <TableColumn fx:id="descriptionColumn" prefWidth="300.0" text="Description" visible="false" />
+                          <TableColumn fx:id="timestampColumn" text="Timestamp" visible="false" />
+                          <TableColumn fx:id="actionIdColumn" minWidth="0.0" prefWidth="100.0" text="ID" visible="false" />
+                      </columns>
+                  </TableView>
               </content>
             </ScrollPane>
          </center>
