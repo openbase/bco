@@ -459,7 +459,7 @@
         <skipTests>true</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <build.appassembler>${project.build.directory}/appassembler</build.appassembler>
+<!--        <build.appassembler>${project.build.directory}/appassembler</build.appassembler>-->
         <build.appassembler.repo.name>share/bco/lib</build.appassembler.repo.name>
         <deb.prefix>usr</deb.prefix>
         <deb.prefix.lib>${deb.prefix}/${build.appassembler.repo.name}</deb.prefix.lib>
