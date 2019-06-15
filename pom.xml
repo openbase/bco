@@ -459,12 +459,12 @@
         <skipTests>true</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-<!--        <build.appassembler>${project.build.directory}/appassembler</build.appassembler>-->
+        <!--build.appassembler>${project.build.directory}/appassembler</build.appassembler>>
         <build.appassembler.repo.name>share/bco/lib</build.appassembler.repo.name>
         <deb.prefix>usr</deb.prefix>
         <deb.prefix.lib>${deb.prefix}/${build.appassembler.repo.name}</deb.prefix.lib>
         <deb.prefix.bin>${deb.prefix}/bin</deb.prefix.bin>
-        <deb.prefix.share>${deb.prefix}/share/${project.artifactId}</deb.prefix.share>
+        <deb.prefix.share>${deb.prefix}/share/${project.artifactId}</deb.prefix.share-->
     </properties>
 
     <dependencies>
