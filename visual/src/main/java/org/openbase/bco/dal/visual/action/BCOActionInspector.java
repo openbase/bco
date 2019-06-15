@@ -27,7 +27,7 @@ import org.openbase.jul.visual.javafx.launch.AbstractFXMLApplication;
 public class BCOActionInspector extends AbstractFXMLApplication {
 
     public BCOActionInspector() {
-        super(UnitAllocationPane.class);
+        super(UnitAllocationPaneController.class);
     }
 
     @Override

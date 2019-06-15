@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openbase.bco.dal.visual.action.UnitSelectionPane">
+<AnchorPane fx:id="mainPain" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openbase.bco.dal.visual.action.UnitSelectionPaneController">
    <children>
       <VBox prefHeight="122.0" prefWidth="622.0">
          <children>
