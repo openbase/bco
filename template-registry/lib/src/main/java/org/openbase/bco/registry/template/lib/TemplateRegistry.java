@@ -34,7 +34,9 @@ import org.openbase.jul.storage.registry.RegistryService;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
 import org.openbase.type.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -76,7 +78,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the unit template registry is consistent
@@ -109,7 +111,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the service template registry is consistent
@@ -119,7 +121,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the unit template registry is consistent
@@ -165,7 +167,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the activity template registry is consistent
@@ -175,11 +177,34 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
 
     /**
      * Method returns true if the underlying registry is marked as consistent.
-     *
+     * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
      *
      * @return if the activity template registry is consistent
      */
     @RPCMethod
     Boolean isActivityTemplateRegistryConsistent();
+
+
+    /**
+     * Method computes if the given {@code serviceType} supports the given {@code servicePattern}
+     * which means it is registered as operation service within at least one unit template.
+     *
+     * @param serviceType the service type to check.
+     * @param servicePattern the service to check for.
+     *
+     * @return true if the service type supports the service pattern, otherwise false.
+     *
+     * @throws CouldNotPerformException is thrown if the registry is not ready yet.
+     */
+    default boolean validateServicePatternSupport(final ServiceType serviceType, final ServicePattern servicePattern) throws CouldNotPerformException {
+        for (UnitTemplate unitTemplate : getUnitTemplates()) {
+            for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
+                if (serviceDescription.getServiceType() == serviceType && serviceDescription.getPattern() == servicePattern) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

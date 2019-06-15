@@ -119,7 +119,7 @@ public class BCOLogin {
             return GlobalCachedExecutorService.submit(() -> {
                 try {
                     try {
-                        autoUserLogin(includeSystemUser);
+                        autoLoginDefaultUser(includeSystemUser);
                     } catch (CouldNotPerformException ex) {
                         if (!includeSystemUser) {
                             throw ex;
@@ -135,16 +135,7 @@ public class BCOLogin {
             });
         }
 
-        /**
-         * {@inheritDoc}
-         *
-         * @param includeSystemUser {@inheritDoc}
-         *
-         * @throws CouldNotPerformException {@inheritDoc}
-         * @throws InterruptedException     {@inheritDoc}
-         */
-        @Override
-        public void autoUserLogin(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException {
+        public void autoLoginDefaultUser(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException {
             // check if authentication is enabled.
             try {
                 if (!JPService.getProperty(JPAuthentication.class).getValue()) {
@@ -170,7 +161,7 @@ public class BCOLogin {
             }
 
             SessionManager.getInstance().loginUser(userId, true);
-            setLocalAutoLoginUser(userId);
+            setLocalDefaultUser(userId);
         }
 
         private static String loadAutoLoginUserId(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException {
@@ -229,7 +220,7 @@ public class BCOLogin {
          * @param userId {@inheritDoc}
          */
         @Override
-        public void setLocalAutoLoginUser(final String userId) {
+        public void setLocalDefaultUser(final String userId) {
             loginProperties.setProperty(DEFAULT_USER_KEY, userId);
             try {
                 final File propertiesFile = new File(JPService.getProperty(JPBCOHomeDirectory.class).getValue(), LOGIN_PROPERTIES);
