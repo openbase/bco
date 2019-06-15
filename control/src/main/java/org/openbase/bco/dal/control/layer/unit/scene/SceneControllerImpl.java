@@ -140,27 +140,28 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                             // stop disabled, so scene can be reactivated because it will never be active but still possilble required actions are executed.
                             // stop();
 
-                            // replaced by applyDataUpdate(). Cleanup when working.
-//                            try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-//                                final Builder internalBuilder = dataBuilder.getInternalBuilder();
-//                                // move current state to last
-//                                internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
-//                                // update current state to deactivate and set timestamp
-//                                final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
-//                                activationStateBuilder.setValue(ActivationState.State.INACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
-//                                // update latest value occurrence map of current state
-//                                for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
-//                                    if (builder.getKey() == activationStateBuilder.getValue()) {
-//                                        builder.setValue(activationStateBuilder.getTimestamp());
-//                                        break;
-//                                    }
-//                                }
-//                            }
-                            try {
-                                applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE)), ServiceType.ACTIVATION_STATE_SERVICE);
-                            } catch (CouldNotPerformException ex) {
-                                throw new CouldNotPerformException("Could not apply new scene state!", ex);
+                            // replace by applyDataUpdate(). Cleanup when working.
+                            try (final ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+                                final Builder internalBuilder = dataBuilder.getInternalBuilder();
+                                // move current state to last
+                                internalBuilder.setActivationStateLast(internalBuilder.getActivationState());
+                                // update current state to deactivate and set timestamp
+                                final ActivationState.Builder activationStateBuilder = internalBuilder.getActivationStateBuilder();
+                                activationStateBuilder.setValue(ActivationState.State.INACTIVE).setTimestamp(TimestampProcessor.getCurrentTimestamp());
+                                // update latest value occurrence map of current state
+                                for (final MapFieldEntry.Builder builder : activationStateBuilder.getLastValueOccurrenceBuilderList()) {
+                                    if (builder.getKey() == activationStateBuilder.getValue()) {
+                                        builder.setValue(activationStateBuilder.getTimestamp());
+                                        break;
+                                    }
+                                }
                             }
+                            // deactivated because not working yet, can maybe replace the manual data builder data update when applyDataUpdate is refactored.
+//                            try {
+//                                applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE)), ServiceType.ACTIVATION_STATE_SERVICE);
+//                            } catch (CouldNotPerformException ex) {
+//                                throw new CouldNotPerformException("Could not apply new scene state!", ex);
+//                            }
                         }
                     }
                 }
