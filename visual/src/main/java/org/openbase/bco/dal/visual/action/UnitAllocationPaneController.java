@@ -10,12 +10,12 @@ package org.openbase.bco.dal.visual.action;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -211,8 +211,10 @@ public class UnitAllocationPaneController extends AbstractFXController {
             actionTable.setEditable(data != State.CONNECTED);
             if (data != State.CONNECTED) {
                 actionTable.setStyle("-fx-border-color: #a00600; -fx-border-width: 3");
+                actionChainTable.setStyle("-fx-border-color: #a00600; -fx-border-width: 3");
             } else {
                 actionTable.setStyle("");
+                actionChainTable.setStyle("");
             }
         };
     }
@@ -267,6 +269,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
             unitSelectionPaneControllerPair.getValue().setupServicePatternPass(ServicePattern.OPERATION);
 
             actionTable.setItems(unitAllocationData);
+            actionChainTable.setItems(actionChainData);
             actionTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
                 // ignore null values
@@ -277,20 +280,26 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 actionChainData.clear();
 
                 try {
-                    int i = 1;
-                    for (ActionReference actionReference : ((UnitAllocationBean) newValue).getRemoteAction().getActionDescription().getActionCauseList()) {
+                    final ActionDescription actionDescription = ((UnitAllocationBean) newValue).getRemoteAction().getActionDescription();
+
+                    int i = 0;
+                    actionChainData.add(new ActionReferenceBean(i++, ActionDescriptionProcessor.generateActionReference(actionDescription)));
+
+                    for (ActionReference actionReference : actionDescription.getActionCauseList()) {
                         actionChainData.add(new ActionReferenceBean(i++, actionReference));
                     }
                 } catch (NotAvailableException ex) {
                     ExceptionPrinter.printHistory("Could updated dynamic content!", ex, LOGGER);
                 }
 
+                actionChainTable.getSelectionModel().select(0);
             });
 
-            actionChainTable.setItems(actionChainData);
+
 
             GlobalScheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() -> {
                 actionTable.refresh();
+                actionChainTable.refresh();
             }), 1, 1, TimeUnit.SECONDS);
 
         } catch (CouldNotPerformException ex) {
@@ -330,6 +339,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
             if (unit.isDataAvailable()) {
                 update();
             }
+            actionTable.getSelectionModel().select(0);
         } catch (NotAvailableException e) {
             throw new CouldNotPerformException("Could not setup Unit[" + unitId + "]");
         } catch (InterruptedException e) {
