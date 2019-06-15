@@ -64,24 +64,25 @@ public interface BCOSession extends Session {
     void loginUserViaUsername(String username, LoginCredentials credentials, boolean stayLoggedIn) throws CouldNotPerformException;
 
     /**
-     * Sets the given user as new auto login user.
+     * Sets the given user as new default user which can then be automatically logged in.
      *
      * @param userId the id to identify the user account.
      */
-    void setLocalAutoLoginUser(final String userId);
+    void setLocalDefaultUser(final String userId);
 
     /**
-     * Method resolves the credentials of the configured auto login user via the local credential store and initiates the login.
+     * Method resolves the credentials of the configured default login user via the local credential store and initiates the login.
      *
      * @throws CouldNotPerformException is thrown if the auto login could not be performed, e.g. because no auto login user was defined or the credentials are not available.
      * @throws InterruptedException     is thrown if the thread was externally interrupted.
      */
-    void autoUserLogin(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException;
+    void autoLoginDefaultUser(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException;
 
     /**
-     * Method tries initiate the login of the auto login user. If this fails, the bco system user is used for the login.
+     * Method tries initiate the login of the auto login user. If this fails, the bco system user is used for the login if {@code includeSystemUser} is set to true.
      * If both are not available the task fails.
      *
+     * @param includeSystemUser flag defines if the system user should be used as fallback if possible.
      * @return a future representing the login task.
      */
     Future<Void> autoLogin(final boolean includeSystemUser);
