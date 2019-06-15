@@ -105,17 +105,17 @@ public class NightLightApp extends AbstractAppController {
                     }
 
                     // if ongoing action skip the update.
-                    if(presentsAction != null && !presentsAction.isDone()) {
+                    if (presentsAction != null && !presentsAction.isDone()) {
                         return;
                     }
 
                     if (location.getPowerState(UnitType.COLORABLE_LIGHT).getValue() != State.ON || !isColorReached(location.getColor().getHsbColor(), COLOR_ORANGE)) {
-                    // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
+                        // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
                         presentsActionLocationMap.put(location, observe(location.setColor(COLOR_ORANGE, getDefaultActionParameter())));
                     }
 
                     // cancel absence actions
-                    if(absenceAction != null) {
+                    if (absenceAction != null) {
                         absenceAction.cancel();
                         absenceActionLocationMap.remove(location);
                     }
@@ -124,7 +124,7 @@ public class NightLightApp extends AbstractAppController {
                 case ABSENT:
 
                     // if ongoing action skip the update.
-                    if(absenceAction != null && !absenceAction.isDone()) {
+                    if (absenceAction != null && !absenceAction.isDone()) {
                         return;
                     }
 
@@ -135,7 +135,7 @@ public class NightLightApp extends AbstractAppController {
                     }
 
                     // cancel presents actions
-                    if(presentsAction != null) {
+                    if (presentsAction != null) {
                         presentsAction.cancel();
                         presentsActionLocationMap.remove(location);
                     }
@@ -144,7 +144,7 @@ public class NightLightApp extends AbstractAppController {
         } catch (ShutdownInProgressException ex) {
             // skip update when shutdown was initiated.
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not control light in "+location.getLabel("?")+" by night light!", ex, LOGGER);
+            ExceptionPrinter.printHistory("Could not control light in " + location.getLabel("?") + " by night light!", ex, LOGGER);
         }
     }
 
@@ -197,7 +197,7 @@ public class NightLightApp extends AbstractAppController {
                     final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(s);
 
                     // let only tiles pass
-                    if(locationUnitConfig.getLocationConfig().getLocationType() != LocationType.TILE) {
+                    if (locationUnitConfig.getLocationConfig().getLocationType() != LocationType.TILE) {
                         continue;
                     }
 
@@ -218,7 +218,7 @@ public class NightLightApp extends AbstractAppController {
                     final LocationRemote remote = Units.getUnit(locationUnitConfig, false, Units.LOCATION);
 
                     // skip locations without colorable lights.
-                    if(!remote.isServiceAvailable(ServiceType.COLOR_STATE_SERVICE)) {
+                    if (!remote.isServiceAvailable(ServiceType.COLOR_STATE_SERVICE)) {
                         continue remoteLocationLoop;
                     }
 
@@ -234,7 +234,7 @@ public class NightLightApp extends AbstractAppController {
 
                 if (getActivationState().getValue() == ActivationState.State.ACTIVE) {
                     locationMap.forEach((remote, observer) -> {
-                        remote.addServiceStateObserver(ServiceType.PRESENCE_STATE_SERVICE, observer);
+                        remote.addDataObserver(observer);
                         update(remote, null);
                     });
                 }
