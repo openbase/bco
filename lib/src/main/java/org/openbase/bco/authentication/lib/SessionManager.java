@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.security.KeyPair;
+import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
@@ -644,7 +645,7 @@ public class SessionManager implements Shutdownable, Session {
             throw new CouldNotPerformException("Please log in first!");
         }
 
-        return credentialStore.getEntry(userId).getCredentials().toStringUtf8();
+        return Base64.getEncoder().encodeToString(credentialStore.getEntry(userId).getCredentials().toByteArray());
     }
 
     public synchronized boolean hasCredentials() {
