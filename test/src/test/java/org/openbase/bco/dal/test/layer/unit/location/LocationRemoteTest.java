@@ -33,6 +33,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
+import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
@@ -42,11 +43,13 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionReferenceType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActionStateType;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
@@ -67,10 +70,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -464,5 +467,59 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
         // test if new value has been set
         assertEquals(serviceState.getValue(), locationRemote.getPowerState().getValue());
+    }
+
+    @Test(timeout = 5000)
+    public void testActionCancellation() throws Exception {
+        System.out.println("testActionCancellation");
+
+        final List<? extends ColorableLightRemote> colorableLightRemotes = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, false, Units.COLORABLE_LIGHT);
+        // validate that location has at least one unit of the type used in this test
+        assertTrue("Cannot execute test if location does not have a colorable light!",
+                colorableLightRemotes.size() > 0);
+
+        for (int i = 0; i < 10; i++) {
+            final PowerState.State powerState = (i % 2 == 0) ? State.ON : State.OFF;
+
+            // execute an action
+            final Future<ActionDescription> actionFuture = locationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT);
+            // wait for its execution
+            Actions.waitForExecution(actionFuture);
+            // save the action description
+            final ActionDescription actionDescription = actionFuture.get();
+
+            // validate that actions are running on the triggered units
+            for (final ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
+                boolean actionRunning = false;
+                for (final ActionReferenceType.ActionReference actionReference : colorableLightRemote.getActionList().get(0).getActionCauseList()) {
+                    if (actionReference.getActionId().equals(actionDescription.getId())) {
+                        actionRunning = true;
+                        break;
+                    }
+                }
+                assertTrue("Location action is not running on unit[" + colorableLightRemote + "]", actionRunning);
+            }
+
+            // cancel the action
+            locationRemote.cancelAction(actionDescription).get();
+            // validate that action is cancelled on all units
+            for (final ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
+                ActionDescription causedAction = null;
+                for (final ActionDescription description : colorableLightRemote.getActionList()) {
+                    for (ActionReferenceType.ActionReference actionReference : description.getActionCauseList()) {
+                        if (actionReference.getActionId().equals(actionDescription.getId())) {
+                            causedAction = description;
+                            break;
+                        }
+                    }
+                }
+
+                if (causedAction == null) {
+                    fail("Caused action on unit[" + colorableLightRemote + "]could not be found!");
+                }
+
+                assertEquals("Action on unit[" + colorableLightRemote + "] was not cancelled!", ActionStateType.ActionState.State.CANCELED, causedAction.getActionState().getValue());
+            }
+        }
     }
 }
