@@ -56,23 +56,35 @@ public class BCOUnitQueryPrinter {
      * @param args
      */
     public static void main(String[] args) {
+
         boolean resultsFound = false;
-        final String query = args[args.length - 1];
+
+        final String query;
+
+        if (args.length == 0) {
+            query = "";
+        } else {
+            query = args[args.length - 1];
+        }
+
         try {
 
-            // remove query from jp args
-            String[] jpArgs = Arrays.copyOfRange(args, 0, args.length - 1);
+            // handle jps
+            if (args.length != 0) {
+                // remove query from jp args
+                String[] jpArgs = Arrays.copyOfRange(args, 0, args.length - 1);
 
-            JPService.setApplicationName("bco-query");
+                JPService.setApplicationName("bco-query");
 
-            // help
-            if (args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
-                JPService.printHelp();
-                printHelp();
-                System.exit(0);
+                // help
+                if (args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
+                    JPService.printHelp();
+                    printHelp();
+                    System.exit(0);
+                }
+
+                JPService.parseAndExitOnError(jpArgs);
             }
-
-            JPService.parseAndExitOnError(jpArgs);
 
             // init
             Registries.waitForData();
@@ -247,7 +259,7 @@ public class BCOUnitQueryPrinter {
         System.out.println();
         System.out.println("Queries:   UNIT_TYPE, UNIT_LOCATION, UNIT_LABEL, UNIT_ID, UNIT_ALIAS, UNIT_SCOPE, UNIT_DESCRIPTION, UNIT_META_CONFIG");
         System.out.println();
-        System.out.println("UnitTypes: "+StringProcessor.transformCollectionToString(Arrays.asList(UnitType.values()), ", "));
+        System.out.println("UnitTypes: " + StringProcessor.transformCollectionToString(Arrays.asList(UnitType.values()), ", "));
         System.out.println();
         System.out.println("Example:   bco-query");
         System.out.println("           bco-query colorablelight");
