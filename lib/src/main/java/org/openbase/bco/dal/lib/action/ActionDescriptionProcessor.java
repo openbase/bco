@@ -798,11 +798,7 @@ public class ActionDescriptionProcessor {
                         StringProcessor.transformToPascalCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
 
                 // setup initiator
-                if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty() && actionDescriptionBuilder.getActionInitiator().getInitiatorId() != User.OTHER) {
-                    description = description.replace(INITIATOR_KEY, LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId()).getLabel()));
-                } else {
-                    description = description.replace(INITIATOR_KEY, "Other");
-                }
+                description = description.replace(INITIATOR_KEY, getInitiatorName(getInitialInitiator(actionDescriptionBuilder)));
 
                 // setup service attribute
                 description = description.replace(SERVICE_STATE_KEY,
@@ -817,6 +813,29 @@ public class ActionDescriptionProcessor {
                 ExceptionPrinter.printHistory("Could not generate action description!", ex, LOGGER);
             }
             actionDescriptionBuilder.setDescription(multiLanguageTextBuilder);
+        }
+    }
+
+    /**
+     * Returns the name of the initiator of the action.
+     * In case the initiator is a user than its username is used, otherwise the best match of the unit label is used.
+     *
+     * @param initialInitiator the initiator..
+     *
+     * @return the label or username.
+     *
+     * @throws NotAvailableException is thrown when the name is not available.
+     */
+    public static String getInitiatorName(final ActionInitiator initialInitiator) throws NotAvailableException {
+        if (initialInitiator.hasInitiatorId() && !initialInitiator.getInitiatorId().isEmpty() && initialInitiator.getInitiatorId() != User.OTHER) {
+            final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(initialInitiator.getInitiatorId());
+            if (initiatorUnitConfig.getUnitType() == UnitType.USER) {
+                return initiatorUnitConfig.getUserConfig().getUserName();
+            } else {
+                return LabelProcessor.getBestMatch(initiatorUnitConfig.getLabel());
+            }
+        } else {
+            return "Other";
         }
     }
 

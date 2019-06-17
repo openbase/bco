@@ -22,7 +22,9 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.iface.Executable;
@@ -47,7 +49,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * The max execution time of an action until the action finishes if it was never extended.
      * The time unit is milliseconds.
      */
-    long MAX_EXECUTION_TIME_PERIOD = TimeUnit.MINUTES.toMillis(30);
+    long MAX_EXECUTION_TIME_PERIOD = (JPService.testMode() ? TimeUnit.SECONDS.toMillis(3) : TimeUnit.MINUTES.toMillis(30));
 
     /**
      * Returns the id of this action.
@@ -90,13 +92,56 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * If the action execution period is larger than {@code Action.MAX_EXECUTION_TIME_PERIOD},
      * and it was never extended (indicated by the last extention value), than the action will be finished.
      *
-     * @return the last extension of this action.
+     * @return the last extension of this action it milliseconds
      *
      * @throws NotAvailableException is thrown if the last extension can not be accessed. This can for example happen,
      *                               if a remote action is not yet fully synchronized and the related action description is not available.
      */
     default long getLastExtensionTime() throws NotAvailableException {
-        return TimestampJavaTimeTransform.transform(getActionDescription().getLastExtensionTimestamp());
+        return getLastExtensionTime(TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Method return the timestamp of the actions last extension.
+     * If the action execution period is larger than {@code Action.MAX_EXECUTION_TIME_PERIOD},
+     * and it was never extended (indicated by the last extention value), than the action will be finished.
+     *
+     * @param timeUnit the timeunit used for the return value.
+     *
+     * @return the last extension of this action it the given time unit.
+     *
+     * @throws NotAvailableException is thrown if the last extension can not be accessed. This can for example happen,
+     *                               if a remote action is not yet fully synchronized and the related action description is not available.
+     */
+    default long getLastExtensionTime(final TimeUnit timeUnit) throws NotAvailableException {
+        if(!getActionDescription().hasLastExtensionTimestamp() || !getActionDescription().getLastExtensionTimestamp().hasTime() || getActionDescription().getLastExtensionTimestamp().getTime() == 0) {
+            throw new NotAvailableException("LastExtentionTime", new InvalidStateException(this + " has never been extended!"));
+        }
+
+        return timeUnit.convert(getActionDescription().getLastExtensionTimestamp().getTime(), TimeUnit.MICROSECONDS);
+    }
+
+    /**
+     * Method returns the time until this action gets invalid if never extended.
+     *
+     * @param timeUnit the timeunit used for the return value.
+     *
+     * @return the time intervall until this action gets invalid.
+     *
+     * @throws NotAvailableException is thrown if the validation time could not be computed. This can for example happen,
+     *                               if a remote action is not yet fully synchronized and the related action description is not available.
+     */
+    default long getValidationTimeout(final TimeUnit timeUnit) throws NotAvailableException {
+
+        long timeSinceStartOrLastExtention;
+        try {
+            timeSinceStartOrLastExtention = getLastExtensionTime();
+        } catch (NotAvailableException ex) {
+            timeSinceStartOrLastExtention = getCreationTime();
+        }
+
+        final long extensionTimeout = (Action.MAX_EXECUTION_TIME_PERIOD - (System.currentTimeMillis() - timeSinceStartOrLastExtention));
+        return timeUnit.convert(Math.max(0, Math.min(getExecutionTime(), extensionTimeout)), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -172,6 +217,11 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
 
         // if done we are not valid to execute anymore.
         if (isDone()) {
+            return false;
+        }
+
+        // action is not valid when a cancellation was requested.
+        if (getActionState() == State.CANCELING) {
             return false;
         }
 

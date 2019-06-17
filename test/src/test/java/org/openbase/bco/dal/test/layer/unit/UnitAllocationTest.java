@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.session.TokenGenerator;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,6 +43,7 @@ import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
@@ -304,7 +306,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         secondaryActionParameter.addCategory(Category.ECONOMY);
         secondaryActionParameter.setSchedulable(true);
         secondaryActionParameter.setInterruptible(true);
-        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(0.90d, secondaryActionParameter.build()));
+        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(0.90d, secondaryActionParameter.build()), () -> true);
         secondaryAction.waitForExecution();
 
         assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());
@@ -324,7 +326,9 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
 
-        final RemoteAction primaryAction = new RemoteAction(authenticatedValueFuture);
+        final AuthToken adminToken = TokenGenerator.generateAuthToken(sessionManager);
+
+        final RemoteAction primaryAction = new RemoteAction(authenticatedValueFuture, adminToken, () -> true);
         primaryAction.waitForExecution();
         secondaryAction.waitForActionState(ActionState.State.SCHEDULED);
 

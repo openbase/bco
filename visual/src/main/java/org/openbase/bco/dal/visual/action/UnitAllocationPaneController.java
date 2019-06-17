@@ -40,9 +40,9 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
@@ -296,7 +296,6 @@ public class UnitAllocationPaneController extends AbstractFXController {
             });
 
 
-
             GlobalScheduledExecutorService.scheduleAtFixedRate(() -> Platform.runLater(() -> {
                 actionTable.refresh();
                 actionChainTable.refresh();
@@ -322,7 +321,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
             for (ActionDescription actionDescription : unit.getActionList()) {
                 unitAllocationData.add(new UnitAllocationBean(i++, actionDescription));
             }
-        } catch (NotAvailableException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could updated dynamic content!", ex, LOGGER);
         }
     }
@@ -368,37 +367,43 @@ public class UnitAllocationPaneController extends AbstractFXController {
 
         private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
 
-        public UnitAllocationBean(final int position, final ActionDescription actionDescription) throws NotAvailableException {
-            this.remoteAction = new RemoteAction(actionDescription);
-            this.position = position;
-            this.timestamp = dateFormat.format(new Date(TimestampJavaTimeTransform.transform(actionDescription.getTimestamp())));
-            this.actionId = actionDescription.getId();
-            this.description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(), "?");
-            this.priority = actionDescription.getPriority().name();
-            this.category = StringProcessor.transformCollectionToString(actionDescription.getCategoryList(), ", ");
-            this.interruptible = actionDescription.getInterruptible();
-            this.schedulable = actionDescription.getSchedulable();
-
-            final ActionInitiator actionInitiator = ActionDescriptionProcessor.getInitialInitiator(actionDescription);
-
-            String initiatorLabel;
+        public UnitAllocationBean(final int position, final ActionDescription actionDescription) throws InstantiationException {
             try {
-                initiatorLabel = Registries.getUnitRegistry().getUnitConfigById(actionInitiator.getInitiatorId()).getUserConfig().getUserName();
-            } catch (CouldNotPerformException e) {
-                initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "?");
+                this.remoteAction = new RemoteAction(actionDescription);
+                this.position = position;
+                this.timestamp = dateFormat.format(new Date(TimestampJavaTimeTransform.transform(actionDescription.getTimestamp())));
+                this.actionId = actionDescription.getId();
+                this.description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(), "?");
+                this.priority = actionDescription.getPriority().name();
+                this.category = StringProcessor.transformCollectionToString(actionDescription.getCategoryList(), ", ");
+                this.interruptible = actionDescription.getInterruptible();
+                this.schedulable = actionDescription.getSchedulable();
+
+                final ActionInitiator actionInitiator = ActionDescriptionProcessor.getInitialInitiator(actionDescription);
+
+                String initiatorLabel;
+                try {
+                    initiatorLabel = ActionDescriptionProcessor.getInitiatorName(ActionDescriptionProcessor.getInitialInitiator(actionDescription));
+                } catch (CouldNotPerformException e) {
+                    initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "?");
+                }
+
+                this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";
+
+                String tmpServiceState;
+                try {
+                    final Message serviceStateMessage = protoBufJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceState(), actionDescription.getServiceStateDescription().getServiceStateClassName());
+                    tmpServiceState = StringProcessor.transformCollectionToString(Services.resolveStateValue(serviceStateMessage), ", ");
+                } catch (CouldNotPerformException e) {
+                    tmpServiceState = "?";
+                }
+                this.serviceState = tmpServiceState;
+            } catch (CouldNotPerformException ex) {
+                throw new InstantiationException(this, ex);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new InstantiationException(this, ex);
             }
-
-            this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";
-
-            String tmpServiceState;
-            try {
-                final Message serviceStateMessage = protoBufJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceState(), actionDescription.getServiceStateDescription().getServiceStateClassName());
-                tmpServiceState = StringProcessor.transformCollectionToString(Services.resolveStateValue(serviceStateMessage), ", ");
-            } catch (CouldNotPerformException e) {
-                tmpServiceState = "?";
-            }
-            this.serviceState = tmpServiceState;
-
         }
 
         public int getPosition() {
@@ -552,7 +557,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
 
             String initiatorLabel;
             try {
-                initiatorLabel = Registries.getUnitRegistry().getUnitConfigById(actionInitiator.getInitiatorId()).getUserConfig().getUserName();
+                initiatorLabel = ActionDescriptionProcessor.getInitiatorName(actionReference.getActionInitiator());
             } catch (CouldNotPerformException e) {
                 initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "?");
             }

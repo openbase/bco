@@ -31,10 +31,8 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -58,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
@@ -108,8 +107,8 @@ public class RemoteAction implements Action {
         this(executorUnit, actionParameter, null, null);
     }
 
-    public RemoteAction(final ActionDescription actionDescription) {
-        this(ActionDescriptionProcessor.generateActionReference(actionDescription), null, null);
+    public RemoteAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        this(actionDescription, null, null);
     }
 
     public RemoteAction(final ActionReference actionReference) {
@@ -148,23 +147,62 @@ public class RemoteAction implements Action {
         this(actionReference, authToken, null);
     }
 
+    public RemoteAction(final ActionDescription actionDescription, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) throws InstantiationException, InterruptedException {
+        try {
+            this.actionParameterBuilder = null;
+            this.actionDescriptionObservable = new ObservableImpl<>();
+            this.autoExtendCheckCallback = autoExtendCheckCallback;
+            this.authToken = authToken;
+            this.setActionDescriptionAndStartObservation(actionDescription);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
+    /**
+     * Instantiates a remote action with an already executed action referred via an action future.
+     *
+     * @param actionFuture            the future referring the action.
+     * @param authToken               the token used for authentication if for example the action is canceled or extended.
+     * @param autoExtendCheckCallback
+     */
     public RemoteAction(final Future<ActionDescription> actionFuture, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) {
         this.actionParameterBuilder = null;
         this.actionDescriptionObservable = new ObservableImpl<>();
         this.autoExtendCheckCallback = autoExtendCheckCallback;
         this.authToken = authToken;
-        this.initFutureObservationTask(actionFuture);
+        this.setActionDescriptionAndStartObservation(actionFuture);
     }
 
-    public RemoteAction(final Unit<?> executorUnit, final ActionParameter actionParameter, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) throws InstantiationException, InterruptedException {
-        this.actionParameterBuilder = actionParameter.toBuilder();
-        this.autoExtendCheckCallback = autoExtendCheckCallback;
-        this.authToken = authToken;
-        this.actionDescriptionObservable = new ObservableImpl<>(this);
+    /**
+     * Instantiates a remote action which can be used to execute the referred action.
+     *
+     * @param initiatingUnit          the unit which initiates the execution. This can be any unit like a user, scene or location.
+     * @param actionParameter         the parameter to descripe the action to execute.
+     * @param authToken               the token to used for the authorization.
+     * @param autoExtendCheckCallback flag defines if the action should be auto extended. This is required to execute an action more than 15 min.
+     *
+     * @throws InstantiationException is thrown if same information are missing.
+     * @throws InterruptedException   is thown if the thread was externally interrupted.
+     */
+    public RemoteAction(final Unit<?> initiatingUnit, final ActionParameter actionParameter, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) throws InstantiationException, InterruptedException {
         try {
+            this.actionParameterBuilder = actionParameter.toBuilder();
+            this.autoExtendCheckCallback = autoExtendCheckCallback;
+
+            // resolve auth token 1. via Argument 2. via action parameter.
+            if (authToken != null) {
+                this.authToken = authToken;
+            } else if (actionParameter.hasAuthToken()) {
+                this.authToken = actionParameter.getAuthToken();
+            } else {
+                this.authToken = null;
+            }
+            this.actionDescriptionObservable = new ObservableImpl<>(this);
+
             // setup initiator
-            if (executorUnit != null) {
-                this.actionParameterBuilder.getActionInitiatorBuilder().setInitiatorId(executorUnit.getId());
+            if (initiatingUnit != null) {
+                this.actionParameterBuilder.getActionInitiatorBuilder().setInitiatorId(initiatingUnit.getId());
             }
 
             // prepare target unit
@@ -174,21 +212,17 @@ public class RemoteAction implements Action {
         }
     }
 
-    public RemoteAction(final ActionDescription actionDescription, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) {
-        this(ActionDescriptionProcessor.generateActionReference(actionDescription), authToken, autoExtendCheckCallback);
-    }
-
     public RemoteAction(final ActionReference actionReference, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) {
         this.actionParameterBuilder = null;
         this.actionDescriptionObservable = new ObservableImpl<>();
         this.autoExtendCheckCallback = autoExtendCheckCallback;
         this.authToken = authToken;
-        this.initFutureObservationTask(actionReference);
+        this.setActionReferenceAndStartObservation(actionReference);
     }
 
     public Future<ActionDescription> execute(final ActionDescription causeActionDescription) {
         try {
-            // check if action remote was instantiated via task future.
+            // check if action remote was instantiated via action parameter.
             if (actionParameterBuilder == null) {
                 throw new NotAvailableException("ActionParameter");
             }
@@ -204,7 +238,7 @@ public class RemoteAction implements Action {
                     actionParameterBuilder.setCause(causeActionDescription);
                 }
                 synchronized (executionSync) {
-                    return initFutureObservationTask(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
+                    return setActionDescriptionAndStartObservation(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -222,30 +256,10 @@ public class RemoteAction implements Action {
         return execute(null);
     }
 
-    private Future<ActionDescription> initFutureObservationTask(final Future<ActionDescription> future) {
+    private Future<ActionDescription> setActionDescriptionAndStartObservation(final Future<ActionDescription> future) {
         futureObservationTask = GlobalCachedExecutorService.submit(() -> {
             try {
-                final ActionDescription actionDescription = future.get();
-                synchronized (executionSync) {
-                    RemoteAction.this.actionDescription = actionDescription;
-
-                    // configure target unit if needed. This is the case if this remote action was instantiated via a future object.
-                    if (targetUnit == null) {
-                        targetUnit = Units.getUnit(actionDescription.getServiceStateDescription().getUnitId(), false);
-                    }
-
-                    if (actionDescription.getIntermediary()) {
-                        // observe impact actions and register callback if available to support action auto extension.
-                        for (ActionReference actionReference : actionDescription.getActionImpactList()) {
-                            RemoteAction remoteAction = new RemoteAction(actionReference, authToken, autoExtendCheckCallback);
-                            remoteAction.addActionDescriptionObserver((source, observable) -> actionDescriptionObservable.notifyObservers(source, observable));
-                            impactedRemoteActions.add(remoteAction);
-                        }
-                    } else {
-                        setupActionObservation();
-                    }
-                }
-                return actionDescription;
+                return setActionDescriptionAndStartObservation(future.get());
             } catch (InterruptedException ex) {
                 // this is useful to cancel actions through cancelling the execute task of a remote actions
                 // it allows to easily handle remote actions through the provided future because remote actions pools do not allow to access them
@@ -264,29 +278,57 @@ public class RemoteAction implements Action {
         return futureObservationTask;
     }
 
-    private Future<ActionDescription> initFutureObservationTask(final ActionReference actionReference) {
-        futureObservationTask = GlobalCachedExecutorService.submit(() -> {
-            try {
-                synchronized (executionSync) {
-                    // Note: this action can never be intermediary because else it cannot be retrieved from an action reference
-                    // therefore, the difference between this initialization and the one above
-                    targetUnit = Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true);
+    private ActionDescription setActionDescriptionAndStartObservation(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
 
-                    // resolve action description via the action reference.
-                    for (final ActionDescription actionDescription : targetUnit.getActionList()) {
-                        if (actionDescription.getId().equals(actionReference.getActionId())) {
-                            RemoteAction.this.actionDescription = actionDescription;
-                        }
-                    }
+        if(actionDescription == null) {
+            throw new NotAvailableException("ActionDescription");
+        }
 
-                    if (RemoteAction.this.actionDescription == null) {
-                        throw ExceptionPrinter.printHistoryAndReturnThrowable("Initial action sync failed!", new NotAvailableException("ActionDescription[" + actionReference.getActionId() + "] on unit[" + targetUnit + "]"), LOGGER);
-                    }
-                    setupActionObservation();
+        if(!actionDescription.hasId()) {
+            throw new InvalidStateException("Given action description seems not to refer to an already executed action!", new NotAvailableException("ActionDescription.id"));
+        }
+
+        synchronized (executionSync) {
+            RemoteAction.this.actionDescription = actionDescription;
+
+            // configure target unit if needed. This is the case if this remote action was instantiated via a future object.
+            if (targetUnit == null) {
+                targetUnit = Units.getUnit(actionDescription.getServiceStateDescription().getUnitId(), false);
+            }
+
+            if (actionDescription.getIntermediary()) {
+                // observe impact actions and register callback if available to support action auto extension.
+                for (ActionReference actionReference : actionDescription.getActionImpactList()) {
+                    RemoteAction remoteAction = new RemoteAction(actionReference, authToken, autoExtendCheckCallback);
+                    remoteAction.addActionDescriptionObserver((source, observable) -> actionDescriptionObservable.notifyObservers(source, observable));
+                    impactedRemoteActions.add(remoteAction);
                 }
-                return actionDescription;
-            } catch (InterruptedException ex) {
-                throw ex;
+            } else {
+                setupActionObservation();
+            }
+        }
+        return actionDescription;
+    }
+
+    private Future<ActionDescription> setActionReferenceAndStartObservation(final ActionReference actionReference) {
+        futureObservationTask = GlobalCachedExecutorService.submit(() -> {
+            synchronized (executionSync) {
+                // The following note seems to be outdated, please verify. Since a scene can switch on a location a action reference can point to
+                // an intermediate action.
+                // Note: this action can never be intermediary because else it cannot be retrieved from an action reference
+                // therefore, the difference between this initialization and the one above
+
+                if (targetUnit == null) {
+                    targetUnit = Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true);
+                }
+
+                // resolve action description via the action reference.
+                for (final ActionDescription actionDescription : targetUnit.getActionList()) {
+                    if (actionDescription.getId().equals(actionReference.getActionId())) {
+                        RemoteAction.this.actionDescription = actionDescription;
+                    }
+                }
+                return setActionDescriptionAndStartObservation(actionDescription);
             }
         });
         return futureObservationTask;
@@ -325,11 +367,14 @@ public class RemoteAction implements Action {
             assert autoExtensionTask == null;
             autoExtensionTask = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
                 try {
-                    // auto extend if not done
-                    if (!isDone() && autoExtendCheckCallback.call()) {
-                        // update last extension time and reapply
-                        extend().get();
+                    // check if extension is still valid otherwise cancel task.
+                    if (!isValid() || !autoExtendCheckCallback.call()) {
+                        autoExtensionTask.cancel(false);
+                        return;
                     }
+
+                    // request an extension of the action
+                    extend().get();
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 } catch (Exception ex) {
@@ -340,17 +385,24 @@ public class RemoteAction implements Action {
             final Observer<RemoteAction, ActionDescription> observer = new Observer<RemoteAction, ActionDescription>() {
                 @Override
                 public void update(RemoteAction remote, ActionDescription description) {
-                    if (remote.isDone()) {
+                    if (!remote.isValid()) {
                         RemoteAction.this.removeActionDescriptionObserver(this);
-                        if (autoExtensionTask != null) {
-                            autoExtensionTask.cancel(false);
-                        }
+                        cancelAutoExtension();
                     }
                 }
             };
             addActionDescriptionObserver(observer);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not auto extend " + RemoteAction.this.toString(), ex, LOGGER);
+        }
+    }
+
+    /**
+     * Method cancels the auto extension of this action if running.
+     */
+    public void cancelAutoExtension() {
+        if (autoExtensionTask != null && !autoExtensionTask.isDone()) {
+            autoExtensionTask.cancel(true);
         }
     }
 
@@ -438,11 +490,16 @@ public class RemoteAction implements Action {
      */
     @Override
     public Future<ActionDescription> cancel() {
-        Future future = null;
+        Future<ActionDescription> future = null;
         try {
             synchronized (executionSync) {
+
+
+                // make sure an action is not auto extended during the cancellation process.
+                cancelAutoExtension();
+
                 if (futureObservationTask == null) {
-                    future = FutureProcessor.canceledFuture(new InvalidStateException(this + " has never been executed!"));
+                    future = FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException(this + " has never been executed!"));
                     return future;
                 }
 
@@ -473,29 +530,44 @@ public class RemoteAction implements Action {
                 cleanup();
             } else {
                 // otherwise create cleanup task
-                final Future passthroughFuture = future;
-                GlobalCachedExecutorService.submit(() -> {
+                final Future<ActionDescription> passthroughFuture = future;
+                return GlobalCachedExecutorService.submit(() -> {
+                    ActionDescription finalActionDescription = null;
                     try {
-                        passthroughFuture.get();
+                        if (passthroughFuture != null) {
+                            finalActionDescription = passthroughFuture.get();
+                        }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     } catch (ExecutionException e) {
                         // just continue with cleanup
                         // controller will cancel the action anyway when not extended any longer by this remote.
                     }
+
+                    // final cleanup remote
                     cleanup();
+
+                    if (finalActionDescription == null) {
+                        throw new CouldNotProcessException("Could not cancel " + RemoteAction.this.toString());
+                    }
+
+                    return finalActionDescription;
                 });
             }
         }
     }
 
     private void cleanup() {
+
         // cleanup synchronisation and observation tasks
         actionDescriptionObservable.shutdown();
-        if (autoExtensionTask != null) {
-            autoExtensionTask.cancel(false);
+
+        // cancel the auto extension task
+        cancelAutoExtension();
+
+        if (targetUnit != null) {
+            targetUnit.removeDataObserver(ServiceTempus.UNKNOWN, unitObserver);
         }
-        targetUnit.removeDataObserver(ServiceTempus.UNKNOWN, unitObserver);
 
         // check if already done, otherwise force cancellation
         if (!isDone()) {
@@ -732,15 +804,17 @@ public class RemoteAction implements Action {
 
     public void waitForSubmission() throws CouldNotPerformException, InterruptedException {
         synchronized (executionSync) {
-            if (futureObservationTask == null) {
+            if (futureObservationTask == null && !getActionDescription().hasId()) {
                 throw new InvalidStateException("Action was never executed!");
             }
         }
 
         try {
-            futureObservationTask.get();
+            if (futureObservationTask != null) {
+                futureObservationTask.get();
+            }
 
-            if (actionDescription.getIntermediary()) {
+            if (getActionDescription().getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
                     impactedRemoteAction.waitForSubmission();
                 }
@@ -752,16 +826,18 @@ public class RemoteAction implements Action {
 
     public void waitForSubmission(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException {
         synchronized (executionSync) {
-            if (futureObservationTask == null) {
+            if (futureObservationTask == null && !getActionDescription().hasId()) {
                 throw new InvalidStateException("Action was never executed!");
             }
         }
 
         try {
-            futureObservationTask.get(timeout, timeUnit);
+            if (futureObservationTask != null) {
+                futureObservationTask.get(timeout, timeUnit);
+            }
 
             //TODO: split timeout
-            if (actionDescription.getIntermediary()) {
+            if (getActionDescription().getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
                     impactedRemoteAction.waitForSubmission(timeout, timeUnit);
                 }
@@ -773,6 +849,11 @@ public class RemoteAction implements Action {
 
     public boolean isSubmissionDone() {
         if (futureObservationTask != null && futureObservationTask.isDone()) {
+
+            if (actionDescription == null) {
+                return false;
+            }
+
             if (actionDescription.getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
                     if (!impactedRemoteAction.isSubmissionDone()) {
@@ -780,7 +861,7 @@ public class RemoteAction implements Action {
                     }
                 }
             }
-            return true;
+            return actionDescription.hasId();
         }
         return false;
     }
@@ -827,3 +908,4 @@ public class RemoteAction implements Action {
         return Action.toString(this);
     }
 }
+
