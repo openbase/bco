@@ -279,7 +279,8 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
             case PRESSED:
             case RELEASED:
             case DOUBLE_PRESSED:
-                updatePresenceState(TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder().setValue(State.PRESENT).setResponsibleAction(buttonState.getResponsibleAction()).build()));
+                // note: currently disabled because some hardware setups offer a fix link between lights and buttons. Therefore, any light actions are resulting in a PRESENT state which then triggers further actions.
+                // updatePresenceState(TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder().setValue(State.PRESENT).setResponsibleAction(buttonState.getResponsibleAction()).build()));
             case UNKNOWN:
             default:
                 // ignore non presence prove
