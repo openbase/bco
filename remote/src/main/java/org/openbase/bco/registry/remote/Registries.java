@@ -165,10 +165,14 @@ public class Registries {
      * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
     public static UnitRegistryRemote getUnitRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
-        if (waitForData) {
-            CachedUnitRegistryRemote.getRegistry().waitForData();
+        try {
+            if (waitForData) {
+                CachedUnitRegistryRemote.getRegistry().waitForData();
+            }
+            return CachedUnitRegistryRemote.getRegistry();
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionProcessor.interruptOnShutdown(ex);
         }
-        return CachedUnitRegistryRemote.getRegistry();
     }
 
     /**
@@ -182,10 +186,14 @@ public class Registries {
      * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
     public static ActivityRegistryRemote getActivityRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
-        if (waitForData) {
-            CachedActivityRegistryRemote.getRegistry().waitForData();
+        try {
+            if (waitForData) {
+                CachedActivityRegistryRemote.getRegistry().waitForData();
+            }
+            return CachedActivityRegistryRemote.getRegistry();
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionProcessor.interruptOnShutdown(ex);
         }
-        return CachedActivityRegistryRemote.getRegistry();
     }
 
     /**
@@ -199,10 +207,14 @@ public class Registries {
      * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
     public static ClassRegistryRemote getClassRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
-        if (waitForData) {
-            CachedClassRegistryRemote.getRegistry().waitForData();
+        try {
+            if (waitForData) {
+                CachedClassRegistryRemote.getRegistry().waitForData();
+            }
+            return CachedClassRegistryRemote.getRegistry();
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionProcessor.interruptOnShutdown(ex);
         }
-        return CachedClassRegistryRemote.getRegistry();
     }
 
     /**
@@ -216,10 +228,14 @@ public class Registries {
      * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
     public static TemplateRegistryRemote getTemplateRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
-        if (waitForData) {
-            CachedTemplateRegistryRemote.getRegistry().waitForData();
+        try {
+            if (waitForData) {
+                CachedTemplateRegistryRemote.getRegistry().waitForData();
+            }
+            return CachedTemplateRegistryRemote.getRegistry();
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionProcessor.interruptOnShutdown(ex);
         }
-        return CachedTemplateRegistryRemote.getRegistry();
     }
 
     /**
