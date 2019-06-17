@@ -10,6 +10,7 @@
 
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.text.Font?>
 <AnchorPane prefHeight="500.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openbase.bco.dal.visual.action.UnitAllocationPaneController">
     <children>
       <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -31,7 +32,8 @@
                       <columns>
                           <TableColumn fx:id="positionColumn" text="Pos" visible="false" />
                           <TableColumn fx:id="actionStateColumn" maxWidth="500.0" prefWidth="90.0" text="Actionstate" />
-                          <TableColumn fx:id="executionTimeColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Executiontime" />
+                          <TableColumn fx:id="executionTimeColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Execution Time" />
+                          <TableColumn fx:id="validityTimeColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Validity Time" visible="true" />
                           <TableColumn fx:id="lastExtensionColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="LastExtension" visible="false" />
                           <TableColumn fx:id="lifetimeColumn" prefWidth="75.0" text="Lifetime" />
                           <TableColumn fx:id="priorityColumn" maxWidth="300.0" prefWidth="70.0" text="Priority" />
@@ -60,8 +62,12 @@
                   <padding>
                       <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                   </padding>
-                  <Label text="Action Chain of Selected Unit"/>
-                  <ScrollPane BorderPane.alignment="BOTTOM_CENTER" fitToHeight="true" fitToWidth="true">
+                  <Label alignment="CENTER" contentDisplay="TOP" text="Action Chain of Selected Unit">
+                      <font>
+                          <Font name="System Bold" size="18.0" />
+                      </font>
+                  </Label>
+                  <ScrollPane BorderPane.alignment="BOTTOM_CENTER" maxWidth="Infinity" fitToHeight="true" fitToWidth="true">
                       <content>
                           <TableView fx:id="actionChainTable" editable="true" maxHeight="Infinity" maxWidth="Infinity" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" >
                               <columns>
@@ -70,16 +76,17 @@
                                   <TableColumn fx:id="actionChainExecutionTimeColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Executiontime" />
                                   <TableColumn fx:id="actionChainLastExtensionColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="LastExtension" visible="false" />
                                   <TableColumn fx:id="actionChainLifetimeColumn" prefWidth="75.0" text="Lifetime" />
+                                  <TableColumn fx:id="actionChainInitiatorColumn" maxWidth="1.7976931348623157E308" prefWidth="150.0" text="Initiator" />
+                                  <TableColumn fx:id="actionChainUnitLabelColumn" maxWidth="1.7976931348623157E308" prefWidth="150.0" text="Unit" />
+                                  <TableColumn fx:id="actionChainServiceStateColumn" maxWidth="1.7976931348623157E308" prefWidth="150.0"  text="Servicestate" />
                                   <TableColumn fx:id="actionChainPriorityColumn" maxWidth="300.0" prefWidth="70.0" text="Priority" />
                                   <TableColumn fx:id="actionChainCategoryColumn" maxWidth="1.7976931348623157E308" prefWidth="100.0" text="Category" />
-                                  <TableColumn fx:id="actionChainInitiatorColumn" maxWidth="1000.0" prefWidth="200.0" text="Initiator" />
                                   <TableColumn fx:id="actionChainInterruptibleColumn" maxWidth="1000.0" text="Interruptible" visible="false" />
-                                  <TableColumn fx:id="actionChainValidColumn" maxWidth="75.0" text="Valid" visible="true" />
-                                  <TableColumn fx:id="actionChainRunningColumn" maxWidth="75.0" text="Running" visible="true" />
-                                  <TableColumn fx:id="actionChainExpiredColumn" maxWidth="75.0" text="Expired" visible="true" />
-                                  <TableColumn fx:id="actionChainDoneColumn" maxWidth="75.0" text="Done" visible="true" />
+                                  <TableColumn fx:id="actionChainValidColumn" maxWidth="75.0" text="Valid" visible="false" />
+                                  <TableColumn fx:id="actionChainRunningColumn" maxWidth="75.0" text="Running" visible="false" />
+                                  <TableColumn fx:id="actionChainExpiredColumn" maxWidth="75.0" text="Expired" visible="false" />
+                                  <TableColumn fx:id="actionChainDoneColumn" maxWidth="75.0" text="Done" visible="false" />
                                   <TableColumn fx:id="actionChainSchedulableColumn" maxWidth="1000.0" text="Schedulable" visible="false" />
-                                  <TableColumn fx:id="actionChainServiceStateColumn" maxWidth="1.7976931348623157E308" prefWidth="500.0" text="Servicestate" />
                                   <TableColumn fx:id="actionChainTimestampColumn" text="Timestamp" visible="false" />
                                   <TableColumn fx:id="actionChainActionIdColumn" minWidth="0.0" prefWidth="100.0" text="ID" visible="false" />
                               </columns>

@@ -23,24 +23,13 @@ package org.openbase.bco.dal.test.action;
  */
 
 import org.junit.*;
-import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
-import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
-import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
-import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
-import org.openbase.bco.dal.lib.action.Action;
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.bco.dal.test.AbstractBCOTest;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest;
-import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.session.TokenGenerator;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -55,14 +44,9 @@ import org.openbase.type.domotic.action.ActionParameterType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType;
-import org.openbase.type.domotic.authentication.AuthTokenType;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
-import org.openbase.type.domotic.authentication.UserClientPairType;
 import org.openbase.type.domotic.state.ActionStateType;
 import org.openbase.type.domotic.state.PowerStateType;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -71,7 +55,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertEquals;
@@ -245,7 +228,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         }
 
         System.out.println("wait until last extension timeout and validate if no further extension will be performed for dominant action...");
-        Thread.sleep(dominantAction.getValidationTimeout(TimeUnit.MILLISECONDS) + 10);
+        Thread.sleep(dominantAction.getValidityTime(TimeUnit.MILLISECONDS) + 10);
         Assert.assertEquals("Dominant action was extended even through the action was already canceled.", false, dominantActionExtentionFlag.value);
 
         System.out.println("cancel low prio action");
@@ -261,7 +244,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         }
 
         System.out.println("wait until last extension timeout and validate if no further extension will be performed for low prio longterm action...");
-        Thread.sleep(lowPrioLongtermAction.getValidationTimeout(TimeUnit.MILLISECONDS) + 10);
+        Thread.sleep(lowPrioLongtermAction.getValidityTime(TimeUnit.MILLISECONDS) + 10);
         Assert.assertEquals("Low prio action was extended even through the action was already canceled.", false, lowPrioLongtermActionExtentionFlag.value);
 
         System.out.println("validate if still everything is done");

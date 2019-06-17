@@ -131,7 +131,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @throws NotAvailableException is thrown if the validation time could not be computed. This can for example happen,
      *                               if a remote action is not yet fully synchronized and the related action description is not available.
      */
-    default long getValidationTimeout(final TimeUnit timeUnit) throws NotAvailableException {
+    default long getValidityTime(final TimeUnit timeUnit) throws NotAvailableException {
 
         long timeSinceStartOrLastExtention;
         try {

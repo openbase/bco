@@ -40,12 +40,14 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.pattern.Observer;
@@ -134,6 +136,9 @@ public class UnitAllocationPaneController extends AbstractFXController {
     private TableColumn expiredColumn;
 
     @FXML
+    private TableColumn validityTimeColumn;
+
+    @FXML
     private TableColumn actionChainPositionColumn;
 
     @FXML
@@ -184,6 +189,9 @@ public class UnitAllocationPaneController extends AbstractFXController {
     @FXML
     private TableColumn actionChainExpiredColumn;
 
+    @FXML
+    private TableColumn actionChainUnitLabelColumn;
+
     private Observer<Remote, State> connectionStateObserver;
 
     private Observer unitObserver;
@@ -209,6 +217,8 @@ public class UnitAllocationPaneController extends AbstractFXController {
         this.connectionStateObserver = (source, data) -> {
             actionTable.setDisable(data != State.CONNECTED);
             actionTable.setEditable(data != State.CONNECTED);
+            actionChainTable.setDisable(data != State.CONNECTED);
+            actionChainTable.setEditable(data != State.CONNECTED);
             if (data != State.CONNECTED) {
                 actionTable.setStyle("-fx-border-color: #a00600; -fx-border-width: 3");
                 actionChainTable.setStyle("-fx-border-color: #a00600; -fx-border-width: 3");
@@ -243,6 +253,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
             schedulableColumn.setCellValueFactory(new PropertyValueFactory<>("schedulable"));
             executionTimeColumn.setCellValueFactory(new PropertyValueFactory<>("executionTime"));
             lastExtensionColumn.setCellValueFactory(new PropertyValueFactory<>("lastExtension"));
+            validityTimeColumn.setCellValueFactory(new PropertyValueFactory<>("validityTime"));
 
             actionChainPositionColumn.setCellValueFactory(new PropertyValueFactory<>("position"));
             actionChainPriorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
@@ -256,6 +267,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
             actionChainTimestampColumn.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
             actionChainLifetimeColumn.setCellValueFactory(new PropertyValueFactory<>("lifetime"));
             actionChainServiceStateColumn.setCellValueFactory(new PropertyValueFactory<>("serviceState"));
+            actionChainUnitLabelColumn.setCellValueFactory(new PropertyValueFactory<>("unitLabel"));
             actionChainInitiatorColumn.setCellValueFactory(new PropertyValueFactory<>("initiator"));
             actionChainInterruptibleColumn.setCellValueFactory(new PropertyValueFactory<>("interruptible"));
             actionChainSchedulableColumn.setCellValueFactory(new PropertyValueFactory<>("schedulable"));
@@ -373,7 +385,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 this.position = position;
                 this.timestamp = dateFormat.format(new Date(TimestampJavaTimeTransform.transform(actionDescription.getTimestamp())));
                 this.actionId = actionDescription.getId();
-                this.description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(), "?");
+                this.description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(), "");
                 this.priority = actionDescription.getPriority().name();
                 this.category = StringProcessor.transformCollectionToString(actionDescription.getCategoryList(), ", ");
                 this.interruptible = actionDescription.getInterruptible();
@@ -385,7 +397,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 try {
                     initiatorLabel = ActionDescriptionProcessor.getInitiatorName(ActionDescriptionProcessor.getInitialInitiator(actionDescription));
                 } catch (CouldNotPerformException e) {
-                    initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "?");
+                    initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "");
                 }
 
                 this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";
@@ -395,7 +407,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                     final Message serviceStateMessage = protoBufJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceState(), actionDescription.getServiceStateDescription().getServiceStateClassName());
                     tmpServiceState = StringProcessor.transformCollectionToString(Services.resolveStateValue(serviceStateMessage), ", ");
                 } catch (CouldNotPerformException e) {
-                    tmpServiceState = "?";
+                    tmpServiceState = "";
                 }
                 this.serviceState = tmpServiceState;
             } catch (CouldNotPerformException ex) {
@@ -476,7 +488,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                         seconds - TimeUnit.MINUTES.toSeconds(minutes))
                         + (days > 0 ? " ( + " + days + " days)" : "");
             } catch (NotAvailableException e) {
-                return "?";
+                return "";
             }
         }
 
@@ -484,7 +496,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
             try {
                 return dateFormat.format(new Date(remoteAction.getLastExtensionTime()));
             } catch (NotAvailableException e) {
-                return "?";
+                return "";
             }
         }
 
@@ -506,7 +518,29 @@ public class UnitAllocationPaneController extends AbstractFXController {
                         seconds - TimeUnit.MINUTES.toSeconds(minutes))
                         + (days > 0 ? " ( + " + days + " days)" : "");
             } catch (NotAvailableException e) {
-                return "?";
+                return "";
+            }
+        }
+
+        public String getValidityTime() {
+            try {
+                final long executionTime = remoteAction.getValidityTime(TimeUnit.MILLISECONDS);
+                final long days = TimeUnit.MILLISECONDS.toDays(executionTime);
+                final long hours = TimeUnit.MILLISECONDS.toHours(executionTime);
+                final long minutes = TimeUnit.MILLISECONDS.toMinutes(executionTime);
+                final long seconds = TimeUnit.MILLISECONDS.toSeconds(executionTime);
+
+                if (days > 365) {
+                    return "∞";
+                }
+
+                return String.format("%02d:%02d:%02d",
+                        hours - TimeUnit.DAYS.toHours(days),
+                        minutes - TimeUnit.HOURS.toMinutes(hours),
+                        seconds - TimeUnit.MINUTES.toSeconds(minutes))
+                        + (days > 0 ? " ( + " + days + " days)" : "");
+            } catch (NotAvailableException e) {
+                return "";
             }
         }
 
@@ -536,6 +570,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
         private final String category;
         private final boolean interruptible;
         private final boolean schedulable;
+        private final String unitLabel;
 
         private final RemoteAction remoteAction;
         final ActionReference actionReference;
@@ -559,7 +594,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
             try {
                 initiatorLabel = ActionDescriptionProcessor.getInitiatorName(actionReference.getActionInitiator());
             } catch (CouldNotPerformException e) {
-                initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "?");
+                initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "");
             }
 
             this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";
@@ -569,10 +604,11 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 final Message serviceStateMessage = protoBufJSonProcessor.deserialize(actionReference.getServiceStateDescription().getServiceState(), actionReference.getServiceStateDescription().getServiceStateClassName());
                 tmpServiceState = StringProcessor.transformCollectionToString(Services.resolveStateValue(serviceStateMessage), ", ");
             } catch (CouldNotPerformException e) {
-                tmpServiceState = "?";
+                tmpServiceState = "";
             }
             this.serviceState = tmpServiceState;
 
+            this.unitLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionReference.getServiceStateDescription().getUnitId()).getLabel(), "");
         }
 
         public int getPosition() {
@@ -580,7 +616,13 @@ public class UnitAllocationPaneController extends AbstractFXController {
         }
 
         public String getActionState() {
-            return remoteAction.getActionState().name();
+
+            switch (remoteAction.getActionState()) {
+                case UNKNOWN:
+                    return "";
+                default:
+                    return remoteAction.getActionState().name();
+            }
         }
 
         public String getTimestamp() {
@@ -641,7 +683,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                         seconds - TimeUnit.MINUTES.toSeconds(minutes))
                         + (days > 0 ? " ( + " + days + " days)" : "");
             } catch (NotAvailableException e) {
-                return "?";
+                return "";
             }
         }
 
@@ -649,7 +691,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
             try {
                 return dateFormat.format(new Date(remoteAction.getLastExtensionTime()));
             } catch (NotAvailableException e) {
-                return "?";
+                return "";
             }
         }
 
@@ -671,7 +713,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                         seconds - TimeUnit.MINUTES.toSeconds(minutes))
                         + (days > 0 ? " ( + " + days + " days)" : "");
             } catch (NotAvailableException e) {
-                return "?";
+                return "";
             }
         }
 
@@ -685,6 +727,10 @@ public class UnitAllocationPaneController extends AbstractFXController {
 
         public RemoteAction getRemoteAction() {
             return remoteAction;
+        }
+
+        public String getUnitLabel() {
+            return unitLabel;
         }
     }
 }
