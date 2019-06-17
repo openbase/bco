@@ -58,9 +58,9 @@ import java.util.concurrent.TimeoutException;
  */
 public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
-    private static final String ADMIN_USERNAME = "Admin";
-    private static final String BCO_USERNAME = "BCO";
-    private static final String OPENHAB_USERNAME = "OpenHAB";
+    public static final String ADMIN_USERNAME = "Admin";
+    public static final String BCO_USERNAME = "BCO";
+    public static final String OPENHAB_USERNAME = "OpenHAB";
 
     public static final String ADMIN_PASSWORD = "admin";
 
