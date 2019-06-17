@@ -686,6 +686,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // retrieve action
                 final SchedulableAction actionToExtend = getActionById(actionDescription.getId(), LOCK_CONSUMER_EXTEND_ACTION);
 
+                if(!actionToExtend.isValid()) {
+                    throw new CouldNotPerformException("Extension of " + actionToExtend + " skipped, because the action is not longer valid!");
+                }
+
                 // validate permissions
                 validateActionPermissions(authenticatedId, actionToExtend);
 
