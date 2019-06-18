@@ -68,7 +68,7 @@ public class JPResetCredentials extends AbstractJPBoolean {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
             }
 
-            logger.warn("=== Type y and press enter to contine ===");
+            logger.warn("=== Type y and press enter to continue ===");
             try {
                 if (!(System.in.read() == 'y')) {
                     throw new JPValidationException("Execution aborted by user!");
