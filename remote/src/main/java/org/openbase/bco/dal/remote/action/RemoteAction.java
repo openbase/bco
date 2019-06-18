@@ -493,8 +493,6 @@ public class RemoteAction implements Action {
         Future<ActionDescription> future = null;
         try {
             synchronized (executionSync) {
-
-
                 // make sure an action is not auto extended during the cancellation process.
                 cancelAutoExtension();
 
@@ -504,10 +502,7 @@ public class RemoteAction implements Action {
                 }
 
                 if (!futureObservationTask.isDone()) {
-                    // task is not yet done, so cancel it which will result in cancelling the action on the controller
-                    futureObservationTask.cancel(true);
-
-                    future = targetUnit.cancelAction(getActionDescription(), authToken);
+                    future = FutureProcessor.allOf(() -> targetUnit.cancelAction(getActionDescription(), authToken).get() ,futureObservationTask);
                 } else {
                     if (getActionDescription().getIntermediary()) {
                         // cancel all impacts of this actions and return the current action description
@@ -516,8 +511,13 @@ public class RemoteAction implements Action {
                             return remoteAction.cancel();
                         });
                     } else {
-                        // cancel the action on the controller
-                        future = targetUnit.cancelAction(getActionDescription(), authToken);
+                        if(isDone()) {
+                            // if already done then skip cancellation
+                            future = FutureProcessor.completedFuture(getActionDescription());
+                        } else {
+                            // cancel the action on the controller
+                            future = targetUnit.cancelAction(getActionDescription(), authToken);
+                        }
                     }
                 }
                 return future;
@@ -532,26 +532,16 @@ public class RemoteAction implements Action {
                 // otherwise create cleanup task
                 final Future<ActionDescription> passthroughFuture = future;
                 return GlobalCachedExecutorService.submit(() -> {
-                    ActionDescription finalActionDescription = null;
                     try {
-                        if (passthroughFuture != null) {
-                            finalActionDescription = passthroughFuture.get();
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    } catch (ExecutionException e) {
-                        // just continue with cleanup
-                        // controller will cancel the action anyway when not extended any longer by this remote.
+                        return passthroughFuture.get();
+                    } catch (InterruptedException ex) {
+                        throw ex;
+                    } catch (ExecutionException ex) {
+                        throw new CouldNotProcessException("Could not cancel " + RemoteAction.this.toString(), ex);
+                    } finally {
+                        // final cleanup remote
+                        cleanup();
                     }
-
-                    // final cleanup remote
-                    cleanup();
-
-                    if (finalActionDescription == null) {
-                        throw new CouldNotProcessException("Could not cancel " + RemoteAction.this.toString());
-                    }
-
-                    return finalActionDescription;
                 });
             }
         }
