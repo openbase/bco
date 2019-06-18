@@ -23,6 +23,7 @@ package org.openbase.bco.app.preset;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
@@ -40,22 +41,20 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationConfigType;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * UnitConfig
  */
 public class PartyLightTileFollowerApp extends AbstractAppController {
 
-    private Map<Unit, ActionDescription> actionLocationMap;
+    private Map<Unit, RemoteAction> actionLocationMap;
     private Map<String, LocationRemote> locationRemoteMap;
 
     private SyncObject taskLock = new SyncObject("TaskLock");
@@ -100,9 +99,18 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop(final ActivationState activationState) {
-        for (Entry<Unit, ActionDescription> unitActionEntry : actionLocationMap.entrySet()) {
-            unitActionEntry.getKey().cancelAction(unitActionEntry.getValue());
+    protected void stop(final ActivationState activationState) throws InterruptedException {
+        final ArrayList<Future<ActionDescription>> cancelTaskList = new ArrayList<>();
+        for (Entry<Unit, RemoteAction> unitActionEntry : actionLocationMap.entrySet()) {
+            cancelTaskList.add(unitActionEntry.getValue().cancel());
+        }
+
+        for (Future<ActionDescription> cancelTask : cancelTaskList) {
+            try {
+                cancelTask.get(10, TimeUnit.SECONDS);
+            } catch (ExecutionException | TimeoutException ex) {
+                ExceptionPrinter.printHistory("Could not cancel action!", ex, logger);
+            }
         }
     }
 
@@ -143,14 +151,12 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
                 // skip if no colorable light is present
                 if (!Registries.getUnitRegistry().getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT, locationRemote.getId()).isEmpty()) {
-                    try {
-                        if (locationRemote.isConnected() && locationRemote.isDataAvailable()) {
-                            actionLocationMap.put(locationRemote, locationRemote.setColor(color, getDefaultActionParameter()).get(5, TimeUnit.SECONDS));
-                        }
-                    } catch (TimeoutException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color!", ex), logger);
+                    if (locationRemote.isConnected() && locationRemote.isDataAvailable()) {
+                        final RemoteAction remoteAction = observe(locationRemote.setColor(color, getDefaultActionParameter()));
+                        actionLocationMap.put(locationRemote, remoteAction);
+                        remoteAction.waitForSubmission();
                     }
-                    Thread.sleep(2000);
+                    //Thread.sleep(2000);
                 }
 
                 // mark as processed
@@ -169,7 +175,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                     // process remote 
                     processRoom(neighborRemote, color);
                 }
-            } catch (CouldNotPerformException | ExecutionException ex) {
+            } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not process room of " + locationRemote, ex);
             }
         }
