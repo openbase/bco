@@ -92,6 +92,7 @@ import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStat
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -660,7 +661,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             builderSetup.lockWrite(LOCK_CONSUMER_CANCEL_ACTION);
             try {
                 // retrieve action
-                final Action actionToCancel = getActionById(actionDescription.getId(), LOCK_CONSUMER_CANCEL_ACTION);
+                final Action actionToCancel;
+                try {
+                    actionToCancel = getActionById(actionDescription.getId(), LOCK_CONSUMER_CANCEL_ACTION);
+                } catch (NotAvailableException ex) {
+                    // if the action is not any longer available, than it can be marked as canceled to inform the remote instance.
+                    return FutureProcessor.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.CANCELED).build()).build());
+                }
+
                 // validate permissions
                 validateActionPermissions(authenticatedId, actionToCancel);
                 // cancel the action which automatically triggers a reschedule.
