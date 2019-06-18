@@ -21,8 +21,10 @@ package org.openbase.bco.dal.remote.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
+
 import org.openbase.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -34,7 +36,6 @@ import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptio
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<PowerConsumptionStateProviderService, PowerConsumptionState> implements PowerConsumptionStateProviderServiceCollection {
@@ -48,6 +49,7 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
      * Computes the average current and voltage and the sum of the consumption of the underlying services.
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -72,12 +74,12 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
                 continue;
             }
 
-            if (service.getPowerConsumptionState().hasVoltage()) {
+            if (service.getPowerConsumptionState().hasVoltage() && service.getPowerConsumptionState().getVoltage() > 0) {
                 voltageValueAmount++;
                 averageVoltage += service.getPowerConsumptionState().getVoltage();
             }
 
-            if (service.getPowerConsumptionState().hasCurrent()) {
+            if (service.getPowerConsumptionState().hasCurrent() && service.getPowerConsumptionState().getCurrent() > 0) {
                 currentValueAmount++;
                 averageCurrent += service.getPowerConsumptionState().getCurrent();
             }
