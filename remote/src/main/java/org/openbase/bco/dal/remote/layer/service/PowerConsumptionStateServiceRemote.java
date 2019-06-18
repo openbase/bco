@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.layer.service;
  * #L%
  */
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.openbase.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
@@ -61,11 +60,10 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
     public PowerConsumptionState getPowerConsumptionState(final UnitType unitType) throws NotAvailableException {
 
         long timestamp = 0;
-        double averageVoltage = 0;
-        double averageCurrent = 0;
-        double consumptionSum = 0;
         int voltageValueAmount = 0;
-        int currentValueAmount = 0;
+        double voltageAverage = 0;
+        double currentSum = 0;
+        double consumptionSum = 0;
 
         for (PowerConsumptionStateProviderService service : getServices(unitType)) {
 
@@ -76,21 +74,16 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
 
             if (service.getPowerConsumptionState().hasVoltage() && service.getPowerConsumptionState().getVoltage() > 0) {
                 voltageValueAmount++;
-                averageVoltage += service.getPowerConsumptionState().getVoltage();
+                voltageAverage += service.getPowerConsumptionState().getVoltage();
             }
 
-            if (service.getPowerConsumptionState().hasCurrent() && service.getPowerConsumptionState().getCurrent() > 0) {
-                currentValueAmount++;
-                averageCurrent += service.getPowerConsumptionState().getCurrent();
-            }
-
+            currentSum += service.getPowerConsumptionState().getCurrent();
             consumptionSum += service.getPowerConsumptionState().getConsumption();
             timestamp = Math.max(timestamp, service.getPowerConsumptionState().getTimestamp().getTime());
         }
 
-        averageVoltage = averageVoltage / voltageValueAmount;
-        averageCurrent = averageCurrent / currentValueAmount;
+        voltageAverage = voltageAverage / voltageValueAmount;
 
-        return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage), TimeUnit.MICROSECONDS, logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(currentSum).setVoltage(voltageAverage), TimeUnit.MICROSECONDS, logger).build();
     }
 }
