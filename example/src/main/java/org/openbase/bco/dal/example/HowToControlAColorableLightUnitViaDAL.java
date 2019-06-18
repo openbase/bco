@@ -77,7 +77,7 @@ public class HowToControlAColorableLightUnitViaDAL {
             LOGGER.info("switch light color to red");
             actionFuture = testLight.setColor(HSBColor.newBuilder().setHue(0).setSaturation(1.0).setBrightness(1.0).build());
 
-            LOGGER.info("wait until action is done...");
+            LOGGER.info("wait until action is executing...");
             new RemoteAction(actionFuture).waitForExecution(5, TimeUnit.SECONDS);
 
         } catch (CouldNotPerformException | CancellationException ex) {
