@@ -32,6 +32,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -135,8 +136,12 @@ public class BCOSystemValidator {
             System.exit(253);
             return;
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not validate system!", ex), System.err);
-            System.exit(254);
+            if (ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not validate system!", ex), System.err);
+                System.exit(254);
+            }
+            System.exit(0);
+            return;
         }
 
         System.out.println();

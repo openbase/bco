@@ -130,6 +130,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
             int colorIndex = 0;
             while (!Thread.currentThread().isInterrupted()) {
+                Thread.yield();
                 try {
                     // apply updates for next iteration
                     colorIndex = ++colorIndex % colors.length;
