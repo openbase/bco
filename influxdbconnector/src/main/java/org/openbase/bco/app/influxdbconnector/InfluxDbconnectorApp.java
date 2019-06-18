@@ -39,6 +39,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.preset.JPTestMode;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -62,6 +63,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -176,29 +178,29 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             } catch (InterruptedException ex) {
                 // finish task because its canceled.
             }
-            try {
 
-                // write initial heartbeat
-                logger.debug("initial heartbeat");
-                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
-                        .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
-                        .time(System.currentTimeMillis(), WritePrecision.MS));
-                Thread.sleep(1);
-                writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
-                        .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
-                        .time(System.currentTimeMillis(), WritePrecision.MS));
-
-                heartbeat = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
-                    logger.debug("write heartbeat");
+            if (!task.isCancelled() && isConnected()) {
+                try {
+                    // write initial heartbeat
+                    logger.debug("initial heartbeat");
+                    writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                            .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
+                            .time(System.currentTimeMillis() - 1, WritePrecision.MS));
                     writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
                             .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
                             .time(System.currentTimeMillis(), WritePrecision.MS));
 
-                }, HEARTBEAT_INITIAL_DELAY, HEARTBEAT_PERIOD, TimeUnit.MILLISECONDS);
-            } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory("Could not write heartbeat!", ex, logger, LogLevel.WARN);
-            }
+                    heartbeat = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
+                        logger.debug("write heartbeat");
+                        writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
+                                .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
+                                .time(System.currentTimeMillis(), WritePrecision.MS));
 
+                    }, HEARTBEAT_INITIAL_DELAY, HEARTBEAT_PERIOD, TimeUnit.MILLISECONDS);
+                } catch (NotAvailableException ex) {
+                    ExceptionPrinter.printHistory("Could not write heartbeat!", ex, logger, LogLevel.WARN);
+                }
+            }
             return null;
         });
         return activationState.getResponsibleAction();
@@ -213,35 +215,42 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             task.cancel(true);
             try {
                 task.get(5, TimeUnit.SECONDS);
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistory(ex, logger);
-            }
-        }
-        logger.debug("finish heartbeat");
-        if (heartbeat != null && !heartbeat.isDone()) {
-            heartbeat.cancel(true);
-            try {
-                task.get(5, TimeUnit.SECONDS);
+            } catch (CancellationException ex) {
+                // that's what we are waiting for.
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         }
 
-        if(isConnected()) {
+        logger.debug("finish heartbeat");
+        if (heartbeat != null && !heartbeat.isDone()) {
+            heartbeat.cancel(true);
+            try {
+                task.get(5, TimeUnit.SECONDS);
+            } catch (CancellationException ex) {
+                // that's what we are waiting for.
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+            }
+        }
+
+        if (isConnected()) {
             // write final heartbeat if connection is established.
             writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
                     .addField(HEARTBEAT_FIELD, HEARTBEAT_ONLINE_VALUE)
-                    .time(System.currentTimeMillis(), WritePrecision.MS));
-            Thread.sleep(1);
+                    .time(System.currentTimeMillis() - 1, WritePrecision.MS));
             writeApi.writePoint(bucketName, org, Point.measurement(HEARTBEAT_MEASUREMENT)
                     .addField(HEARTBEAT_FIELD, HEARTBEAT_OFFLINE_VALUE)
                     .time(System.currentTimeMillis(), WritePrecision.MS));
+            writeApi.flush();
         }
 
         // deregister
         customUnitPool.removeObserver(unitStateObserver);
         customUnitPool.deactivate();
         disconnectDatabase();
+
+        super.stop(activationState);
     }
 
 
@@ -271,7 +280,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         }
     }
 
-
     private void storeServiceState(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
         final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
         Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
@@ -282,8 +290,8 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             storeServiceState(unit, serviceType, currentServiceState);
             storeServiceState(unit, serviceType, lastServiceState);
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(
-                    "UnitType[" + unit.getUnitType().toString() + "] " +
+            ExceptionPrinter.printHistory("Could not store service state change into db! " +
+                            "UnitType[" + unit.getUnitType().toString() + "] " +
                             "ServiceType[" + serviceType.toString() + "] " +
                             "CurrentServiceState[" + currentServiceState.toString() + "] " +
                             "LastServiceState[" + lastServiceState.toString() + "]"
