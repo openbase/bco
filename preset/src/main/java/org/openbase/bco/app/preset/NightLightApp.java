@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -109,10 +110,8 @@ public class NightLightApp extends AbstractAppController {
                         return;
                     }
 
-                    if (location.getPowerState(UnitType.COLORABLE_LIGHT).getValue() != State.ON || !isColorReached(location.getColor().getHsbColor(), COLOR_ORANGE)) {
-                        // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
-                        presentsActionLocationMap.put(location, observe(location.setColor(COLOR_ORANGE, getDefaultActionParameter())));
-                    }
+                    // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
+                    presentsActionLocationMap.put(location, observe(location.setColor(COLOR_ORANGE, getDefaultActionParameter())));
 
                     // cancel absence actions
                     if (absenceAction != null) {
@@ -128,7 +127,7 @@ public class NightLightApp extends AbstractAppController {
                         return;
                     }
 
-                    if (location.getPowerState(UnitType.LIGHT).getValue() == State.ON && (timeout == null || timeout.isExpired() || !timeout.isActive())) {
+                    if (timeout == null || timeout.isExpired() || !timeout.isActive()) {
                         // System.out.println("Location power State[" + location.getPowerState().getValue() + ". " + location.getPowerState(UnitType.LIGHT).getValue() + "]");
                         // System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
                         absenceActionLocationMap.put(location, observe(location.setPowerState(State.OFF, UnitType.LIGHT, getDefaultActionParameter())));
@@ -248,10 +247,10 @@ public class NightLightApp extends AbstractAppController {
 
     @Override
     public void shutdown() {
+        super.shutdown();
         synchronized (locationMapLock) {
             locationMap.clear();
         }
-        super.shutdown();
     }
 
     @Override
@@ -273,7 +272,7 @@ public class NightLightApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop(final ActivationState activationState) {
+    protected void stop(final ActivationState activationState) throws InterruptedException {
         synchronized (locationMapLock) {
 
             // remove observer
@@ -288,12 +287,20 @@ public class NightLightApp extends AbstractAppController {
                 }
             });
 
-            // cancel depending actions
+            final ArrayList<Future<ActionDescription>> cancelTaskList = new ArrayList<>();
             for (Entry<Unit, RemoteAction> unitActionEntry : presentsActionLocationMap.entrySet()) {
-                unitActionEntry.getValue().cancel();
+                cancelTaskList.add(unitActionEntry.getValue().cancel());
             }
             for (Entry<Unit, RemoteAction> unitActionEntry : absenceActionLocationMap.entrySet()) {
-                unitActionEntry.getValue().cancel();
+                cancelTaskList.add(unitActionEntry.getValue().cancel());
+            }
+
+            for (Future<ActionDescription> cancelTask : cancelTaskList) {
+                try {
+                    cancelTask.get(10, TimeUnit.SECONDS);
+                } catch (ExecutionException | TimeoutException ex) {
+                    ExceptionPrinter.printHistory("Could not cancel action!", ex, logger);
+                }
             }
 
             // clear actions list
