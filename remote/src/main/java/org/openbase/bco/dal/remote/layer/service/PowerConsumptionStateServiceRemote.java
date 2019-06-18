@@ -84,11 +84,12 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
                 averageCurrent += service.getPowerConsumptionState().getCurrent();
             }
 
-            averageVoltage = averageVoltage / voltageValueAmount;
-            averageCurrent = averageCurrent / currentValueAmount;
             consumptionSum += service.getPowerConsumptionState().getConsumption();
             timestamp = Math.max(timestamp, service.getPowerConsumptionState().getTimestamp().getTime());
         }
+
+        averageVoltage = averageVoltage / voltageValueAmount;
+        averageCurrent = averageCurrent / currentValueAmount;
 
         return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage), TimeUnit.MICROSECONDS, logger).build();
     }
