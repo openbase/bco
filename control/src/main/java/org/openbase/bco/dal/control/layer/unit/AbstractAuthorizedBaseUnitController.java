@@ -26,6 +26,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -33,9 +34,11 @@ import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -45,22 +48,30 @@ import org.openbase.type.domotic.authentication.AuthenticationTokenType.Authenti
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractExecutableBaseUnitController<D, DB> {
 
     private ActionParameter defaultActionParameter;
     private AuthToken authToken = null;
 
+    private ArrayList<RemoteAction> observedTaskList;
+
     private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
 
     public AbstractAuthorizedBaseUnitController(DB builder) throws InstantiationException {
         super(builder);
+        this.observedTaskList = new ArrayList<>();
     }
 
     @Override
@@ -150,6 +161,38 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
      * @return a ready to use action remote instance.
      */
     protected RemoteAction observe(final Future<ActionDescription> futureAction) {
-        return new RemoteAction(futureAction, getToken(), () -> isEnabled() && isActive() && getActivationState().getValue() == ActivationState.State.ACTIVE);
+
+        // generate remote action
+        final RemoteAction remoteAction = new RemoteAction(futureAction, getToken(), () -> isEnabled() && isActive() && getActivationState().getValue() == State.ACTIVE);
+
+        // cleanup done actions
+        for (RemoteAction action : new ArrayList<>(observedTaskList)) {
+            if (action.isDone()) {
+                observedTaskList.remove(action);
+            }
+        }
+
+        // register new action
+        observedTaskList.add(remoteAction);
+
+        return remoteAction;
+    }
+
+
+    @Override
+    protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+        final ArrayList<Future<ActionDescription>> cancelTaskList = new ArrayList<>();
+        for (RemoteAction remoteAction : observedTaskList) {
+            cancelTaskList.add(remoteAction.cancel());
+        }
+
+        for (Future<ActionDescription> cancelTask : cancelTaskList) {
+            try {
+                cancelTask.get(10, TimeUnit.SECONDS);
+            } catch (ExecutionException | TimeoutException ex) {
+                ExceptionPrinter.printHistory("Could not cancel action!", ex, logger);
+            }
+            observedTaskList.remove(cancelTask);
+        }
     }
 }
