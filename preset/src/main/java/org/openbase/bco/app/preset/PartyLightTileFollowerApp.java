@@ -29,6 +29,7 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -140,7 +141,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                     processRoom(locationRemote, colors[colorIndex]);
 
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Skip animation run!", ex), logger);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Skip animation run!", ExceptionProcessor.interruptOnShutdown(ex)), logger);
                 }
             }
             return null;
@@ -157,7 +158,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                         actionLocationMap.put(locationRemote, remoteAction);
                         remoteAction.waitForSubmission();
                     }
-                    //Thread.sleep(2000);
+                    Thread.sleep(1000);
                 }
 
                 // mark as processed
