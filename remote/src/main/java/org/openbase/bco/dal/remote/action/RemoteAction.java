@@ -280,11 +280,11 @@ public class RemoteAction implements Action {
 
     private ActionDescription setActionDescriptionAndStartObservation(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
 
-        if(actionDescription == null) {
+        if (actionDescription == null) {
             throw new NotAvailableException("ActionDescription");
         }
 
-        if(!actionDescription.hasId()) {
+        if (!actionDescription.hasId()) {
             throw new InvalidStateException("Given action description seems not to refer to an already executed action!", new NotAvailableException("ActionDescription.id"));
         }
 
@@ -502,7 +502,7 @@ public class RemoteAction implements Action {
                 }
 
                 if (!futureObservationTask.isDone()) {
-                    future = FutureProcessor.allOf(() -> targetUnit.cancelAction(getActionDescription(), authToken).get() ,futureObservationTask);
+                    future = FutureProcessor.allOf(() -> targetUnit.cancelAction(getActionDescription(), authToken).get(), futureObservationTask);
                 } else {
                     if (getActionDescription().getIntermediary()) {
                         // cancel all impacts of this actions and return the current action description
@@ -511,12 +511,14 @@ public class RemoteAction implements Action {
                             return remoteAction.cancel();
                         });
                     } else {
-                        if(isDone()) {
+                        if (isDone()) {
                             // if already done then skip cancellation
                             future = FutureProcessor.completedFuture(getActionDescription());
                         } else {
-                            // cancel the action on the controller
-                            future = targetUnit.cancelAction(getActionDescription(), authToken);
+                            // cancel the action on the controller if possible.
+                            if(targetUnit.isConnected()) {
+                                future = targetUnit.cancelAction(getActionDescription(), authToken);
+                            }
                         }
                     }
                 }
