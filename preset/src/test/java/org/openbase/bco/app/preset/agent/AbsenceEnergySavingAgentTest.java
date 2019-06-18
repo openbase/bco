@@ -23,13 +23,10 @@ package org.openbase.bco.app.preset.agent;
  */
 import static org.junit.Assert.assertEquals;
 
-import org.junit.BeforeClass;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.layer.unit.HandleRemote;
 import org.openbase.bco.dal.remote.layer.unit.MotionDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
@@ -38,8 +35,6 @@ import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;

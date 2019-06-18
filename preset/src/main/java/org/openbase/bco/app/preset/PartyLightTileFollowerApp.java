@@ -99,7 +99,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop(final ActivationState activationState) throws InterruptedException {
+    protected void stop(final ActivationState activationState) throws InterruptedException, CouldNotPerformException {
         final ArrayList<Future<ActionDescription>> cancelTaskList = new ArrayList<>();
         for (Entry<Unit, RemoteAction> unitActionEntry : actionLocationMap.entrySet()) {
             cancelTaskList.add(unitActionEntry.getValue().cancel());
@@ -112,6 +112,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                 ExceptionPrinter.printHistory("Could not cancel action!", ex, logger);
             }
         }
+        super.stop(activationState);
     }
 
     public class TileFollower implements Callable<Void> {

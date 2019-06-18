@@ -253,7 +253,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void stop(final ActivationState activationState) {
+    protected void stop(final ActivationState activationState) throws InterruptedException, CouldNotPerformException {
         try {
             logger.trace("Stopping PowerStateSynchroniserAgent[" + getLabel() + "]");
         } catch (NotAvailableException ex) {
@@ -280,5 +280,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             remoteAction.cancel();
             remoteAction = null;
         }
+        super.stop(activationState);
     }
 }

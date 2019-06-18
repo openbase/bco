@@ -86,12 +86,13 @@ public class StandbyAgent extends AbstractAgentController {
     }
 
     @Override
-    protected void stop(final ActivationState activationState) {
+    protected void stop(final ActivationState activationState) throws InterruptedException, CouldNotPerformException {
         if (locationRemote != null) {
             locationRemote.removeDataObserver(locationDataObserver);
             locationRemote = null;
         }
         timeout.cancel();
+        super.stop(activationState);
     }
 
     public void triggerPresenceChange(LocationDataType.LocationData data) throws InterruptedException {

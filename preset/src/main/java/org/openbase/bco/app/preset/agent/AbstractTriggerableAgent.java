@@ -101,6 +101,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Deactivating [{}]", LabelProcessor.getBestMatch(getConfig().getLabel()));
         triggerPool.deactivate();
+        super.stop(activationState);
     }
 
     @Override

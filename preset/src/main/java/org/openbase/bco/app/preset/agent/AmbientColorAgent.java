@@ -21,9 +21,11 @@ package org.openbase.bco.app.preset.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 import org.openbase.bco.dal.remote.layer.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.control.layer.unit.agent.AbstractAgentController;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
@@ -46,9 +48,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
  */
 @Deprecated
 public class AmbientColorAgent extends AbstractAgentController {
@@ -223,6 +223,7 @@ public class AmbientColorAgent extends AbstractAgentController {
                 throw new CouldNotPerformException("Could not stop " + this + "!");
             }
         }
+        super.stop(activationState);
     }
 
     private void initColorStates() throws CouldNotPerformException {
@@ -234,7 +235,7 @@ public class AmbientColorAgent extends AbstractAgentController {
             if (!colors.contains(colorRemote.getColorState().getColor().getHsbColor())) {
                 color = colors.get(random.nextInt(colors.size()));
                 System.out.println("set color");
-                colorRemote.setColor(color,getDefaultActionParameter(60000));
+                observe(colorRemote.setColor(color, getDefaultActionParameter(60000)));
             }
         }
     }
@@ -272,7 +273,7 @@ public class AmbientColorAgent extends AbstractAgentController {
                 while (isExecuting() && !Thread.interrupted()) {
                     for (ColorableLightRemote colorRemote : colorableLightRemotes) {
                         try {
-                            colorRemote.setColor(choseDifferentElem(colors, colorRemote.getHSBColor()));
+                            observe(colorRemote.setColor(choseDifferentElem(colors, colorRemote.getHSBColor()), getDefaultActionParameter()));
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set/get color of [" + colorRemote.getClass().getName() + "]", ex), logger);
                         }
@@ -318,9 +319,10 @@ public class AmbientColorAgent extends AbstractAgentController {
      * being possibly the same as currentElem. If currentElem is not contained
      * by the list a random element from the list is returned.
      *
-     * @param <T> the type of list elements
-     * @param list the list containing elements of type T
+     * @param <T>         the type of list elements
+     * @param list        the list containing elements of type T
      * @param currentElem the currently hold element out of the list
+     *
      * @return a different element from the list than currentElem
      */
     private <T> T choseDifferentElem(List<T> list, T currentElem) {

@@ -28,10 +28,8 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.ShutdownInProgressException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
@@ -272,7 +270,7 @@ public class NightLightApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop(final ActivationState activationState) throws InterruptedException {
+    protected void stop(final ActivationState activationState) throws InterruptedException, CouldNotPerformException {
         synchronized (locationMapLock) {
 
             // remove observer
@@ -283,7 +281,9 @@ public class NightLightApp extends AbstractAppController {
                         neighbor.removeDataObserver(observer);
                     }
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not remove observer from neighbor locations.", ex, LOGGER);
+                    if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                        ExceptionPrinter.printHistory("Could not remove observer from neighbor locations.", ex, LOGGER);
+                    }
                 }
             });
 
@@ -307,5 +307,6 @@ public class NightLightApp extends AbstractAppController {
             presentsActionLocationMap.clear();
             absenceActionLocationMap.clear();
         }
+        super.stop(activationState);
     }
 }

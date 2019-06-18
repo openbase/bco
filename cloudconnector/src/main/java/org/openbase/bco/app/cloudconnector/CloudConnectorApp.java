@@ -165,10 +165,11 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * @throws CouldNotPerformException if a socket connections could not be deactivated
      */
     @Override
-    protected void stop(final ActivationState activationState) throws CouldNotPerformException {
+    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         for (SocketWrapper socketWrapper : userIdSocketMap.values()) {
             socketWrapper.deactivate();
         }
+        super.stop(activationState);
     }
 
     /**
