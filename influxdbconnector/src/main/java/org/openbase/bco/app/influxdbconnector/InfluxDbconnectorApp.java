@@ -116,7 +116,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
     public InfluxDbconnectorApp() throws InstantiationException {
         this.customUnitPool = new CustomUnitPool();
-        this.unitStateObserver = (source, data) -> storeServiceState((Unit) source.getServiceProvider(), source.getServiceType());
+        this.unitStateObserver = (source, data) -> storeServiceState((Unit) source.getServiceProvider(), source.getServiceType(), false);
     }
 
     @Override
@@ -269,7 +269,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                         if (serviceDescription.getPattern() != ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER) {
                             continue;
                         }
-                        storeServiceState(unit, serviceDescription.getServiceType());
+                        storeServiceState(unit, serviceDescription.getServiceType(), true);
                     }
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not store service state " + unit, ex, logger);
@@ -280,9 +280,11 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         }
     }
 
-    private void storeServiceState(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
+    private void storeServiceState(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType, boolean initialSync) throws CouldNotPerformException {
         final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
         Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
+
+        // todo: @david please make sure the current state is stored even when the last state is not available.
 
         try {
             final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MILLISECONDS) - 1l;
@@ -290,6 +292,12 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             storeServiceState(unit, serviceType, currentServiceState);
             storeServiceState(unit, serviceType, lastServiceState);
         } catch (CouldNotPerformException ex) {
+
+            // filter log if initial timestamps are missing
+            if (initialSync) {
+                return;
+            }
+
             ExceptionPrinter.printHistory("Could not store service state change into db! " +
                             "UnitType[" + unit.getUnitType().toString() + "] " +
                             "ServiceType[" + serviceType.toString() + "] " +
