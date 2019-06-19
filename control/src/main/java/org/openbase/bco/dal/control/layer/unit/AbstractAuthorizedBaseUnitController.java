@@ -32,6 +32,7 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -183,7 +184,12 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
     protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         final ArrayList<Future<ActionDescription>> cancelTaskList = new ArrayList<>();
         for (RemoteAction remoteAction : observedTaskList) {
-            cancelTaskList.add(remoteAction.cancel());
+            final Future<ActionDescription> cancel = remoteAction.cancel();
+            if (cancel == null) {
+                new FatalImplementationErrorException("null task in observer list", this);
+                continue;
+            }
+            cancelTaskList.add(cancel);
         }
 
         for (Future<ActionDescription> cancelTask : cancelTaskList) {

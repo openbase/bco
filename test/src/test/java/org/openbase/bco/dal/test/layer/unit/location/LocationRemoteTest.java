@@ -469,7 +469,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals(serviceState.getValue(), locationRemote.getPowerState().getValue());
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 20000)
     public void testActionCancellation() throws Exception {
         System.out.println("testActionCancellation");
 
