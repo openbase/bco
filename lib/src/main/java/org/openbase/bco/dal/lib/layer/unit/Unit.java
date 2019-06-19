@@ -659,6 +659,18 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
             final UnitConfig unitConfig = getConfig();
             final MetaConfigPool configPool = new MetaConfigPool();
 
+            configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
+            configPool.register(new ProtobufVariableProvider(unitConfig));
+
+            // register location meta config if available
+            try {
+                UnitConfig locationUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
+                configPool.register(new MetaConfigVariableProvider("UnitLocationMetaConfig", locationUnitConfig.getMetaConfig()));
+                configPool.register(new ProtobufVariableProvider(locationUnitConfig));
+            } catch (NullPointerException | CouldNotPerformException | InterruptedException ex) {
+                // location not available so skip those
+            }
+
             // resolve host unit meta configs if this unit is a dal unit.
             if (isDalUnit()) {
 
@@ -681,18 +693,6 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         break;
                 }
             }
-
-            // register location meta config if available
-            try {
-                UnitConfig locationUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
-                configPool.register(new MetaConfigVariableProvider("UnitLocationMetaConfig", locationUnitConfig.getMetaConfig()));
-                configPool.register(new ProtobufVariableProvider(locationUnitConfig));
-            } catch (NullPointerException | CouldNotPerformException | InterruptedException ex) {
-                // location not available so skip those
-            }
-
-            configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
-            configPool.register(new ProtobufVariableProvider(unitConfig));
             return configPool;
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("Variable Provider not available!", ex);
