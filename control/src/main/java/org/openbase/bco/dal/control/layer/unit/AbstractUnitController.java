@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,6 +27,10 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
+import org.influxdata.client.InfluxDBClient;
+import org.influxdata.client.InfluxDBClientFactory;
+import org.influxdata.client.QueryApi;
+import org.influxdata.query.FluxTable;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
@@ -108,13 +112,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -158,6 +162,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final Map<ServiceType, Message> requestedStateCache;
     private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
     final BuilderSyncSetup<DB> builderSetup;
+
+    private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
+    private static final String INFLUXDB_URL_DEFAULT = "http://192.168.75.100:9999";
+    private static final String INFLUXDB_ORG_DEFAULT = "openbase";
+    private static String INFLUXDB_ORG_ID_DEFAULT = "03e2c6b79272c000";
+    private static final Integer READ_TIMEOUT = 60;
+    private static final Integer WRITE_TIMEOUT = 60;
+    private static final Integer CONNECT_TIMOUT = 40;
+    private static final char[] TOKEN = "JwXkUyMvJIUVQU-itwGljVALbbliYnAsjitO1HUeHaOXi6f0KHenVQyGGbH8pWMgQ1RG8mqJJRZu_PfnIS-p4w==".toCharArray();
 
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
@@ -534,10 +547,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // In this case we perform an unauthorized action.
             for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
                 if (stackTraceElement.getClassName().equals(RPCHelper.class.getName())) {
-                    logger.info("incomming unauthorized action: "+ builder.toString());
+                    logger.info("incomming unauthorized action: " + builder.toString());
                     builder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
                     final ActionDescription build = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build();
-                    logger.info("set human as executor out of legacy reasons: "+ builder.toString());
+                    logger.info("set human as executor out of legacy reasons: " + builder.toString());
                     return applyUnauthorizedAction(build);
                 }
             }
@@ -576,9 +589,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
-     *
      * @return the action identified by the provided id as described above.
-     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
@@ -610,7 +621,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
-     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
@@ -694,7 +704,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // retrieve action
                 final SchedulableAction actionToExtend = getActionById(actionDescription.getId(), LOCK_CONSUMER_EXTEND_ACTION);
 
-                if(!actionToExtend.isValid()) {
+                if (!actionToExtend.isValid()) {
                     throw new CouldNotPerformException("Extension of " + actionToExtend + " skipped, because the action is not longer valid!");
                 }
 
@@ -729,7 +739,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (executingAction == null) {
                 logger.error("{} seems not to be valid and was excluded from execution of {}.", actionToSchedule, this);
             }
-            if(JPService.verboseMode()) {
+            if (JPService.verboseMode()) {
                 logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
             } else {
                 logger.trace("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
@@ -765,7 +775,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
-     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
      */
@@ -963,7 +972,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
-     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1476,9 +1484,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
-     *
      * @return a location remote instance.
-     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1526,7 +1532,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
-     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1555,12 +1560,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return Collections.unmodifiableMap(operationServiceMap);
     }
 
+
     /**
      * {@inheritDoc}
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
@@ -1583,6 +1588,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
+
     public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
 
         String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + "Controller";
@@ -1595,5 +1601,70 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
             }
         }
+    }
+
+
+    private List<FluxTable> sendQuery(final String query) throws CouldNotPerformException {
+
+        try (
+                InfluxDBClient influxDBClient = InfluxDBClientFactory
+                        .create(INFLUXDB_URL_DEFAULT + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", TOKEN);) {
+
+            if (influxDBClient.health().getStatus().getValue() != "pass") {
+                throw new CouldNotPerformException("Could not connect to database server at " + INFLUXDB_URL_DEFAULT + "!");
+
+            }
+            QueryApi queryApi = influxDBClient.getQueryApi();
+
+
+            List<FluxTable> tables = queryApi.query(query, INFLUXDB_ORG_ID_DEFAULT);
+            return tables;
+
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not send query to database!", ex);
+
+        }
+
+    }
+
+    public String buildGetAverageQuery(final Message databaseQuery) {
+        String measurement = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("measurement")).toString();
+        String window = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("window")).toString();
+        String timeStart = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStart")).toString();
+        String timeStop = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStop")).toString();
+        String field = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("field")).toString();
+        FieldDescriptor filter = databaseQuery.getDescriptorForType().findFieldByName("filter");
+
+        String query = "from(bucket: \"" + INFLUXDB_BUCKET_DEFAULT + "\")" +
+                " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
+                " |> filter(fn: (r) => r._measurement == " + measurement + ")" +
+                " |> filter(fn: (r) => r._field == \"" + field + "\")";
+
+        // add filters
+        for (int i = 0; i < databaseQuery.getRepeatedFieldCount(filter); i++) {
+            final Object repeatedFieldEntry = databaseQuery.getRepeatedField(filter, i);
+            query = addFilterToQuery(query, repeatedFieldEntry.toString());
+
+        }
+        query += " |> aggregateWindow(every:" + window + " , fn: mean)" +
+                " |> group(columns: [\"_field\"], mode:\"by\")" +
+                " |> mean(column: \"_value\")";
+
+        return query;
+    }
+
+    private String addFilterToQuery(String query, String filter) {
+        filter = " |> filter(fn: (r) => r._field == \"" + filter + "\")";
+        query += filter;
+        return query;
+    }
+
+
+    public Message getAveragePowerConsumption(Message databaseQuery) throws CouldNotPerformException {
+
+        String query = buildGetAverageQuery(databaseQuery);
+
+        List<FluxTable> tables = sendQuery(query);
+        return getSingleValueFromTables(tables);
     }
 }
