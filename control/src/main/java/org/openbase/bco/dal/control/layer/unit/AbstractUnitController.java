@@ -30,6 +30,7 @@ import com.google.protobuf.Message;
 import org.influxdata.client.InfluxDBClient;
 import org.influxdata.client.InfluxDBClientFactory;
 import org.influxdata.client.QueryApi;
+import org.influxdata.query.FluxRecord;
 import org.influxdata.query.FluxTable;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
@@ -1627,30 +1628,42 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     }
 
-    public String buildGetAverageQuery(final Message databaseQuery) {
+
+    private String buildGetAverageQuery(final Message databaseQuery) {
         String measurement = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("measurement")).toString();
-        String window = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("window")).toString();
         String timeStart = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStart")).toString();
         String timeStop = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStop")).toString();
-        String field = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("field")).toString();
         FieldDescriptor filter = databaseQuery.getDescriptorForType().findFieldByName("filter");
-
         String query = "from(bucket: \"" + INFLUXDB_BUCKET_DEFAULT + "\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
-                " |> filter(fn: (r) => r._measurement == " + measurement + ")" +
-                " |> filter(fn: (r) => r._field == \"" + field + "\")";
+                " |> filter(fn: (r) => r._measurement == " + measurement + ")";
 
-        // add filters
         for (int i = 0; i < databaseQuery.getRepeatedFieldCount(filter); i++) {
             final Object repeatedFieldEntry = databaseQuery.getRepeatedField(filter, i);
             query = addFilterToQuery(query, repeatedFieldEntry.toString());
 
         }
-        query += " |> aggregateWindow(every:" + window + " , fn: mean)" +
-                " |> group(columns: [\"_field\"], mode:\"by\")" +
-                " |> mean(column: \"_value\")";
+        if (databaseQuery.getDescriptorForType().findFieldByName("value").getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
 
-        return query;
+            query += " |> group(columns: [\"_value\"])" +
+                    " |> map(fn: (r) => ({_time: r._time, index: 1}))" +
+                    "|> cumulativeSum(columns: [\"index\"])" +
+                    "|> last()";
+
+
+            return query;
+        } else {
+
+            String window = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("window")).toString();
+            // add filters
+            query += "|> group(columns: [\"_field\"], mode:\"by\")\" +\n " +
+                    " |> aggregateWindow(every:" + window + " , fn: mean)" +
+                    " |> mean(column: \"_value\")";
+
+            return query;
+
+        }
+
     }
 
     private String addFilterToQuery(String query, String filter) {
@@ -1659,12 +1672,62 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return query;
     }
 
+    private double calculateEnumStatePercentage(List<FluxTable> tables, String field) {
+        int sum = 0;
+        double fieldValue = 0;
 
-    public Message getAveragePowerConsumption(Message databaseQuery) throws CouldNotPerformException {
+
+        for (FluxTable fluxTable : tables) {
+            List<FluxRecord> records = fluxTable.getRecords();
+            for (FluxRecord fluxRecord : records) {
+                if (fluxRecord.getField().equals(field)) {
+                    fieldValue = (double) fluxRecord.getValueByKey("_value");
+                }
+                sum += (int) fluxRecord.getValueByKey("_value");
+            }
+        }
+
+        fieldValue = fieldValue / sum;
+
+        return fieldValue;
+    }
+
+    private double filterFluxTablesForValue(List<FluxTable> tables, String field) {
+
+        for (FluxTable fluxTable : tables) {
+            List<FluxRecord> records = fluxTable.getRecords();
+            for (FluxRecord fluxRecord : records) {
+                if (fluxRecord.getField().equals(field)) {
+                    return (double) fluxRecord.getValueByKey("_value");
+                }
+            }
+        }
+        return 0;
+    }
+
+    public Message getAverage(Message databaseQuery) throws CouldNotPerformException {
+
+        Message serviceType = (Message) databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("service_type"));
+        ServiceType averageServiceType = (ServiceType) serviceType.getField(databaseQuery.getDescriptorForType().findFieldByName("average"));
+        final Message.Builder builder = Services.generateServiceStateBuilder(averageServiceType);
 
         String query = buildGetAverageQuery(databaseQuery);
-
         List<FluxTable> tables = sendQuery(query);
-        return getSingleValueFromTables(tables);
+        for (Entry<FieldDescriptor, Object> fieldDescriptorObjectEntry : builder.getAllFields().entrySet()) {
+            double averageValue;
+
+            final String serviceFieldName = fieldDescriptorObjectEntry.getKey().getName();
+            //todo : maybe better enum check
+            if (databaseQuery.getDescriptorForType().findFieldByName("value").getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
+                averageValue = calculateEnumStatePercentage(tables, serviceFieldName);
+            } else {
+                averageValue = filterFluxTablesForValue(tables, serviceFieldName);
+            }
+            builder.setField(fieldDescriptorObjectEntry.getKey(), averageValue);
+        }
+        final Message average = builder.build();
+        return average;
+
+
     }
 }
