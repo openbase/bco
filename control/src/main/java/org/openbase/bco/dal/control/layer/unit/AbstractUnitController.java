@@ -1629,7 +1629,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
 
-    private String buildGetAverageQuery(final Message databaseQuery) {
+    private String buildGetAverageQuery(final Message databaseQuery, boolean isEnum) {
         String measurement = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("measurement")).toString();
         String timeStart = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStart")).toString();
         String timeStop = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStop")).toString();
@@ -1643,7 +1643,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             query = addFilterToQuery(query, repeatedFieldEntry.toString());
 
         }
-        if (databaseQuery.getDescriptorForType().findFieldByName("value").getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
+        if (isEnum) {
 
             query += " |> group(columns: [\"_value\"])" +
                     " |> map(fn: (r) => ({_time: r._time, index: 1}))" +
@@ -1710,24 +1710,27 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         Message serviceType = (Message) databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("service_type"));
         ServiceType averageServiceType = (ServiceType) serviceType.getField(databaseQuery.getDescriptorForType().findFieldByName("average"));
         final Message.Builder builder = Services.generateServiceStateBuilder(averageServiceType);
+        //todo : maybe better enum check
+        boolean isEnum = databaseQuery.getDescriptorForType().findFieldByName("value").getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM;
 
-        String query = buildGetAverageQuery(databaseQuery);
+        String query = buildGetAverageQuery(databaseQuery, isEnum);
         List<FluxTable> tables = sendQuery(query);
         for (Entry<FieldDescriptor, Object> fieldDescriptorObjectEntry : builder.getAllFields().entrySet()) {
             double averageValue;
 
             final String serviceFieldName = fieldDescriptorObjectEntry.getKey().getName();
-            //todo : maybe better enum check
-            if (databaseQuery.getDescriptorForType().findFieldByName("value").getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
+            if (serviceFieldName.equals("query")) {
+                builder.setField(fieldDescriptorObjectEntry.getKey(), databaseQuery);
+
+            } else if (isEnum) {
                 averageValue = calculateEnumStatePercentage(tables, serviceFieldName);
+                builder.setField(fieldDescriptorObjectEntry.getKey(), averageValue);
+
             } else {
                 averageValue = filterFluxTablesForValue(tables, serviceFieldName);
+                builder.setField(fieldDescriptorObjectEntry.getKey(), averageValue);
             }
-            builder.setField(fieldDescriptorObjectEntry.getKey(), averageValue);
         }
-        final Message average = builder.build();
-        return average;
-
-
+        return builder.build();
     }
 }
