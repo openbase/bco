@@ -23,11 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
+import org.openbase.type.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface MotionDetector extends MotionStateProviderService {
+public interface MotionDetector extends Unit<MotionDetectorData>, MotionStateProviderService {
     
 }

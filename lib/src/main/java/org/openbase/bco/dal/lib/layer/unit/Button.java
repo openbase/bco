@@ -23,11 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.provider.ButtonStateProviderService;
+import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Button extends ButtonStateProviderService {
+public interface Button extends Unit<ButtonData>, ButtonStateProviderService {
     
 }

@@ -21,6 +21,7 @@ package org.openbase.bco.dal.control.layer.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.unit.AudioSource;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.VideoRgbSource;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -32,7 +33,7 @@ import org.openbase.type.domotic.unit.dal.AudioSourceDataType.AudioSourceData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AudioSourceController extends AbstractDALUnitController<AudioSourceData, AudioSourceData.Builder> implements VideoRgbSource {
+public class AudioSourceController extends AbstractDALUnitController<AudioSourceData, AudioSourceData.Builder> implements AudioSource {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AudioSourceData.getDefaultInstance()));

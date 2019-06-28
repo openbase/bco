@@ -21,8 +21,11 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
+import org.openbase.type.domotic.unit.dal.VideoDepthSourceDataType.VideoDepthSourceData;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface VideoDepthSource {
+public interface VideoDepthSource extends Unit<VideoDepthSourceData> {
 }

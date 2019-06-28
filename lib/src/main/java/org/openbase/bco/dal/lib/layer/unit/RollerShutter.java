@@ -22,11 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.type.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface RollerShutter extends BlindStateOperationService {
+public interface RollerShutter extends Unit<RollerShutterData>, BlindStateOperationService {
 
 }
