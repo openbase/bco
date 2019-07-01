@@ -24,7 +24,7 @@ package org.openbase.bco.app.preset.agent;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
-import org.openbase.bco.dal.remote.trigger.GenericValueDualBoundaryBCOTrigger;
+import org.openbase.bco.dal.remote.trigger.GenericDualBoundedDoubleValueTrigger;
 import org.openbase.bco.dal.remote.trigger.preset.IlluminanceDualBoundaryTrigger;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -94,7 +94,7 @@ public class IlluminationLightSavingAgent extends AbstractTriggerableAgent {
 
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
-            registerTrigger(new IlluminanceDualBoundaryTrigger<LocationRemote, LocationDataType.LocationData>(locationRemote, MAXIMUM_WANTED_ILLUMINATION, MINIMUM_NEEDED_ILLUMINATION, GenericValueDualBoundaryBCOTrigger.TriggerOperation.HIGH_ACTIVE), TriggerPool.TriggerAggregation.OR);
+            registerTrigger(new IlluminanceDualBoundaryTrigger<LocationRemote, LocationDataType.LocationData>(locationRemote, MAXIMUM_WANTED_ILLUMINATION, MINIMUM_NEEDED_ILLUMINATION, GenericDualBoundedDoubleValueTrigger.TriggerOperation.HIGH_ACTIVE), TriggerPool.TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

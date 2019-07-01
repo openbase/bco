@@ -23,7 +23,7 @@ package org.openbase.bco.app.preset.agent;
  */
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
+import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -68,7 +68,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
             // Todo: Add trigger for FireAlarm as soon as it is supported
 //            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceType.FIRE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
-            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceType.SMOKE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
+            registerTrigger(new GenericServiceStateValueTrigger(locationRemote, triggerState, ServiceType.SMOKE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

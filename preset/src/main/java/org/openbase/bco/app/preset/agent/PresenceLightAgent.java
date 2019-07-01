@@ -25,13 +25,16 @@ package org.openbase.bco.app.preset.agent;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
+import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger;
+import org.openbase.bco.dal.remote.trigger.GenericBoundedDoubleValueTrigger;
+import org.openbase.bco.dal.remote.trigger.GenericBoundedDoubleValueTrigger.TriggerOperation;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
@@ -63,7 +66,8 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-            registerTrigger(new GenericBCOTrigger(locationRemote, PresenceState.State.PRESENT, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
+            registerTrigger(new GenericServiceStateValueTrigger(locationRemote, PresenceState.State.PRESENT, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
+         //   registerTrigger(new GenericBoundedDoubleValueTrigger<>(locationRemote, 1000, TriggerOperation.LOW_ACTIVE, ServiceType.ILLUMINANCE_STATE_SERVICE, "getIlluminance"), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

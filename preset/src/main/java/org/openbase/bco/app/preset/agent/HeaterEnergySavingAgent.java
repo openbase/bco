@@ -24,7 +24,7 @@ package org.openbase.bco.app.preset.agent;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
+import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -33,10 +33,8 @@ import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.state.WindowStateType.WindowState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 
 import java.util.concurrent.ExecutionException;
@@ -69,7 +67,7 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
             for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(false)) {
                 if (connectionRemote.getConfig().getConnectionConfig().getConnectionType().equals(ConnectionType.WINDOW)) {
                     try {
-                        registerTrigger(new GenericBCOTrigger(connectionRemote, WindowState.State.OPEN, ServiceType.WINDOW_STATE_SERVICE), TriggerAggregation.OR);
+                        registerTrigger(new GenericServiceStateValueTrigger(connectionRemote, WindowState.State.OPEN, ServiceType.WINDOW_STATE_SERVICE), TriggerAggregation.OR);
                     } catch (CouldNotPerformException ex) {
                         throw new InitializationException("Could not add agent to agentpool", ex);
                     }

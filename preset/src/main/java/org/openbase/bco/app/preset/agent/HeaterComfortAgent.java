@@ -23,7 +23,7 @@ package org.openbase.bco.app.preset.agent;
  */
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
+import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -55,7 +55,7 @@ public class HeaterComfortAgent extends AbstractTriggerableAgent{
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceType.PRESENCE_STATE_SERVICE), TriggerPool.TriggerAggregation.OR);
+            registerTrigger(new GenericServiceStateValueTrigger(locationRemote, triggerState, ServiceType.PRESENCE_STATE_SERVICE), TriggerPool.TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
