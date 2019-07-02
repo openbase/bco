@@ -36,6 +36,7 @@ import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
@@ -54,67 +55,74 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     private final Observer<Trigger, ActivationState> activationTriggerPoolObserver;
     private final Observer<Trigger, ActivationState> deactivationTriggerPoolObserver;
 
+    private final SyncObject triggerSync = new SyncObject("TriggerSync");
+
+    private ActivationState.State currentTriggerActivationState;
+
     public AbstractTriggerableAgent() throws InstantiationException {
+
+        this.currentTriggerActivationState = State.UNKNOWN;
 
         this.activationTriggerPool = new TriggerPool();
         this.deactivationTriggerPool = new TriggerPool();
 
         this.activationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
-            try {
-                switch (getActivationState().getValue()) {
-                    // if agent is active and deactivate agent if agent is active and deactivation pool is triggering an active state.
-                    case ACTIVE:
+            System.out.println("activationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
+            synchronized (triggerSync) {
+                try {
+                    //triggerInternal(data);
+                    switch (currentTriggerActivationState) {
+                        // if agent is active and deactivate agent if agent is active and deactivation pool is triggering an active state.
+                        case ACTIVE:
 
-                        // do not handle activation update when deactivation trigger are registered.
-                        if(!deactivationTriggerPool.isEmpty()) {
-                            return;
-                        }
+                            // do not handle activation update when deactivation trigger are registered.
+                            if (!deactivationTriggerPool.isEmpty()) {
+                                return;
+                            }
 
-                        if(data.getValue() == State.DEACTIVE) {
+                            if (data.getValue() == State.DEACTIVE) {
+                                triggerInternal(data);
+                            }
+                            break;
+
+                        case DEACTIVE:
+                            if (data.getValue() == State.ACTIVE) {
+                                triggerInternal(data);
+                            }
+                            break;
+
+                        case UNKNOWN:
                             triggerInternal(data);
-                        }
-                        break;
-                    case DEACTIVE:
-                        if(data.getValue() == State.ACTIVE) {
-                            triggerInternal(data);
-                        }
-                        break;
-                    case UNKNOWN:
+                            break;
 
-                        // do not handle activation update when deactivation trigger are registered.
-                        if(!deactivationTriggerPool.isEmpty()) {
-                            return;
-                        }
-
-                        triggerInternal(data);
-                    default:
-                        // do nothing
+                        default:
+                            // do nothing
+                    }
+                } catch (CancellationException ex) {
+                    ExceptionPrinter.printHistory("Could not trigger agent!", ex, logger);
                 }
-            } catch (CouldNotPerformException | CancellationException ex) {
-                ExceptionPrinter.printHistory("Could not trigger agent!", ex, logger);
             }
-
         };
         this.deactivationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
-            GlobalCachedExecutorService.submit(() -> {
+            System.out.println("deactivationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
+            synchronized (triggerSync) {
                 try {
                     // deactivate agent if agent is active and deactivation pool is triggering an active state.
-                    switch (getActivationState().getValue()) {
+                    switch (currentTriggerActivationState) {
                         case ACTIVE:
                         case UNKNOWN:
                             // if the deactivation pool is active we need to send a deactivation trigger
-                            if(data.getValue() == State.ACTIVE) {
-                                trigger(data.toBuilder().setValue(State.DEACTIVE).build());
+                            if (data.getValue() == State.ACTIVE) {
+                                triggerInternal(data.toBuilder().setValue(State.DEACTIVE).build());
                             }
                             break;
                         default:
                             // do nothing
                     }
-                } catch (CouldNotPerformException | CancellationException ex) {
+                } catch (CancellationException ex) {
                     ExceptionPrinter.printHistory("Could not trigger agent!", ex, logger);
                 }
-                return null;
-            });
+            }
         };
     }
 
@@ -129,8 +137,9 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
      * Method registers a new trigger which can activate the agent.
      * In case no deactivation trigger are registered, the activation trigger can also cause a deactivation of the agent.
      *
-     * @param trigger the trigger to register.
+     * @param trigger     the trigger to register.
      * @param aggregation used to
+     *
      * @throws CouldNotPerformException
      */
     public void registerActivationTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException {
@@ -143,7 +152,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
 
     public void registerDeactivationTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException {
         try {
-            activationTriggerPool.addTrigger(trigger, aggregation);
+            deactivationTriggerPool.addTrigger(trigger, aggregation);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agent pool", ex);
         }
@@ -186,9 +195,12 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     }
 
     private void triggerInternal(final ActivationState activationState) {
+        currentTriggerActivationState = activationState.getValue();
         GlobalCachedExecutorService.submit(() -> {
-            trigger(activationState);
-            return null;
+            synchronized (triggerSync) {
+                trigger(activationState);
+                return null;
+            }
         });
     }
 
