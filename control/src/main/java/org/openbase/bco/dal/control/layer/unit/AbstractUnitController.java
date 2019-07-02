@@ -1423,7 +1423,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, authenticationBaseData) -> {
             try {
                 verifyAccessPermission(authenticationBaseData, ServiceType.UNKNOWN);
-
+//
                 try {
 //                    internalRestoreSnapshot(snapshot, ticketEvaluationWrapper).get();
                     restoreSnapshot(snapshot).get();
