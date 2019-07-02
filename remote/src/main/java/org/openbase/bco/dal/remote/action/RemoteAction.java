@@ -269,7 +269,7 @@ public class RemoteAction implements Action {
                 // this is useful to cancel actions through cancelling the execute task of a remote actions
                 // it allows to easily handle remote actions through the provided future because remote actions pools do not allow to access them
                 // it is used to cancel optional actions from scenes
-                if(targetUnit != null ) {
+                if (targetUnit != null) {
                     targetUnit.cancelAction(actionDescription, authToken);
                 }
                 cleanup();
@@ -552,27 +552,27 @@ public class RemoteAction implements Action {
                     return future;
                 }
 
+                // handle intermediary action
                 if (getActionDescription().getIntermediary()) {
                     // cancel all impacts of this actions and return the current action description
                     future = FutureProcessor.allOf(impactedRemoteActions, input -> getActionDescription(), remoteAction -> {
                         remoteAction.waitForSubmission();
                         return remoteAction.cancel();
                     });
-                } else {
-                    if (isDone()) {
-                        // if already done then skip cancellation
-                        future = FutureProcessor.completedFuture(getActionDescription());
-                    } else {
-                        // cancel the action on the controller if possible.
-                        if (targetUnit != null && targetUnit.isConnected()) {
-                            future = targetUnit.cancelAction(getActionDescription(), authToken);
-                        }
-                    }
+                    return future;
                 }
 
-                // validate
-                if(future == null) {
-                    new FatalImplementationErrorException("Cancelation future is empty!", this);
+                // if already done then skip cancellation
+                if (isDone()) {
+                    future = FutureProcessor.completedFuture(getActionDescription());
+                    return future;
+                }
+
+                // cancel the action on the controller if possible.
+                if (targetUnit != null && targetUnit.isConnected()) {
+                    future = targetUnit.cancelAction(getActionDescription(), authToken);
+                } else {
+                    future = FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel action since target unit not reachable!"));
                 }
 
                 return future;
