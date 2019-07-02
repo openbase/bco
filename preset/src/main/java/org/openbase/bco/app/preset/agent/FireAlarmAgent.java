@@ -67,8 +67,8 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
             // Todo: Add trigger for FireAlarm as soon as it is supported
-//            registerTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceType.FIRE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
-            registerTrigger(new GenericServiceStateValueTrigger(locationRemote, triggerState, ServiceType.SMOKE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
+//            registerActivationTrigger(new GenericBCOTrigger(locationRemote, triggerState, ServiceType.FIRE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
+            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, triggerState, ServiceType.SMOKE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

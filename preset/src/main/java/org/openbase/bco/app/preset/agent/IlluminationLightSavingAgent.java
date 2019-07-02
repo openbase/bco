@@ -94,7 +94,7 @@ public class IlluminationLightSavingAgent extends AbstractTriggerableAgent {
 
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
-            registerTrigger(new IlluminanceDualBoundaryTrigger<LocationRemote, LocationDataType.LocationData>(locationRemote, MAXIMUM_WANTED_ILLUMINATION, MINIMUM_NEEDED_ILLUMINATION, GenericDualBoundedDoubleValueTrigger.TriggerOperation.HIGH_ACTIVE), TriggerPool.TriggerAggregation.OR);
+            registerActivationTrigger(new IlluminanceDualBoundaryTrigger<LocationRemote, LocationDataType.LocationData>(locationRemote, MAXIMUM_WANTED_ILLUMINATION, MINIMUM_NEEDED_ILLUMINATION, GenericDualBoundedDoubleValueTrigger.TriggerOperation.HIGH_ACTIVE), TriggerPool.TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

@@ -38,25 +38,78 @@ import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public abstract class AbstractTriggerableAgent extends AbstractAgentController {
 
-    private TriggerPool triggerPool;
-    private Observer<Trigger, ActivationState> triggerHolderObserver;
+    private final TriggerPool activationTriggerPool;
+    private final TriggerPool deactivationTriggerPool;
+
+    private final Observer<Trigger, ActivationState> activationTriggerPoolObserver;
+    private final Observer<Trigger, ActivationState> deactivationTriggerPoolObserver;
 
     public AbstractTriggerableAgent() throws InstantiationException {
-        this.triggerPool = new TriggerPool();
-        this.triggerHolderObserver = (Trigger source, ActivationState data) -> {
+
+        this.activationTriggerPool = new TriggerPool();
+        this.deactivationTriggerPool = new TriggerPool();
+
+        this.activationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
+            try {
+                switch (getActivationState().getValue()) {
+                    // if agent is active and deactivate agent if agent is active and deactivation pool is triggering an active state.
+                    case ACTIVE:
+
+                        // do not handle activation update when deactivation trigger are registered.
+                        if(!deactivationTriggerPool.isEmpty()) {
+                            return;
+                        }
+
+                        if(data.getValue() == State.DEACTIVE) {
+                            triggerInternal(data);
+                        }
+                        break;
+                    case DEACTIVE:
+                        if(data.getValue() == State.ACTIVE) {
+                            triggerInternal(data);
+                        }
+                        break;
+                    case UNKNOWN:
+
+                        // do not handle activation update when deactivation trigger are registered.
+                        if(!deactivationTriggerPool.isEmpty()) {
+                            return;
+                        }
+
+                        triggerInternal(data);
+                    default:
+                        // do nothing
+                }
+            } catch (CouldNotPerformException | CancellationException ex) {
+                ExceptionPrinter.printHistory("Could not trigger agent!", ex, logger);
+            }
+
+        };
+        this.deactivationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
             GlobalCachedExecutorService.submit(() -> {
                 try {
-                    trigger(data);
+                    // deactivate agent if agent is active and deactivation pool is triggering an active state.
+                    switch (getActivationState().getValue()) {
+                        case ACTIVE:
+                        case UNKNOWN:
+                            // if the deactivation pool is active we need to send a deactivation trigger
+                            if(data.getValue() == State.ACTIVE) {
+                                trigger(data.toBuilder().setValue(State.DEACTIVE).build());
+                            }
+                            break;
+                        default:
+                            // do nothing
+                    }
                 } catch (CouldNotPerformException | CancellationException ex) {
                     ExceptionPrinter.printHistory("Could not trigger agent!", ex, logger);
                 }
@@ -68,12 +121,29 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
-        triggerPool.addObserver(triggerHolderObserver);
+        activationTriggerPool.addObserver(activationTriggerPoolObserver);
+        deactivationTriggerPool.addObserver(deactivationTriggerPoolObserver);
     }
 
-    public void registerTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException{
+    /**
+     * Method registers a new trigger which can activate the agent.
+     * In case no deactivation trigger are registered, the activation trigger can also cause a deactivation of the agent.
+     *
+     * @param trigger the trigger to register.
+     * @param aggregation used to
+     * @throws CouldNotPerformException
+     */
+    public void registerActivationTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException {
         try {
-            triggerPool.addTrigger(trigger, aggregation);
+            activationTriggerPool.addTrigger(trigger, aggregation);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException("Could not add agent to agent pool", ex);
+        }
+    }
+
+    public void registerDeactivationTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException {
+        try {
+            activationTriggerPool.addTrigger(trigger, aggregation);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agent pool", ex);
         }
@@ -82,7 +152,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Activating [{}]", LabelProcessor.getBestMatch(getConfig().getLabel()));
-        
+
         // do not activate agents that need the resource allocation to work properly if the resource allocation is turned off
         try {
             if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
@@ -92,7 +162,8 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
         }
-        triggerPool.activate();
+        activationTriggerPool.activate();
+        deactivationTriggerPool.activate();
 
         return activationState.getResponsibleAction();
     }
@@ -100,15 +171,25 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Deactivating [{}]", LabelProcessor.getBestMatch(getConfig().getLabel()));
-        triggerPool.deactivate();
+        activationTriggerPool.deactivate();
+        deactivationTriggerPool.deactivate();
         super.stop(activationState);
     }
 
     @Override
     public void shutdown() {
-        triggerPool.removeObserver(triggerHolderObserver);
-        triggerPool.shutdown();
+        activationTriggerPool.removeObserver(activationTriggerPoolObserver);
+        deactivationTriggerPool.removeObserver(deactivationTriggerPoolObserver);
+        activationTriggerPool.shutdown();
+        deactivationTriggerPool.shutdown();
         super.shutdown();
+    }
+
+    private void triggerInternal(final ActivationState activationState) {
+        GlobalCachedExecutorService.submit(() -> {
+            trigger(activationState);
+            return null;
+        });
     }
 
     abstract protected void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException;
