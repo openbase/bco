@@ -67,7 +67,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         this.deactivationTriggerPool = new TriggerPool();
 
         this.activationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
-            System.out.println("activationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
+            logger.debug("activationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
             synchronized (triggerSync) {
                 try {
                     //triggerInternal(data);
@@ -104,7 +104,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
             }
         };
         this.deactivationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
-            System.out.println("deactivationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
+            logger.debug("deactivationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
             synchronized (triggerSync) {
                 try {
                     // deactivate agent if agent is active and deactivation pool is triggering an active state.
