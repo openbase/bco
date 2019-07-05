@@ -189,7 +189,7 @@ public class MockRegistry {
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     authenticatorLauncher = new AuthenticatorLauncher();
-                    authenticatorLauncher.launch();
+                    authenticatorLauncher.launch().get();
                     authenticatorController = authenticatorLauncher.getLaunchable();
                     authenticatorController.waitForActivation();
                 } catch (CouldNotPerformException ex) {
@@ -206,7 +206,7 @@ public class MockRegistry {
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     unitRegistryLauncher = new UnitRegistryLauncher();
-                    unitRegistryLauncher.launch();
+                    unitRegistryLauncher.launch().get();
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
@@ -215,7 +215,7 @@ public class MockRegistry {
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     classRegistryLauncher = new ClassRegistryLauncher();
-                    classRegistryLauncher.launch();
+                    classRegistryLauncher.launch().get();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
@@ -224,7 +224,7 @@ public class MockRegistry {
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     templateRegistryLauncher = new TemplateRegistryLauncher();
-                    templateRegistryLauncher.launch();
+                    templateRegistryLauncher.launch().get();
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
@@ -233,7 +233,7 @@ public class MockRegistry {
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     activityRegistryLauncher = new ActivityRegistryLauncher();
-                    activityRegistryLauncher.launch();
+                    activityRegistryLauncher.launch().get();
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
