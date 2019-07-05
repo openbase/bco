@@ -59,7 +59,7 @@ public class AppRemoteTest {
 //        registry = MockRegistryHolder.newMockRegistry();
 //
 //        appManagerLauncher = new UserManagerLauncher();
-//        appManagerLauncher.launch();
+//        appManagerLauncher.launch().get();
 
 //        AppConfig appConfig = AppConfig.getDefaultInstance();
 //        appRemote = new UserRemote();

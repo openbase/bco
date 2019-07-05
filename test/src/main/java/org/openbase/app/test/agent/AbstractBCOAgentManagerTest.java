@@ -66,15 +66,15 @@ public abstract class AbstractBCOAgentManagerTest extends AbstractBCOTest {
 
             LOGGER.trace("Start device manager...");
             deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
+            deviceManagerLauncher.launch().get();
 
             LOGGER.trace("Start agent manager...");
             agentManagerLauncher = new AgentManagerLauncher();
-            agentManagerLauncher.launch();
+            agentManagerLauncher.launch().get();
 
             LOGGER.trace("Start location manager...");
             locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
+            locationManagerLauncher.launch().get();
 
             LOGGER.trace("Finally wait for registry...");
             Registries.waitForData();
