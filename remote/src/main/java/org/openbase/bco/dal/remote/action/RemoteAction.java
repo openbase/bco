@@ -556,7 +556,6 @@ public class RemoteAction implements Action {
                 if (getActionDescription().getIntermediary()) {
                     // cancel all impacts of this actions and return the current action description
                     future = FutureProcessor.allOf(impactedRemoteActions, input -> getActionDescription(), remoteAction -> {
-                        remoteAction.waitForSubmission();
                         return remoteAction.cancel();
                     });
                     return future;

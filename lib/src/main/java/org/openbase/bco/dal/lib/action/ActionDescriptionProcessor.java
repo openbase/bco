@@ -720,7 +720,7 @@ public class ActionDescriptionProcessor {
      *
      * @throws VerificationFailedException if verifying the action description failed.
      */
-    public static Message verifyActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final Unit unit, final boolean prepare) throws VerificationFailedException {
+    public static Message verifyActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final Unit<?> unit, final boolean prepare) throws VerificationFailedException {
         try {
             if (actionDescriptionBuilder == null) {
                 throw new NotAvailableException("ActionDescription");
@@ -741,7 +741,7 @@ public class ActionDescriptionProcessor {
                 } catch (CouldNotPerformException ex) {
                     targetUnitLabel = actionDescriptionBuilder.getServiceStateDescription().getUnitId();
                 }
-                throw new InvalidStateException("Referred Unit[" + targetUnitLabel + "] is not compatible with the registered UnitController[" + unit.getLabel("?") + "]!");
+                throw new InvalidStateException("Referred Unit[" + targetUnitLabel + ":" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "] is not compatible with the registered UnitController[" + unit.getLabel("?") + ":" + unit.getId() + "]!");
             }
 
             for (ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {

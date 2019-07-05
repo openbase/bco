@@ -45,7 +45,7 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
             AbstractBCOTest.setUpClass();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
+            deviceManagerLauncher.launch().get();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

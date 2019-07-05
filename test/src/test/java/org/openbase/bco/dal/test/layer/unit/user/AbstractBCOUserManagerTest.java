@@ -47,7 +47,7 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
             AbstractBCOTest.setUpClass();
 
             userManagerLauncher = new UserManagerLauncher();
-            userManagerLauncher.launch();
+            userManagerLauncher.launch().get();
 
             Registries.waitForData();
         } catch (CouldNotPerformException | InterruptedException ex) {
