@@ -42,7 +42,22 @@ public interface UnitConfigCollectionProvider {
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigs() throws CouldNotPerformException {
-        return getUnitConfigs(true);
+        return getUnitConfigsFiltered(true);
+    }
+
+    /**
+     * Method returns all registered unit configs. It allows to filter disabled unit configs.
+     *
+     * @param filterDisabledUnits if true all unit configs which are disabled will be skipped.
+     *
+     * @return the unit configs stored in this registry.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @deprecated since 2.0 and will be removed in 3.0: please use getUnitConfigsFiltered(...) instead.
+     */
+    @Deprecated
+    default List<UnitConfig> getUnitConfigs(final boolean filterDisabledUnits) throws CouldNotPerformException {
+        return getUnitConfigsFiltered(filterDisabledUnits);
     }
 
     /**
@@ -54,7 +69,7 @@ public interface UnitConfigCollectionProvider {
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    List<UnitConfig> getUnitConfigs(final boolean filterDisabledUnits) throws CouldNotPerformException;
+    List<UnitConfig> getUnitConfigsFiltered(final boolean filterDisabledUnits) throws CouldNotPerformException;
 
     /**
      * Method returns true if the unit config with the given id is
@@ -90,14 +105,42 @@ public interface UnitConfigCollectionProvider {
      * @return the requested unit config validated with the given unit type.
      *
      * @throws NotAvailableException is thrown if the request fails.
+     @deprecated since 2.0 and will be removed in 3.0: please use getUnitConfigByIdAndUnitType(...) instead.
      */
     @RPCMethod
+    @Deprecated
     default UnitConfig getUnitConfigById(final String unitConfigId, final UnitType unitType) throws NotAvailableException {
         final UnitConfig unitConfig = getUnitConfigById(unitConfigId);
 
         try {
             // validate type
-            if (unitConfig.getUnitType() != unitType) {
+            if (unitType != UnitType.UNKNOWN && unitConfig.getUnitType() != unitType) {
+                throw new VerificationFailedException("Referred Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] is not compatible to given type!");
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitConfigId", unitConfigId, ex);
+        }
+
+        return unitConfig;
+    }
+
+    /**
+     * Method returns the unit config which is registered with the given
+     * unit id. Additionally the type will be verified.
+     *
+     * @param unitConfigId the identifier of the unit.
+     * @param unitType     the type to verify.
+     *
+     * @return the requested unit config validated with the given unit type.
+     *
+     * @throws NotAvailableException is thrown if the request fails.
+     */
+    default UnitConfig getUnitConfigByIdAndUnitType(final String unitConfigId, final UnitType unitType) throws NotAvailableException {
+        final UnitConfig unitConfig = getUnitConfigById(unitConfigId);
+
+        try {
+            // validate type
+            if (unitType != UnitType.UNKNOWN && unitConfig.getUnitType() != unitType) {
                 throw new VerificationFailedException("Referred Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] is not compatible to given type!");
             }
         } catch (CouldNotPerformException ex) {
@@ -118,5 +161,5 @@ public interface UnitConfigCollectionProvider {
      *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
-    List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
+    List<UnitConfig> getUnitConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
 }

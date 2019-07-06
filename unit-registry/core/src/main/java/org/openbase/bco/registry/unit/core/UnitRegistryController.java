@@ -598,11 +598,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(final String unitAlias, final UnitType unitType) throws NotAvailableException {
+    public UnitConfig getUnitConfigByAliasAndUnitType(final String unitAlias, final UnitType unitType) throws NotAvailableException {
         try {
             synchronized (aliasIdMapLock) {
                 if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
-                    return getUnitConfigById(aliasIdMap.get(unitAlias.toLowerCase()), unitType);
+                    return getUnitConfigByIdAndUnitType(aliasIdMap.get(unitAlias.toLowerCase()), unitType);
                 }
             }
             throw new NotAvailableException("Alias", unitAlias);
@@ -677,7 +677,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
-    public List<UnitConfig> getUnitConfigs(boolean filterDisabledUnits) throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfig> getUnitConfigsFiltered(boolean filterDisabledUnits) throws CouldNotPerformException, NotAvailableException {
         validateData();
         final List<UnitConfig> unitConfigs = new ArrayList<>();
         for (final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry : unitConfigRegistryList) {
@@ -765,7 +765,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException
      */
     @Override
-    public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
+    public List<ServiceConfig> getServiceConfigsByServiceType(final ServiceType serviceType) throws CouldNotPerformException {
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
@@ -789,7 +789,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType unitType, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        List<UnitConfig> unitConfigs = getUnitConfigs(unitType);
+        List<UnitConfig> unitConfigs = getUnitConfigsByUnitType(unitType);
         boolean foundServiceType;
 
         for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
@@ -974,7 +974,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
+    public Shape getUnitShapeByUnitConfig(final UnitConfig unitConfig) throws NotAvailableException {
         return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
     }
 

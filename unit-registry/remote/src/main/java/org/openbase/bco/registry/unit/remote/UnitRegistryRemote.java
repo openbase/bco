@@ -313,11 +313,11 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigByAlias(String unitAlias, final UnitType unitType) throws NotAvailableException {
+    public UnitConfig getUnitConfigByAliasAndUnitType(String unitAlias, final UnitType unitType) throws NotAvailableException {
         try {
             synchronized (aliasIdMapLock) {
                 if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
-                    return getUnitConfigById(aliasIdMap.get(unitAlias.toLowerCase()), unitType);
+                    return getUnitConfigByIdAndUnitType(aliasIdMap.get(unitAlias.toLowerCase()), unitType);
                 }
             }
             throw new NotAvailableException("Alias", unitAlias);
@@ -377,7 +377,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
-    public List<UnitConfig> getUnitConfigs(boolean filterDisabledUnits) throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfig> getUnitConfigsFiltered(boolean filterDisabledUnits) throws CouldNotPerformException, NotAvailableException {
         validateData();
         final List<UnitConfig> unitConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : unitConfigRemoteRegistry.getMessages()) {

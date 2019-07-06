@@ -93,7 +93,7 @@ public class BCOUnitQueryPrinter {
 
             // print all
             if (args.length == 0) {
-                printUnits(Registries.getUnitRegistry().getUnitConfigs(false));
+                printUnits(Registries.getUnitRegistry().getUnitConfigsFiltered(false));
                 System.exit(0);
             }
 
@@ -101,7 +101,7 @@ public class BCOUnitQueryPrinter {
             unitConfigs.clear();
             for (final UnitType unitType : UnitType.values()) {
                 if (unitType.name().toLowerCase().equals(query.toLowerCase())) {
-                    unitConfigs.addAll(Registries.getUnitRegistry().getUnitConfigs(unitType));
+                    unitConfigs.addAll(Registries.getUnitRegistry().getUnitConfigsByUnitType(unitType));
                     break;
                 }
             }
@@ -115,7 +115,7 @@ public class BCOUnitQueryPrinter {
 
             // print by location
             unitConfigs.clear();
-            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(false)) {
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsFiltered(false)) {
                 if (getLocationLabel(unitConfig).toLowerCase().contains(query.toLowerCase())) {
                     unitConfigs.add(unitConfig);
                 }
@@ -131,7 +131,7 @@ public class BCOUnitQueryPrinter {
             // print by containing label
             unitConfigs.clear();
             unitLoop:
-            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(false)) {
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsFiltered(false)) {
                 for (Label.MapFieldEntry mapFieldEntry : unitConfig.getLabel().getEntryList()) {
                     for (String label : mapFieldEntry.getValueList()) {
                         if (label.toLowerCase().contains(query.toLowerCase())) {
@@ -151,7 +151,7 @@ public class BCOUnitQueryPrinter {
 
             // print by scope
             unitConfigs.clear();
-            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(false)) {
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsFiltered(false)) {
                 if (ScopeProcessor.generateStringRep(unitConfig.getScope()).contains(query.toLowerCase())) {
                     unitConfigs.add(unitConfig);
                 }
@@ -166,7 +166,7 @@ public class BCOUnitQueryPrinter {
 
             // print by id
             unitConfigs.clear();
-            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(false)) {
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsFiltered(false)) {
                 if (unitConfig.getId().contains(query.toLowerCase())) {
                     unitConfigs.add(unitConfig);
                 }
@@ -198,7 +198,7 @@ public class BCOUnitQueryPrinter {
             // print by meta config
             unitConfigs.clear();
             unitLoop:
-            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(false)) {
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsFiltered(false)) {
                 for (Entry entry : unitConfig.getMetaConfig().getEntryList()) {
                     if (entry.getKey().toLowerCase().contains(query.toLowerCase()) || entry.getValue().toLowerCase().contains(query.toLowerCase())) {
                         unitConfigs.add(unitConfig);
@@ -217,7 +217,7 @@ public class BCOUnitQueryPrinter {
             // print by description
             unitConfigs.clear();
             unitLoop:
-            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(false)) {
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsFiltered(false)) {
                 for (MapFieldEntry mapFieldEntry : unitConfig.getDescription().getEntryList()) {
                     if (mapFieldEntry.getValue().toLowerCase().contains(query.toLowerCase())) {
                         unitConfigs.add(unitConfig);
