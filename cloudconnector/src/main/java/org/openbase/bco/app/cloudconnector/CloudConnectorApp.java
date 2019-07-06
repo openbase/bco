@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloudconnector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -143,10 +143,10 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      */
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        //TODO activate check again if service server key is static
-//        if (!tokenStore.hasCloudConnectorToken()) {
-        createAuthenticationToken();
-//        }
+
+        if (!tokenStore.hasCloudConnectorToken()) {
+            createAuthenticationToken();
+        }
 
         // start socket connection for all users which are already registered
         for (final Entry<String, String> entry : tokenStore.getCloudEntries().entrySet()) {
