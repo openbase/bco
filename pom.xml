@@ -182,8 +182,9 @@
 
     <modules>
         <module>cloudconnector</module>
-        <module>influxdbconnector</module>
         <module>manager</module>
+        <module>influxdbconnector</module>
+        <module>openapiserver</module>
         <module>test</module>
         <module>preset</module>
         <module>util</module>
