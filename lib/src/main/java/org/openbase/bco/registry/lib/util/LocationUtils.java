@@ -21,11 +21,8 @@ package org.openbase.bco.registry.lib.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -127,7 +124,10 @@ public class LocationUtils {
             rootLocationConfigList.put(currentLocationConfig.getId(), currentLocationConfig);
 
             if (rootLocationConfigList.size() == 1) {
-                return rootLocationConfigList.values().stream().findFirst().get();
+                for (UnitConfig unitConfig : rootLocationConfigList.values()) {
+                    return Optional.of(unitConfig).get();
+                }
+                return Optional.<UnitConfig>empty().get();
             }
 
             for (UnitConfig locationConfig : new ArrayList<>(rootLocationConfigList.values())) {
@@ -144,7 +144,10 @@ public class LocationUtils {
             if (rootLocationConfigList.isEmpty()) {
                 throw new NotAvailableException("root candidate");
             } else if (rootLocationConfigList.size() == 1) {
-                return rootLocationConfigList.values().stream().findFirst().get();
+                for (UnitConfig unitConfig : rootLocationConfigList.values()) {
+                    return Optional.of(unitConfig).get();
+                }
+                return Optional.<UnitConfig>empty().get();
             }
 
             throw new InvalidStateException("To many potential root locations detected!");
@@ -219,7 +222,12 @@ public class LocationUtils {
 
         // if the parent type is a zone but no childs are defined the location could be a tile or a zone which leaves the type undefined
         String childTypes = "";
-        childTypes = "[ " + childLocationTypes.stream().map((locationType) -> locationType.toString() + " ").reduce(childTypes, (s, str) -> s.concat(str)) + "]";
+        String acc = childTypes;
+        for (LocationType locationType : childLocationTypes) {
+            String s = locationType.toString() + " ";
+            acc = acc.concat(s);
+        }
+        childTypes = "[ " + acc + "]";
         throw new CouldNotPerformException("Could not detect locationType from parentType[" + parentLocationType.name() + "] and childTypes" + childTypes);
     }
 }

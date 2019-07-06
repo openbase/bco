@@ -35,6 +35,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.pattern.ChangeListener;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
@@ -76,6 +77,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider;
     private Future notifyChangeFuture;
     private ChangeListener transactionListener;
+    private final Observer changeObserver;
 
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
@@ -113,7 +115,8 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
         this.randomJitter = new Random();
         this.lockedRegistries = new ArrayList<>();
         this.lock = new ReentrantReadWriteLock();
-        this.transactionListener = this::updateTransactionId;
+        this.transactionListener = () -> updateTransactionId();
+        this.changeObserver = (source, data) -> notifyChange();
     }
 
     @Override
@@ -203,9 +206,9 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     @Override
     public void shutdown() {
         super.shutdown();
-        registryList.stream().forEach((registry) -> {
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             registry.shutdown();
-        });
+        }
     }
 
     @Override
@@ -328,9 +331,9 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
         assert lock.isWriteLockedByCurrentThread();
 
         // unlock all internal registries
-        lockedRegistries.forEach((registry) -> {
+        for (Registry registry : lockedRegistries) {
             registry.unlockRegistry();
-        });
+        }
         // clear list
         lockedRegistries.clear();
         // unlock this controller
@@ -338,18 +341,16 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     }
 
     private void removeDependencies() throws CouldNotPerformException {
-        registryList.stream().forEach((registry) -> {
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             registry.removeAllDependencies();
-        });
+        }
     }
 
     private void registerObserver() throws CouldNotPerformException {
-        registryList.stream().forEach((registry) -> {
-            registry.addObserver((source, data) -> {
-                notifyChange();
-            });
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
+            registry.addObserver(changeObserver);
             registry.addTransactionListener(transactionListener);
-        });
+        }
     }
 
     private void waitForRemoteDependencies() throws CouldNotPerformException, InterruptedException {
@@ -472,7 +473,12 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
      */
     @Override
     public Boolean isReady() {
-        return registryList.stream().noneMatch((registry) -> (!registry.isReady()));
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
+            if(!registry.isReady()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

@@ -355,10 +355,11 @@ public class MockRegistry {
 
     public static Iterable<ServiceConfigType.ServiceConfig> generateServiceConfig(final UnitTemplate template) {
         final List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
-        template.getServiceDescriptionList().stream().forEach((serviceDescription) -> {
+
+        for (ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
             BindingConfig bindingServiceConfig = BindingConfig.newBuilder().setBindingId(BINDING_OPENHAB).build();
             serviceConfigList.add(ServiceConfig.newBuilder().setServiceDescription(serviceDescription).setBindingConfig(bindingServiceConfig).build());
-        });
+        }
         return serviceConfigList;
     }
 

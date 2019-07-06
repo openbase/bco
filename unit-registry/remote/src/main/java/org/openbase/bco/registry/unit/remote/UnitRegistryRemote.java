@@ -358,7 +358,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::removeUnitConfigAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), authenticatedValue -> removeUnitConfigAuthenticated(authenticatedValue));
     }
 
     @Override
@@ -785,7 +785,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                 authorizationToken,
                 String.class,
                 SessionManager.getInstance(),
-                this::requestAuthorizationTokenAuthenticated
+                authenticatedValue -> requestAuthorizationTokenAuthenticated(authenticatedValue)
         );
     }
 
@@ -807,7 +807,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                 authenticationToken,
                 String.class,
                 SessionManager.getInstance(),
-                this::requestAuthenticationTokenAuthenticated
+                authenticatedValue -> requestAuthenticationTokenAuthenticated(authenticatedValue)
         );
     }
 

@@ -69,7 +69,6 @@ import javax.vecmath.Point3d;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable, RegistryService {
 
@@ -249,14 +248,22 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
-        List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
-        getUnitConfigs().parallelStream().filter((unitConfig) -> (LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel))).forEach(unitConfigs::add);
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigs()) {
+            if(LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel)) {
+                unitConfigs.add(unitConfig);
+            }
+        }
         return unitConfigs;
     }
 
     default List<UnitConfig> getUnitConfigsByLabelAndUnitType(final String unitConfigLabel, final UnitType unitType) throws CouldNotPerformException {
-        List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
-        getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getUnitType().equals(unitType) && LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel))).forEach(unitConfigs::add);
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigs()) {
+            if(unitConfig.getUnitType().equals(unitType) && LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel)) {
+                unitConfigs.add(unitConfig);
+            }
+        }
         return unitConfigs;
     }
 
@@ -882,10 +889,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getLocationUnitConfigsByType(final LocationType locationType) throws CouldNotPerformException {
-        return getUnitConfigs(UnitType.LOCATION)
-                .stream()
-                .filter(locationUnitConfig -> locationUnitConfig.getLocationConfig().getLocationType() == locationType)
-                .collect(Collectors.toList());
+        List<UnitConfig> list = new ArrayList<>();
+        for (UnitConfig locationUnitConfig : getUnitConfigs(UnitType.LOCATION)) {
+            if (locationUnitConfig.getLocationConfig().getLocationType() == locationType) {
+                list.add(locationUnitConfig);
+            }
+        }
+        return list;
     }
 
     /**
@@ -931,9 +941,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                 List<Vec3DDoubleType.Vec3DDouble> floorList = locationUnitConfig.getPlacementConfig().getShape().getFloorList();
 
                 // Convert the shape into a PolygonsSet
-                List<Vector2D> vertices = floorList.stream()
-                        .map(vec3DDouble -> new Vector2D(vec3DDouble.getX(), vec3DDouble.getY()))
-                        .collect(Collectors.toList());
+                List<Vector2D> vertices = new ArrayList<>();
+                for (Vec3DDouble vec3DDouble : floorList) {
+                    Vector2D vector2D = new Vector2D(vec3DDouble.getX(), vec3DDouble.getY());
+                    vertices.add(vector2D);
+                }
                 PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
 
                 // Transform the given coordinate
@@ -1197,8 +1209,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId, final boolean recursive) throws CouldNotPerformException {
-        return getUnitConfigsByLocation(locationId, recursive).stream().filter(unitConfig ->
-                LabelProcessor.contains(unitConfig.getLabel(), unitLabel)).collect(Collectors.toList());
+        List<UnitConfig> list = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigsByLocation(locationId, recursive)) {
+            if (LabelProcessor.contains(unitConfig.getLabel(), unitLabel)) {
+                list.add(unitConfig);
+            }
+        }
+        return list;
     }
 
     /**

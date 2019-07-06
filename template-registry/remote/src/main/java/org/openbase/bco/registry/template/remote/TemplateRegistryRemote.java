@@ -256,7 +256,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      */
     @Override
     public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(serviceTemplate, this::updateServiceTemplateVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(serviceTemplate, transactionValue -> updateServiceTemplateVerified(transactionValue));
     }
 
     @Override

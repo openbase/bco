@@ -107,7 +107,7 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      */
     @Override
     public Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig) {
-        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this::updateActivityConfigVerified);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, transactionValue -> updateActivityConfigVerified(transactionValue));
     }
 
     @Override
