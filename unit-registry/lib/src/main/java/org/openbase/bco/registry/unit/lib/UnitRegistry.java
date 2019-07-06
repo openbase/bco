@@ -1117,7 +1117,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         List<UnitConfig> result = new ArrayList<>();
 
         try {
-            for (UnitConfig locationUnitConfig : getUnitConfigs(UnitType.LOCATION)) {
+            for (UnitConfig locationUnitConfig : getUnitConfigsByUnitType(UnitType.LOCATION)) {
                 // Check if the unit meets the requirements of the filter
                 if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(locationUnitConfig.getLocationConfig().getLocationType())) {
                     continue;
