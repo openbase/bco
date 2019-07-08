@@ -1720,7 +1720,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(serviceType);
 
             for (Descriptors.FieldDescriptor fieldDescriptor : serviceStateBuilder.getDescriptorForType().getFields()) {
-
+                //todo some refactoring
                 if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
                     if (query == null) {
                         query = buildGetAggregatedQuery(databaseQuery, true);

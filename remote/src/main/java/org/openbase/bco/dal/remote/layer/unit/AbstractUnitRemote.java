@@ -688,7 +688,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     }
 
     public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
-        return RPCHelper.callRemoteServerMethod(databaseQuery, this, AggregatedServiceStateType.AggregatedServiceState.class);
+        return RPCHelper.callRemoteMethod(databaseQuery, this, AggregatedServiceStateType.AggregatedServiceState.class);
 
     }
 
