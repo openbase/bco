@@ -75,10 +75,7 @@ import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.SyncObject;
-import org.openbase.jul.schedule.Timeout;
+import org.openbase.jul.schedule.*;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
@@ -91,6 +88,7 @@ import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import org.openbase.type.domotic.database.DatabaseQueryType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -99,6 +97,8 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
+import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.state.PowerStateType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
@@ -113,7 +113,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
 
@@ -1611,12 +1610,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 InfluxDBClient influxDBClient = InfluxDBClientFactory
                         .create(INFLUXDB_URL_DEFAULT + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", TOKEN);) {
 
-            if (influxDBClient.health().getStatus().getValue() != "pass") {
+            if (influxDBClient.health().getStatus().getValue().equals("pass")) {
                 throw new CouldNotPerformException("Could not connect to database server at " + INFLUXDB_URL_DEFAULT + "!");
 
             }
             QueryApi queryApi = influxDBClient.getQueryApi();
-
 
             List<FluxTable> tables = queryApi.query(query, INFLUXDB_ORG_ID_DEFAULT);
             return tables;
@@ -1629,18 +1627,19 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
 
-    private String buildGetAverageQuery(final Message databaseQuery, boolean isEnum) {
+    private String buildGetAggregatedQuery(final Message databaseQuery, boolean isEnum) {
         String measurement = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("measurement")).toString();
         String timeStart = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStart")).toString();
         String timeStop = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStop")).toString();
         FieldDescriptor filter = databaseQuery.getDescriptorForType().findFieldByName("filter");
+
         String query = "from(bucket: \"" + INFLUXDB_BUCKET_DEFAULT + "\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == " + measurement + ")";
 
         for (int i = 0; i < databaseQuery.getRepeatedFieldCount(filter); i++) {
-            final Object repeatedFieldEntry = databaseQuery.getRepeatedField(filter, i);
-            query = addFilterToQuery(query, repeatedFieldEntry.toString());
+            final Message repeatedFieldEntry = (Message) databaseQuery.getRepeatedField(filter, i);
+            query = addFilterToQuery(query, repeatedFieldEntry);
 
         }
         if (isEnum) {
@@ -1666,71 +1665,113 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     }
 
-    private String addFilterToQuery(String query, String filter) {
-        filter = " |> filter(fn: (r) => r._field == \"" + filter + "\")";
-        query += filter;
+    private String addFilterToQuery(String query, Message filter) {
+        String field = filter.getField(filter.getDescriptorForType().findFieldByName("filter")).toString();
+        String value = filter.getField(filter.getDescriptorForType().findFieldByName("value")).toString();
+
+        String filterString = " |> filter(fn: (r) => r." + field + " == \"" + value + "\")";
+
+        query += filterString;
         return query;
     }
 
-    private double calculateEnumStatePercentage(List<FluxTable> tables, String field) {
-        int sum = 0;
-        double fieldValue = 0;
+    //todo to own type
+    private Map<Integer, Double> calculateEnumStatePercentage(List<FluxTable> tables) {
+        Map<Integer, Double> percentages = new HashMap<>();
+        ArrayList<PowerStateType.PowerState.AggregatedValueCoverageMapFieldEntry> aggregatedValueCoverageList = new ArrayList<>();
+        long sum = 0;
 
 
         for (FluxTable fluxTable : tables) {
             List<FluxRecord> records = fluxTable.getRecords();
             for (FluxRecord fluxRecord : records) {
-                if (fluxRecord.getField().equals(field)) {
-                    fieldValue = (double) fluxRecord.getValueByKey("_value");
-                }
-                sum += (int) fluxRecord.getValueByKey("_value");
+                percentages.put((int) fluxRecord.getValueByKey("_value"), (double) fluxRecord.getValueByKey("index"));
+                sum += (long) fluxRecord.getValueByKey("_value");
             }
         }
+        for (Map.Entry<Integer, Double> entry : percentages.entrySet()) {
+            entry.setValue(entry.getValue() / sum);
 
-        fieldValue = fieldValue / sum;
+        }
 
-        return fieldValue;
+        return percentages;
     }
 
-    private double filterFluxTablesForValue(List<FluxTable> tables, String field) {
 
+    private Map<String, Double> aggregatedFluxTablesToMap(List<FluxTable> tables) {
+        Map<String, Double> aggregatedValues = new HashMap<>();
         for (FluxTable fluxTable : tables) {
             List<FluxRecord> records = fluxTable.getRecords();
             for (FluxRecord fluxRecord : records) {
-                if (fluxRecord.getField().equals(field)) {
-                    return (double) fluxRecord.getValueByKey("_value");
+                aggregatedValues.put(fluxRecord.getField(), (double) fluxRecord.getValueByKey("_value"))
+            }
+        }
+        return aggregatedValues;
+
+    }
+
+
+    private static boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
+
+        try {
+            ServiceType serviceType = databaseQuery.getServiceType();
+            String query = null;
+            Map<String, Double> aggregatedValues = null;
+            Map<Integer, Double> aggregatedEnumValues = null;
+            AggregatedServiceStateType.AggregatedServiceState.Builder builder = AggregatedServiceStateType.AggregatedServiceState.newBuilder();
+            builder.setServiceType(serviceType);
+            builder.setQuery(databaseQuery);
+            Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(serviceType);
+
+            for (Entry<FieldDescriptor, Object> fieldDescriptorObjectEntry : serviceStateBuilder.getAllFields().entrySet()) {
+
+                if (fieldDescriptorObjectEntry.getKey().getJavaType() == FieldDescriptor.JavaType.ENUM) {
+                    if (query == null) {
+                        query = buildGetAggregatedQuery(databaseQuery, true);
+                        List<FluxTable> fluxTableList = sendQuery(query);
+                        aggregatedEnumValues = calculateEnumStatePercentage(fluxTableList);
+                        Descriptors.FieldDescriptor aggregatedValueCoverageField = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "aggregated_value_coverage");
+
+                        for (Entry<Integer, Double> entry : aggregatedEnumValues.entrySet()) {
+                            aggregatedValueCoverageField.getName()
+                            serviceStateBuilder.setRepeatedField(aggregatedValueCoverageField, entry.getKey(), entry.getValue());
+                        }
+                    }
+
+                } else {
+                    if (isNumeric(fieldDescriptorObjectEntry.getValue().toString())) {
+                        if (query == null) {
+                            query = buildGetAggregatedQuery(databaseQuery, false);
+                            List<FluxTable> fluxTableList = sendQuery(query);
+                            aggregatedValues = aggregatedFluxTablesToMap(fluxTableList);
+                        }
+                        if (aggregatedValues.containsKey(fieldDescriptorObjectEntry.getKey().getName())) {
+                            serviceStateBuilder.setField(fieldDescriptorObjectEntry.getKey(), aggregatedValues.get(fieldDescriptorObjectEntry.getKey().getName()));
+                        }
+
+                    }
+
                 }
+
+
             }
+            Services.invokeOperationServiceMethod(serviceType, builder, serviceStateBuilder.build());
+
+            return FutureProcessor.completedFuture(builder.build());
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state ,ex"))))
+            ;
         }
-        return 0;
     }
 
-    public Message getAverage(Message databaseQuery) throws CouldNotPerformException {
 
-        Message serviceType = (Message) databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("service_type"));
-        ServiceType averageServiceType = (ServiceType) serviceType.getField(databaseQuery.getDescriptorForType().findFieldByName("average"));
-        final Message.Builder builder = Services.generateServiceStateBuilder(averageServiceType);
-        //todo : maybe better enum check
-        boolean isEnum = databaseQuery.getDescriptorForType().findFieldByName("value").getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM;
-
-        String query = buildGetAverageQuery(databaseQuery, isEnum);
-        List<FluxTable> tables = sendQuery(query);
-        for (Entry<FieldDescriptor, Object> fieldDescriptorObjectEntry : builder.getAllFields().entrySet()) {
-            double averageValue;
-
-            final String serviceFieldName = fieldDescriptorObjectEntry.getKey().getName();
-            if (serviceFieldName.equals("query")) {
-                builder.setField(fieldDescriptorObjectEntry.getKey(), databaseQuery);
-
-            } else if (isEnum) {
-                averageValue = calculateEnumStatePercentage(tables, serviceFieldName);
-                builder.setField(fieldDescriptorObjectEntry.getKey(), averageValue);
-
-            } else {
-                averageValue = filterFluxTablesForValue(tables, serviceFieldName);
-                builder.setField(fieldDescriptorObjectEntry.getKey(), averageValue);
-            }
-        }
-        return builder.build();
-    }
 }
