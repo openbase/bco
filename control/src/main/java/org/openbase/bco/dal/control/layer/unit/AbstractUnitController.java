@@ -77,6 +77,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.*;
 import org.openbase.type.communication.ScopeType;
+import org.openbase.type.configuration.EntryType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
@@ -92,6 +93,7 @@ import org.openbase.type.domotic.database.DatabaseQueryType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -1610,7 +1612,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 InfluxDBClient influxDBClient = InfluxDBClientFactory
                         .create(INFLUXDB_URL_DEFAULT + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", TOKEN);) {
 
-            if (influxDBClient.health().getStatus().getValue().equals("pass")) {
+            if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
                 throw new CouldNotPerformException("Could not connect to database server at " + INFLUXDB_URL_DEFAULT + "!");
 
             }
@@ -1627,21 +1629,21 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
 
-    private String buildGetAggregatedQuery(final Message databaseQuery, boolean isEnum) {
-        String measurement = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("measurement")).toString();
-        String timeStart = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStart")).toString();
-        String timeStop = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("timeStop")).toString();
-        FieldDescriptor filter = databaseQuery.getDescriptorForType().findFieldByName("filter");
+    private String buildGetAggregatedQuery(final DatabaseQueryType.DatabaseQuery databaseQuery, boolean isEnum) {
+        String measurement = databaseQuery.getMeasurement();
+        String timeStart = String.valueOf(databaseQuery.getTimeRangeStart().getTime());
+        String timeStop = String.valueOf(databaseQuery.getTimeRangeStop().getTime());
+        List<EntryType.Entry> filterList = databaseQuery.getFilterList();
 
         String query = "from(bucket: \"" + INFLUXDB_BUCKET_DEFAULT + "\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
-                " |> filter(fn: (r) => r._measurement == " + measurement + ")";
+                " |> filter(fn: (r) => r._measurement == \"" + measurement + "\")";
 
-        for (int i = 0; i < databaseQuery.getRepeatedFieldCount(filter); i++) {
-            final Message repeatedFieldEntry = (Message) databaseQuery.getRepeatedField(filter, i);
-            query = addFilterToQuery(query, repeatedFieldEntry);
+        for (EntryType.Entry entry : filterList) {
+            query = addFilterToQuery(query, entry);
 
         }
+
         if (isEnum) {
 
             query += " |> group(columns: [\"_value\"])" +
@@ -1649,18 +1651,17 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     "|> cumulativeSum(columns: [\"index\"])" +
                     "|> last()";
 
-
             return query;
         } else {
+            logger.warn("get query");
 
-            String window = databaseQuery.getField(databaseQuery.getDescriptorForType().findFieldByName("window")).toString();
+            String window = databaseQuery.getAggregatedWindow();
             // add filters
-            query += "|> group(columns: [\"_field\"], mode:\"by\")\" +\n " +
+            query += "|> group(columns: [\"_field\"], mode:\"by\")" +
                     " |> aggregateWindow(every:" + window + " , fn: mean)" +
                     " |> mean(column: \"_value\")";
 
             return query;
-
         }
 
     }
@@ -1675,23 +1676,19 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return query;
     }
 
-    //todo to own type
     private Map<Integer, Double> calculateEnumStatePercentage(List<FluxTable> tables) {
         Map<Integer, Double> percentages = new HashMap<>();
-        ArrayList<PowerStateType.PowerState.AggregatedValueCoverageMapFieldEntry> aggregatedValueCoverageList = new ArrayList<>();
-        long sum = 0;
-
+        double sum = 0;
 
         for (FluxTable fluxTable : tables) {
             List<FluxRecord> records = fluxTable.getRecords();
             for (FluxRecord fluxRecord : records) {
-                percentages.put((int) fluxRecord.getValueByKey("_value"), (double) fluxRecord.getValueByKey("index"));
-                sum += (long) fluxRecord.getValueByKey("_value");
+                percentages.put((int) Double.parseDouble(fluxRecord.getValueByKey("_value").toString()), Double.parseDouble(fluxRecord.getValueByKey("index").toString()));
+                sum += Double.parseDouble(fluxRecord.getValueByKey("index").toString());
             }
         }
         for (Map.Entry<Integer, Double> entry : percentages.entrySet()) {
             entry.setValue(entry.getValue() / sum);
-
         }
 
         return percentages;
@@ -1703,27 +1700,17 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         for (FluxTable fluxTable : tables) {
             List<FluxRecord> records = fluxTable.getRecords();
             for (FluxRecord fluxRecord : records) {
-                aggregatedValues.put(fluxRecord.getField(), (double) fluxRecord.getValueByKey("_value"))
+                aggregatedValues.put(fluxRecord.getField(), (double) fluxRecord.getValueByKey("_value"));
             }
         }
         return aggregatedValues;
 
     }
 
-
-    private static boolean isNumeric(String str) {
-        try {
-            Double.parseDouble(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
     public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
 
         try {
-            ServiceType serviceType = databaseQuery.getServiceType();
+            ServiceTemplateType.ServiceTemplate.ServiceType serviceType = databaseQuery.getServiceType();
             String query = null;
             Map<String, Double> aggregatedValues = null;
             Map<Integer, Double> aggregatedEnumValues = null;
@@ -1732,46 +1719,43 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             builder.setQuery(databaseQuery);
             Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(serviceType);
 
-            for (Entry<FieldDescriptor, Object> fieldDescriptorObjectEntry : serviceStateBuilder.getAllFields().entrySet()) {
+            for (Descriptors.FieldDescriptor fieldDescriptor : serviceStateBuilder.getDescriptorForType().getFields()) {
 
-                if (fieldDescriptorObjectEntry.getKey().getJavaType() == FieldDescriptor.JavaType.ENUM) {
+                if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
                     if (query == null) {
                         query = buildGetAggregatedQuery(databaseQuery, true);
                         List<FluxTable> fluxTableList = sendQuery(query);
                         aggregatedEnumValues = calculateEnumStatePercentage(fluxTableList);
                         Descriptors.FieldDescriptor aggregatedValueCoverageField = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "aggregated_value_coverage");
-
-                        for (Entry<Integer, Double> entry : aggregatedEnumValues.entrySet()) {
-                            aggregatedValueCoverageField.getName()
-                            serviceStateBuilder.setRepeatedField(aggregatedValueCoverageField, entry.getKey(), entry.getValue());
+                        for (Map.Entry<Integer, Double> entry : aggregatedEnumValues.entrySet()) {
+                            Message.Builder aggregatedValueBuilder = serviceStateBuilder.newBuilderForField(aggregatedValueCoverageField);
+                            Descriptors.FieldDescriptor key = aggregatedValueBuilder.getDescriptorForType().findFieldByName("key");
+                            Descriptors.FieldDescriptor coverage = aggregatedValueBuilder.getDescriptorForType().findFieldByName("coverage");
+                            aggregatedValueBuilder.setField(coverage, entry.getValue());
+                            aggregatedValueBuilder.setField(key, key.getEnumType().getValues().get(entry.getKey()));
+                            serviceStateBuilder.addRepeatedField(aggregatedValueCoverageField, aggregatedValueBuilder.build());
                         }
                     }
+                    break;
 
-                } else {
-                    if (isNumeric(fieldDescriptorObjectEntry.getValue().toString())) {
-                        if (query == null) {
-                            query = buildGetAggregatedQuery(databaseQuery, false);
-                            List<FluxTable> fluxTableList = sendQuery(query);
-                            aggregatedValues = aggregatedFluxTablesToMap(fluxTableList);
-                        }
-                        if (aggregatedValues.containsKey(fieldDescriptorObjectEntry.getKey().getName())) {
-                            serviceStateBuilder.setField(fieldDescriptorObjectEntry.getKey(), aggregatedValues.get(fieldDescriptorObjectEntry.getKey().getName()));
-                        }
-
+                } else if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.DOUBLE) {
+                    if (query == null) {
+                        query = buildGetAggregatedQuery(databaseQuery, false);
+                        List<FluxTable> fluxTableList = sendQuery(query);
+                        aggregatedValues = aggregatedFluxTablesToMap(fluxTableList);
                     }
-
+                    if (aggregatedValues.containsKey(fieldDescriptor.getName())) {
+                        serviceStateBuilder.setField(fieldDescriptor, aggregatedValues.get(fieldDescriptor.getName()));
+                    }
                 }
-
-
             }
             Services.invokeOperationServiceMethod(serviceType, builder, serviceStateBuilder.build());
+            AggregatedServiceStateType.AggregatedServiceState newAggregatedServiceState = builder.build();
 
-            return FutureProcessor.completedFuture(builder.build());
+            return FutureProcessor.completedFuture(newAggregatedServiceState);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state ,ex"))))
-            ;
+            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state ,ex")));
         }
     }
-
 
 }
