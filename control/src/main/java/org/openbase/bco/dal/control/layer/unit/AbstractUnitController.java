@@ -1625,11 +1625,18 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
+    /**
+     * Creates a connection to the influxdb and sends a query.
+     *
+     * @param query Query to send
+     * @return List of FluxTables
+     * @throws CouldNotPerformException
+     */
     private List<FluxTable> sendQuery(final String query) throws CouldNotPerformException {
 
         try (
                 InfluxDBClient influxDBClient = InfluxDBClientFactory
-                        .create(INFLUXDB_URL + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", TOKEN);) {
+                        .create(INFLUXDB_URL + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", TOKEN)) {
 
             if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
                 throw new CouldNotPerformException("Could not connect to database server at " + INFLUXDB_URL + "!");
@@ -1646,6 +1653,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
+    /**
+     * Builds a  flux query string for aggregating values.
+     *
+     * @param databaseQuery The databaseQuery Object which is used to build the Flux query.
+     * @param isEnum        If the aggregated fields consists of enum values.
+     * @return
+     */
     private String buildGetAggregatedQuery(final DatabaseQueryType.DatabaseQuery databaseQuery, boolean isEnum) {
         String measurement = databaseQuery.getMeasurement();
         String timeStart = String.valueOf(databaseQuery.getTimeRangeStart().getTime());
@@ -1670,7 +1684,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             return query;
         } else {
-            logger.warn("get query");
 
             String window = databaseQuery.getAggregatedWindow();
             // add filters
@@ -1682,9 +1695,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
-    private String addFilterToQuery(String query, Message filter) {
-        String field = filter.getField(filter.getDescriptorForType().findFieldByName("filter")).toString();
-        String value = filter.getField(filter.getDescriptorForType().findFieldByName("value")).toString();
+    /**
+     * Add a filter to a flux query string.
+     *
+     * @param query  The flux query string.
+     * @param filter Entry object with key and value
+     * @return
+     */
+    private String addFilterToQuery(String query, EntryType.Entry filter) {
+        String field = filter.getKey();
+        String value = filter.getValue();
 
         String filterString = " |> filter(fn: (r) => r." + field + " == \"" + value + "\")";
 
@@ -1692,6 +1712,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return query;
     }
 
+    /**
+     * Calculates the percentages of the different (enum) values in a List of FluxTables
+     *
+     * @param tables List of FluxTables with the occurrence ( as index key) of the enum values (as _value)
+     * @return Map with the Enum Value Index as Key and the percentage (betweeen 0-1) as value.
+     */
     private Map<Integer, Double> calculateEnumStatePercentage(List<FluxTable> tables) {
         Map<Integer, Double> percentages = new HashMap<>();
         double sum = 0;
@@ -1710,7 +1736,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return percentages;
     }
 
-
+    /**
+     * Build a Map of String,Double pairs out of FluxTables for easy filtering.
+     *
+     * @param tables List of FluxTables.
+     * @return Map<String, Double> with the fields as key and the values as value.
+     */
     private Map<String, Double> aggregatedFluxTablesToMap(List<FluxTable> tables) {
         Map<String, Double> aggregatedValues = new HashMap<>();
         for (FluxTable fluxTable : tables) {
@@ -1722,6 +1753,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return aggregatedValues;
     }
 
+    /**
+     * Get the aggregated value coverage of a service state.
+     *
+     * @param databaseQuery DatabaseQuery which will be used to build a query which will be send to the influxdb.
+     * @return AggregatedServiceState  with the aggregated value coverage, the databaseQuery the service_type and the unit_id.
+     */
     public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
         try {
             ServiceTemplateType.ServiceTemplate.ServiceType serviceType = databaseQuery.getServiceType();
