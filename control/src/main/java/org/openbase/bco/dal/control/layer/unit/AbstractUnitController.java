@@ -1708,23 +1708,24 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
-
         try {
             ServiceTemplateType.ServiceTemplate.ServiceType serviceType = databaseQuery.getServiceType();
-            String query = null;
-            Map<String, Double> aggregatedValues = null;
-            Map<Integer, Double> aggregatedEnumValues = null;
+            Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(serviceType);
             AggregatedServiceStateType.AggregatedServiceState.Builder builder = AggregatedServiceStateType.AggregatedServiceState.newBuilder();
             builder.setServiceType(serviceType);
             builder.setQuery(databaseQuery);
-            Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(serviceType);
+
+            String query = null;
+            Map<String, Double> aggregatedValues = new HashMap<>();
+            Map<Integer, Double> aggregatedEnumValues;
+            List<FluxTable> fluxTableList;
 
             for (Descriptors.FieldDescriptor fieldDescriptor : serviceStateBuilder.getDescriptorForType().getFields()) {
-                //todo some refactoring
+
                 if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
                     if (query == null) {
                         query = buildGetAggregatedQuery(databaseQuery, true);
-                        List<FluxTable> fluxTableList = sendQuery(query);
+                        fluxTableList = sendQuery(query);
                         aggregatedEnumValues = calculateEnumStatePercentage(fluxTableList);
                         Descriptors.FieldDescriptor aggregatedValueCoverageField = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "aggregated_value_coverage");
                         for (Map.Entry<Integer, Double> entry : aggregatedEnumValues.entrySet()) {
@@ -1736,12 +1737,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             serviceStateBuilder.addRepeatedField(aggregatedValueCoverageField, aggregatedValueBuilder.build());
                         }
                     }
-                    break;
 
                 } else if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.DOUBLE) {
                     if (query == null) {
                         query = buildGetAggregatedQuery(databaseQuery, false);
-                        List<FluxTable> fluxTableList = sendQuery(query);
+                        fluxTableList = sendQuery(query);
                         aggregatedValues = aggregatedFluxTablesToMap(fluxTableList);
                     }
                     if (aggregatedValues.containsKey(fieldDescriptor.getName())) {
@@ -1754,6 +1754,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             return FutureProcessor.completedFuture(newAggregatedServiceState);
         } catch (CouldNotPerformException ex) {
+
+            ex.printStackTrace();
+
             return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state ,ex")));
         }
     }
