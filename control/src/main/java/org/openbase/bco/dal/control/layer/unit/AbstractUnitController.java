@@ -36,6 +36,7 @@ import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPBCOHomeDirectory;
 import org.openbase.bco.dal.control.action.ActionImpl;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionComparator;
@@ -100,13 +101,15 @@ import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
-import org.openbase.type.domotic.state.PowerStateType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
+import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
@@ -166,15 +169,33 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     final BuilderSyncSetup<DB> builderSetup;
 
     private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
-    private static final String INFLUXDB_URL_DEFAULT = "http://192.168.75.100:9999";
-    private static final String INFLUXDB_ORG_DEFAULT = "openbase";
-    private static String INFLUXDB_ORG_ID_DEFAULT = "03e2c6b79272c000";
     private static final Integer READ_TIMEOUT = 60;
     private static final Integer WRITE_TIMEOUT = 60;
     private static final Integer CONNECT_TIMOUT = 40;
-    private static final char[] TOKEN = "JwXkUyMvJIUVQU-itwGljVALbbliYnAsjitO1HUeHaOXi6f0KHenVQyGGbH8pWMgQ1RG8mqJJRZu_PfnIS-p4w==".toCharArray();
+    private static final String INFLUXDB_URL;
+    private static String INFLUXDB_ORG_ID;
+    private static final String INFLUXDB_PROPERTIES = "influxdb.properties";
+    private static Properties influxDBProperties = new Properties();
+    private static final char[] TOKEN;
 
+    static {
+        loadInfluxDBProperties();
+        TOKEN = influxDBProperties.get("token").toString().toCharArray();
+        INFLUXDB_ORG_ID = influxDBProperties.get("influxdb_org_id").toString();
+        INFLUXDB_URL = influxDBProperties.get("influxdb_url").toString();
+    }
 
+    private static void loadInfluxDBProperties() {
+        try {
+            final File propertiesFile = new File(JPService.getProperty(JPBCOHomeDirectory.class).getValue(), INFLUXDB_PROPERTIES);
+            if (propertiesFile.exists()) {
+                influxDBProperties.load(new FileInputStream(propertiesFile));
+            }
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory("No influxdb properties found!", ex, LoggerFactory.getLogger(AbstractUnitController.class));
+        }
+    }
+    
     public AbstractUnitController(final DB builder) throws InstantiationException {
         super(builder);
         this.unitDataObservableMap = new HashMap<>();
@@ -1610,15 +1631,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
         try (
                 InfluxDBClient influxDBClient = InfluxDBClientFactory
-                        .create(INFLUXDB_URL_DEFAULT + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", TOKEN);) {
+                        .create(INFLUXDB_URL + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", TOKEN);) {
 
             if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
-                throw new CouldNotPerformException("Could not connect to database server at " + INFLUXDB_URL_DEFAULT + "!");
+                throw new CouldNotPerformException("Could not connect to database server at " + INFLUXDB_URL + "!");
 
             }
             QueryApi queryApi = influxDBClient.getQueryApi();
 
-            List<FluxTable> tables = queryApi.query(query, INFLUXDB_ORG_ID_DEFAULT);
+            List<FluxTable> tables = queryApi.query(query, INFLUXDB_ORG_ID);
             return tables;
 
         } catch (Exception ex) {
