@@ -195,7 +195,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             ExceptionPrinter.printHistory("No influxdb properties found!", ex, LoggerFactory.getLogger(AbstractUnitController.class));
         }
     }
-    
+
+
     public AbstractUnitController(final DB builder) throws InstantiationException {
         super(builder);
         this.unitDataObservableMap = new HashMap<>();
@@ -1583,7 +1584,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return Collections.unmodifiableMap(operationServiceMap);
     }
 
-
     /**
      * {@inheritDoc}
      *
@@ -1611,7 +1611,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
-
     public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
 
         String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + "Controller";
@@ -1625,7 +1624,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         }
     }
-
 
     private List<FluxTable> sendQuery(final String query) throws CouldNotPerformException {
 
@@ -1646,9 +1644,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             throw new CouldNotPerformException("Could not send query to database!", ex);
 
         }
-
     }
-
 
     private String buildGetAggregatedQuery(final DatabaseQueryType.DatabaseQuery databaseQuery, boolean isEnum) {
         String measurement = databaseQuery.getMeasurement();
@@ -1684,7 +1680,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             return query;
         }
-
     }
 
     private String addFilterToQuery(String query, Message filter) {
@@ -1725,7 +1720,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         }
         return aggregatedValues;
-
     }
 
     public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
@@ -1781,5 +1775,4 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state ,ex")));
         }
     }
-
 }
