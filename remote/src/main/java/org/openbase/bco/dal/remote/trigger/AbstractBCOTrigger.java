@@ -47,9 +47,9 @@ import java.lang.reflect.Method;
  * @param <STE> StateTypeEnum
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Message, STE extends Enum<STE>> extends AbstractTrigger {
+public abstract class AbstractBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Message, STE> extends AbstractTrigger {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
+    protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final UR unitRemote;
     private final STE targetState;
@@ -58,39 +58,26 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Mes
     private final Observer<Remote, ConnectionState.State> connectionObserver;
     private boolean active = false;
 
-    public GenericBCOTrigger(final UR unitRemote, final STE targetState, final ServiceType serviceType) throws InstantiationException {
+    public AbstractBCOTrigger(final UR unitRemote, final STE targetState, final ServiceType serviceType) throws InstantiationException {
         super();
         this.unitRemote = unitRemote;
         this.targetState = targetState;
         this.serviceType = serviceType;
 
         this.dataObserver = (DataProvider<DT> source, DT data) -> {
-            verifyCondition(data);
+            verifyCondition(data, targetState, serviceType);
         };
 
         this.connectionObserver = (Remote source, ConnectionState.State data) -> {
             if (data.equals(ConnectionState.State.CONNECTED)) {
-                verifyCondition(unitRemote.getData());
+                verifyCondition(unitRemote.getData(), targetState, serviceType);
             } else {
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
             }
         };
     }
 
-    private void verifyCondition(DT data) {
-        try {
-            Message serviceState = Services.invokeProviderServiceMethod(serviceType, data);
-
-            Method method = serviceState.getClass().getMethod("getValue");
-            if (method.invoke(serviceState).equals(targetState)) {
-                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
-            } else {
-                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build()));
-            }
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory("Could not verify condition " + this, ex, LOGGER);
-        }
-    }
+    protected abstract void verifyCondition(final DT data, final STE targetState, final ServiceType serviceType);
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
@@ -98,7 +85,7 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote<DT>, DT extends Mes
         unitRemote.addConnectionStateObserver(connectionObserver);
         active = true;
         if (unitRemote.isDataAvailable()) {
-            verifyCondition(unitRemote.getData());
+            verifyCondition(unitRemote.getData(), targetState, serviceType);
         }
     }
 

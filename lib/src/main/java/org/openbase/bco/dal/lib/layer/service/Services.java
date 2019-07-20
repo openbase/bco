@@ -324,8 +324,8 @@ public class Services extends ServiceStateProcessor {
     public static Class<? extends Message> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
         try {
             return getServiceStateClass(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType());
-        } catch (CouldNotPerformException e) {
-            throw new NotAvailableException("CommunicationType for ServiceType[" + serviceType + "]");
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("CommunicationType for ServiceType[" + serviceType + "]", ex);
         }
     }
 
@@ -346,7 +346,7 @@ public class Services extends ServiceStateProcessor {
             }
             serviceStateName = StringProcessor.transformUpperCaseToPascalCase(communicationType.name());
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("CommunicationType", communicationType.name());
+            throw new NotAvailableException("CommunicationType", communicationType.name(), ex);
         }
 
         final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName;

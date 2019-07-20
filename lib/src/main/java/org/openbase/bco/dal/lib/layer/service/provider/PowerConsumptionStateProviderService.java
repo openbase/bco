@@ -26,6 +26,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState.Builder;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE;
 
@@ -34,6 +35,8 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface PowerConsumptionStateProviderService extends ProviderService {
+
+    double DEFAULT_VOLTAGE = 230;
 
     @RPCMethod(legacy = true)
     default PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
@@ -49,34 +52,46 @@ public interface PowerConsumptionStateProviderService extends ProviderService {
             throw new VerificationFailedException("PowerConsumptionState does not contain any values!");
         }
 
+        int availableParameterCount = 0;
+
         // consumption range check
         if (powerConsumptionState.hasConsumption()) {
             OperationService.verifyValueRange("Consumption", powerConsumptionState.getConsumption(), 0, Double.MAX_VALUE);
+            availableParameterCount++;
         }
 
         // voltage range check
         if (powerConsumptionState.hasVoltage()) {
             OperationService.verifyValueRange("Voltage", powerConsumptionState.getVoltage(), 0, Double.MAX_VALUE);
+            availableParameterCount++;
         }
 
         // current range check
         if (powerConsumptionState.hasCurrent()) {
             OperationService.verifyValueRange("Current", powerConsumptionState.getCurrent(), 0, Double.MAX_VALUE);
+            availableParameterCount++;
+        }
+
+        final Builder powerConsumtionBuilder = powerConsumptionState.toBuilder();
+
+        // fix voltage to default if not enough parameters are given to compute the missing ones.
+        if (availableParameterCount == 1  && !powerConsumptionState.hasVoltage()) {
+            powerConsumtionBuilder.setVoltage(DEFAULT_VOLTAGE);
         }
 
         // try to compute missing consumption
-        if(!powerConsumptionState.hasConsumption() && powerConsumptionState.hasVoltage() && powerConsumptionState.hasCurrent()) {
-            return powerConsumptionState.toBuilder().setConsumption(powerConsumptionState.getVoltage() * powerConsumptionState.getCurrent()).build();
+        if(!powerConsumtionBuilder.hasConsumption() && powerConsumtionBuilder.hasVoltage() && powerConsumtionBuilder.hasCurrent()) {
+            return powerConsumtionBuilder.setConsumption(powerConsumtionBuilder.getVoltage() * powerConsumtionBuilder.getCurrent()).build();
         }
 
         // try to compute missing voltage
-        if(!powerConsumptionState.hasVoltage() && powerConsumptionState.hasConsumption() && powerConsumptionState.hasCurrent()) {
-            return powerConsumptionState.toBuilder().setVoltage(powerConsumptionState.getConsumption() / powerConsumptionState.getCurrent()).build();
+        if(!powerConsumtionBuilder.hasVoltage() && powerConsumtionBuilder.hasConsumption() && powerConsumtionBuilder.hasCurrent()) {
+            return powerConsumtionBuilder.setVoltage(powerConsumtionBuilder.getConsumption() / powerConsumtionBuilder.getCurrent()).build();
         }
 
         // try to compute missing current
-        if(!powerConsumptionState.hasCurrent() && powerConsumptionState.hasVoltage() && powerConsumptionState.hasConsumption()) {
-            return powerConsumptionState.toBuilder().setCurrent(powerConsumptionState.getConsumption() / powerConsumptionState.getVoltage()).build();
+        if(!powerConsumtionBuilder.hasCurrent() && powerConsumtionBuilder.hasVoltage() && powerConsumtionBuilder.hasConsumption()) {
+            return powerConsumtionBuilder.setCurrent(powerConsumtionBuilder.getConsumption() / powerConsumtionBuilder.getVoltage()).build();
         }
 
         return powerConsumptionState;

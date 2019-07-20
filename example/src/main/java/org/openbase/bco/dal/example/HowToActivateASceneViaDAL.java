@@ -84,8 +84,9 @@ public class HowToActivateASceneViaDAL {
 
             final Future<ActionDescription> actionFuture = testScene.setActivationState(State.ACTIVE);
 
-            LOGGER.info("wait until action is done...");
+            LOGGER.info("wait until action is executing...");
             new RemoteAction(actionFuture).waitForExecution();
+
         } catch (CouldNotPerformException | CancellationException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }

@@ -54,6 +54,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
@@ -458,10 +459,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     public void activate() throws CouldNotPerformException, InterruptedException {
         verifyMaintainability();
         active = true;
-        unitRemoteMap.values().stream().forEach((remote) -> {
+        for (UnitRemote<?> remote : unitRemoteMap.values()) {
             remote.addDataObserver(dataObserver);
             remote.addConnectionStateObserver(connectionStateObserver);
-        });
+        }
         updateServiceState();
     }
 
@@ -494,10 +495,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         verifyMaintainability();
         active = false;
-        unitRemoteMap.values().stream().forEach(remote -> {
+        for (UnitRemote<?> remote : unitRemoteMap.values()) {
             remote.removeDataObserver(dataObserver);
             remote.removeConnectionStateObserver(connectionStateObserver);
-        });
+        }
     }
 
     /**
@@ -508,9 +509,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         try {
             verifyMaintainability();
             deactivate();
-            unitRemoteMap.values().stream().forEach(remote -> remote.removeConfigObserver(unitConfigObserver));
-            disabledUnitRemoteMap.values().stream().forEach(remote -> remote.removeConfigObserver(unitConfigObserver));
-            infrastructureUnitMap.values().stream().forEach(remote -> remote.removeConfigObserver(unitConfigObserver));
+            for (UnitRemote<?> unitRemote : unitRemoteMap.values()) {
+                unitRemote.removeConfigObserver(unitConfigObserver);
+            }
+            for (UnitRemote<?> unitRemote : disabledUnitRemoteMap.values()) {
+                unitRemote.removeConfigObserver(unitConfigObserver);
+            }
+            for (UnitRemote<?> remote : infrastructureUnitMap.values()) {
+                remote.removeConfigObserver(unitConfigObserver);
+            }
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(new ShutdownException(this, ex), logger);
         }
@@ -972,7 +979,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     @Override
     public boolean isConnected() {
-        return getInternalUnits().stream().noneMatch((unitRemote) -> (!unitRemote.isConnected()));
+
+        final Iterator<UnitRemote> iterator = getInternalUnits().iterator();
+
+        while (iterator.hasNext()) {
+            if (!iterator.next().isConnected()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -991,7 +1006,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     }
 
     public static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
-        return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceDescription().getServiceType() == serviceType));
+        for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            if ((serviceConfig.getServiceDescription().getServiceType() == serviceType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

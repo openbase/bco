@@ -34,6 +34,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -72,8 +74,8 @@ public class DeviceManagerLauncherTest extends AbstractBCOTest {
     public void testShutdown() throws Exception {
         DeviceManagerLauncher instance = new DeviceManagerLauncher();
         try {
-            instance.launch();
-        } catch (CouldNotPerformException | InterruptedException ex) {
+            instance.launch().get();
+        } catch (ExecutionException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
         instance.shutdown();

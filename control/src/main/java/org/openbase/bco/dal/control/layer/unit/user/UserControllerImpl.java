@@ -312,6 +312,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         stringRemoteActionPoolEntry.getValue().stop();
                     }
                 } else if ((activityMultiState.getActivityIdCount() > 0)) {
+                    // todo: why is only the first action validated and were are activities disabled and their actions canceled?
                     final String activityId = activityMultiState.getActivityId(0);
                     for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
                         if (!stringRemoteActionPoolEntry.getKey().equals(activityId)) {
@@ -322,7 +323,8 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         final RemoteActionPool remoteActionPool = new RemoteActionPool(UserControllerImpl.this);
                         remoteActionPoolMap.put(activityId, remoteActionPool);
                         final ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityId);
-                        remoteActionPool.initViaServiceStateDescription(activityConfig.getServiceStateDescriptionList());
+                        remoteActionPool.initViaServiceStateDescription(activityConfig.getServiceStateDescriptionList(), () -> true);
+                        // todo: check [() -> true)] needs to be implemented. -> true if action is included in current action multi state
                     }
                     remoteActionPoolMap.get(activityId).execute(activityMultiState.getResponsibleAction());
                 }

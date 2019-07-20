@@ -28,11 +28,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
+import org.openbase.type.domotic.unit.dal.LightSensorDataType.LightSensorData;
 
 /**
  *
  * @author pleminoq
  */
-public interface LightSensor extends IlluminanceStateProviderService {
+public interface LightSensor extends Unit<LightSensorData>, IlluminanceStateProviderService {
 
 }

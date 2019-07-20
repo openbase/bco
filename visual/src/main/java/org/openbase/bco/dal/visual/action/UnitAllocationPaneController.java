@@ -300,7 +300,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                     for (ActionReference actionReference : actionDescription.getActionCauseList()) {
                         actionChainData.add(new ActionReferenceBean(i++, actionReference));
                     }
-                } catch (NotAvailableException ex) {
+                } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could updated dynamic content!", ex, LOGGER);
                 }
 
@@ -577,38 +577,42 @@ public class UnitAllocationPaneController extends AbstractFXController {
 
         private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
 
-        public ActionReferenceBean(final int position, final ActionReference actionReference) throws NotAvailableException {
-            this.actionReference = actionReference;
-            this.remoteAction = new RemoteAction(actionReference);
-            this.position = position;
-            this.timestamp = dateFormat.format(new Date(TimestampJavaTimeTransform.transform(actionReference.getTimestamp())));
-            this.actionId = actionReference.getActionId();
-            this.priority = actionReference.getPriority().name();
-            this.category = StringProcessor.transformCollectionToString(actionReference.getCategoryList(), ", ");
-            this.interruptible = actionReference.getInterruptible();
-            this.schedulable = actionReference.getSchedulable();
-
-            final ActionInitiator actionInitiator = actionReference.getActionInitiator();
-
-            String initiatorLabel;
+        public ActionReferenceBean(final int position, final ActionReference actionReference) throws InstantiationException {
             try {
-                initiatorLabel = ActionDescriptionProcessor.getInitiatorName(actionReference.getActionInitiator());
-            } catch (CouldNotPerformException e) {
-                initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "");
+                this.actionReference = actionReference;
+                this.remoteAction = new RemoteAction(actionReference);
+                this.position = position;
+                this.timestamp = dateFormat.format(new Date(TimestampJavaTimeTransform.transform(actionReference.getTimestamp())));
+                this.actionId = actionReference.getActionId();
+                this.priority = actionReference.getPriority().name();
+                this.category = StringProcessor.transformCollectionToString(actionReference.getCategoryList(), ", ");
+                this.interruptible = actionReference.getInterruptible();
+                this.schedulable = actionReference.getSchedulable();
+
+                final ActionInitiator actionInitiator = actionReference.getActionInitiator();
+
+                String initiatorLabel;
+                try {
+                    initiatorLabel = ActionDescriptionProcessor.getInitiatorName(actionReference.getActionInitiator());
+                } catch (CouldNotPerformException e) {
+                    initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "");
+                }
+
+                this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";
+
+                String tmpServiceState;
+                try {
+                    final Message serviceStateMessage = protoBufJSonProcessor.deserialize(actionReference.getServiceStateDescription().getServiceState(), actionReference.getServiceStateDescription().getServiceStateClassName());
+                    tmpServiceState = StringProcessor.transformCollectionToString(Services.resolveStateValue(serviceStateMessage), ", ");
+                } catch (CouldNotPerformException e) {
+                    tmpServiceState = "";
+                }
+                this.serviceState = tmpServiceState;
+
+                this.unitLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionReference.getServiceStateDescription().getUnitId()).getLabel(), "");
+            } catch (CouldNotPerformException ex) {
+                throw new InstantiationException(this, ex);
             }
-
-            this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";
-
-            String tmpServiceState;
-            try {
-                final Message serviceStateMessage = protoBufJSonProcessor.deserialize(actionReference.getServiceStateDescription().getServiceState(), actionReference.getServiceStateDescription().getServiceStateClassName());
-                tmpServiceState = StringProcessor.transformCollectionToString(Services.resolveStateValue(serviceStateMessage), ", ");
-            } catch (CouldNotPerformException e) {
-                tmpServiceState = "";
-            }
-            this.serviceState = tmpServiceState;
-
-            this.unitLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionReference.getServiceStateDescription().getUnitId()).getLabel(), "");
         }
 
         public int getPosition() {

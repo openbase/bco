@@ -220,14 +220,14 @@ public class Units {
                 public void shutdown() {
                     try {
                         shutdownInitialized = true;
-                        unitRemoteRegistry.getEntries().stream().parallel().forEach(((org.openbase.bco.dal.lib.layer.unit.UnitRemote unitRemote) -> {
+                        for (UnitRemote<? extends Message> unitRemote : unitRemoteRegistry.getEntries()) {
                             try {
                                 unitRemote.unlock(unitRemoteRegistry);
                                 unitRemote.shutdown();
                             } catch (CouldNotPerformException ex) {
                                 ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
                             }
-                        }));
+                        }
                     } catch (Exception ex) {
                         ExceptionPrinter.printHistory("Could not properly shutdown remote pool!", ex, LOGGER);
                     } finally {

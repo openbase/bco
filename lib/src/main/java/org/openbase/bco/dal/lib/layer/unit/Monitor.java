@@ -24,11 +24,12 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
+import org.openbase.type.domotic.unit.dal.MonitorDataType.MonitorData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Monitor extends PowerStateOperationService, StandbyStateOperationService {
+public interface Monitor extends Unit<MonitorData>, PowerStateOperationService, StandbyStateOperationService {
     
 }

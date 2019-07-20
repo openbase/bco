@@ -51,6 +51,7 @@ import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -116,10 +117,10 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
             // init service unit map
             for (final UnitConfig unitConfig : unitConfigList) {
                 // sort dal unit by service type
-                unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
-                    // register unit for each service type. UnitConfigs can be added twice because of duplicated types with different service patterns but are filtered by the set.
+                // register unit for each service type. UnitConfigs can be added twice because of duplicated types with different service patterns but are filtered by the set.
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                     serviceMap.get(serviceConfig.getServiceDescription().getServiceType()).add(unitConfig);
-                });
+                }
             }
 
             // initialize service remotes
@@ -266,9 +267,9 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
                 if (unitType == UnitType.UNKNOWN) {
                     // if the type is unknown then take the snapshot for all units
-                    getServiceRemoteList().stream().forEach((serviceRemote) -> {
-                        unitRemoteSet.addAll(serviceRemote.getInternalUnits());
-                    });
+                    for (AbstractServiceRemote abstractServiceRemote : getServiceRemoteList()) {
+                        unitRemoteSet.addAll(abstractServiceRemote.getInternalUnits());
+                    }
                 } else {
                     // for efficiency reasons only one serviceType implemented by the unitType is regarded because the unitRemote is part of
                     // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType

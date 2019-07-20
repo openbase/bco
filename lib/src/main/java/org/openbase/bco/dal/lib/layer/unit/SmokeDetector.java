@@ -24,10 +24,11 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
+import org.openbase.type.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface SmokeDetector extends SmokeAlarmStateProviderService, SmokeStateProviderService {
+public interface SmokeDetector extends Unit<SmokeDetectorData>, SmokeAlarmStateProviderService, SmokeStateProviderService {
 }

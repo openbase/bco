@@ -23,11 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.type.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface PowerSwitch extends PowerStateOperationService {
+public interface PowerSwitch extends Unit<PowerSwitchData>, PowerStateOperationService {
     
 }

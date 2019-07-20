@@ -116,7 +116,13 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
             this.buttonUnitPool = new CustomUnitPool();
             this.connectionUnitPool = new CustomUnitPool();
 
-            this.buttonUnitPool.addObserver((source, data) -> PresenceDetector.this.updateButtonState((ButtonState) data));
+            this.buttonUnitPool.addObserver((source, data) -> {
+                try {
+                    PresenceDetector.this.updateButtonState((ButtonState) data);
+                } catch (ClassCastException ex) {
+                    ExceptionPrinter.printHistory("ButtonPool entail incompatible units!", ex, logger);
+                }
+            });
 
             this.connectionUnitPool.addObserver((source, data) -> {
                 switch (source.getServiceType()) {

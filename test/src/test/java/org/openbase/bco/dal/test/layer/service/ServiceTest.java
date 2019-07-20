@@ -38,6 +38,9 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.type.domotic.service.ServiceCommunicationTypeType;
+import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType;
+import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BatteryStateType;
 import org.openbase.type.domotic.state.ColorStateType;
@@ -98,6 +101,36 @@ public class ServiceTest extends AbstractBCOTest {
             Collection<? extends ProtocolMessageEnum> values = Services.getServiceStateEnumValues(ServiceType.POWER_STATE_SERVICE);
             for (PowerState.State state : PowerState.State.values()) {
                 Assert.assertTrue("Detected values does not contain " + state.name(), values.contains(state));
+            }
+        } catch (Exception ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
+        }
+    }
+
+    /**
+     * Test of getServiceStateEnumValues method, of class Service.
+     */
+    @Test
+    public void testGenerateServiceStateBuilder() throws Exception {
+        System.out.println("getServiceStateEnumValues");
+        try {
+            Registries.getClassRegistry().waitForData();
+            Registries.getTemplateRegistry().waitForData();
+
+            for (ServiceType serviceType : ServiceType.values()) {
+                // todo release: refactor name of RFIDState to RfidState to enable class loading via reflection.
+                if (serviceType == ServiceType.UNKNOWN || serviceType == ServiceType.RFID_STATE_SERVICE) {
+                    continue;
+                }
+                Services.generateServiceStateBuilder(serviceType);
+            }
+
+            for (CommunicationType communicationType : CommunicationType.values()) {
+                // todo release: refactor name of RFIDState to RfidState to enable class loading via reflection.
+                if (communicationType == CommunicationType.UNKNOWN|| communicationType == CommunicationType.RFID_STATE) {
+                    continue;
+                }
+                Services.generateServiceStateBuilder(communicationType);
             }
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);

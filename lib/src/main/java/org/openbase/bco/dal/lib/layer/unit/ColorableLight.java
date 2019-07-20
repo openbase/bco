@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ColorableLight extends ColorStateOperationService, BrightnessStateOperationService, PowerStateOperationService, Unit<ColorableLightData> {
+public interface ColorableLight extends Unit<ColorableLightData>, ColorStateOperationService, BrightnessStateOperationService, PowerStateOperationService {
 
     /**
      * @return A list only containing the color state service type.

@@ -23,11 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
+import org.openbase.type.domotic.unit.dal.ReedContactDataType.ReedContactData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface ReedContact extends ContactStateProviderService {
+public interface ReedContact extends Unit<ReedContactData>, ContactStateProviderService {
 
 }

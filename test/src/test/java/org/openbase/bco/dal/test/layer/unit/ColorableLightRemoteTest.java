@@ -103,7 +103,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception if an error occurs
      */
-    @Test(timeout = 10000)
+    @Test(timeout = 15000)
     public void testControllingViaLightRemote() throws Exception {
         System.out.println("testControllingViaLightRemote");
 

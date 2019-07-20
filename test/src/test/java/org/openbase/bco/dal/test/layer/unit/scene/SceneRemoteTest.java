@@ -128,14 +128,14 @@ public class SceneRemoteTest extends AbstractBCOTest {
             JPService.setupJUnitTestMode();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
+            deviceManagerLauncher.launch().get();
 
             locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
+            locationManagerLauncher.launch().get();
             locationManagerLauncher.getLaunchable();
 
             sceneManagerLauncher = new SceneManagerLauncher();
-            sceneManagerLauncher.launch();
+            sceneManagerLauncher.launch().get();
 
             powerStateServiceRemote = new PowerStateServiceRemote();
             colorStateServiceRemote = new ColorStateServiceRemote();

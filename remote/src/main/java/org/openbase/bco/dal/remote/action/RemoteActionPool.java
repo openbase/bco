@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observer;
@@ -46,10 +47,10 @@ import rsb.converter.ProtocolBufferConverter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class RemoteActionPool {
 
@@ -72,15 +73,15 @@ public class RemoteActionPool {
         this.unit = unit;
     }
 
-    public void initViaServiceStateDescription(final List<ServiceStateDescription> serviceStateDescriptions) throws CouldNotPerformException, InterruptedException {
+    public void initViaServiceStateDescription(final List<ServiceStateDescription> serviceStateDescriptions, Callable<Boolean> autoExtendCheckCallback) throws CouldNotPerformException, InterruptedException {
         List<ActionParameter> actionParameters = new ArrayList<>();
         for (ServiceStateDescription serviceStateDescription : serviceStateDescriptions) {
             actionParameters.add(ActionParameter.newBuilder().setServiceStateDescription(serviceStateDescription).build());
         }
-        init(actionParameters);
+        init(actionParameters, autoExtendCheckCallback);
     }
 
-    public void init(final List<ActionParameter> actionParameters) throws CouldNotPerformException, InterruptedException {
+    public void init(final List<ActionParameter> actionParameters, Callable<Boolean> autoExtendCheckCallback) throws CouldNotPerformException, InterruptedException {
 
         MultiException.ExceptionStack exceptionStack = null;
 
@@ -91,7 +92,7 @@ public class RemoteActionPool {
             RemoteAction action;
             for (ActionParameter actionParameter : actionParameters) {
                 try {
-                    action = new RemoteAction(unit, actionParameter);
+                    action = new RemoteAction(unit, actionParameter, autoExtendCheckCallback);
                     remoteActionList.add(action);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
