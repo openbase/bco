@@ -429,7 +429,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         if (locationList.isEmpty()) {
             return getUnitByLabel(label);
         }
-        return fromList(Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(label, locationList.get(0).getId()));
+        return fromList(Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitLabel(locationList.get(0).getId(), label));
     }
 
 
@@ -570,7 +570,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 final String locationLabel = params.get("location").getAsString();
                 UnitConfig location = null;
 
-                for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
+                for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.LOCATION)) {
                     for (MapFieldEntry entry : unitConfig.getLabel().getEntryList()) {
                         for (String label : entry.getValueList()) {
                             if (locationLabel.equalsIgnoreCase(label)) {
@@ -846,7 +846,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 entry.addValue(label);
 
                 // make sure label is available for this location
-                for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(label, location.getId())) {
+                for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitLabel(location.getId(), label)) {
                     if (unitConfig.getUnitType() == UnitType.SCENE) {
                         respond(acknowledgement, "Es existiert bereits eine Szene mit dem Name " + label + " in dem Ort " + LabelProcessor.getBestMatch(Locale.GERMAN, location.getLabel()), true);
                     }
