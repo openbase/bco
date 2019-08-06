@@ -314,7 +314,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
         return active;
     }
 
-    public List<UnitRemote<? extends Message>> getInternalUnitList() throws CouldNotPerformException {
+    public List<UnitRemote<? extends Message>> getInternalUnitList() {
         return unitRemoteRegistry.getEntries();
     }
 }
