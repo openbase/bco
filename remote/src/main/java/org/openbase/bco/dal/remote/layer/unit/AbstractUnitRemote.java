@@ -642,7 +642,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     @Override
     public Future<Void> restoreSnapshot(Snapshot snapshot) {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), this::restoreSnapshotAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), authenticatedSnapshot -> restoreSnapshotAuthenticated(authenticatedSnapshot));
     }
 
     @Override

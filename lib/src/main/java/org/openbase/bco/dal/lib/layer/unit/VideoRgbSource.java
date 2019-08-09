@@ -23,9 +23,11 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
+import org.openbase.type.domotic.unit.dal.VideoRgbSourceDataType.VideoRgbSourceData;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface VideoRgbSource {
+public interface VideoRgbSource extends Unit<VideoRgbSourceData> {
 
 }

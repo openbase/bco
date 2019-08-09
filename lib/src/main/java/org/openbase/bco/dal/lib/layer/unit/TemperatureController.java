@@ -24,11 +24,12 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
+import org.openbase.type.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface TemperatureController extends TemperatureStateProviderService, TargetTemperatureStateOperationService {
+public interface TemperatureController extends Unit<TemperatureControllerData>, TemperatureStateProviderService, TargetTemperatureStateOperationService {
     
 }

@@ -21,8 +21,9 @@ package org.openbase.bco.dal.remote.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
+
 import java.util.concurrent.TimeUnit;
+
 import org.openbase.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -34,7 +35,6 @@ import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptio
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<PowerConsumptionStateProviderService, PowerConsumptionState> implements PowerConsumptionStateProviderServiceCollection {
@@ -48,6 +48,7 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
      * Computes the average current and voltage and the sum of the consumption of the underlying services.
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -59,11 +60,10 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
     public PowerConsumptionState getPowerConsumptionState(final UnitType unitType) throws NotAvailableException {
 
         long timestamp = 0;
-        double averageVoltage = 0;
-        double averageCurrent = 0;
-        double consumptionSum = 0;
         int voltageValueAmount = 0;
-        int currentValueAmount = 0;
+        double voltageAverage = 0;
+        double currentSum = 0;
+        double consumptionSum = 0;
 
         for (PowerConsumptionStateProviderService service : getServices(unitType)) {
 
@@ -72,22 +72,18 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
                 continue;
             }
 
-            if (service.getPowerConsumptionState().hasVoltage()) {
+            if (service.getPowerConsumptionState().hasVoltage() && service.getPowerConsumptionState().getVoltage() > 0) {
                 voltageValueAmount++;
-                averageVoltage += service.getPowerConsumptionState().getVoltage();
+                voltageAverage += service.getPowerConsumptionState().getVoltage();
             }
 
-            if (service.getPowerConsumptionState().hasCurrent()) {
-                currentValueAmount++;
-                averageCurrent += service.getPowerConsumptionState().getCurrent();
-            }
-
-            averageVoltage = averageVoltage / voltageValueAmount;
-            averageCurrent = averageCurrent / currentValueAmount;
+            currentSum += service.getPowerConsumptionState().getCurrent();
             consumptionSum += service.getPowerConsumptionState().getConsumption();
             timestamp = Math.max(timestamp, service.getPowerConsumptionState().getTimestamp().getTime());
         }
 
-        return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage), TimeUnit.MICROSECONDS, logger).build();
+        voltageAverage = voltageAverage / voltageValueAmount;
+
+        return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(currentSum).setVoltage(voltageAverage), TimeUnit.MICROSECONDS, logger).build();
     }
 }

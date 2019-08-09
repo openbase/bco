@@ -218,12 +218,12 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals("Consumption of location has not been updated!", powerConsumptionState.getConsumption() * powerConsumptionSensorList.size(), locationRemote.getPowerConsumptionState().getConsumption(), 0.01);
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 15000)
     public void testRecordAndRestoreSnapshots() throws Exception {
         BlindState snapshotBlindState = BlindState.newBuilder().setValue(BlindState.State.DOWN).setOpeningRatio(0).build();
-        BlindState newBlindState = BlindState.newBuilder().setValue(BlindState.State.UP).setOpeningRatio(50).build();
-        ColorState snapshotColorState = ColorState.newBuilder().setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBColor.newBuilder().setBrightness(100).setHue(0).setSaturation(100))).build();
-        ColorState newColorState = ColorState.newBuilder().setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBColor.newBuilder().setBrightness(20).setHue(100).setSaturation(50))).build();
+        BlindState newBlindState = BlindState.newBuilder().setValue(BlindState.State.UP).setOpeningRatio(0.5).build();
+        ColorState snapshotColorState = ColorState.newBuilder().setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBColor.newBuilder().setBrightness(1).setHue(0).setSaturation(1))).build();
+        ColorState newColorState = ColorState.newBuilder().setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBColor.newBuilder().setBrightness(0.2).setHue(100).setSaturation(0.5))).build();
         PowerState snapshotPowerState = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         PowerState newPowerState = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         TemperatureState snapshotTemperatureState = TemperatureState.newBuilder().setTemperature(20).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
@@ -260,8 +260,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
         logger.info("Restore snapshot");
 
-        locationRemote.restoreSnapshot(snapshot).get();
-        locationRemote.requestData().get();
+        locationRemote.restoreSnapshot(snapshot).get(10, TimeUnit.SECONDS);
+        locationRemote.requestData().get(10, TimeUnit.SECONDS);
 
         final BlindState.State blindStateValue = snapshotBlindState.getValue();
         final HSBColor hsbColor = snapshotColorState.getColor().getHsbColor();
@@ -469,7 +469,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals(serviceState.getValue(), locationRemote.getPowerState().getValue());
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 20000)
     public void testActionCancellation() throws Exception {
         System.out.println("testActionCancellation");
 

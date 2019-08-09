@@ -23,11 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.type.domotic.unit.dal.LightDataType.LightData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Light extends PowerStateOperationService {
+public interface Light extends Unit<LightData>, PowerStateOperationService {
     
 }

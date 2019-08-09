@@ -22,7 +22,7 @@ package org.openbase.bco.dal.remote.trigger.preset;
  * #L%
  */
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.remote.trigger.GenericValueDualBoundaryBCOTrigger;
+import org.openbase.bco.dal.remote.trigger.GenericDualBoundedDoubleValueTrigger;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -33,7 +33,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
  * @param <UR> UnitRemote
  * @param <DT> DataType
  */
-public class IlluminanceDualBoundaryTrigger<UR extends AbstractUnitRemote<DT>, DT extends Message> extends GenericValueDualBoundaryBCOTrigger<UR, DT> {
+public class IlluminanceDualBoundaryTrigger<UR extends AbstractUnitRemote<DT>, DT extends Message> extends GenericDualBoundedDoubleValueTrigger<UR, DT> {
 
     public IlluminanceDualBoundaryTrigger(UR unitRemote, double upperBoundary, double lowerIllumination, TriggerOperation triggerOperation) throws InstantiationException {
         super(unitRemote, upperBoundary, lowerIllumination, triggerOperation, ServiceType.ILLUMINANCE_STATE_SERVICE, "getIlluminance");

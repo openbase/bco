@@ -1,6 +1,7 @@
 package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.provider.SwitchStateProviderService;
+import org.openbase.type.domotic.unit.dal.SwitchDataType.SwitchData;
 
 /*
  * #%L
@@ -28,6 +29,6 @@ import org.openbase.bco.dal.lib.layer.service.provider.SwitchStateProviderServic
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Switch extends SwitchStateProviderService {
+public interface Switch extends Unit<SwitchData>, SwitchStateProviderService {
     
 }

@@ -49,13 +49,13 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
             AbstractBCOTest.setUpClass();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
+            deviceManagerLauncher.launch().get();
 
             userManagerLauncher = new UserManagerLauncher();
-            userManagerLauncher.launch();
+            userManagerLauncher.launch().get();
 
             locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
+            locationManagerLauncher.launch().get();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }

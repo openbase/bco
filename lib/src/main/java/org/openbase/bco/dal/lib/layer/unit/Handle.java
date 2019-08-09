@@ -23,11 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
+import org.openbase.type.domotic.unit.dal.HandleDataType.HandleData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Handle extends HandleStateProviderService {
+public interface Handle extends Unit<HandleData>, HandleStateProviderService {
     
 }

@@ -585,7 +585,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     public Future<ActionDescription> applyUnauthorizedAction(final ActionDescription actionDescription) {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, MOCKUP_SESSION_MANAGER, this::applyActionAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, MOCKUP_SESSION_MANAGER, authenticatedValue -> applyActionAuthenticated(authenticatedValue));
     }
 
     @Override
@@ -1455,7 +1455,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, authenticationBaseData) -> {
             try {
                 verifyAccessPermission(authenticationBaseData, ServiceType.UNKNOWN);
-
+//
                 try {
 //                    internalRestoreSnapshot(snapshot, ticketEvaluationWrapper).get();
                     restoreSnapshot(snapshot).get();

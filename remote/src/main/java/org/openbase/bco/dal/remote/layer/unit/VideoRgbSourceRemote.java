@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.VideoDepthSource;
+import org.openbase.bco.dal.lib.layer.unit.VideoRgbSource;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.dal.VideoRgbSourceDataType.VideoRgbSourceData;
@@ -30,7 +31,7 @@ import org.openbase.type.domotic.unit.dal.VideoRgbSourceDataType.VideoRgbSourceD
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class VideoRgbSourceRemote extends AbstractUnitRemote<VideoRgbSourceData> implements VideoDepthSource {
+public class VideoRgbSourceRemote extends AbstractUnitRemote<VideoRgbSourceData> implements VideoRgbSource {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(VideoRgbSourceData.getDefaultInstance()));

@@ -24,11 +24,12 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureAlarmStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
+import org.openbase.type.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface TemperatureSensor extends TemperatureStateProviderService, TemperatureAlarmStateProviderService {
+public interface TemperatureSensor extends Unit<TemperatureSensorData>, TemperatureStateProviderService, TemperatureAlarmStateProviderService {
     
 }

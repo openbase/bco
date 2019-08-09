@@ -21,11 +21,15 @@ package org.openbase.bco.dal.remote.trigger;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Message;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
@@ -42,51 +46,38 @@ import org.openbase.jul.pattern.trigger.AbstractTrigger;
 import org.slf4j.Logger;
 
 /**
- *
- * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  * @param <UR> UnitRemote
  * @param <DT> DataType
+ *
+ * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class GenericValueBoundaryBCOTrigger<UR extends AbstractUnitRemote, DT extends Message> extends AbstractTrigger {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
+public class GenericBoundedDoubleValueTrigger<UR extends AbstractUnitRemote<DT>, DT extends Message> extends AbstractBCOTrigger<UR, DT, Double> {
 
     public enum TriggerOperation {
         HIGH_ACTIVE, LOW_ACTIVE
     }
 
-    private final UR unitRemote;
-    private final ServiceType serviceType;
-    private final double boundary;
-    private final Observer<DataProvider<DT>,DT> dataObserver;
-    private final Observer<Remote, ConnectionState.State> connectionObserver;
     private final TriggerOperation triggerOperation;
     private final String specificValueCall;
-    private boolean active = false;
 
-    public GenericValueBoundaryBCOTrigger(final UR unitRemote, final double boundary, final TriggerOperation triggerOperation, ServiceType serviceType, String specificValueCall) throws InstantiationException {
-        super();
+    public GenericBoundedDoubleValueTrigger(final UR unitRemote, final double boundary, final TriggerOperation triggerOperation, ServiceType serviceType, String specificValueCall) throws InstantiationException {
+        super(unitRemote, boundary, serviceType);
 
-        this.unitRemote = unitRemote;
-        this.serviceType = serviceType;
-        this.boundary = boundary;
-        this.triggerOperation = triggerOperation;
-        this.specificValueCall = specificValueCall;
+        try {
 
-        dataObserver = (source, data) -> {
-            verifyCondition(data);
-        };
-
-        connectionObserver = (Remote source, ConnectionStateType.ConnectionState.State data) -> {
-            if (data.equals(ConnectionState.State.CONNECTED)) {
-                verifyCondition((DT) unitRemote.getData());
-            } else {
-                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            if (triggerOperation == null) {
+                throw new NotAvailableException("triggerOperation");
             }
-        };
+
+            this.triggerOperation = triggerOperation;
+            this.specificValueCall = specificValueCall;
+
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this.getClass(), ex);
+        }
     }
 
-    private void verifyCondition(DT data) {
+    protected void verifyCondition(final DT data, final Double boundary, final ServiceType serviceType) {
         try {
             Object serviceState = Services.invokeProviderServiceMethod(serviceType, data);
 
@@ -119,38 +110,5 @@ public class GenericValueBoundaryBCOTrigger<UR extends AbstractUnitRemote, DT ex
         } catch (InvocationTargetException ex) {
             ExceptionPrinter.printHistory("Could not invoke method " + this, ex, LOGGER);
         }
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        unitRemote.addDataObserver(dataObserver);
-        unitRemote.addConnectionStateObserver(connectionObserver);
-        active = true;
-        verifyCondition((DT) unitRemote.getData());
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        unitRemote.removeDataObserver(dataObserver);
-        unitRemote.removeConnectionStateObserver(connectionObserver);
-        active = false;
-        notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
-    }
-
-    @Override
-    public boolean isActive() {
-        return active;
-    }
-
-    @Override
-    public void shutdown() {
-        try {
-            deactivate();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not shutdown " + this, ex, LOGGER);
-        }
-        super.shutdown();
     }
 }

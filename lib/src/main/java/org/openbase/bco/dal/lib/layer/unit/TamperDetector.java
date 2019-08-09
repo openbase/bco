@@ -23,11 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
+import org.openbase.type.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface TamperDetector extends TamperStateProviderService {
+public interface TamperDetector extends Unit<TamperDetectorData>, TamperStateProviderService {
     
 }

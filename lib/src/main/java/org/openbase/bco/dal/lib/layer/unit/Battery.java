@@ -23,11 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.service.provider.BatteryStateProviderService;
+import org.openbase.type.domotic.unit.dal.BatteryDataType.BatteryData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Battery extends BatteryStateProviderService {
+public interface Battery extends Unit<BatteryData>, BatteryStateProviderService {
     
 }

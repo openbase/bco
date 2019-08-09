@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Dimmer extends PowerStateOperationService, BrightnessStateOperationService, Unit<DimmerData> {
+public interface Dimmer extends Unit<DimmerData>, PowerStateOperationService, BrightnessStateOperationService {
 
     /**
      * @return A list only containing the brightness state service type.
