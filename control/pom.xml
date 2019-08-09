@@ -1,26 +1,27 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>bco.dal.control</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO DAL Control</name>
-    
+
     <parent>
         <groupId>org.openbase</groupId>
         <artifactId>bco.dal</artifactId>
         <version>2.0-SNAPSHOT</version>
-    </parent>    
-    
+    </parent>
+
     <url>https://github.com/openbase/bco.dal/wiki</url>
-    
+
     <licenses>
         <license>
             <name>GPLv3</name>
             <url>http://www.gnu.org/licenses/gpl.html</url>
         </license>
     </licenses>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -54,7 +55,8 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher</mainClass>
+                            <mainClass>org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher
+                            </mainClass>
                             <id>bco-manager-location</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -75,7 +77,8 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.dal.control.layer.unit.device.FallbackDeviceManagerLauncher</mainClass>
+                            <mainClass>org.openbase.bco.dal.control.layer.unit.device.FallbackDeviceManagerLauncher
+                            </mainClass>
                             <id>bco-manager-device-fallback</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -103,7 +106,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
@@ -125,6 +128,11 @@
             <artifactId>jul.pattern.trigger</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.influxdata</groupId>
+            <artifactId>influxdb-client-java</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
