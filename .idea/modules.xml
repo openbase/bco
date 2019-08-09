@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/bco.dal.iml" filepath="$PROJECT_DIR$/bco.dal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/control/bco.dal.control.iml" filepath="$PROJECT_DIR$/control/bco.dal.control.iml" />
       <module fileurl="file://$PROJECT_DIR$/example/bco.dal.example.iml" filepath="$PROJECT_DIR$/example/bco.dal.example.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib/bco.dal.lib.iml" filepath="$PROJECT_DIR$/lib/bco.dal.lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/remote/bco.dal.remote.iml" filepath="$PROJECT_DIR$/remote/bco.dal.remote.iml" />
