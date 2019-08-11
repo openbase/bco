@@ -30,6 +30,7 @@ import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
+import org.openbase.bco.registry.message.core.MessageRegistryLauncher;
 import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
@@ -59,6 +60,7 @@ public class BCOLauncher {
                 ClassRegistryLauncher.class,
                 ActivityRegistryLauncher.class,
                 UnitRegistryLauncher.class,
+                MessageRegistryLauncher.class,
                 /**
                  * Manager *
                  */

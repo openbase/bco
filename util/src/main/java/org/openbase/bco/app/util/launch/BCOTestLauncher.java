@@ -32,6 +32,7 @@ import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
 import org.openbase.bco.authentication.lib.BCO;
+import org.openbase.bco.registry.message.core.MessageRegistryLauncher;
 import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
@@ -56,6 +57,7 @@ public class BCOTestLauncher {
                 ClassRegistryLauncher.class,
                 ActivityRegistryLauncher.class,
                 UnitRegistryLauncher.class,
+                MessageRegistryLauncher.class,
                 /**
                  * Manager *
                  */
