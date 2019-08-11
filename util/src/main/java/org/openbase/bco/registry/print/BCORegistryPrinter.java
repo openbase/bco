@@ -80,14 +80,14 @@ public class BCORegistryPrinter {
             maxUnitLabelLength = Math.max(maxUnitLabelLength, LabelProcessor.getBestMatch(deviceClass.getLabel()).length());
             deviceNumberByClassMap.put(deviceClass.getId(), 0);
         }
-        for (UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
+        for (UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.DEVICE)) {
             deviceNumberByClassMap.put(deviceUnitConfig.getDeviceConfig().getDeviceClassId(), deviceNumberByClassMap.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()) + 1);
         }
 
         // prepare units
         for (UnitType unitType : UnitType.values()) {
             maxUnitLabelLength = Math.max(maxUnitLabelLength, unitType.name().length());
-            int unitsPerType = Registries.getUnitRegistry().getUnitConfigs(unitType).size();
+            int unitsPerType = Registries.getUnitRegistry().getUnitConfigsByUnitType(unitType).size();
             unitNumberByTypeMap.put(unitType, unitsPerType);
         }
 
@@ -106,7 +106,7 @@ public class BCORegistryPrinter {
         // print device category
         System.out.println();
         System.out.println(LINE_DELIMITER_FAT);
-        printEntry("Devices", Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE).size());
+        printEntry("Devices", Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.DEVICE).size());
         System.out.println(LINE_DELIMITER_FAT);
 
         // sort devices

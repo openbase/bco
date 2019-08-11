@@ -13,6 +13,11 @@
     <file url="file://$PROJECT_DIR$/class-registry/remote" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/class-registry/test" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/message-registry" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/message-registry/core" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/message-registry/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/message-registry/remote" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/message-registry/test" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/remote" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/template-registry" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/template-registry/core" charset="UTF-8" />

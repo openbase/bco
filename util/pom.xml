@@ -158,7 +158,11 @@
             <artifactId>bco.registry.unit.core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.message.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>bco.registry.remote</artifactId>

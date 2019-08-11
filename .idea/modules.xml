@@ -14,6 +14,11 @@
       <module fileurl="file://$PROJECT_DIR$/class-registry/remote/bco.registry.class.remote.iml" filepath="$PROJECT_DIR$/class-registry/remote/bco.registry.class.remote.iml" />
       <module fileurl="file://$PROJECT_DIR$/class-registry/test/bco.registry.class.test.iml" filepath="$PROJECT_DIR$/class-registry/test/bco.registry.class.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib/bco.registry.lib.iml" filepath="$PROJECT_DIR$/lib/bco.registry.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/message-registry/bco.registry.message.iml" filepath="$PROJECT_DIR$/message-registry/bco.registry.message.iml" />
+      <module fileurl="file://$PROJECT_DIR$/message-registry/core/bco.registry.message.core.iml" filepath="$PROJECT_DIR$/message-registry/core/bco.registry.message.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/message-registry/lib/bco.registry.message.lib.iml" filepath="$PROJECT_DIR$/message-registry/lib/bco.registry.message.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/message-registry/remote/bco.registry.message.remote.iml" filepath="$PROJECT_DIR$/message-registry/remote/bco.registry.message.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/message-registry/test/bco.registry.message.test.iml" filepath="$PROJECT_DIR$/message-registry/test/bco.registry.message.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/remote/bco.registry.remote.iml" filepath="$PROJECT_DIR$/remote/bco.registry.remote.iml" />
       <module fileurl="file://$PROJECT_DIR$/template-registry/bco.registry.template.iml" filepath="$PROJECT_DIR$/template-registry/bco.registry.template.iml" />
       <module fileurl="file://$PROJECT_DIR$/template-registry/core/bco.registry.template.core.iml" filepath="$PROJECT_DIR$/template-registry/core/bco.registry.template.core.iml" />

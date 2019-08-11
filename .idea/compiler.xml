@@ -6,25 +6,29 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="bco.registry.activity.core" />
-        <module name="bco.registry.activity.lib" />
-        <module name="bco.registry.activity.remote" />
-        <module name="bco.registry.activity.test" />
-        <module name="bco.registry.class.core" />
-        <module name="bco.registry.class.lib" />
-        <module name="bco.registry.class.remote" />
-        <module name="bco.registry.class.test" />
-        <module name="bco.registry.lib" />
-        <module name="bco.registry.remote" />
         <module name="bco.registry.template.core" />
-        <module name="bco.registry.template.lib" />
-        <module name="bco.registry.template.remote" />
-        <module name="bco.registry.template.test" />
         <module name="bco.registry.unit.core" />
-        <module name="bco.registry.unit.lib" />
         <module name="bco.registry.unit.remote" />
+        <module name="bco.registry.class.lib" />
+        <module name="bco.registry.activity.test" />
+        <module name="bco.registry.template.lib" />
         <module name="bco.registry.unit.test" />
+        <module name="bco.registry.remote" />
+        <module name="bco.registry.template.remote" />
+        <module name="bco.registry.message.lib" />
+        <module name="bco.registry.activity.core" />
+        <module name="bco.registry.lib" />
+        <module name="bco.registry.activity.remote" />
         <module name="bco.registry.util" />
+        <module name="bco.registry.message.core" />
+        <module name="bco.registry.class.remote" />
+        <module name="bco.registry.template.test" />
+        <module name="bco.registry.activity.lib" />
+        <module name="bco.registry.class.core" />
+        <module name="bco.registry.class.test" />
+        <module name="bco.registry.unit.lib" />
+        <module name="bco.registry.message.remote" />
+        <module name="bco.registry.message.test" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -40,6 +44,11 @@
       <module name="bco.registry.class.remote" target="1.8" />
       <module name="bco.registry.class.test" target="1.8" />
       <module name="bco.registry.lib" target="1.8" />
+      <module name="bco.registry.message" target="1.8" />
+      <module name="bco.registry.message.core" target="1.8" />
+      <module name="bco.registry.message.lib" target="1.8" />
+      <module name="bco.registry.message.remote" target="1.8" />
+      <module name="bco.registry.message.test" target="1.8" />
       <module name="bco.registry.remote" target="1.8" />
       <module name="bco.registry.template" target="1.8" />
       <module name="bco.registry.template.core" target="1.8" />

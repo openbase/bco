@@ -31,14 +31,13 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.PermissionDeniedException;
-import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken.PermissionRule;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import org.openbase.type.domotic.communication.UserMessageType.UserMessage;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -103,6 +102,43 @@ public class AuthorizationWithTokenHelper {
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could verify access token", ex);
         }
+    }
+
+    /**
+     * Perform a permission check by validating that the actor is either the receiver or the sender of the message.
+     *
+     * @param authenticationBaseData the authentication data including who is authenticated and tokens used for authorization
+     * @param userMessage            the user message for which permissions are checked
+     * @param permissionType         the permission type which is checked
+     * @param unitRegistry           unit registry used to resolve ids
+     *
+     * @return a string representing the authorized user, this is either just the username of the authenticated user
+     * or the username of the authenticated user followed by the username of the issuer of the authorization token
+     *
+     * @throws CouldNotPerformException thrown if the user does not have permissions or if the check fails
+     */
+    public static AuthPair canDo(
+            final AuthenticationBaseData authenticationBaseData,
+            final UserMessage userMessage,
+            final PermissionType permissionType,
+            final UnitRegistry unitRegistry) throws CouldNotPerformException {
+
+        try {
+            // validate sender
+            return canDo(authenticationBaseData, unitRegistry.getUnitConfigById(userMessage.getSenderId()), permissionType, unitRegistry, null, null);
+        } catch (CouldNotPerformException ex) {
+            ExceptionStack exceptionStack = null;
+            exceptionStack = MultiException.push(AuthorizationWithTokenHelper.class, ex, exceptionStack);
+
+            // validate receiver if sender validation failed.
+            try {
+                return canDo(authenticationBaseData, unitRegistry.getUnitConfigById(userMessage.getRecipientId()), permissionType, unitRegistry, null, null);
+            } catch (CouldNotPerformException exx) {
+                exceptionStack = MultiException.push(AuthorizationWithTokenHelper.class, exx, exceptionStack);
+                MultiException.checkAndThrow(() -> "Permission denied!", exceptionStack);
+            }
+        }
+        throw new FatalImplementationErrorException("ExceptionStack empty in error case.", AuthorizationWithTokenHelper.class);
     }
 
     /**

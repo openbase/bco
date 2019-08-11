@@ -189,6 +189,7 @@
         <module>class-registry</module>
         <module>template-registry</module>
         <module>unit-registry</module>
+        <module>message-registry</module>
         <module>remote</module>
         <module>util</module>
         <module>lib</module>
