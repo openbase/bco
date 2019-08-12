@@ -4,11 +4,5 @@
     <file url="file://$PROJECT_DIR$/module/bco.bcozy/src/main/resources/languages/languages.properties" />
     <file url="file://$PROJECT_DIR$/module/bco.bcozy/src/main/resources/languages/languages_de_DE.properties" />
     <file url="file://$PROJECT_DIR$/module/bco.bcozy/src/main/resources/languages/languages_en_US.properties" />
-    <custom-resource-bundle>
-      <file value="file://$PROJECT_DIR$/module/bco.bcozy/src/main/resources/languages/languages.properties" />
-      <file value="file://$PROJECT_DIR$/module/bco.bcozy/src/main/resources/languages/languages_de_DE.properties" />
-      <file value="file://$PROJECT_DIR$/module/bco.bcozy/src/main/resources/languages/languages_en_US.properties" />
-      <base-name>languages</base-name>
-    </custom-resource-bundle>
   </component>
 </project>
