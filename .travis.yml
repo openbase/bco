@@ -4,12 +4,10 @@ dist: xenial
 
 jdk:
   - openjdk11
-  - openjdk8
   - openjdk-ea
 
 matrix:
   allow_failures:
-  - jdk: openjdk8
   - jdk: openjdk-ea
 
 # cache disabled since it cause many issues where artifacts are not correctly updated.
@@ -49,15 +47,11 @@ jobs:
       stage: compile
       script: skip  # skip tests
     - <<: *compile
-      jdk: openjdk8
-    - <<: *compile
       jdk: openjdk-ea
     - &documentation
       stage: documentation
       install: skip # skip compile
       script: .travis/generate-doc.sh
-    - <<: *documentation
-      jdk: openjdk8
     - <<: *documentation
       jdk: openjdk-ea
     - stage: deploy
