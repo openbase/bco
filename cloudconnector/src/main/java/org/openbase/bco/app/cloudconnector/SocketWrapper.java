@@ -36,6 +36,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.user.UserRemote;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
@@ -439,7 +440,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         }
 
         final UnitConfig unitConfig = unitConfigList.get(0);
-        if (unitConfig.getUnitHostId().isEmpty() || !unitConfig.getBoundToUnitHost()) {
+        if (!UnitConfigProcessor.isHostUnitAvailable(unitConfig) || !unitConfig.getBoundToUnitHost()) {
             return unitConfig;
         }
 
