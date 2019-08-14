@@ -23,6 +23,7 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  */
 
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -157,7 +158,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
         }
 
         // ignore all units from devices handled by the openhab app
-        if (!unitConfig.getUnitHostId().isEmpty()) {
+        if (UnitConfigProcessor.isHostUnitAvailable(unitConfig)) {
             UnitConfig unitHost = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
             if (unitHost.getUnitType() == UnitType.DEVICE) {
                 DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(unitHost.getDeviceConfig().getDeviceClassId());

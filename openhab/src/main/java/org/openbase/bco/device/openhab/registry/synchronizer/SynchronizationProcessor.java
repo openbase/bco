@@ -216,6 +216,7 @@ public class SynchronizationProcessor {
 
     private static String getChannelUID(final UnitConfig unitConfig, final ServiceType serviceType, final ServicePattern servicePattern, final ThingDTO thingDTO) throws CouldNotPerformException {
         String channelUID = "";
+        // todo: validate that unit host is available by using UnitConfigProcessor.isHostUnitAvailable(unitConfig) and make sure apps are handled as well.
         final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
         final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
         outer:
@@ -296,6 +297,7 @@ public class SynchronizationProcessor {
             itemDTO.name = itemName;
 
             // try to resolve item type from meta config
+            // todo: validate that unit host is available by using UnitConfigProcessor.isHostUnitAvailable(unitConfig) and make sure apps are handled as well.
             final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
             final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
             outer:
