@@ -55,7 +55,7 @@ import org.openbase.bco.registry.unit.core.plugin.*;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
-import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
+import org.openbase.bco.registry.unit.lib.generator.UnitShapeGenerator;
 import org.openbase.bco.registry.unit.lib.jp.*;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -975,7 +975,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Shape getUnitShapeByUnitConfig(final UnitConfig unitConfig) throws NotAvailableException {
-        return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
+        return UnitShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
     }
 
     @Override

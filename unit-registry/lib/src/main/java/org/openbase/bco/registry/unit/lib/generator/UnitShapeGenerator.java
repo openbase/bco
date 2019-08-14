@@ -31,7 +31,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.spatial.ShapeType.Shape;
 
-public class UntShapeGenerator {
+public class UnitShapeGenerator {
 
     /**
      * Method returns the unit shape of the given unit referred by the unit config.

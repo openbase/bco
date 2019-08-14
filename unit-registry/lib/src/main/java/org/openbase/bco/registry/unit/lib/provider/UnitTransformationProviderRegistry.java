@@ -25,7 +25,7 @@ package org.openbase.bco.registry.unit.lib.provider;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.provider.RootLocationConfigProvider;
 import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
-import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
+import org.openbase.bco.registry.unit.lib.generator.UnitShapeGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -471,6 +471,6 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
      */
     default Shape getUnitShapeByUnitConfig(final UnitConfig unitConfig) throws NotAvailableException {
-        return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
+        return UnitShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
     }
 }
