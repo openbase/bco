@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -65,7 +66,7 @@ public class DalUnitLocationIdConsistencyHandler extends AbstractProtoBufRegistr
 
         // Setup device location if unit has no location configured.
         if (!dalUnitConfig.getPlacementConfig().hasLocationId() || dalUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
-            if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+            if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
                 throw new NotAvailableException("unitConfig.unitHostId");
             }
 
@@ -94,8 +95,11 @@ public class DalUnitLocationIdConsistencyHandler extends AbstractProtoBufRegistr
                 throw new InvalidStateException("The configured Location[" + dalUnitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + dalUnitConfig.getId() + "] is unknown and can not be recovered!", ex);
             }
             // recover unit location with device location.
-            dalUnitConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(dalUnitConfig.getPlacementConfig()).setLocationId(deviceRegistry.getMessage(dalUnitConfig.getUnitHostId()).getPlacementConfig().getLocationId()));
-            modification = true;
+            // todo: implement handling for dal units offered by apps
+            if(UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
+                dalUnitConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(dalUnitConfig.getPlacementConfig()).setLocationId(deviceRegistry.getMessage(dalUnitConfig.getUnitHostId()).getPlacementConfig().getLocationId()));
+                modification = true;
+            }
         }
 
         if (modification) {

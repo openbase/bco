@@ -29,6 +29,7 @@ import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -374,7 +375,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
             }
 
             // resolve shape via unit host
-            if (unitConfig.hasUnitHostId()) {
+            if (UnitConfigProcessor.isHostUnitAvailable(unitConfig)) {
                 return getUnitShape(unitConfig.getUnitHostId());
             }
 

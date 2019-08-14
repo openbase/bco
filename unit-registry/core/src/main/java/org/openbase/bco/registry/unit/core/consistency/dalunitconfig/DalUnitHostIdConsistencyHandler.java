@@ -26,6 +26,7 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -61,7 +62,7 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig dalUnitConfig = entry.getMessage();
 
-        if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+        if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
 
             // generate host id for virtual units
             if (UnitConfigProcessor.isDalUnit(dalUnitConfig)) {
@@ -77,7 +78,9 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
 
             // retrieve the config of the unit host
             UnitConfig unitHostConfig;
-            if (unitDeviceConfigRegistry.contains(dalUnitConfig.getUnitHostId())) {
+            if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
+                throw new NotAvailableException("Host of DalUnitConfig [" + dalUnitConfig + "] does not exist");
+            } else if (unitDeviceConfigRegistry.contains(dalUnitConfig.getUnitHostId())) {
                 unitHostConfig = unitDeviceConfigRegistry.get(dalUnitConfig.getUnitHostId()).getMessage();
             } else if (unitAppConfigRegistry.contains(dalUnitConfig.getUnitHostId())) {
                 unitHostConfig = unitAppConfigRegistry.get(dalUnitConfig.getUnitHostId()).getMessage();

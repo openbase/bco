@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * #L%
  */
 
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -47,7 +48,7 @@ public class DalUnitBoundToHostPlugin extends ProtobufRegistryPluginAdapter<Stri
     @Override
     public void beforeUpdate(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws RejectedException {
         UnitConfig unitConfig = entry.getMessage();
-        if (unitConfig.getBoundToUnitHost()) {
+        if (unitConfig.getBoundToUnitHost() && UnitConfigProcessor.isHostUnitAvailable(unitConfig)) {
             try {
                 UnitConfig deviceUnitConfig = deviceRegistry.getMessage(unitConfig.getUnitHostId());
                 PlacementConfig unitPlacement = unitConfig.getPlacementConfig();

@@ -315,4 +315,18 @@ public class UnitConfigProcessor {
         }
         return unitConfig.getAlias(0);
     }
+
+    /**
+     * Method checks if the unit referred via the unitConfig is managed by an host unit.
+     * <p>
+     * Since only apps and devices are host units, they do not link to any host unit.
+     *
+     * @param unitConfig config identifies the unit to check.
+     *
+     * @return true if the host unit is available, otherwise false in case the unit itself is already a host unit.
+     */
+    public static boolean isHostUnitAvailable(final UnitConfigOrBuilder unitConfig) {
+        // in case the host unit field is referring the id of the unit itself, then no host unit is registered.
+        return unitConfig.hasUnitHostId() && !unitConfig.getUnitHostId().isEmpty() && !unitConfig.getUnitHostId().equals(unitConfig.getId());
+    }
 }

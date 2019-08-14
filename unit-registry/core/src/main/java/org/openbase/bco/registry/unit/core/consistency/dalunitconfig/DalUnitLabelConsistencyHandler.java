@@ -78,7 +78,7 @@ public class DalUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyH
         UnitConfig.Builder dalUnitConfig = entry.getMessage().toBuilder();
         // virtual units will be handles by super call
         if (!UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
-            if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+            if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
                 throw new NotAvailableException("unitConfig.unitHostId");
             }
 

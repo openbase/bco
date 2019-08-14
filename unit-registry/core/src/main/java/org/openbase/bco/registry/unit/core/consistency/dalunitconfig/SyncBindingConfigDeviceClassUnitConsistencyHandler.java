@@ -62,9 +62,10 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
             return;
         }
 
-        if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+        if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
             throw new NotAvailableException("dalUnitConfig.unitHostId");
         }
+
         DeviceConfig deviceConfig = deviceUnitRegistry.getMessage(dalUnitConfig.getUnitHostId()).getDeviceConfig();
 
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {

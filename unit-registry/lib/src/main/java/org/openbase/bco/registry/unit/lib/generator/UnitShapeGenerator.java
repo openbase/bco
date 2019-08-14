@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.lib.generator;
 
 import org.openbase.bco.registry.lib.provider.clazz.DeviceClassCollectionProvider;
 import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -56,8 +57,8 @@ public class UnitShapeGenerator {
                 }
             }
 
-            // resolve shape via unit host
-            if (unitConfig.hasUnitHostId()) {
+            // resolve shape via unit host if unit has a unit host.
+            if (UnitConfigProcessor.isHostUnitAvailable(unitConfig)) {
                 return generateUnitShape(unitConfig.getUnitHostId(), unitConfigCollectionProvider, deviceClassCollectionProvider);
             }
 

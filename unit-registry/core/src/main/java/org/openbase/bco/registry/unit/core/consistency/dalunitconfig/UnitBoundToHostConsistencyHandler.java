@@ -54,7 +54,7 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
             return;
         }
 
-        if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+        if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
             throw new NotAvailableException("dalUnitConfig.unitHostId");
         }
 

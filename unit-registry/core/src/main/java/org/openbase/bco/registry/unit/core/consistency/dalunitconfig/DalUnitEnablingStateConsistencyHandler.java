@@ -62,7 +62,7 @@ public class DalUnitEnablingStateConsistencyHandler extends AbstractProtoBufRegi
             return;
         }
 
-        if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+        if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
             throw new NotAvailableException("unitConfig.unitHostId");
         }
 
