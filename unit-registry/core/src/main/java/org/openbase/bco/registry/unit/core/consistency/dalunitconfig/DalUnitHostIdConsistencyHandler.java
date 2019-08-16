@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -62,7 +62,8 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig dalUnitConfig = entry.getMessage();
 
-        if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
+        // validate virtual units
+        if (!UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig) && !UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
 
             // generate host id for virtual units
             if (UnitConfigProcessor.isDalUnit(dalUnitConfig)) {
@@ -70,7 +71,10 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
             }
 
             throw new VerificationFailedException("DalUnitConfig [" + dalUnitConfig + "] has no unitHostId!");
-        } else {
+        }
+
+        // validate hostunit - unit reference if hostunit is available
+        if (UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
             // skip unit host check if device or app registry is maybe currently registering this unit.
             if (unitDeviceConfigRegistry.isBusyByCurrentThread() || unitAppConfigRegistry.isBusyByCurrentThread()) {
                 return;
@@ -90,9 +94,9 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
 
             // retrieve the units the host knows about
             List<String> hostUnitIdList = new ArrayList<>();
-            if(unitHostConfig.getUnitType() == UnitType.DEVICE) {
+            if (unitHostConfig.getUnitType() == UnitType.DEVICE) {
                 hostUnitIdList = unitHostConfig.getDeviceConfig().getUnitIdList();
-            } else if(unitHostConfig.getUnitType() == UnitType.APP) {
+            } else if (unitHostConfig.getUnitType() == UnitType.APP) {
                 hostUnitIdList = unitHostConfig.getAppConfig().getUnitIdList();
             }
 
