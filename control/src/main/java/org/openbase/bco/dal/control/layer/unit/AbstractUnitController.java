@@ -76,6 +76,7 @@ import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.processing.VariableProvider;
 import org.openbase.jul.schedule.*;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.configuration.EntryType;
@@ -90,26 +91,20 @@ import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
-import org.openbase.type.domotic.database.DatabaseQueryType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
-import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
-import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
@@ -167,34 +162,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final Map<ServiceType, Message> requestedStateCache;
     private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
     final BuilderSyncSetup<DB> builderSetup;
-
-    private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
-    private static final Integer READ_TIMEOUT = 60;
-    private static final Integer WRITE_TIMEOUT = 60;
-    private static final Integer CONNECT_TIMOUT = 40;
-    private static final String INFLUXDB_URL;
-    private static String INFLUXDB_ORG_ID;
-    private static final String INFLUXDB_PROPERTIES = "influxdb.properties";
-    private static Properties influxDBProperties = new Properties();
-    private static final char[] TOKEN;
-
-    static {
-        loadInfluxDBProperties();
-        TOKEN = influxDBProperties.get("token").toString().toCharArray();
-        INFLUXDB_ORG_ID = influxDBProperties.get("influxdb_org_id").toString();
-        INFLUXDB_URL = influxDBProperties.get("influxdb_url").toString();
-    }
-
-    private static void loadInfluxDBProperties() {
-        try {
-            final File propertiesFile = new File(JPService.getProperty(JPBCOHomeDirectory.class).getValue(), INFLUXDB_PROPERTIES);
-            if (propertiesFile.exists()) {
-                influxDBProperties.load(new FileInputStream(propertiesFile));
-            }
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory("No influxdb properties found!", ex, LoggerFactory.getLogger(AbstractUnitController.class));
-        }
-    }
 
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
@@ -294,6 +261,19 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    @Override
+    public UnitConfigType.UnitConfig applyConfigUpdate(UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        config = super.applyConfigUpdate(config);
+
+        bucketName = generateVariablePool().getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
+        batchTime = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT));
+        batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
+        databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
+        token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
+        org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
+        return config;
     }
 
     @Override
@@ -1622,194 +1602,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             } catch (CouldNotPerformException ex1) {
                 throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
             }
-        }
-    }
-
-    /**
-     * Creates a connection to the influxdb and sends a query.
-     *
-     * @param query Query to send
-     * @return List of FluxTables
-     * @throws CouldNotPerformException
-     */
-    private List<FluxTable> sendQuery(final String query) throws CouldNotPerformException {
-
-        try (
-                InfluxDBClient influxDBClient = InfluxDBClientFactory
-                        .create(INFLUXDB_URL + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", TOKEN)) {
-
-            if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
-                throw new CouldNotPerformException("Could not connect to database server at " + INFLUXDB_URL + "!");
-
-            }
-            QueryApi queryApi = influxDBClient.getQueryApi();
-
-            List<FluxTable> tables = queryApi.query(query, INFLUXDB_ORG_ID);
-            return tables;
-
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not send query to database!", ex);
-
-        }
-    }
-
-    /**
-     * Builds a  flux query string for aggregating values.
-     *
-     * @param databaseQuery The databaseQuery Object which is used to build the Flux query.
-     * @param isEnum        If the aggregated fields consists of enum values.
-     * @return
-     */
-    private String buildGetAggregatedQuery(final DatabaseQueryType.DatabaseQuery databaseQuery, boolean isEnum) {
-        String measurement = databaseQuery.getMeasurement();
-        String timeStart = String.valueOf(databaseQuery.getTimeRangeStart().getTime());
-        String timeStop = String.valueOf(databaseQuery.getTimeRangeStop().getTime());
-        List<EntryType.Entry> filterList = databaseQuery.getFilterList();
-
-        String query = "from(bucket: \"" + INFLUXDB_BUCKET_DEFAULT + "\")" +
-                " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
-                " |> filter(fn: (r) => r._measurement == \"" + measurement + "\")";
-
-        for (EntryType.Entry entry : filterList) {
-            query = addFilterToQuery(query, entry);
-
-        }
-
-        if (isEnum) {
-
-            query += " |> group(columns: [\"_value\"])" +
-                    " |> map(fn: (r) => ({_time: r._time, index: 1}))" +
-                    "|> cumulativeSum(columns: [\"index\"])" +
-                    "|> last()";
-
-            return query;
-        } else {
-
-            String window = databaseQuery.getAggregatedWindow();
-            // add filters
-            query += "|> group(columns: [\"_field\"], mode:\"by\")" +
-                    " |> aggregateWindow(every:" + window + " , fn: mean)" +
-                    " |> mean(column: \"_value\")";
-
-            return query;
-        }
-    }
-
-    /**
-     * Add a filter to a flux query string.
-     *
-     * @param query  The flux query string.
-     * @param filter Entry object with key and value
-     * @return
-     */
-    private String addFilterToQuery(String query, EntryType.Entry filter) {
-        String field = filter.getKey();
-        String value = filter.getValue();
-
-        String filterString = " |> filter(fn: (r) => r." + field + " == \"" + value + "\")";
-
-        query += filterString;
-        return query;
-    }
-
-    /**
-     * Calculates the percentages of the different (enum) values in a List of FluxTables
-     *
-     * @param tables List of FluxTables with the occurrence ( as index key) of the enum values (as _value)
-     * @return Map with the Enum Value Index as Key and the percentage (betweeen 0-1) as value.
-     */
-    private Map<Integer, Double> calculateEnumStatePercentage(List<FluxTable> tables) {
-        Map<Integer, Double> percentages = new HashMap<>();
-        double sum = 0;
-
-        for (FluxTable fluxTable : tables) {
-            List<FluxRecord> records = fluxTable.getRecords();
-            for (FluxRecord fluxRecord : records) {
-                percentages.put((int) Double.parseDouble(fluxRecord.getValueByKey("_value").toString()), Double.parseDouble(fluxRecord.getValueByKey("index").toString()));
-                sum += Double.parseDouble(fluxRecord.getValueByKey("index").toString());
-            }
-        }
-        for (Map.Entry<Integer, Double> entry : percentages.entrySet()) {
-            entry.setValue(entry.getValue() / sum);
-        }
-
-        return percentages;
-    }
-
-    /**
-     * Build a Map of String,Double pairs out of FluxTables for easy filtering.
-     *
-     * @param tables List of FluxTables.
-     * @return Map<String, Double> with the fields as key and the values as value.
-     */
-    private Map<String, Double> aggregatedFluxTablesToMap(List<FluxTable> tables) {
-        Map<String, Double> aggregatedValues = new HashMap<>();
-        for (FluxTable fluxTable : tables) {
-            List<FluxRecord> records = fluxTable.getRecords();
-            for (FluxRecord fluxRecord : records) {
-                aggregatedValues.put(fluxRecord.getField(), (double) fluxRecord.getValueByKey("_value"));
-            }
-        }
-        return aggregatedValues;
-    }
-
-    /**
-     * Get the aggregated value coverage of a service state.
-     *
-     * @param databaseQuery DatabaseQuery which will be used to build a query which will be send to the influxdb.
-     * @return AggregatedServiceState  with the aggregated value coverage, the databaseQuery the service_type and the unit_id.
-     */
-    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
-        try {
-            ServiceTemplateType.ServiceTemplate.ServiceType serviceType = databaseQuery.getServiceType();
-            Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(serviceType);
-            AggregatedServiceStateType.AggregatedServiceState.Builder builder = AggregatedServiceStateType.AggregatedServiceState.newBuilder();
-            builder.setServiceType(serviceType);
-            builder.setQuery(databaseQuery);
-
-            String query = null;
-            Map<String, Double> aggregatedValues = new HashMap<>();
-            Map<Integer, Double> aggregatedEnumValues;
-            List<FluxTable> fluxTableList;
-
-            for (Descriptors.FieldDescriptor fieldDescriptor : serviceStateBuilder.getDescriptorForType().getFields()) {
-
-                if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.ENUM) {
-                    if (query == null) {
-                        query = buildGetAggregatedQuery(databaseQuery, true);
-                        fluxTableList = sendQuery(query);
-                        aggregatedEnumValues = calculateEnumStatePercentage(fluxTableList);
-                        Descriptors.FieldDescriptor aggregatedValueCoverageField = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "aggregated_value_coverage");
-                        for (Map.Entry<Integer, Double> entry : aggregatedEnumValues.entrySet()) {
-                            Message.Builder aggregatedValueBuilder = serviceStateBuilder.newBuilderForField(aggregatedValueCoverageField);
-                            Descriptors.FieldDescriptor key = aggregatedValueBuilder.getDescriptorForType().findFieldByName("key");
-                            Descriptors.FieldDescriptor coverage = aggregatedValueBuilder.getDescriptorForType().findFieldByName("coverage");
-                            aggregatedValueBuilder.setField(coverage, entry.getValue());
-                            aggregatedValueBuilder.setField(key, key.getEnumType().getValues().get(entry.getKey()));
-                            serviceStateBuilder.addRepeatedField(aggregatedValueCoverageField, aggregatedValueBuilder.build());
-                        }
-                    }
-
-                } else if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.DOUBLE) {
-                    if (query == null) {
-                        query = buildGetAggregatedQuery(databaseQuery, false);
-                        fluxTableList = sendQuery(query);
-                        aggregatedValues = aggregatedFluxTablesToMap(fluxTableList);
-                    }
-                    if (aggregatedValues.containsKey(fieldDescriptor.getName())) {
-                        serviceStateBuilder.setField(fieldDescriptor, aggregatedValues.get(fieldDescriptor.getName()));
-                    }
-                }
-            }
-            Services.invokeOperationServiceMethod(serviceType, builder, serviceStateBuilder.build());
-            AggregatedServiceStateType.AggregatedServiceState newAggregatedServiceState = builder.build();
-
-            return FutureProcessor.completedFuture(newAggregatedServiceState);
-        } catch (CouldNotPerformException ex) {
-
-            ex.printStackTrace();
-
-            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state ,ex")));
         }
     }
 }
