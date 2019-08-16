@@ -7,35 +7,26 @@ import org.influxdata.client.InfluxDBClientFactory;
 import org.influxdata.client.QueryApi;
 import org.influxdata.query.FluxRecord;
 import org.influxdata.query.FluxTable;
-import org.openbase.bco.authentication.lib.jp.JPBCOHomeDirectory;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.domotic.database.DatabaseQueryType;
-import org.openbase.type.domotic.registry.UnitRegistryDataType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Future;
 
 public class InfluxDbProcessor {
@@ -43,7 +34,6 @@ public class InfluxDbProcessor {
 
     private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
     private static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
-    private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
     private static final String INFLUXDB_BATCH_TIME = "INFLUXDB_BATCH_TIME";
     private static final String INFLUXDB_BATCH_TIME_DEFAULT = "1000";
     private static final String INFLUXDB_BATCH_LIMIT = "INFLUXDB_BATCH_LIMIT";
@@ -52,6 +42,7 @@ public class InfluxDbProcessor {
     private static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     private static final String INFLUXDB_ORG_DEFAULT = "openbase";
     private static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
+    private static final String INFLUXDB_ORG_ID="INFLUXDB_ORG_ID";
     private static final long READ_TIMEOUT = 60;
     private static final long WRITE_TIMEOUT = 60;
     private static final long CONNECT_TIMOUT = 40;
@@ -59,11 +50,14 @@ public class InfluxDbProcessor {
     private static MetaConfigPool metaConfigPool = new MetaConfigPool();
 
     static {
-        Registries.getUnitRegistry().addDataObserver((source, data) -> {
-            updateConfiguration();
-        });
+        try {
+            Registries.getUnitRegistry().addDataObserver((source, data) -> {
+                updateConfiguration();
+            });
+        } catch (NotAvailableException ex) {
+            LOGGER.error("Unit Registry not available", ex);
+        }
     }
-
 
 
     private static void updateConfiguration() {
@@ -72,7 +66,6 @@ public class InfluxDbProcessor {
             if (influxdbConnectorApps.size() > 1) {
                 LOGGER.warn("More than one influxdbConnectorApp found!");
             }
-            //todo clear metaconfigPool
             for (UnitConfigType.UnitConfig influxdbConnectorApp : influxdbConnectorApps) {
                 metaConfigPool.register(new MetaConfigVariableProvider(LabelProcessor.getBestMatch(influxdbConnectorApp.getLabel()), influxdbConnectorApp.getMetaConfig()));
             }
