@@ -29,6 +29,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import javax.vecmath.Point2d;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE;
 
@@ -37,24 +40,43 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
  */
 public interface EmphasisStateProviderService extends ProviderService {
 
-    /* THIS WILL LATER BE USED TO COMPUTE THE AREA OF EACH EMPHASIS CATEGORY WHEN REPRESENTED WITHIN A TRIANGLE. */
+    /* THIS IS USED TO COMPUTE THE AREA OF EACH EMPHASIS CATEGORY WHEN REPRESENTED WITHIN A TRIANGLE. */
     double EMPHASIS_TRIANGLE_TOTAL_AREA = 1d;
-    double EMPHASIS_TRIANGLE_OUTER_LINE = 1d / Math.sqrt(Math.sqrt(3d) / 4d);
+    double EMPHASIS_TRIANGLE_OUTER_LINE = EMPHASIS_TRIANGLE_TOTAL_AREA / Math.sqrt(Math.sqrt(3d) / 4d);
     double EMPHASIS_TRIANGLE_OUTER_LINE_HALF = EMPHASIS_TRIANGLE_OUTER_LINE / 2d;
 
     double EMPHASIS_TRIANGLE_HEIGHT = (EMPHASIS_TRIANGLE_OUTER_LINE * Math.sqrt(3d)) / 2d;
     double EMPHASIS_TRIANGLE_HEIGHT_HALF = EMPHASIS_TRIANGLE_HEIGHT / 2d;
 
     static double computeComfortTriangleArea(final double x, final double y) {
-        return Math.max(0d, Math.min(1d, 0.5d * Math.abs((x * EMPHASIS_TRIANGLE_HEIGHT) - (y * EMPHASIS_TRIANGLE_OUTER_LINE_HALF))));
+        return Math.max(0d, Math.min(EMPHASIS_TRIANGLE_TOTAL_AREA, 0.5d * Math.abs((x * EMPHASIS_TRIANGLE_HEIGHT) - (y * EMPHASIS_TRIANGLE_OUTER_LINE_HALF))));
     }
 
     static double computeEconomyTriangleArea(final double x, final double y) {
-        return Math.max(0d, Math.min(1d, 0.5d * Math.abs(((EMPHASIS_TRIANGLE_OUTER_LINE - x) * (EMPHASIS_TRIANGLE_HEIGHT -y)) - ((EMPHASIS_TRIANGLE_OUTER_LINE_HALF - x) * (-y)))));
+        return Math.max(0d, Math.min(EMPHASIS_TRIANGLE_TOTAL_AREA, 0.5d * Math.abs(((EMPHASIS_TRIANGLE_OUTER_LINE - x) * (EMPHASIS_TRIANGLE_HEIGHT - y)) - ((EMPHASIS_TRIANGLE_OUTER_LINE_HALF - x) * (-y)))));
     }
 
     static double computeSecurityTriangleArea(final double x, final double y) {
-        return Math.max(0d, Math.min(1d, 0.5d * Math.abs(EMPHASIS_TRIANGLE_OUTER_LINE * y)));
+        return Math.max(0d, Math.min(EMPHASIS_TRIANGLE_TOTAL_AREA, 0.5d * Math.abs(EMPHASIS_TRIANGLE_OUTER_LINE * y)));
+    }
+
+    /**
+     * Method can be used to compute the emphasis triangle handle coordinates out of the given {@code emphasisState}.
+     *
+     * The coordinates are related to an coordinate system with its base at the left bottom corner of the emphasis triangle.
+     * Therefore the following ranges are used:
+     * x = [0..{@code EMPHASIS_TRIANGLE_OUTER_LINE}]
+     * y = [0..{@code EMPHASIS_TRIANGLE_HEIGHT}]
+     *
+     * @param emphasisState the state used to resolve the emphasis category weights.
+     * @return the coordinates of the handle.
+     */
+    static Point2d computeTriangleHandlePosition(final EmphasisState emphasisState) {
+        // compute coordinates out of the given emphasis state.
+        double x = (2 * emphasisState.getComfort() + emphasisState.getSecurity()) / EMPHASIS_TRIANGLE_HEIGHT;
+        double y = (2 * emphasisState.getSecurity()) / EMPHASIS_TRIANGLE_OUTER_LINE;
+
+        return new Point2d(x, y);
     }
 
     @RPCMethod(legacy = true)
@@ -76,17 +98,17 @@ public interface EmphasisStateProviderService extends ProviderService {
         boolean emphasisFound = false;
 
         if (emphasisState.hasComfort()) {
-            OperationService.verifyValueRange("comfort", comfort, 0d, 1d);
+            OperationService.verifyValueRange("comfort", comfort, 0d, EMPHASIS_TRIANGLE_TOTAL_AREA);
             emphasisFound = true;
         }
 
         if (emphasisState.hasEconomy()) {
-            OperationService.verifyValueRange("economy", economy, 0d, 1d);
+            OperationService.verifyValueRange("economy", economy, 0d, EMPHASIS_TRIANGLE_TOTAL_AREA);
             emphasisFound = true;
         }
 
         if (emphasisState.hasSecurity()) {
-            OperationService.verifyValueRange("security", security, 0d, 1d);
+            OperationService.verifyValueRange("security", security, 0d, EMPHASIS_TRIANGLE_TOTAL_AREA);
             emphasisFound = true;
         }
 
@@ -94,7 +116,7 @@ public interface EmphasisStateProviderService extends ProviderService {
             throw new VerificationFailedException("EmphasisState does not contain emphasis!");
         }
 
-        OperationService.verifyValue("emphasis sum", comfort + economy + security, 1d, MARGIN);
+        OperationService.verifyValue("emphasis sum", comfort + economy + security, EMPHASIS_TRIANGLE_TOTAL_AREA, MARGIN);
 
         // make sure all of the emphasis weight distances are greater then MARGIN, otherwise correct by default values.
         if (Math.abs(security - economy) <= MARGIN && Math.abs(security - comfort) <= MARGIN) {
@@ -283,4 +305,6 @@ public interface EmphasisStateProviderService extends ProviderService {
         final EmphasisState emphasisState = getEmphasisState();
         return emphasisState.getSecurity() / (emphasisState.getSecurity() + emphasisState.getComfort());
     }
+
+
 }

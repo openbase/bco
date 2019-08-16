@@ -607,7 +607,11 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      */
     default UnitConfig getHostUnitConfig() throws NotAvailableException {
         try {
-            return Registries.getUnitRegistry().getUnitConfigById(getConfig().getUnitHostId());
+            final UnitConfig config = getConfig();
+            if(!UnitConfigProcessor.isHostUnitAvailable(config)) {
+                throw new InvalidStateException("Unit itself might me a host unit and therefore do not link to any host unit.");
+            }
+            return Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("HostUnitConfig", ex);
         }

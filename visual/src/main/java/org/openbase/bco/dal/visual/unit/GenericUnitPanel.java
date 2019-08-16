@@ -30,6 +30,7 @@ import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.dal.visual.util.StatusPanel.StatusType;
 import org.openbase.bco.dal.visual.util.UnitRemoteView;
 
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -115,7 +116,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote<Message>> extends Un
 
                 String unitHostLabel;
                 try {
-                    if (unitConfig.hasUnitHostId() && !unitConfig.getUnitHostId().isEmpty()) {
+                    if (UnitConfigProcessor.isHostUnitAvailable(unitConfig)) {
                         unitHostLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getLabel());
                     } else {
                         unitHostLabel = "";
