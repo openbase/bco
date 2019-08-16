@@ -262,19 +262,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             throw new InitializationException(this, ex);
         }
     }
-
-    @Override
-    public UnitConfigType.UnitConfig applyConfigUpdate(UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        config = super.applyConfigUpdate(config);
-
-        bucketName = generateVariablePool().getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
-        batchTime = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT));
-        batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
-        databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
-        token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
-        org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
-        return config;
-    }
+    
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
