@@ -55,8 +55,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher
-                            </mainClass>
+                            <mainClass>org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher</mainClass>
                             <id>bco-manager-location</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -77,8 +76,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.dal.control.layer.unit.device.FallbackDeviceManagerLauncher
-                            </mainClass>
+                            <mainClass>org.openbase.bco.dal.control.layer.unit.device.FallbackDeviceManagerLauncher</mainClass>
                             <id>bco-manager-device-fallback</id>
                             <platforms>
                                 <platform>unix</platform>

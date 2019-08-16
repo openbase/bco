@@ -119,6 +119,7 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -581,7 +582,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
+     *
      * @return the action identified by the provided id as described above.
+     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
@@ -613,6 +616,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
+     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
@@ -767,6 +771,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
+     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
      */
@@ -964,6 +969,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
+     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1476,7 +1482,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     *
      * @return a location remote instance.
+     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1524,6 +1532,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
+     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1557,6 +1566,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
