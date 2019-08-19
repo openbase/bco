@@ -129,7 +129,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      */
     default Shape getUnitShape() throws NotAvailableException {
         try {
-            return Registries.getUnitRegistry().getUnitShape(getConfig());
+            return Registries.getUnitRegistry().getUnitShapeByUnitConfig(getConfig());
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitShape", ex);
         }
@@ -688,7 +688,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      */
     default UnitConfig getParentLocationConfig() throws NotAvailableException {
         try {
-            return Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId(), UnitType.LOCATION);
+            return Registries.getUnitRegistry().getUnitConfigByIdAndUnitType(getConfig().getPlacementConfig().getLocationId(), UnitType.LOCATION);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("LocationConfig", ex);
         }
