@@ -1150,7 +1150,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         }
 
         if (locationType == LocationType.UNKNOWN) {
-            result.sort((o1, o2) -> {
+            Collections.sort(result, (o1, o2) -> {
                 switch (o1.getLocationConfig().getLocationType()) {
                     case REGION:
                         switch (o2.getLocationConfig().getLocationType()) {
