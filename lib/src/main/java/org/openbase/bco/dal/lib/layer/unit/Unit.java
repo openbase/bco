@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -49,7 +49,8 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.rct.Transform;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
-import org.openbase.type.domotic.database.DatabaseQueryType;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -608,7 +609,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     default UnitConfig getHostUnitConfig() throws NotAvailableException {
         try {
             final UnitConfig config = getConfig();
-            if(!UnitConfigProcessor.isHostUnitAvailable(config)) {
+            if (!UnitConfigProcessor.isHostUnitAvailable(config)) {
                 throw new InvalidStateException("Unit itself might me a host unit and therefore do not link to any host unit.");
             }
             return Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId());
@@ -718,5 +719,8 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     }
 
     @RPCMethod
-    Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery);
+    Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery);
+
+    @RPCMethod
+    Future<RecordType.Record> queryRecord(final QueryType.Query databaseQuery);
 }

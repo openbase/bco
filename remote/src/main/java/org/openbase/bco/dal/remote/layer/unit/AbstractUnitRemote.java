@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -54,7 +54,8 @@ import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBui
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.database.DatabaseQueryType;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -687,11 +688,17 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         return infrastructure;
     }
 
-    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
+    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
         return RPCHelper.callRemoteMethod(databaseQuery, this, AggregatedServiceStateType.AggregatedServiceState.class);
 
     }
 
 //    public Future<AggregatedServiceState> queryAggregatedServiceStateAuthenticated(final DatabaseQuery databaseQuery);
+
+    @Override
+    public Future<RecordType.Record> queryRecord(final QueryType.Query databaseQuery) {
+        return RPCHelper.callRemoteMethod(databaseQuery, this, RecordType.Record.class);
+
+    }
 
 }

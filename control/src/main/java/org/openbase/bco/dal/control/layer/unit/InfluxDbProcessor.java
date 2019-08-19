@@ -1,5 +1,27 @@
 package org.openbase.bco.dal.control.layer.unit;
 
+/*-
+ * #%L
+ * BCO DAL Control
+ * %%
+ * Copyright (C) 2014 - 2019 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.influxdata.client.InfluxDBClient;
@@ -17,7 +39,8 @@ import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.configuration.EntryType;
-import org.openbase.type.domotic.database.DatabaseQueryType;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.unit.UnitConfigType;
@@ -42,7 +65,7 @@ public class InfluxDbProcessor {
     private static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     private static final String INFLUXDB_ORG_DEFAULT = "openbase";
     private static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
-    private static final String INFLUXDB_ORG_ID="INFLUXDB_ORG_ID";
+    private static final String INFLUXDB_ORG_ID = "INFLUXDB_ORG_ID";
     private static final long READ_TIMEOUT = 60;
     private static final long WRITE_TIMEOUT = 60;
     private static final long CONNECT_TIMOUT = 40;
@@ -137,13 +160,35 @@ public class InfluxDbProcessor {
             }
             QueryApi queryApi = influxDBClient.getQueryApi();
 
-            List<FluxTable> tables = queryApi.query(query, getInfluxdbOrgId());
-            return tables;
+            return queryApi.query(query, getInfluxdbOrgId());
 
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not send query to database!", ex);
 
         }
+    }
+
+    private static String buildRecordQuery(final QueryType.Query databaseQuery) {
+        String measurement = databaseQuery.getMeasurement();
+        String timeStart = String.valueOf(databaseQuery.getTimeRangeStart().getTime());
+        String timeStop = String.valueOf(databaseQuery.getTimeRangeStop().getTime());
+        String window = String.valueOf(databaseQuery.getAggregatedWindow());
+        List<EntryType.Entry> filterList = databaseQuery.getFilterList();
+
+        String query = "from(bucket: \"" + getInfluxdbBucket() + "\")" +
+                " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
+                " |> filter(fn: (r) => r._measurement == \"" + measurement + "\")";
+
+        for (EntryType.Entry entry : filterList) {
+            query = addFilterToQuery(query, entry);
+
+        }
+        query += " |> aggregateWindow(every:" + window + " , fn: mean)" +
+                " |> group(columns: [\"_time\"], mode:\"by\")" +
+                "|> mean(column: \"_value\")";
+
+        return query;
+
     }
 
     /**
@@ -153,7 +198,7 @@ public class InfluxDbProcessor {
      * @param isEnum        If the aggregated fields consists of enum values.
      * @return
      */
-    private static String buildGetAggregatedQuery(final DatabaseQueryType.DatabaseQuery databaseQuery, boolean isEnum) {
+    private static String buildGetAggregatedQuery(final QueryType.Query databaseQuery, boolean isEnum) {
         String measurement = databaseQuery.getMeasurement();
         String timeStart = String.valueOf(databaseQuery.getTimeRangeStart().getTime());
         String timeStop = String.valueOf(databaseQuery.getTimeRangeStop().getTime());
@@ -229,6 +274,15 @@ public class InfluxDbProcessor {
         return percentages;
     }
 
+
+    public static Future<RecordType.Record> queryRecord(final QueryType.Query databaseQuery) {
+        String query = buildRecordQuery(databaseQuery);
+        List<FluxTable> fluxTableList = sendQuery(query);
+
+
+
+    }
+
     /**
      * Build a Map of String,Double pairs out of FluxTables for easy filtering.
      *
@@ -252,7 +306,7 @@ public class InfluxDbProcessor {
      * @param databaseQuery DatabaseQuery which will be used to build a query which will be send to the influxdb.
      * @return AggregatedServiceState  with the aggregated value coverage, the databaseQuery the service_type and the unit_id.
      */
-    public static Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final DatabaseQueryType.DatabaseQuery databaseQuery) {
+    public static Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
         try {
             ServiceTemplateType.ServiceTemplate.ServiceType serviceType = databaseQuery.getServiceType();
             Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(serviceType);

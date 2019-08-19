@@ -16,6 +16,9 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
+import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
@@ -302,4 +305,8 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
+
+
+
+
 }
