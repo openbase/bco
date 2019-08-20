@@ -55,6 +55,7 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -695,9 +696,9 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
 //    public Future<AggregatedServiceState> queryAggregatedServiceStateAuthenticated(final DatabaseQuery databaseQuery);
 
-    @Override
-    public Future<RecordType.Record> queryRecord(final QueryType.Query databaseQuery) {
-        return RPCHelper.callRemoteMethod(databaseQuery, this, RecordType.Record.class);
+
+    public  Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
+        return RPCHelper.callRemoteMethod(databaseQuery, this, RecordCollectionType.RecordCollection.class);
 
     }
 

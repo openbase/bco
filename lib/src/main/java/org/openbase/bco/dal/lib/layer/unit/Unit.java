@@ -50,6 +50,7 @@ import org.openbase.rct.Transform;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -722,5 +723,5 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery);
 
     @RPCMethod
-    Future<RecordType.Record> queryRecord(final QueryType.Query databaseQuery);
+    Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery);
 }
