@@ -33,6 +33,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
@@ -40,10 +41,12 @@ import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.timing.TimestampType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,10 +95,11 @@ public class InfluxDbProcessor {
             for (UnitConfigType.UnitConfig influxdbConnectorApp : influxdbConnectorApps) {
                 metaConfigPool.register(new MetaConfigVariableProvider(LabelProcessor.getBestMatch(influxdbConnectorApp.getLabel()), influxdbConnectorApp.getMetaConfig()));
             }
-        } catch (CouldNotPerformException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not update configuration!", ex, LOGGER);
+        } catch (InterruptedException ex) {
+            ExceptionPrinter.printHistory("Update configuration interrupted!", ex, LOGGER);
+
         }
 
 
@@ -166,29 +170,6 @@ public class InfluxDbProcessor {
             throw new CouldNotPerformException("Could not send query to database!", ex);
 
         }
-    }
-
-    private static String buildRecordQuery(final QueryType.Query databaseQuery) {
-        String measurement = databaseQuery.getMeasurement();
-        String timeStart = String.valueOf(databaseQuery.getTimeRangeStart().getTime());
-        String timeStop = String.valueOf(databaseQuery.getTimeRangeStop().getTime());
-        String window = String.valueOf(databaseQuery.getAggregatedWindow());
-        List<EntryType.Entry> filterList = databaseQuery.getFilterList();
-
-        String query = "from(bucket: \"" + getInfluxdbBucket() + "\")" +
-                " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
-                " |> filter(fn: (r) => r._measurement == \"" + measurement + "\")";
-
-        for (EntryType.Entry entry : filterList) {
-            query = addFilterToQuery(query, entry);
-
-        }
-        query += " |> aggregateWindow(every:" + window + " , fn: mean)" +
-                " |> group(columns: [\"_time\"], mode:\"by\")" +
-                "|> mean(column: \"_value\")";
-
-        return query;
-
     }
 
     /**
@@ -275,12 +256,63 @@ public class InfluxDbProcessor {
     }
 
 
-    public static Future<RecordType.Record> queryRecord(final QueryType.Query databaseQuery) {
-        String query = buildRecordQuery(databaseQuery);
-        List<FluxTable> fluxTableList = sendQuery(query);
+    public static Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
+        try {
+
+            List<FluxTable> fluxTableList = sendQuery(databaseQuery.getRawQuery());
+
+            return FutureProcessor.completedFuture(convertFluxTablesToRecordCollections(fluxTableList));
 
 
+        } catch (CouldNotPerformException ex) {
 
+            ex.printStackTrace();
+
+            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query Record", ex)));
+        }
+
+
+    }
+
+    private static RecordType.Record convertFluxRecordToProtoRecord(FluxRecord record) {
+        RecordType.Record.Builder builder = RecordType.Record.newBuilder();
+
+        if (record.getTime() != null) {
+            builder.setTime(TimestampType.Timestamp.newBuilder().setTime(record.getTime().getEpochSecond()).build());
+        }
+        if (record.getStart() != null) {
+            builder.setTimeRangeStart(TimestampType.Timestamp.newBuilder().setTime(record.getStart().getEpochSecond()).build());
+        }
+        if (record.getStop() != null) {
+            builder.setTimeRangeStop(TimestampType.Timestamp.newBuilder().setTime(record.getStop().getEpochSecond()).build());
+        }
+        if (record.getMeasurement() != null) {
+            builder.setMeasurement(record.getMeasurement());
+        }
+        if (record.getField() != null) {
+            builder.setField(record.getField());
+        }
+        if (record.getValue() != null) {
+            builder.setValue(Double.valueOf(record.getValue().toString()));
+        }
+
+        builder.setTable(record.getTable());
+
+        for (Map.Entry<String, Object> entry : record.getValues().entrySet()) {
+            builder.addEntryBuilder().setKey(entry.getKey()).setValue(entry.getValue().toString());
+        }
+
+        return builder.build();
+    }
+
+    private static RecordCollectionType.RecordCollection convertFluxTablesToRecordCollections(List<FluxTable> tables) {
+        RecordCollectionType.RecordCollection.Builder builder = RecordCollectionType.RecordCollection.newBuilder();
+        for (FluxTable table : tables) {
+            for (FluxRecord record : table.getRecords()) {
+                builder.addRecord(convertFluxRecordToProtoRecord(record));
+            }
+        }
+        return builder.build();
     }
 
     /**
@@ -356,7 +388,7 @@ public class InfluxDbProcessor {
 
             ex.printStackTrace();
 
-            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state ,ex")));
+            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state", ex)));
         }
     }
 
