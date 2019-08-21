@@ -207,7 +207,7 @@ public class FulfillmentHandler {
 
             // if a unit config is bound to and hosted by a device and this device hosts more than one unit
             // with the same label which are all bound to it, register them as one
-            for (final UnitConfig deviceUnitConfig : unitRegistryRemote.getUnitConfigs(UnitType.DEVICE)) {
+            for (final UnitConfig deviceUnitConfig : unitRegistryRemote.getUnitConfigsByUnitType(UnitType.DEVICE)) {
                 // ignore disabled devices
                 if (deviceUnitConfig.getEnablingState().getValue() == State.DISABLED) {
                     continue;
@@ -246,7 +246,7 @@ public class FulfillmentHandler {
             }
 
             // register unit groups separately because they depend on the unit type of their group configuration
-            for (final UnitConfig unitGroup : Registries.getUnitRegistry().getUnitConfigs(UnitType.UNIT_GROUP)) {
+            for (final UnitConfig unitGroup : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.UNIT_GROUP)) {
                 // ignore disabled groups
                 if (unitGroup.getEnablingState().getValue() == State.DISABLED) {
                     continue;
