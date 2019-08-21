@@ -54,11 +54,16 @@ import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBui
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
+import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.state.DoorStateType;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -697,4 +702,19 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     public boolean isInfrastructure() {
         return infrastructure;
     }
+
+    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
+        return RPCHelper.callRemoteMethod(databaseQuery, this, AggregatedServiceStateType.AggregatedServiceState.class);
+
+    }
+
+    // todo: authenticate both queries! Please checkout: https://github.com/openbase/bco.dal/issues/154 for more details.
+//    public Future<AggregatedServiceState> queryAggregatedServiceStateAuthenticated(final DatabaseQuery databaseQuery);
+
+
+    public Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
+        return RPCHelper.callRemoteMethod(databaseQuery, this, RecordCollectionType.RecordCollection.class);
+
+    }
+
 }

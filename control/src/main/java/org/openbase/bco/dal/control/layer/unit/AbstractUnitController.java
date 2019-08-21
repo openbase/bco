@@ -70,11 +70,10 @@ import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.SyncObject;
-import org.openbase.jul.schedule.Timeout;
+import org.openbase.jul.processing.VariableProvider;
+import org.openbase.jul.schedule.*;
 import org.openbase.type.communication.ScopeType;
+import org.openbase.type.configuration.EntryType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
@@ -86,6 +85,8 @@ import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -94,6 +95,8 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
+import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
@@ -142,22 +145,22 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
     }
 
+    final BuilderSyncSetup<DB> builderSetup;
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
     //private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
     private final ReentrantReadWriteLock actionListNotificationLock = new ReentrantReadWriteLock();
     private final ActionComparator actionComparator;
+    private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
+    private final Map<ServiceType, Message> requestedStateCache;
+    private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
     private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
     private String classDescription = "";
     private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
-    private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
-    private final Map<ServiceType, Message> requestedStateCache;
-    private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
-    final BuilderSyncSetup<DB> builderSetup;
 
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
@@ -240,6 +243,20 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         };
 
         this.actionComparator = new ActionComparator(() -> getParentLocationRemote(false).getEmphasisState());
+    }
+
+    public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
+
+        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + "Controller";
+        try {
+            return (Class<? extends UnitController>) Class.forName(className);
+        } catch (ClassNotFoundException ex) {
+            try {
+                throw new CouldNotTransformException(ScopeProcessor.generateStringRep(unitConfig.getScope()), UnitController.class, new NotAvailableException("Class", ex));
+            } catch (CouldNotPerformException ex1) {
+                throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
+            }
+        }
     }
 
     @Override
@@ -534,10 +551,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // In this case we perform an unauthorized action.
             for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
                 if (stackTraceElement.getClassName().equals(RPCHelper.class.getName())) {
-                    logger.info("incomming unauthorized action: "+ builder.toString());
+                    logger.info("incomming unauthorized action: " + builder.toString());
                     builder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
                     final ActionDescription build = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build();
-                    logger.info("set human as executor out of legacy reasons: "+ builder.toString());
+                    logger.info("set human as executor out of legacy reasons: " + builder.toString());
                     return applyUnauthorizedAction(build);
                 }
             }
@@ -694,7 +711,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // retrieve action
                 final SchedulableAction actionToExtend = getActionById(actionDescription.getId(), LOCK_CONSUMER_EXTEND_ACTION);
 
-                if(!actionToExtend.isValid()) {
+                if (!actionToExtend.isValid()) {
                     throw new CouldNotPerformException("Extension of " + actionToExtend + " skipped, because the action is not longer valid!");
                 }
 
@@ -729,7 +746,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (executingAction == null) {
                 logger.error("{} seems not to be valid and was excluded from execution of {}.", actionToSchedule, this);
             }
-            if(JPService.verboseMode()) {
+            if (JPService.verboseMode()) {
                 logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
             } else {
                 logger.trace("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
@@ -946,7 +963,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
-
     /**
      * Update the action list in the data builder and notify. Skip updates if the unit is currently rescheduling actions.
      */
@@ -1102,7 +1118,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // shutdown registry observer
             Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
         } catch (final NotAvailableException ex) {
-            // if the registry is not any longer available (in case of registry shutdown) than the observer is already cleared. 
+            // if the registry is not any longer available (in case of registry shutdown) than the observer is already cleared.
         } catch (final Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove unit registry observer.", ex), logger);
         }
@@ -1583,17 +1599,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
-    public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
+    @Override
+    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(QueryType.Query databaseQuery) {
+        return InfluxDbProcessor.queryAggregatedServiceState(databaseQuery);
+    }
 
-        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + "Controller";
-        try {
-            return (Class<? extends UnitController>) Class.forName(className);
-        } catch (ClassNotFoundException ex) {
-            try {
-                throw new CouldNotTransformException(ScopeProcessor.generateStringRep(unitConfig.getScope()), UnitController.class, new NotAvailableException("Class", ex));
-            } catch (CouldNotPerformException ex1) {
-                throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
-            }
-        }
+    @Override
+    public Future<RecordCollectionType.RecordCollection> queryRecord(QueryType.Query databaseQuery) {
+        return InfluxDbProcessor.queryRecord(databaseQuery);
     }
 }

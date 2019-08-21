@@ -49,6 +49,9 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.rct.Transform;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
+import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -56,6 +59,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -633,7 +637,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     default UnitConfig getHostUnitConfig() throws NotAvailableException {
         try {
             final UnitConfig config = getConfig();
-            if(!UnitConfigProcessor.isHostUnitAvailable(config)) {
+            if (!UnitConfigProcessor.isHostUnitAvailable(config)) {
                 throw new InvalidStateException("Unit itself might me a host unit and therefore do not link to any host unit.");
             }
             return Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId());
@@ -745,4 +749,10 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     default List<ActionDescription> getActionList() throws NotAvailableException {
         return ProtoBufFieldProcessor.getRepeatedFieldList(Action.TYPE_FIELD_NAME_ACTION, getData());
     }
+
+    @RPCMethod
+    Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery);
+
+    @RPCMethod
+    Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery);
 }

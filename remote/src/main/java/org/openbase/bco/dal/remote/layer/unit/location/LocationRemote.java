@@ -16,6 +16,9 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
+import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
@@ -301,5 +304,97 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
+    }
+
+    /**
+     * Returns the average value of specific field from the power_consumption_state_service in a time window.
+     *
+     * @param window    Time interval in which the measurement is carried out (e.g every 1m, 1s, 1d ...)
+     * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
+     * @param timeStart Timestamp when the measurement should start
+     * @param timeStop  Timestamp when the measurement should stop
+     *
+     * @return RecordCollection of mean values
+     */
+    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, Long timeStart, Long timeStop, String field) {
+        String query = "from(bucket: \"" + ".." + "\")" +
+                " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
+                " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
+                " |> filter(fn: (r) => r._field == \"" + field + "\")" +
+                " |> aggregateWindow(every:" + window + " , fn: mean)" +
+                " |> group(columns: [\"_time\"], mode:\"by\")" +
+                "|> mean(column: \"_value\")";
+        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
+    }
+
+    /**
+     * Returns the average value of specific field from the power_consumption_state_service in a time window.
+     *
+     * @param window    Time interval in which the measurement is carried out (e.g every 1m, 1s, 1d ...)
+     * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
+     * @param timeStart Timestamp when the measurement should start
+     * @param timeStop  Timestamp when the measurement should stop
+     *
+     * @return RecordCollection of mean values
+     */
+    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, String unitId, Long timeStart, Long timeStop, String field) {
+        String query = "from(bucket: \"" + ".." + "\")" +
+                " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
+                " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
+                " |> filter(fn: (r) => r._field == \"" + field + "\")" +
+                " |> filter(fn: (r) => r.unit_id == \"" + unitId + "\")" +
+                " |> aggregateWindow(every:" + window + " , fn: mean)" +
+                " |> group(columns: [\"_time\"], mode:\"by\")" +
+                " |> mean(column: \"_value\")";
+
+        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
+
+    }
+
+    /**
+     * Returns the average value of specific field from the power_consumption_state_service in a time window.
+     *
+     * @param window    Time interval in which the measurement is carried out (e.g every 1m, 1s, 1d ...)
+     * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
+     * @param timeStart Timestamp when the measurement should start
+     * @param timeStop  Timestamp when the measurement should stop
+     *
+     * @return RecordCollection with one entry
+     */
+    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumption(String window, Long timeStart, Long timeStop, String field) {
+
+        String query = "from(bucket: \"" + "" + "\")" +
+                " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
+                " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
+                " |> filter(fn: (r) => r._field == \"" + field + "\")" +
+                " |> aggregateWindow(every:" + window + " , fn: mean)" +
+                " |> group(columns: [\"_field\"], mode:\"by\")" +
+                " |> mean(column: \"_value\")";
+        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
+    }
+
+    /**
+     * Returns the average value of specific field  and unit from the power_consumption_state_service in a time window.
+     *
+     * @param window    Time interval in which the measurement is carried out (e.g every 1m, 1s, 1d ...)
+     * @param unit_id   Id of Unit
+     * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
+     * @param timeStart Timestamp when the measurement should start
+     * @param timeStop  Timestamp when the measurement should stop
+     *
+     * @return RecordCollection with one entry
+     */
+    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumption(String window, String unit_id, Long timeStart, Long timeStop, String field) {
+
+        String query = "from(bucket: \"" + "" + "\")" +
+                " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
+                " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
+                " |> filter(fn: (r) => r._field == \"" + field + "\")" +
+                " |> filter(fn: (r) => r.unit_id == \"" + unit_id + "\")" +
+                " |> aggregateWindow(every:" + window + " , fn: mean)" +
+                " |> group(columns: [\"_field\"], mode:\"by\")" +
+                " |> mean(column: \"_value\")";
+
+        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
     }
 }
