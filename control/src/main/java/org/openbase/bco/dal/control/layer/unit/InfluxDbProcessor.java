@@ -272,7 +272,7 @@ public class InfluxDbProcessor {
         RecordType.Record.Builder builder = RecordType.Record.newBuilder();
 
         if (record.getTime() != null) {
-            builder.setTime(TimestampType.Timestamp.newBuilder().setTime(record.getTime().getEpochSecond()).build());
+            builder.setTimestamp(TimestampType.Timestamp.newBuilder().setTime(record.getTime().getEpochSecond()).build());
         }
         if (record.getStart() != null) {
             builder.setTimeRangeStart(TimestampType.Timestamp.newBuilder().setTime(record.getStart().getEpochSecond()).build());
