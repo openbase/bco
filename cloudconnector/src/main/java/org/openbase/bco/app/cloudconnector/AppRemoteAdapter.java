@@ -33,9 +33,12 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.database.QueryType.Query;
+import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -202,6 +205,16 @@ public class AppRemoteAdapter implements App {
     @Override
     public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         appRemote.waitForData(timeout, timeUnit);
+    }
+
+    @Override
+    public Future<AggregatedServiceState> queryAggregatedServiceState(final Query databaseQuery) {
+        return appRemote.queryAggregatedServiceState(databaseQuery);
+    }
+
+    @Override
+    public Future<RecordCollection> queryRecord(Query databaseQuery) {
+        return appRemote.queryRecord(databaseQuery);
     }
 
     public AppRemote getAppRemote() {
