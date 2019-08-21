@@ -83,22 +83,6 @@
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>bonitoo-snapshot</id>
-            <name>Bonitoo.io snapshot repository</name>
-            <url>https://apitea.com/nexus/content/repositories/bonitoo-snapshot/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-
-    
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
