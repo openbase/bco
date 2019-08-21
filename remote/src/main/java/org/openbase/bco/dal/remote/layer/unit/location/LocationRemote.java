@@ -142,7 +142,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      *
      * @param locationID  the location id of the location to check.
      * @param waitForData flag defines if the method should block until all needed instances are available.
+     *
      * @return a collection of unit connection remotes.
+     *
      * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
      */
     public List<ConnectionRemote> getDirectConnectionList(final String locationID, final boolean waitForData) throws CouldNotPerformException {
@@ -170,7 +172,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param locationID     the location id of the location to check.
      * @param connectionType the type of the connection. To disable this filter use ConnectionType.UNKNOWN
      * @param waitForData    flag defines if the method should block until all needed instances are available.
+     *
      * @return true if the specified connection exists.
+     *
      * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
      */
     public boolean hasDirectConnection(final String locationID, final ConnectionType connectionType, final boolean waitForData) throws CouldNotPerformException {
@@ -187,6 +191,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * Returns a Map of all units which directly or recursively provided by this location..
      *
      * @return the Map of provided units sorted by their UnitType.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
      * @throws java.lang.InterruptedException                   is thrown if the current thread was externally interrupted.
      */
@@ -198,7 +203,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * Returns a Map of all units which are directly or recursively provided by this location..
      *
      * @param recursive defines if recursive related unit should be included as well.
+     *
      * @return the Map of provided units sorted by their UnitType.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
      * @throws java.lang.InterruptedException                   is thrown if the current thread was externally interrupted.
      */
@@ -243,7 +250,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param unitType        the unit type.
      * @param waitForData     if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
      * @param unitRemoteClass the unit remote class.
+     *
      * @return a list of instances of the given remote class.
+     *
      * @throws CouldNotPerformException is thrown in case something went wrong.
      * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
@@ -260,7 +269,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param waitForData     if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
      * @param unitRemoteClass the unit remote class.
      * @param recursive       defines if recursive related unit should be included as well.
+     *
      * @return a list of instances of the given remote class.
+     *
      * @throws CouldNotPerformException is thrown in case something went wrong.
      * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
@@ -302,9 +313,10 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
      * @param timeStart Timestamp when the measurement should start
      * @param timeStop  Timestamp when the measurement should stop
+     *
      * @return RecordCollection of mean values
      */
-    public  Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, Long timeStart, Long timeStop, String field) {
+    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, Long timeStart, Long timeStop, String field) {
         String query = "from(bucket: \"" + ".." + "\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
@@ -322,6 +334,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
      * @param timeStart Timestamp when the measurement should start
      * @param timeStop  Timestamp when the measurement should stop
+     *
      * @return RecordCollection of mean values
      */
     public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, String unitId, Long timeStart, Long timeStop, String field) {
@@ -345,6 +358,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
      * @param timeStart Timestamp when the measurement should start
      * @param timeStop  Timestamp when the measurement should stop
+     *
      * @return RecordCollection with one entry
      */
     public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumption(String window, Long timeStart, Long timeStop, String field) {
@@ -367,6 +381,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
      * @param timeStart Timestamp when the measurement should start
      * @param timeStop  Timestamp when the measurement should stop
+     *
      * @return RecordCollection with one entry
      */
     public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumption(String window, String unit_id, Long timeStart, Long timeStop, String field) {
