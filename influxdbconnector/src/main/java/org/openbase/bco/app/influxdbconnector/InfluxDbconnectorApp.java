@@ -269,7 +269,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 try {
                     unit = Units.getFutureUnit(unitConfig, true).get(MAX_INITIAL_STORAGE_TIMEOUT, TimeUnit.MILLISECONDS);
                 } catch (ExecutionException | TimeoutException ex) {
-                    ExceptionPrinter.printHistory("Could not reach Unit " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "! Skip initial service state storage!", ex, logger);
+                    ExceptionPrinter.printHistory("Could not reach Unit " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "! Skip initial service state synchronisation!", ex, logger);
                     continue;
                 }
                 try {
