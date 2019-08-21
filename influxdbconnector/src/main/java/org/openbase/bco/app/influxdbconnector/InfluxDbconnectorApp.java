@@ -10,12 +10,12 @@ package org.openbase.bco.app.influxdbconnector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -44,6 +44,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -64,8 +65,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 
@@ -77,6 +80,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     private static final Integer WRITE_TIMEOUT = 60;
     private static final Integer CONNECT_TIMOUT = 40;
     private static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
+    private static final long MAX_INITIAL_STORAGE_TIMEOUT = TimeUnit.SECONDS.toMillis(5);
     private static final Integer ADDITIONAL_TIMEOUT = 60000;
     private static final Integer DATABASE_TIMEOUT_DEFAULT = 60000;
     private static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
@@ -261,8 +265,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             customUnitPool.activate();
 
             for (UnitConfigType.UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
-                final UnitRemote<?> unit = Units.getUnit(unitConfig, true);
-
+                final UnitRemote<?> unit;
+                try {
+                    unit = Units.getFutureUnit(unitConfig, true).get(MAX_INITIAL_STORAGE_TIMEOUT, TimeUnit.MILLISECONDS);
+                } catch (ExecutionException | TimeoutException ex) {
+                    ExceptionPrinter.printHistory("Could not reach Unit " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "! Skip initial service state storage!", ex, logger);
+                    continue;
+                }
                 try {
                     for (ServiceDescriptionType.ServiceDescription serviceDescription : unit.getUnitTemplate().getServiceDescriptionList()) {
 
