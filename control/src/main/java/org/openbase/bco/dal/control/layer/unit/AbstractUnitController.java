@@ -117,6 +117,7 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -144,22 +145,22 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
     }
 
+    final BuilderSyncSetup<DB> builderSetup;
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
     //private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
     private final ReentrantReadWriteLock actionListNotificationLock = new ReentrantReadWriteLock();
     private final ActionComparator actionComparator;
+    private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
+    private final Map<ServiceType, Message> requestedStateCache;
+    private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
     private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
     private String classDescription = "";
     private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
-    private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
-    private final Map<ServiceType, Message> requestedStateCache;
-    private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
-    final BuilderSyncSetup<DB> builderSetup;
 
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
@@ -244,6 +245,20 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         this.actionComparator = new ActionComparator(() -> getParentLocationRemote(false).getEmphasisState());
     }
 
+    public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
+
+        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + "Controller";
+        try {
+            return (Class<? extends UnitController>) Class.forName(className);
+        } catch (ClassNotFoundException ex) {
+            try {
+                throw new CouldNotTransformException(ScopeProcessor.generateStringRep(unitConfig.getScope()), UnitController.class, new NotAvailableException("Class", ex));
+            } catch (CouldNotPerformException ex1) {
+                throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
+            }
+        }
+    }
+
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
@@ -260,7 +275,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             throw new InitializationException(this, ex);
         }
     }
-
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
@@ -579,7 +593,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
+     *
      * @return the action identified by the provided id as described above.
+     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
@@ -611,6 +627,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
+     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
@@ -765,6 +782,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
+     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
      */
@@ -945,7 +963,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
-
     /**
      * Update the action list in the data builder and notify. Skip updates if the unit is currently rescheduling actions.
      */
@@ -962,6 +979,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
+     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1100,7 +1118,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // shutdown registry observer
             Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
         } catch (final NotAvailableException ex) {
-            // if the registry is not any longer available (in case of registry shutdown) than the observer is already cleared. 
+            // if the registry is not any longer available (in case of registry shutdown) than the observer is already cleared.
         } catch (final Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove unit registry observer.", ex), logger);
         }
@@ -1474,7 +1492,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     *
      * @return a location remote instance.
+     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1522,6 +1542,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
+     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1555,6 +1576,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -1574,20 +1596,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("Unexpected exception while performing operation service!", ex, logger);
             return FutureProcessor.canceledFuture(Void.class, ex);
-        }
-    }
-
-    public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
-
-        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name()) + "Controller";
-        try {
-            return (Class<? extends UnitController>) Class.forName(className);
-        } catch (ClassNotFoundException ex) {
-            try {
-                throw new CouldNotTransformException(ScopeProcessor.generateStringRep(unitConfig.getScope()), UnitController.class, new NotAvailableException("Class", ex));
-            } catch (CouldNotPerformException ex1) {
-                throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
-            }
         }
     }
 

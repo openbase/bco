@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -82,6 +82,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @param <D> The unit data type.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
@@ -164,6 +165,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @param id
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -180,6 +182,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -196,6 +199,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -212,6 +216,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -301,7 +306,9 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @param unitConfig {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
@@ -413,6 +420,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      *
      * @param timeout  {@inheritDoc}
      * @param timeUnit {@inheritDoc}
+     *
      * @throws CouldNotPerformException       {@inheritDoc}
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
@@ -480,6 +488,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @return
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
@@ -504,6 +513,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
@@ -521,7 +531,9 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     *
      * @return a location remote instance.
+     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -537,6 +549,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @param actionDescription {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -558,6 +571,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      * {@inheritDoc}
      *
      * @param actionParameter {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -697,7 +711,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 //    public Future<AggregatedServiceState> queryAggregatedServiceStateAuthenticated(final DatabaseQuery databaseQuery);
 
 
-    public  Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
+    public Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
         return RPCHelper.callRemoteMethod(databaseQuery, this, RecordCollectionType.RecordCollection.class);
 
     }
