@@ -85,7 +85,6 @@ public class InfluxDbProcessor {
         }
     }
 
-
     private static void updateConfiguration() {
         try {
             List<UnitConfigType.UnitConfig> influxdbConnectorApps = Registries.getUnitRegistry().getAppUnitConfigsByAppClassId(INFLUXDB_APP_CLASS_ID);
@@ -101,7 +100,6 @@ public class InfluxDbProcessor {
             ExceptionPrinter.printHistory("Update configuration interrupted!", ex, LOGGER);
 
         }
-
 
     }
 
@@ -255,7 +253,6 @@ public class InfluxDbProcessor {
         return percentages;
     }
 
-
     public static Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
         try {
 
@@ -263,15 +260,12 @@ public class InfluxDbProcessor {
 
             return FutureProcessor.completedFuture(convertFluxTablesToRecordCollections(fluxTableList));
 
-
         } catch (CouldNotPerformException ex) {
 
             ex.printStackTrace();
 
             return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query Record", ex)));
         }
-
-
     }
 
     private static RecordType.Record convertFluxRecordToProtoRecord(FluxRecord record) {
