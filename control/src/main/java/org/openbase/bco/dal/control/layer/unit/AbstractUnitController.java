@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -85,6 +85,8 @@ import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
+import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -93,12 +95,14 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
+import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
@@ -113,7 +117,6 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -576,9 +579,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
-     *
      * @return the action identified by the provided id as described above.
-     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
@@ -610,7 +611,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
-     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
@@ -765,7 +765,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
-     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
      */
@@ -963,7 +962,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
-     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1476,9 +1474,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
-     *
      * @return a location remote instance.
-     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1526,7 +1522,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
-     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1560,7 +1555,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
@@ -1595,5 +1589,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
             }
         }
+    }
+
+    @Override
+    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(QueryType.Query databaseQuery) {
+        return InfluxDbProcessor.queryAggregatedServiceState(databaseQuery);
+    }
+
+    @Override
+    public Future<RecordCollectionType.RecordCollection> queryRecord(QueryType.Query databaseQuery) {
+        return InfluxDbProcessor.queryRecord(databaseQuery);
     }
 }
