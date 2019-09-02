@@ -44,18 +44,22 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.dal.DimmerDataType.DimmerData;
 import org.openbase.type.domotic.unit.location.LocationDataType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData.Builder;
 import org.openbase.type.vision.ColorType;
 import org.openbase.type.vision.HSBColorType;
+import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -65,6 +69,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  * UnitConfig
@@ -159,6 +165,21 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
             }
         }
         return childList;
+    }
+
+    @Override
+    protected void applyCustomDataUpdate(Builder internalBuilder, ServiceType serviceType) {
+        switch (serviceType) {
+            case EMPHASIS_STATE_SERVICE:
+                try {
+                    for (LocationRemote childLocation : getChildLocationList(false)) {
+                        childLocation.setEmphasisState(internalBuilder.getEmphasisState(), ActionParameter.newBuilder().setCause(internalBuilder.getEmphasisState().getResponsibleAction()).build());
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update childs emphasis statee.", ex, logger);
+                }
+                break;
+        }
     }
 
     public class StandbyStateOperationServiceImpl implements StandbyStateOperationService {
