@@ -55,7 +55,9 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType;
+import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
 import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -63,6 +65,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.state.DoorStateType;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -91,9 +94,11 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AggregatedServiceState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Query.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RecordCollection.getDefaultInstance()));
     }
 
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
@@ -703,6 +708,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         return infrastructure;
     }
 
+    @Override
     public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
         return RPCHelper.callRemoteMethod(databaseQuery, this, AggregatedServiceStateType.AggregatedServiceState.class);
 
@@ -711,7 +717,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     // todo: authenticate both queries! Please checkout: https://github.com/openbase/bco.dal/issues/154 for more details.
 //    public Future<AggregatedServiceState> queryAggregatedServiceStateAuthenticated(final DatabaseQuery databaseQuery);
 
-
+    @Override
     public Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
         return RPCHelper.callRemoteMethod(databaseQuery, this, RecordCollectionType.RecordCollection.class);
 

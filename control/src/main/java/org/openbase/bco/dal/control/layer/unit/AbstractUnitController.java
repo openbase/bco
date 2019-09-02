@@ -86,7 +86,9 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType;
+import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -96,6 +98,7 @@ import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -143,6 +146,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
+
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AggregatedServiceState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Query.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RecordCollection.getDefaultInstance()));
     }
 
     final BuilderSyncSetup<DB> builderSetup;
