@@ -31,6 +31,7 @@ import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.vision.ColorType;
 import org.openbase.type.vision.HSBColorType;
 import org.openbase.type.vision.RGBColorType;
+import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
@@ -317,13 +318,14 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @return RecordCollection of mean values
      */
     public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, Long timeStart, Long timeStop, String field) {
-        String query = "from(bucket: \"" + ".." + "\")" +
+        String query = "from(bucket:\"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
                 " |> filter(fn: (r) => r._field == \"" + field + "\")" +
                 " |> aggregateWindow(every:" + window + " , fn: mean)" +
                 " |> group(columns: [\"_time\"], mode:\"by\")" +
                 "|> mean(column: \"_value\")";
+
         return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
     }
 
@@ -338,7 +340,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @return RecordCollection of mean values
      */
     public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, String unitId, Long timeStart, Long timeStop, String field) {
-        String query = "from(bucket: \"" + ".." + "\")" +
+        String query = "from(bucket:\"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
                 " |> filter(fn: (r) => r._field == \"" + field + "\")" +
@@ -363,13 +365,14 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      */
     public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumption(String window, Long timeStart, Long timeStop, String field) {
 
-        String query = "from(bucket: \"" + "" + "\")" +
+        String query = "from(bucket: \"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
                 " |> filter(fn: (r) => r._field == \"" + field + "\")" +
                 " |> aggregateWindow(every:" + window + " , fn: mean)" +
                 " |> group(columns: [\"_field\"], mode:\"by\")" +
                 " |> mean(column: \"_value\")";
+
         return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
     }
 
@@ -386,7 +389,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      */
     public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumption(String window, String unit_id, Long timeStart, Long timeStop, String field) {
 
-        String query = "from(bucket: \"" + "" + "\")" +
+        String query = "from(bucket: \"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
                 " |> filter(fn: (r) => r._field == \"" + field + "\")" +
