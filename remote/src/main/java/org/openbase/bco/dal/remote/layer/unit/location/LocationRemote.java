@@ -96,7 +96,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
     public List<LocationRemote> getNeighborLocationList(final boolean waitForData) throws CouldNotPerformException {
         final List<LocationRemote> neighborList = new ArrayList<>();
         try {
-            for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getNeighborLocations(getId())) {
+            for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getNeighborLocationsByLocationId(getId())) {
                 neighborList.add(Units.getUnit(locationUnitConfig, waitForData, LOCATION));
             }
         } catch (InterruptedException ex) {
@@ -125,7 +125,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
 
         List<ConnectionRemote> connectionList = new ArrayList<>();
         try {
-            for (UnitConfig connectionUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.CONNECTION)) {
+            for (UnitConfig connectionUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.CONNECTION)) {
                 ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
                 if (connection.getConfig().getConnectionConfig().getTileIdList().contains(getId())) {
                     connectionList.add(connection);
@@ -154,7 +154,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
 
         final List<ConnectionRemote> connectionList = new ArrayList<>();
         try {
-            for (UnitConfig connectionUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.CONNECTION)) {
+            for (UnitConfig connectionUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.CONNECTION)) {
                 ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
                 if (connectionUnitConfig.getConnectionConfig().getTileIdList().contains(getId()) && connectionUnitConfig.getConnectionConfig().getTileIdList().contains(locationID)) {
                     connectionList.add(connection);
@@ -279,7 +279,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
         final List<UR> unitRemote = new ArrayList<>();
         MultiException.ExceptionStack exceptionStack = null;
         Registries.waitForData();
-        for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(unitType, getId())) {
+        for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(getId(), unitType)) {
             try {
                 if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(getId())) {
                     unitRemote.add(Units.getUnit(unitConfig, waitForData, unitRemoteClass));
