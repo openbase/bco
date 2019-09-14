@@ -55,10 +55,19 @@
         </plugins>
     </build>
 
+    <!--<properties>-->
+        <!--<jackson-version>[2.9,3.0-alpha)</jackson-version>-->
+    <!--</properties>-->
+
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>bco.dal.control</artifactId>
+            <version>${dependency.bco.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.openapi</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
     </dependencies>
