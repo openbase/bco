@@ -25,19 +25,13 @@ package org.openbase.bco.app.openapiserver.spring;
 import org.openbase.bco.app.openapiserver.RegistryRPCProcessor;
 import org.openbase.bco.openapi.server.api.RegistryApi;
 import org.openbase.bco.openapi.server.model.*;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 

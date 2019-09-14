@@ -25,6 +25,7 @@ package org.openbase.bco.app.openapiserver;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.app.openapiserver.spring.RegistryApiController;
+import org.openbase.bco.app.openapiserver.spring.UnitApiController;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -49,7 +50,7 @@ import java.util.Collections;
 
 @Configuration
 @EnableAutoConfiguration
-@Import({RegistryApiController.class})
+@Import({RegistryApiController.class, UnitApiController.class})
 public class OpenApiServerApp extends AbstractAppController {
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
