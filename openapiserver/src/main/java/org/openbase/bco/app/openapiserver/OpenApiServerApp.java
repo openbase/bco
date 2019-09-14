@@ -24,7 +24,7 @@ package org.openbase.bco.app.openapiserver;
 
 
 import com.google.protobuf.Message;
-import org.openbase.bco.app.openapiserver.spring.ServerConfiguration;
+import org.openbase.bco.app.openapiserver.spring.RegistryApiController;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -32,9 +32,7 @@ import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -42,13 +40,16 @@ import org.openbase.type.domotic.unit.UnitConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import java.util.Collections;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
+@Configuration
+@EnableAutoConfiguration
+@Import({RegistryApiController.class})
 public class OpenApiServerApp extends AbstractAppController {
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -62,7 +63,7 @@ public class OpenApiServerApp extends AbstractAppController {
     public OpenApiServerApp() throws InstantiationException {
         this.customUnitPool = new CustomUnitPool();
         this.unitStateObserver = (source, data) -> storeServiceState((Unit) source.getServiceProvider(), source.getServiceType(), false);
-        this.springApplication = new SpringApplication(ServerConfiguration.class);
+        this.springApplication = new SpringApplication(OpenApiServerApp.class);
     }
 
     @Override

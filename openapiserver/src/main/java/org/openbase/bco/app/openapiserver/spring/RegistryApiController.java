@@ -24,35 +24,92 @@ package org.openbase.bco.app.openapiserver.spring;
 
 import org.openbase.bco.app.openapiserver.RegistryRPCProcessor;
 import org.openbase.bco.openapi.server.api.RegistryApi;
-import org.openbase.bco.openapi.server.model.InlineObject106;
-import org.openbase.bco.openapi.server.model.OpenbaseUnitConfig;
+import org.openbase.bco.openapi.server.model.*;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 @Controller
-//@RequestMapping("${openapi.sample.base-path:}") TODO: this can be used for a common base path - the RegistryApi defines this for every method...
 public class RegistryApiController implements RegistryApi {
 
     private final Logger logger = LoggerFactory.getLogger(RegistryApiController.class);
 
     @Override
-    public ResponseEntity<OpenbaseUnitConfig> registryUnitGetUnitConfigByAliasPost(@Valid InlineObject106 inlineObject106) {
-        logger.info("Get unit config by alias: " + inlineObject106);
-        try {
-            return ResponseEntity.ok(RegistryRPCProcessor.invokeMethod(inlineObject106, OpenbaseUnitConfig.class));
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Getting unit config by alias failed!", ex, logger);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+    public ResponseEntity<List<OpenbaseActivityTemplate>> registryTemplateGetActivityTemplatesGet() {
+        class Tmp extends ArrayList<OpenbaseActivityTemplate> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<List<OpenbaseServiceTemplate>> registryTemplateGetServiceTemplatesGet() {
+        class Tmp extends ArrayList<OpenbaseServiceTemplate> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<List<OpenbaseUnitTemplate>> registryTemplateGetUnitTemplatesGet() {
+        class Tmp extends ArrayList<OpenbaseUnitTemplate> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<List<OpenbaseDeviceClass>> registryClassGetDeviceClassesGet() {
+        class Tmp extends ArrayList<OpenbaseDeviceClass> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<List<OpenbaseAgentClass>> registryClassGetAgentClassesGet() {
+        class Tmp extends ArrayList<OpenbaseAgentClass> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<List<OpenbaseAppClass>> registryClassGetAppClassesGet() {
+        class Tmp extends ArrayList<OpenbaseAppClass> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<List<OpenbaseUnitConfig>> registryUnitGetDalUnitConfigsGet() {
+        class Tmp extends ArrayList<OpenbaseUnitConfig> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<List<OpenbaseUnitConfig>> registryUnitGetUnitConfigsByUnitTypePost(@Valid @RequestBody InlineObject133 inlineObject133) {
+        class Tmp extends ArrayList<OpenbaseUnitConfig> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject133, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<List<OpenbaseActivityConfig>> registryActivityGetActivityConfigsGet() {
+        class Tmp extends ArrayList<OpenbaseActivityConfig> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<OpenbaseUnitConfig> registryUnitGetUnitConfigByAliasPost(@Valid @RequestBody InlineObject106 inlineObject106) {
+        return RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject106, OpenbaseUnitConfig.class, logger);
+    }
+
+    @Override
+    public ResponseEntity<Boolean> registryClassContainsAppClassByIdPost(@Valid @RequestBody InlineObject44 inlineObject44) {
+        return RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject44, Boolean.class, logger);
     }
 }
