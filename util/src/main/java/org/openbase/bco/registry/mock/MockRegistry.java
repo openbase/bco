@@ -901,8 +901,8 @@ public class MockRegistry {
 
     public enum MockUnitTemplate {
 
-        COLORABLE_LIGHT(UnitType.COLORABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
-        DIMMABLE_LIGHT(UnitType.DIMMABLE_LIGHT, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
+        COLORABLE_LIGHT(UnitType.COLORABLE_LIGHT, UnitType.DIMMABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
+        DIMMABLE_LIGHT(UnitType.DIMMABLE_LIGHT, UnitType.LIGHT, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
         LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
         MOTION_DETECTOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
         LIGHT_SENSOR(UnitType.LIGHT_SENSOR, ILLUMINANCE_SPS),
@@ -931,8 +931,16 @@ public class MockRegistry {
         private final UnitTemplate template;
 
         MockUnitTemplate(final UnitType type, final MockServiceDescription... serviceTemplates) {
+            this(type, null, serviceTemplates);
+        }
+
+        MockUnitTemplate(final UnitType type, final UnitType superType, final MockServiceDescription... serviceTemplates) {
             final UnitTemplate.Builder unitTemplateBuilder = UnitTemplate.newBuilder();
             unitTemplateBuilder.setUnitType(type);
+
+            if(superType != null) {
+                unitTemplateBuilder.addSuperType(superType);
+            }
 
             for (final MockServiceDescription serviceTemplate : serviceTemplates) {
                 unitTemplateBuilder.addServiceDescription(serviceTemplate.getDescription());
