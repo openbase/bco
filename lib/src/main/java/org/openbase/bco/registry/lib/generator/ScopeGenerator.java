@@ -10,12 +10,12 @@ package org.openbase.bco.registry.lib.generator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -77,17 +77,17 @@ public class ScopeGenerator {
         return scope.build();
     }
 
-    public static ScopeType.Scope generateConnectionScope(final UnitConfig connectionConfig, final UnitConfig locationConfig) throws CouldNotPerformException {
+    public static ScopeType.Scope generateConnectionScope(final UnitConfig unitConfig, final UnitConfig locationConfig) throws CouldNotPerformException {
 
-        if (connectionConfig == null) {
-            throw new NotAvailableException("connectionConfig");
+        if (unitConfig == null) {
+            throw new NotAvailableException("unitConfig");
         }
 
-        if (!connectionConfig.hasLabel()) {
-            throw new NotAvailableException("connectionConfig.label");
+        if (!unitConfig.hasLabel()) {
+            throw new NotAvailableException("unitConfig.label");
         }
 
-        final String defaultLabel = LabelProcessor.getBestMatch(connectionConfig.getLabel());
+        final String defaultLabel = LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel());
 
         if (locationConfig == null) {
             throw new NotAvailableException("location");
@@ -101,7 +101,7 @@ public class ScopeGenerator {
         ScopeType.Scope.Builder scope = locationConfig.getScope().toBuilder();
 
         // add unit type
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(connectionConfig.getUnitType().name().replace("_", "")));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(unitConfig.getUnitType().name().replace("_", "")));
 
         // add unit label
         scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(defaultLabel));
