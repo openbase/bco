@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -102,6 +102,7 @@ import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServ
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.timing.TimestampType.Timestamp;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -168,6 +169,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private String classDescription = "";
     private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
+    private final RecurrenceEventFilter<Void> parentLocationEmphasisRescheduleEventFilter;
+    private final Observer<ServiceStateProvider<Message>, Message> emphasisStateObserver;
 
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
@@ -250,6 +253,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         };
 
         this.actionComparator = new ActionComparator(() -> getParentLocationRemote(false).getEmphasisState());
+
+
+        // used to make sure reschedule is triggered when the emphasis state of the parent location has been changed.
+        this.parentLocationEmphasisRescheduleEventFilter = new RecurrenceEventFilter<Void>() {
+            @Override
+            public void relay() throws Exception {
+                reschedule();
+            }
+        };
+        this.emphasisStateObserver = (source, data) -> parentLocationEmphasisRescheduleEventFilter.trigger();
     }
 
     public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
@@ -323,6 +336,24 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+        getParentLocationRemote(false).addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
+        if(getUnitType() == UnitType.LOCATION) {
+            this.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
+        }
+    }
+
+    @Override
+    public synchronized void deactivate() throws InterruptedException, CouldNotPerformException {
+        getParentLocationRemote(false).removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
+        if(getUnitType() == UnitType.LOCATION) {
+            this.removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
+        }
+        super.deactivate();
     }
 
     @Override
@@ -1148,14 +1179,90 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
 
+            // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
+            Message newState = computeNewState(serviceState, serviceType, internalBuilder);
+
+            // verify the service state
+            newState = Services.verifyAndRevalidateServiceState(newState);
+
             // move current state to last state
             updateLastWithCurrentState(serviceType, internalBuilder);
 
+            // copy latestValueOccurrence map from current state, only if available
+            try {
+                Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
+                Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
+                newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
+            } catch (NotAvailableException ex) {
+                // skip last vaule update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
+            }
+
+            // log state transition
+            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
+
+            // update the current state
+            Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
+
+            // Update timestamps
+            updatedAndValidateTimestamps(serviceType, internalBuilder);
+
+            // do custom state depending update in sub classes
+            applyCustomDataUpdate(internalBuilder, serviceType);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + serviceState + "] for " + this + "!", ex);
+        }
+    }
+
+    /**
+     * Update the state timestamp and the timestamps of the value occurrence map.
+     *
+     * @param serviceType     the service type of the state to update.
+     * @param internalBuilder the internal builder instance holding the service state.
+     */
+    private void updatedAndValidateTimestamps(final ServiceType serviceType, final DB internalBuilder) {
+        try {
+            Message.Builder serviceStateBuilder = (Message.Builder) internalBuilder.getClass().getMethod("get" + Services.getServiceStateName(serviceType) + "Builder").invoke(internalBuilder);
+
+            //Set timestamp if missing
+            if (!serviceStateBuilder.hasField(serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp"))) {
+                logger.warn("State[" + Services.getServiceStateName(serviceType) + "] of " + this + " does not contain any state related timestamp!");
+                TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder, logger);
+            }
+
+            // update state value occurrence timestamp
+            try {
+                FieldDescriptor valueFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("value");
+                FieldDescriptor timestampFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp");
+                if (valueFieldDescriptor != null) {
+                    ServiceStateProcessor.updateLatestValueOccurrence((EnumValueDescriptor) serviceStateBuilder.getField(valueFieldDescriptor), ((Timestamp) serviceStateBuilder.getField(timestampFieldDescriptor)), serviceStateBuilder);
+                }
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not update state value occurrence timestamp!", ex);
+            }
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory("Could not update timestamp!", ex, logger);
+        }
+    }
+
+    /**
+     * @param serviceState
+     * @param serviceType
+     * @param internalBuilder
+     *
+     * @return
+     *
+     * @throws CouldNotPerformException
+     */
+    private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
+
+        try {
             Message newState = null;
 
             // only operation service action can be remapped
             if (hasOperationServiceForType(serviceType)) {
                 boolean requestedStateDoesNotMatch;
+
+                // in case the new incoming state is related to the exist
                 if (Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
                     final Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
 
@@ -1184,7 +1291,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // as a result the responsible action is set and it has to be rescheduled to maintain priorities from BCO
                     newState = serviceState;
 
+
                     // clear requested state because its not compatible any more to current state.
+                    //todo: please fix since the incomming state can still be compatible
                     final Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
                     internalBuilder.clearField(requestedStateField);
 
@@ -1199,12 +1308,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     boolean schedulingRequired = true;
                     synchronized (requestedStateCacheSync) {
                         if (requestedStateCache.containsKey(serviceType) && Services.equalServiceStates(newState, requestedStateCache.get(serviceType))) {
+                            System.out.println("skip because compatible task found in requestet state cache.");
                             schedulingRequired = false;
                         }
 
                         if (schedulingRequired) {
+                            System.out.println("request super service types for "+ serviceType.name());
                             for (final ServiceType superServiceType : Registries.getTemplateRegistry().getSuperServiceTypes(serviceType)) {
+                                System.out.println("found "+ superServiceType.name());
                                 if (!requestedStateCache.containsKey(superServiceType)) {
+                                    System.out.println();
                                     continue;
                                 }
 
@@ -1216,7 +1329,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         }
                     }
 
-                    // todo release: why in the state always applied even when reschedule is initiated?
+                    // todo release: why is the state always applied even when reschedule is initiated?
                     if (schedulingRequired) {
 
                         // retrieve the responsible action
@@ -1262,10 +1375,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                                 reschedule();
 
                                 // update action list in builder
-                                final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder.getInternalBuilder(), Action.TYPE_FIELD_NAME_ACTION);
-                                dataBuilder.getInternalBuilder().clearField(actionFieldDescriptor);
+                                final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Action.TYPE_FIELD_NAME_ACTION);
+                                internalBuilder.clearField(actionFieldDescriptor);
                                 for (final SchedulableAction scheduledAction : scheduledActionList) {
-                                    dataBuilder.getInternalBuilder().addRepeatedField(actionFieldDescriptor, scheduledAction.getActionDescription());
+                                    internalBuilder.addRepeatedField(actionFieldDescriptor, scheduledAction.getActionDescription());
 
                                 }
                             } finally {
@@ -1279,51 +1392,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 newState = serviceState;
             }
 
-            // verify the service state
-            newState = Services.verifyAndRevalidateServiceState(newState);
-
-            // copy latestValueOccurrence map from current state, only if available
-            try {
-                Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
-                Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
-                newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
-            } catch (NotAvailableException ex) {
-                // skip update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
-            }
-            //StringProcessor.formatHumanReadable(Services.getServiceBaseName(serviceType))
-            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
-
-            // update the current state
-            Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
-
-            // Update timestamps
-            try {
-                Message.Builder serviceStateBuilder = (Message.Builder) internalBuilder.getClass().getMethod("get" + Services.getServiceStateName(serviceType) + "Builder").invoke(internalBuilder);
-
-                //Set timestamp if missing
-                if (!serviceStateBuilder.hasField(serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp"))) {
-                    logger.warn("State[" + Services.getServiceStateName(serviceType) + "] of " + this + " does not contain any state related timestamp!");
-                    TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder, logger);
-                }
-
-                // update state value occurrence timestamp
-                try {
-                    FieldDescriptor valueFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("value");
-                    FieldDescriptor timestampFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp");
-                    if (valueFieldDescriptor != null) {
-                        ServiceStateProcessor.updateLatestValueOccurrence((EnumValueDescriptor) serviceStateBuilder.getField(valueFieldDescriptor), ((Timestamp) serviceStateBuilder.getField(timestampFieldDescriptor)), serviceStateBuilder);
-                    }
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not update state value occurrence timestamp!", ex);
-                }
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistory("Could not update timestamp!", ex, logger);
-            }
-
-            // do custom state depending update in sub classes
-            applyCustomDataUpdate(internalBuilder, serviceType);
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + serviceState + "] for " + this + "!", ex);
+            return newState;
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not compute new state!", ex);
         }
     }
 
