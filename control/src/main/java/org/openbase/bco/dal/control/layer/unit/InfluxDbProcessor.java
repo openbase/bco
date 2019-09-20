@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -80,6 +80,7 @@ public class InfluxDbProcessor {
             Registries.getUnitRegistry().addDataObserver((source, data) -> {
                 updateConfiguration();
             });
+            updateConfiguration();
         } catch (NotAvailableException ex) {
             LOGGER.error("Unit Registry not available", ex);
         }
@@ -257,12 +258,11 @@ public class InfluxDbProcessor {
         try {
 
             List<FluxTable> fluxTableList = sendQuery(databaseQuery.getRawQuery());
+            System.err.println(fluxTableList);
 
             return FutureProcessor.completedFuture(convertFluxTablesToRecordCollections(fluxTableList));
 
         } catch (CouldNotPerformException ex) {
-
-            ex.printStackTrace();
 
             return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query Record", ex)));
         }
@@ -270,38 +270,50 @@ public class InfluxDbProcessor {
 
     private static RecordType.Record convertFluxRecordToProtoRecord(FluxRecord record) {
         RecordType.Record.Builder builder = RecordType.Record.newBuilder();
-
         if (record.getTime() != null) {
+
             builder.setTimestamp(TimestampType.Timestamp.newBuilder().setTime(record.getTime().getEpochSecond()).build());
         }
         if (record.getStart() != null) {
+
             builder.setTimeRangeStart(TimestampType.Timestamp.newBuilder().setTime(record.getStart().getEpochSecond()).build());
         }
         if (record.getStop() != null) {
+
             builder.setTimeRangeStop(TimestampType.Timestamp.newBuilder().setTime(record.getStop().getEpochSecond()).build());
         }
         if (record.getMeasurement() != null) {
+
             builder.setMeasurement(record.getMeasurement());
         }
         if (record.getField() != null) {
+
             builder.setField(record.getField());
         }
         if (record.getValue() != null) {
+
             builder.setValue(Double.valueOf(record.getValue().toString()));
+        } else {
+            builder.setValue(0);
         }
 
         builder.setTable(record.getTable());
 
         for (Map.Entry<String, Object> entry : record.getValues().entrySet()) {
-            builder.addEntryBuilder().setKey(entry.getKey()).setValue(entry.getValue().toString());
+            if (entry.getValue() != null) {
+
+                builder.addEntryBuilder().setKey(entry.getKey()).setValue(entry.getValue().toString());
+            }
         }
 
         return builder.build();
     }
 
     private static RecordCollectionType.RecordCollection convertFluxTablesToRecordCollections(List<FluxTable> tables) {
+        //todo fix aggregatedValues
         RecordCollectionType.RecordCollection.Builder builder = RecordCollectionType.RecordCollection.newBuilder();
         for (FluxTable table : tables) {
+
             for (FluxRecord record : table.getRecords()) {
                 builder.addRecord(convertFluxRecordToProtoRecord(record));
             }
@@ -379,9 +391,6 @@ public class InfluxDbProcessor {
 
             return FutureProcessor.completedFuture(newAggregatedServiceState);
         } catch (CouldNotPerformException ex) {
-
-            ex.printStackTrace();
-
             return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state", ex)));
         }
     }

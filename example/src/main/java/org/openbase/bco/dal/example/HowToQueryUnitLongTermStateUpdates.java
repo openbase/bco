@@ -10,12 +10,12 @@ package org.openbase.bco.dal.example;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -33,6 +33,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.database.QueryType.Query;
+import org.openbase.type.domotic.database.RecordCollectionType;
+import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.Logger;
@@ -73,7 +75,11 @@ public class HowToQueryUnitLongTermStateUpdates {
 
             testLocation = Units.getUnitByAlias("Location-1", true, Units.LOCATION);
 
-            testLocation.queryRecord(Query.newBuilder().setRawQuery("hallo word").build()).get();
+            RecordCollectionType.RecordCollection recordCollection = testLocation.queryRecord(Query.newBuilder().setRawQuery("from(bucket: \"bco-persistence\")\n" +
+                    "  |> range(start:1568704474, stop:1568904474)\n" +
+                    "  |> filter(fn: (r) => r._measurement == \"heartbeat\")").build()).get();
+
+            LOGGER.info(recordCollection.toString());
 
         } catch (CouldNotPerformException | CancellationException | ExecutionException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
