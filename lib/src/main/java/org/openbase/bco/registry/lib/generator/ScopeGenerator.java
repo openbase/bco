@@ -72,7 +72,7 @@ public class ScopeGenerator {
         if (!unitConfig.getLocationConfig().getRoot()) {
             scope.addAllComponent(registry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getScope().getComponentList());
         }
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(unitConfig.getLabel())));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
 
         return scope.build();
     }
@@ -138,7 +138,7 @@ public class ScopeGenerator {
         scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent("device"));
 
         // add device scope
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(deviceConfig.getLabel())));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, deviceConfig.getLabel())));
 
         return scope.build();
     }
@@ -172,7 +172,7 @@ public class ScopeGenerator {
         scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(unitConfig.getUnitType().name().replace("_", "")));
 
         // add unit label
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getFirstLabel(unitConfig.getLabel())));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
 
         return scope.build();
     }
