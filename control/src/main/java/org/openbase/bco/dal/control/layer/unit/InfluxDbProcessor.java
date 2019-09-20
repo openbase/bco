@@ -258,7 +258,6 @@ public class InfluxDbProcessor {
         try {
 
             List<FluxTable> fluxTableList = sendQuery(databaseQuery.getRawQuery());
-            System.err.println(fluxTableList);
 
             return FutureProcessor.completedFuture(convertFluxTablesToRecordCollections(fluxTableList));
 

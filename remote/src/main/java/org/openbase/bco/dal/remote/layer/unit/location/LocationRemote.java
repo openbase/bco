@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.CONNECTION;
@@ -54,12 +55,12 @@ import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -143,9 +144,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      *
      * @param locationID  the location id of the location to check.
      * @param waitForData flag defines if the method should block until all needed instances are available.
-     *
      * @return a collection of unit connection remotes.
-     *
      * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
      */
     public List<ConnectionRemote> getDirectConnectionList(final String locationID, final boolean waitForData) throws CouldNotPerformException {
@@ -173,9 +172,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param locationID     the location id of the location to check.
      * @param connectionType the type of the connection. To disable this filter use ConnectionType.UNKNOWN
      * @param waitForData    flag defines if the method should block until all needed instances are available.
-     *
      * @return true if the specified connection exists.
-     *
      * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
      */
     public boolean hasDirectConnection(final String locationID, final ConnectionType connectionType, final boolean waitForData) throws CouldNotPerformException {
@@ -192,7 +189,6 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * Returns a Map of all units which directly or recursively provided by this location..
      *
      * @return the Map of provided units sorted by their UnitType.
-     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
      * @throws java.lang.InterruptedException                   is thrown if the current thread was externally interrupted.
      */
@@ -204,9 +200,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * Returns a Map of all units which are directly or recursively provided by this location..
      *
      * @param recursive defines if recursive related unit should be included as well.
-     *
      * @return the Map of provided units sorted by their UnitType.
-     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
      * @throws java.lang.InterruptedException                   is thrown if the current thread was externally interrupted.
      */
@@ -251,9 +245,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param unitType        the unit type.
      * @param waitForData     if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
      * @param unitRemoteClass the unit remote class.
-     *
      * @return a list of instances of the given remote class.
-     *
      * @throws CouldNotPerformException is thrown in case something went wrong.
      * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
@@ -270,9 +262,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param waitForData     if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
      * @param unitRemoteClass the unit remote class.
      * @param recursive       defines if recursive related unit should be included as well.
-     *
      * @return a list of instances of the given remote class.
-     *
      * @throws CouldNotPerformException is thrown in case something went wrong.
      * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
@@ -314,10 +304,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
      * @param timeStart Timestamp when the measurement should start
      * @param timeStop  Timestamp when the measurement should stop
-     *
      * @return RecordCollection of mean values
      */
-    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, Long timeStart, Long timeStop, String field) {
+    public RecordCollectionType.RecordCollection getAveragePowerConsumptionTables(String window, Long timeStart, Long timeStop, String field) throws ExecutionException, InterruptedException {
         String query = "from(bucket:\"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
@@ -326,7 +315,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
                 " |> group(columns: [\"_time\"], mode:\"by\")" +
                 "|> mean(column: \"_value\")";
 
-        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
+        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build()).get();
     }
 
     /**
@@ -336,10 +325,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
      * @param timeStart Timestamp when the measurement should start
      * @param timeStop  Timestamp when the measurement should stop
-     *
      * @return RecordCollection of mean values
      */
-    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumptionTables(String window, String unitId, Long timeStart, Long timeStop, String field) {
+    public RecordCollectionType.RecordCollection getAveragePowerConsumptionTables(String window, String unitId, Long timeStart, Long timeStop, String field) throws ExecutionException, InterruptedException {
         String query = "from(bucket:\"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
@@ -349,7 +337,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
                 " |> group(columns: [\"_time\"], mode:\"by\")" +
                 " |> mean(column: \"_value\")";
 
-        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
+        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build()).get();
 
     }
 
@@ -360,10 +348,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
      * @param timeStart Timestamp when the measurement should start
      * @param timeStop  Timestamp when the measurement should stop
-     *
      * @return RecordCollection with one entry
      */
-    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumption(String window, Long timeStart, Long timeStop, String field) {
+    public RecordCollectionType.RecordCollection getAveragePowerConsumption(String window, Long timeStart, Long timeStop, String field) throws ExecutionException, InterruptedException {
 
         String query = "from(bucket: \"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
@@ -373,7 +360,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
                 " |> group(columns: [\"_field\"], mode:\"by\")" +
                 " |> mean(column: \"_value\")";
 
-        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
+        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build()).get();
     }
 
     /**
@@ -384,10 +371,9 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param field     Name of the field which should be checked (e.g consumption, current, voltage)
      * @param timeStart Timestamp when the measurement should start
      * @param timeStop  Timestamp when the measurement should stop
-     *
      * @return RecordCollection with one entry
      */
-    public Future<RecordCollectionType.RecordCollection> getAveragePowerConsumption(String window, String unit_id, Long timeStart, Long timeStop, String field) {
+    public RecordCollectionType.RecordCollection getAveragePowerConsumption(String window, String unit_id, Long timeStart, Long timeStop, String field) throws ExecutionException, InterruptedException {
 
         String query = "from(bucket: \"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
@@ -398,6 +384,6 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
                 " |> group(columns: [\"_field\"], mode:\"by\")" +
                 " |> mean(column: \"_value\")";
 
-        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build());
+        return queryRecord(QueryType.Query.newBuilder().setRawQuery(query).build()).get();
     }
 }

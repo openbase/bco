@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -1599,7 +1599,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(QueryType.Query databaseQuery) {
-        System.err.println("@@@@@@@@@@@@@@@@@ queryAggreagated: " + databaseQuery);
 
         return InfluxDbProcessor.queryAggregatedServiceState(databaseQuery);
     }
@@ -1624,7 +1623,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public Future<RecordCollectionType.RecordCollection> queryRecord(QueryType.Query databaseQuery) {
-        System.err.println("@@@@@@@@@@@@@@@@@ queryRecord: " + databaseQuery);
         return InfluxDbProcessor.queryRecord(databaseQuery);
     }
 
