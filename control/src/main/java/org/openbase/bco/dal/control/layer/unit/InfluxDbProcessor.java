@@ -32,6 +32,7 @@ import org.influxdata.query.FluxTable;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -54,25 +55,46 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class InfluxDbProcessor {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(InfluxDbProcessor.class);
 
-    private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
-    private static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
-    private static final String INFLUXDB_BATCH_TIME = "INFLUXDB_BATCH_TIME";
-    private static final String INFLUXDB_BATCH_TIME_DEFAULT = "1000";
-    private static final String INFLUXDB_BATCH_LIMIT = "INFLUXDB_BATCH_LIMIT";
-    private static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
-    private static final String INFLUXDB_URL = "INFLUXDB_URL";
-    private static final String INFLUXDB_ORG = "INFLUXDB_ORG";
-    private static final String INFLUXDB_ORG_DEFAULT = "openbase";
-    private static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
-    private static final String INFLUXDB_ORG_ID = "INFLUXDB_ORG_ID";
-    private static final long READ_TIMEOUT = 60;
-    private static final long WRITE_TIMEOUT = 60;
-    private static final long CONNECT_TIMOUT = 40;
-    private static String INFLUXDB_APP_CLASS_ID = "e6d9a242-58de-4e44-8e56-64c8da560fe4";
+    public static final Integer READ_TIMEOUT = 60;
+    public static final Integer WRITE_TIMEOUT = 60;
+    public static final Integer CONNECT_TIMOUT = 40;
+
+    public static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
+    public static final long MAX_INITIAL_STORAGE_TIMEOUT = TimeUnit.SECONDS.toMillis(5);
+
+    public static final Integer ADDITIONAL_TIMEOUT = 60000;
+    public static final Integer DATABASE_TIMEOUT_DEFAULT = 60000;
+
+    public static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
+    public static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
+    public static final String INFLUXDB_BATCH_TIME = "INFLUXDB_BATCH_TIME";
+    public static final String INFLUXDB_BATCH_TIME_DEFAULT = "1000";
+    public static final String INFLUXDB_BATCH_LIMIT = "INFLUXDB_BATCH_LIMIT";
+    public static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
+    public static final String INFLUXDB_URL = "INFLUXDB_URL";
+    public static final String INFLUXDB_URL_DEFAULT = "http://localhost:9999";
+    public static final String INFLUXDB_ORG = "INFLUXDB_ORG";
+    public static final String INFLUXDB_ORG_DEFAULT = "openbase";
+    public static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
+
+    public static final long HEARTBEAT_PERIOD = TimeUnit.MINUTES.toMillis(15);
+    public static final Integer HEARTBEAT_INITIAL_DELAY = 0;
+    public static final Integer HEARTBEAT_ONLINE_VALUE = 1;
+    public static final Integer HEARTBEAT_OFFLINE_VALUE = 0;
+    public static final String HEARTBEAT_MEASUREMENT = "heartbeat";
+    public static final String HEARTBEAT_FIELD = "alive";
+
+    public static final String INFLUXDB_ORG_ID = "INFLUXDB_ORG_ID";
+    public static final String INFLUXDB_ORG_ID_DEFAULT = INFLUXDB_ORG_DEFAULT;
+
+    public static String INFLUXDB_APP_CLASS_ID = "e6d9a242-58de-4e44-8e56-64c8da560fe4";
+
     private static MetaConfigPool metaConfigPool = new MetaConfigPool();
 
     static {
@@ -98,18 +120,12 @@ public class InfluxDbProcessor {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not update configuration!", ex, LOGGER);
         } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistory("Update configuration interrupted!", ex, LOGGER);
-
+            Thread.currentThread().interrupt();
         }
-
     }
 
-    public static String getInfluxdbUrl() throws NotAvailableException {
-        try {
-            return metaConfigPool.getValue(INFLUXDB_URL);
-        } catch (NotAvailableException ex) {
-            throw new NotAvailableException("Influxddb_url", ex);
-        }
+    public static String getInfluxdbUrl() {
+        return metaConfigPool.getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
     }
 
     public static String getInfluxdbBucket() {
@@ -124,50 +140,46 @@ public class InfluxDbProcessor {
         return metaConfigPool.getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT);
     }
 
-    public static String getInfluxdbOrg() {
-        return metaConfigPool.getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
-    }
-
     public static String getInfluxdbToken() throws NotAvailableException {
         try {
             return metaConfigPool.getValue(INFLUXDB_TOKEN);
         } catch (NotAvailableException ex) {
-            throw new NotAvailableException("Influxdb_Token", ex);
+            throw new NotAvailableException(INFLUXDB_TOKEN, new InvalidStateException("MetaConfig entry " + INFLUXDB_TOKEN + " not configured for InfluxDbConnectorApp!", ex));
         }
     }
 
     public static String getInfluxdbOrgId() throws NotAvailableException {
-        try {
-            return metaConfigPool.getValue(INFLUXDB_ORG_ID);
-        } catch (NotAvailableException ex) {
-            throw new NotAvailableException("Influxdb_org_id", ex);
-        }
+        return metaConfigPool.getValue(INFLUXDB_ORG_ID, INFLUXDB_ORG_ID_DEFAULT);
     }
 
     /**
      * Creates a connection to the influxdb and sends a query.
      *
      * @param query Query to send
+     *
      * @return List of FluxTables
+     *
      * @throws CouldNotPerformException
      */
     private static List<FluxTable> sendQuery(final String query) throws CouldNotPerformException {
 
-        try (
-                InfluxDBClient influxDBClient = InfluxDBClientFactory
-                        .create(getInfluxdbUrl() + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", getInfluxdbToken().toCharArray())) {
+        System.out.println("request query[" + query + "]");
+
+        try (InfluxDBClient influxDBClient = InfluxDBClientFactory
+                .create(getInfluxdbUrl() + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", getInfluxdbToken().toCharArray())) {
 
             if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
                 throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
-
             }
-            QueryApi queryApi = influxDBClient.getQueryApi();
 
+            final QueryApi queryApi = influxDBClient.getQueryApi();
             return queryApi.query(query, getInfluxdbOrgId());
 
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not send query to database!", ex);
-
+            throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
         }
     }
 
@@ -176,6 +188,7 @@ public class InfluxDbProcessor {
      *
      * @param databaseQuery The databaseQuery Object which is used to build the Flux query.
      * @param isEnum        If the aggregated fields consists of enum values.
+     *
      * @return
      */
     private static String buildGetAggregatedQuery(final QueryType.Query databaseQuery, boolean isEnum) {
@@ -190,25 +203,22 @@ public class InfluxDbProcessor {
 
         for (EntryType.Entry entry : filterList) {
             query = addFilterToQuery(query, entry);
-
         }
 
         if (isEnum) {
-
             query += " |> group(columns: [\"_value\"])" +
                     " |> map(fn: (r) => ({_time: r._time, index: 1}))" +
                     "|> cumulativeSum(columns: [\"index\"])" +
                     "|> last()";
-
             return query;
         } else {
 
             String window = databaseQuery.getAggregatedWindow();
+
             // add filters
             query += "|> group(columns: [\"_field\"], mode:\"by\")" +
                     " |> aggregateWindow(every:" + window + " , fn: mean)" +
                     " |> mean(column: \"_value\")";
-
             return query;
         }
     }
@@ -218,6 +228,7 @@ public class InfluxDbProcessor {
      *
      * @param query  The flux query string.
      * @param filter Entry object with key and value
+     *
      * @return
      */
     private static String addFilterToQuery(String query, EntryType.Entry filter) {
@@ -234,6 +245,7 @@ public class InfluxDbProcessor {
      * Calculates the percentages of the different (enum) values in a List of FluxTables
      *
      * @param tables List of FluxTables with the occurrence ( as index key) of the enum values (as _value)
+     *
      * @return Map with the Enum Value Index as Key and the percentage (between 0-1) as value.
      */
     private static Map<Integer, Double> calculateEnumStatePercentage(List<FluxTable> tables) {
@@ -256,14 +268,10 @@ public class InfluxDbProcessor {
 
     public static Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
         try {
-
             List<FluxTable> fluxTableList = sendQuery(databaseQuery.getRawQuery());
-
             return FutureProcessor.completedFuture(convertFluxTablesToRecordCollections(fluxTableList));
-
         } catch (CouldNotPerformException ex) {
-
-            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query Record", ex)));
+            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query Record!", ex)));
         }
     }
 
@@ -324,6 +332,7 @@ public class InfluxDbProcessor {
      * Build a Map of String,Double pairs out of FluxTables for easy filtering.
      *
      * @param tables List of FluxTables.
+     *
      * @return Map<String, Double> with the fields as key and the values as value.
      */
     private static Map<String, Double> aggregatedFluxTablesToMap(List<FluxTable> tables) {
@@ -341,6 +350,7 @@ public class InfluxDbProcessor {
      * Get the aggregated value coverage of a service state.
      *
      * @param databaseQuery DatabaseQuery which will be used to build a query which will be send to the influxdb.
+     *
      * @return AggregatedServiceState  with the aggregated value coverage, the databaseQuery the service_type and the unit_id.
      */
     public static Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {

@@ -71,9 +71,9 @@ public class HowToQueryUnitLongTermStateUpdates {
             LOGGER.info("authenticate current session...");
             BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
 
-            LOGGER.info("request light unit with alias \"ColorableLight-7\"");
+            LOGGER.info("request the root location");
 
-            testLocation = Units.getUnitByAlias("Location-1", true, Units.LOCATION);
+            testLocation = Units.getRootLocation(true);
 
             RecordCollectionType.RecordCollection recordCollection = testLocation.queryRecord(Query.newBuilder().setRawQuery("from(bucket: \"bco-persistence\")\n" +
                     "  |> range(start:1568704474, stop:1568904474)\n" +

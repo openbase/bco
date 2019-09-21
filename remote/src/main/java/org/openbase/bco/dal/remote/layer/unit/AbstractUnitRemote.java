@@ -725,6 +725,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     @Override
     public Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
+        System.out.println("query["+databaseQuery.getRawQuery()+"]");
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(databaseQuery, RecordCollection.class, SessionManager.getInstance(), authenticatedValue -> queryRecordAuthenticated(authenticatedValue));
     }
 }
