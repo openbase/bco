@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -1577,7 +1577,7 @@ public class Units {
      */
     public static LocationRemote getRootLocation(final boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
-            return waitForData(getUnitRemote(Registries.getUnitRegistry().getRootLocationConfig()), waitForData, Units.LOCATION);
+            return getUnit(Registries.getUnitRegistry().getRootLocationConfig(), waitForData, Units.LOCATION);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("RootLocation", ex);
         }
@@ -1604,7 +1604,7 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
      */
-    public Future<UnitRemote<?>> getFutureRootLocation(boolean waitForData) {
+    public Future<LocationRemote> getFutureRootLocation(boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getRootLocation(waitForData));
     }
 }
