@@ -307,7 +307,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param timeStop  Timestamp when the measurement should stop
      * @return future of RecordCollection of mean values
      */
-    public Future<RecordCollection> getAveragePowerConsumptionTables(String window, Long timeStart, Long timeStop, String field) throws ExecutionException, InterruptedException {
+    public Future<RecordCollection> getAveragePowerConsumptionTables(String window, Long timeStart, Long timeStop, String field) {
         String query = "from(bucket:\"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
@@ -328,7 +328,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param timeStop  Timestamp when the measurement should stop
      * @return future of RecordCollection of mean values
      */
-    public Future<RecordCollection> getAveragePowerConsumptionTables(String window, String unitId, Long timeStart, Long timeStop, String field) throws ExecutionException, InterruptedException {
+    public Future<RecordCollection> getAveragePowerConsumptionTables(String window, String unitId, Long timeStart, Long timeStop, String field) {
         String query = "from(bucket:\"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
                 " |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")" +
@@ -351,7 +351,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param timeStop  Timestamp when the measurement should stop
      * @return future of RecordCollection with one entry
      */
-    public Future<RecordCollection> getAveragePowerConsumption(String window, Long timeStart, Long timeStop, String field) throws ExecutionException, InterruptedException {
+    public Future<RecordCollection> getAveragePowerConsumption(String window, Long timeStart, Long timeStop, String field) {
 
         String query = "from(bucket: \"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
@@ -374,7 +374,7 @@ public class LocationRemote extends AbstractAggregatedBaseUnitRemote<LocationDat
      * @param timeStop  Timestamp when the measurement should stop
      * @return future of RecordCollection with one entry
      */
-    public Future<RecordCollection> getAveragePowerConsumption(String window, String unit_id, Long timeStart, Long timeStop, String field) throws ExecutionException, InterruptedException {
+    public Future<RecordCollection> getAveragePowerConsumption(String window, String unit_id, Long timeStart, Long timeStop, String field) {
 
         String query = "from(bucket: \"bco-persistence\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
