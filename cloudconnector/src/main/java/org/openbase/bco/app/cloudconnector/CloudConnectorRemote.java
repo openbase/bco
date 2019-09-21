@@ -63,7 +63,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
         }
 
         UnitConfig cloudConnectorConfig = null;
-        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.APP)) {
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.APP)) {
             if (unitConfig.getAppConfig().getAppClassId().equals(appClassId)) {
                 cloudConnectorConfig = unitConfig;
                 break;

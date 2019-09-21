@@ -123,6 +123,11 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
+    public Future<AuthenticatedValue> queryAggregatedServiceStateAuthenticated(AuthenticatedValue databaseQuery) {
+        return appRemote.queryAggregatedServiceStateAuthenticated(databaseQuery);
+    }
+
+    @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
         return appRemote.restoreSnapshotAuthenticated(authenticatedSnapshot);
     }
@@ -210,6 +215,11 @@ public class AppRemoteAdapter implements App {
     @Override
     public Future<AggregatedServiceState> queryAggregatedServiceState(final Query databaseQuery) {
         return appRemote.queryAggregatedServiceState(databaseQuery);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> queryRecordAuthenticated(AuthenticatedValue databaseQuery) {
+        return appRemote.queryRecordAuthenticated(databaseQuery);
     }
 
     @Override

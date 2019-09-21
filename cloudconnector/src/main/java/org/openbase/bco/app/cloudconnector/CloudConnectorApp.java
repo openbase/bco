@@ -101,7 +101,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
     private void createAuthenticationToken() throws CouldNotPerformException, InterruptedException {
         try {
             UnitConfig cloudConnectorUser = null;
-            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.USER)) {
                 MetaConfigPool metaConfigPool = new MetaConfigPool();
                 metaConfigPool.register(new MetaConfigVariableProvider(UnitConfigProcessor.getDefaultAlias(unitConfig, "?"), unitConfig.getMetaConfig()));
                 try {
