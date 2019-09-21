@@ -39,7 +39,6 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.preset.JPTestMode;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -72,35 +71,11 @@ import java.util.concurrent.TimeoutException;
 
 import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 
+import static org.openbase.bco.dal.control.layer.unit.InfluxDbProcessor.*;
+
 public class InfluxDbconnectorApp extends AbstractAppController {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
-    private static final Integer READ_TIMEOUT = 60;
-    private static final Integer WRITE_TIMEOUT = 60;
-    private static final Integer CONNECT_TIMOUT = 40;
-    private static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
-    private static final long MAX_INITIAL_STORAGE_TIMEOUT = TimeUnit.SECONDS.toMillis(5);
-    private static final Integer ADDITIONAL_TIMEOUT = 60000;
-    private static final Integer DATABASE_TIMEOUT_DEFAULT = 60000;
-    private static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
-    private static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
-    private static final String INFLUXDB_BATCH_TIME = "INFLUXDB_BATCH_TIME";
-    private static final String INFLUXDB_BATCH_TIME_DEFAULT = "1000";
-    private static final String INFLUXDB_BATCH_LIMIT = "INFLUXDB_BATCH_LIMIT";
-    private static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
-    private static final String INFLUXDB_URL = "INFLUXDB_URL";
-    private static final String INFLUXDB_URL_DEFAULT = "http://localhost:9999";
-    private static final String INFLUXDB_ORG = "INFLUXDB_ORG";
-    private static final String INFLUXDB_ORG_DEFAULT = "openbase";
-    private static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
-    private static final long HEARTBEAT_PERIOD = TimeUnit.MINUTES.toMillis(15);
-    private static final Integer HEARTBEAT_INITIAL_DELAY = 0;
-    private static final Integer HEARTBEAT_ONLINE_VALUE = 1;
-    private static final Integer HEARTBEAT_OFFLINE_VALUE = 0;
-    private static final String HEARTBEAT_MEASUREMENT = "heartbeat";
-    private static final String HEARTBEAT_FIELD = "alive";
-
 
     private WriteApi writeApi;
     private Integer databaseTimeout = DATABASE_TIMEOUT_DEFAULT;
@@ -132,7 +107,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
         databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
         token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
-        org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
+        org = generateVariablePool().getValue(INFLUXDB_ORG_ID, INFLUXDB_ORG_ID_DEFAULT);
         return config;
     }
 
@@ -482,8 +457,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger);
         }
         logger.debug(" Try to connect to influxDB at " + databaseUrl);
-        influxDBClient = InfluxDBClientFactory
-                .create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
+        influxDBClient = InfluxDBClientFactory.create(databaseUrl + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", token);
     }
 
     private void disconnectDatabase() {
