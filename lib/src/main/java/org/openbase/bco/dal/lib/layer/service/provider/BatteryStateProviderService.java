@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.NotAvailableException;
@@ -33,7 +34,6 @@ import org.openbase.type.domotic.state.BatteryStateType.BatteryState.State;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface BatteryStateProviderService extends ProviderService {
@@ -62,11 +62,11 @@ public interface BatteryStateProviderService extends ProviderService {
                 builder.setValue(BatteryState.State.OK);
             }
         } else if (!builder.hasLevel() && builder.getValue() != BatteryState.State.UNKNOWN) {
-            if(builder.getValue() == BatteryState.State.INSUFFICIENT) {
+            if (builder.getValue() == BatteryState.State.INSUFFICIENT) {
                 builder.setLevel(0.05d);
-            }else if(builder.getValue() == BatteryState.State.CRITICAL) {
+            } else if (builder.getValue() == BatteryState.State.CRITICAL) {
                 builder.setLevel(0.15d);
-            }else if(builder.getValue() == State.OK) {
+            } else if (builder.getValue() == State.OK) {
                 builder.setLevel(1.0d);
             }
         }
