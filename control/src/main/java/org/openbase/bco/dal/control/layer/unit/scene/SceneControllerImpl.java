@@ -51,6 +51,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -153,7 +154,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                     }
                                 }
                             }
-                            // deactivated because not working yet, can maybe replace the manual data builder data update when applyDataUpdate is refactored.
+                            // todo: deactivated because not working yet, can maybe replace the manual data builder data update when applyDataUpdate is refactored.
 //                            try {
 //                                applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE)), ServiceType.ACTIVATION_STATE_SERVICE);
 //                            } catch (CouldNotPerformException ex) {
@@ -221,8 +222,9 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
         }
 
-        requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList(), () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
-        optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList(), () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
+        final ActionParameter actionParameterPrototype = ActionParameter.newBuilder().setInterruptible(true).setSchedulable(true).setExecutionTimePeriod(Long.MAX_VALUE).build();
+        requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
+        optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
         return config;
     }
 

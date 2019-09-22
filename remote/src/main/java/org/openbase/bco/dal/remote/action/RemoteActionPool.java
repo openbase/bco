@@ -73,10 +73,10 @@ public class RemoteActionPool {
         this.unit = unit;
     }
 
-    public void initViaServiceStateDescription(final List<ServiceStateDescription> serviceStateDescriptions, Callable<Boolean> autoExtendCheckCallback) throws CouldNotPerformException, InterruptedException {
+    public void initViaServiceStateDescription(final List<ServiceStateDescription> serviceStateDescriptions, final ActionParameter actionParameterPrototype, final Callable<Boolean> autoExtendCheckCallback) throws CouldNotPerformException, InterruptedException {
         List<ActionParameter> actionParameters = new ArrayList<>();
         for (ServiceStateDescription serviceStateDescription : serviceStateDescriptions) {
-            actionParameters.add(ActionParameter.newBuilder().setServiceStateDescription(serviceStateDescription).build());
+            actionParameters.add(actionParameterPrototype.toBuilder().setServiceStateDescription(serviceStateDescription).build());
         }
         init(actionParameters, autoExtendCheckCallback);
     }
