@@ -90,9 +90,6 @@ public class InfluxDbProcessor {
     public static final String HEARTBEAT_MEASUREMENT = "heartbeat";
     public static final String HEARTBEAT_FIELD = "alive";
 
-    public static final String INFLUXDB_ORG_ID = "INFLUXDB_ORG_ID";
-    public static final String INFLUXDB_ORG_ID_DEFAULT = INFLUXDB_ORG_DEFAULT;
-
     public static String INFLUXDB_APP_CLASS_ID = "e6d9a242-58de-4e44-8e56-64c8da560fe4";
 
     private static MetaConfigPool metaConfigPool = new MetaConfigPool();
@@ -148,8 +145,8 @@ public class InfluxDbProcessor {
         }
     }
 
-    public static String getInfluxdbOrgId() throws NotAvailableException {
-        return metaConfigPool.getValue(INFLUXDB_ORG_ID, INFLUXDB_ORG_ID_DEFAULT);
+    public static String getInfluxdbOrg() throws NotAvailableException {
+        return metaConfigPool.getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
     }
 
     /**
@@ -173,7 +170,7 @@ public class InfluxDbProcessor {
             }
 
             final QueryApi queryApi = influxDBClient.getQueryApi();
-            return queryApi.query(query, getInfluxdbOrgId());
+            return queryApi.query(query, getInfluxdbOrg());
 
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
