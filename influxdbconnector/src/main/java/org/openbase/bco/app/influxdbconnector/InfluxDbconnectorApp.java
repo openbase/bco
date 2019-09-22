@@ -107,7 +107,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
         databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
         token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
-        org = generateVariablePool().getValue(INFLUXDB_ORG_ID, INFLUXDB_ORG_ID_DEFAULT);
+        org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
         return config;
     }
 
@@ -265,16 +265,23 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     }
 
     private void storeServiceState(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType, boolean initialSync) throws CouldNotPerformException {
-        final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
-        Message lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
 
-        // todo: @david please make sure the current state is stored even when the last state is not available.
+        final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
+        Message lastServiceState = null;
 
         try {
+            lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
             final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MILLISECONDS) - 1l;
             lastServiceState = TimestampProcessor.updateTimestamp(serviceStateTimestamp, lastServiceState, TimeUnit.MILLISECONDS);
-            storeServiceState(unit, serviceType, currentServiceState);
             storeServiceState(unit, serviceType, lastServiceState);
+        } catch (CouldNotPerformException ex) {
+            // we don't care if the last service state is not available
+            // which can be the case for an initial sync
+            // or any states which got only one state update since system startup.
+        }
+
+        try {
+            storeServiceState(unit, serviceType, currentServiceState);
         } catch (CouldNotPerformException ex) {
 
             // filter log if initial timestamps are missing
@@ -283,10 +290,10 @@ public class InfluxDbconnectorApp extends AbstractAppController {
             }
 
             ExceptionPrinter.printHistory("Could not store service state change into db! " +
-                            "UnitType[" + unit.getUnitType().toString() + "] " +
-                            "ServiceType[" + serviceType.toString() + "] " +
-                            "CurrentServiceState[" + currentServiceState.toString() + "] " +
-                            "LastServiceState[" + lastServiceState.toString() + "]"
+                            "UnitType[" + unit.getUnitType() + "] " +
+                            "ServiceType[" + serviceType + "] " +
+                            "CurrentServiceState[" + currentServiceState + "] " +
+                            "LastServiceState[" + lastServiceState + "]"
                     , ex, logger, LogLevel.WARN);
         }
     }
