@@ -33,12 +33,9 @@ public class BatteryStateDecimalTypeTransformer implements ServiceStateCommandTr
 
     /**
      * Transform a number to a battery state. The number is set as the level and
-     * should be between 0 and 1. If the level is higher than 0.15 the battery
-     * state is set as okay, higher than 0.3 means critical and between 0 and 0.3
-     * means insufficient. If the value is smaller than 0 unknown is set as the
-     * battery state.
+     * should be between 0 and 1.
      *
-     * @param decimalType the battery level between 0 and 100
+     * @param decimalType the battery level between 0 and 1
      *
      * @return the corresponding battery state
      */
@@ -46,13 +43,7 @@ public class BatteryStateDecimalTypeTransformer implements ServiceStateCommandTr
     public BatteryState transform(final DecimalType decimalType) {
         BatteryState.Builder state = BatteryState.newBuilder();
         state.setLevel(decimalType.doubleValue());
-        if (state.getLevel() > 0.3d) {
-            state.setValue(State.OK);
-        } else if (state.getLevel() > 0.15d) {
-            state.setValue(State.INSUFFICIENT);
-        } else {
-            state.setValue(State.CRITICAL);
-        }
+
         return state.build();
     }
 
