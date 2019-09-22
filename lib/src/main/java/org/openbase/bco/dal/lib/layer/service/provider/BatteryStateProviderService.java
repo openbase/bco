@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.NotAvailableException;
@@ -33,7 +34,6 @@ import org.openbase.type.domotic.state.BatteryStateType.BatteryState.State;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface BatteryStateProviderService extends ProviderService {
@@ -54,19 +54,24 @@ public interface BatteryStateProviderService extends ProviderService {
         if (builder.hasLevel()) {
             builder.setLevel(ProviderService.oldValueNormalization(builder.getLevel(), 100));
             OperationService.verifyValueRange("batterylevel", builder.getLevel(), 0, 1d);
+
             if (builder.getLevel() <= 0.05d) {
-                builder.setValue(BatteryState.State.INSUFFICIENT);
+                builder.setValue(State.INSUFFICIENT);
             } else if (builder.getLevel() <= 0.15d) {
-                builder.setValue(BatteryState.State.CRITICAL);
+                builder.setValue(State.CRITICAL);
+            } else if (builder.getLevel() <= 0.3d) {
+                builder.setValue(State.LOW);
             } else {
-                builder.setValue(BatteryState.State.OK);
+                builder.setValue(State.OK);
             }
         } else if (!builder.hasLevel() && builder.getValue() != BatteryState.State.UNKNOWN) {
-            if(builder.getValue() == BatteryState.State.INSUFFICIENT) {
+            if (builder.getValue() == State.INSUFFICIENT) {
                 builder.setLevel(0.05d);
-            }else if(builder.getValue() == BatteryState.State.CRITICAL) {
+            } else if (builder.getValue() == State.CRITICAL) {
                 builder.setLevel(0.15d);
-            }else if(builder.getValue() == State.OK) {
+            } else if (builder.getValue() == State.LOW) {
+                builder.setLevel(0.30d);
+            } else if (builder.getValue() == State.OK) {
                 builder.setLevel(1.0d);
             }
         }

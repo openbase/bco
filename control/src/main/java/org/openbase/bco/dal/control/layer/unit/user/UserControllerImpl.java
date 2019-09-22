@@ -42,6 +42,7 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -298,6 +299,8 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         private final Map<String, RemoteActionPool> remoteActionPoolMap;
         private UserController userController;
 
+        private final ActionParameter actionParameterPrototype = ActionParameter.newBuilder().setInterruptible(true).setSchedulable(true).setExecutionTimePeriod(Long.MAX_VALUE).build();
+
         public ActivityMultiStateOperationServiceImpl(final UserController userController) {
             this.userController = userController;
             this.remoteActionPoolMap = new HashMap<>();
@@ -312,7 +315,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         stringRemoteActionPoolEntry.getValue().stop();
                     }
                 } else if ((activityMultiState.getActivityIdCount() > 0)) {
-                    // todo: why is only the first action validated and were are activities disabled and their actions canceled?
+                    // todo: why is only the first action validated and where are activities disabled and their actions canceled?
                     final String activityId = activityMultiState.getActivityId(0);
                     for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
                         if (!stringRemoteActionPoolEntry.getKey().equals(activityId)) {
@@ -323,7 +326,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         final RemoteActionPool remoteActionPool = new RemoteActionPool(UserControllerImpl.this);
                         remoteActionPoolMap.put(activityId, remoteActionPool);
                         final ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityId);
-                        remoteActionPool.initViaServiceStateDescription(activityConfig.getServiceStateDescriptionList(), () -> true);
+                        remoteActionPool.initViaServiceStateDescription(activityConfig.getServiceStateDescriptionList(), actionParameterPrototype, () -> true);
                         // todo: check [() -> true)] needs to be implemented. -> true if action is included in current action multi state
                     }
                     remoteActionPoolMap.get(activityId).execute(activityMultiState.getResponsibleAction());

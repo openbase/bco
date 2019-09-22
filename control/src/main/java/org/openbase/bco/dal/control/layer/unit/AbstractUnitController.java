@@ -110,6 +110,7 @@ import rsb.converter.ProtocolBufferConverter;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -1683,7 +1684,41 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
+    public Future<AuthenticatedValue> queryAggregatedServiceStateAuthenticated(final AuthenticatedValue databaseQuery) {
+        return GlobalCachedExecutorService.submit(() ->
+                AuthenticatedServiceProcessor.authenticatedAction(databaseQuery, QueryType.Query.class, (message, authenticationBaseData) -> {
+                    AuthorizationWithTokenHelper.canDo(authenticationBaseData, getConfig(), PermissionType.READ, Registries.getUnitRegistry(), getUnitType(), ServiceType.UNKNOWN);
+
+                    try {
+                        return queryAggregatedServiceState(message).get();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
+                    } catch (ExecutionException ex) {
+                        throw new CouldNotPerformException("Authenticated action failed!", ex);
+                    }
+                }));
+    }
+
+    @Override
     public Future<RecordCollectionType.RecordCollection> queryRecord(QueryType.Query databaseQuery) {
         return InfluxDbProcessor.queryRecord(databaseQuery);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> queryRecordAuthenticated(final AuthenticatedValue databaseQuery) {
+        return GlobalCachedExecutorService.submit(() ->
+                AuthenticatedServiceProcessor.authenticatedAction(databaseQuery, QueryType.Query.class, (message, authenticationBaseData) -> {
+                    AuthorizationWithTokenHelper.canDo(authenticationBaseData, getConfig(), PermissionType.READ, Registries.getUnitRegistry(), getUnitType(), ServiceType.UNKNOWN);
+
+                    try {
+                        return queryRecord(message).get();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
+                    } catch (ExecutionException ex) {
+                        throw new CouldNotPerformException("Authenticated action failed!", ex);
+                    }
+                }));
     }
 }

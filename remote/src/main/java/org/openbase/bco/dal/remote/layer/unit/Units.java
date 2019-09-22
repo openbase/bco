@@ -425,7 +425,6 @@ public class Units {
     }
 
 
-
     /**
      * Returns the unit remote of the unit identified by the given unit config.
      *
@@ -837,7 +836,6 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
      *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
-     *
      */
     public static Future<UnitRemote<?>> getFutureUnitByAlias(final String alias, final boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByAlias(alias, waitForData));
@@ -856,7 +854,6 @@ public class Units {
      * @param unitRemoteClass the unit remote class.
      *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
-     *
      */
     public static <UR extends UnitRemote<?>> Future<UR> getFutureUnitByAlias(final String alias, final boolean waitForData, final Class<UR> unitRemoteClass) {
         return GlobalCachedExecutorService.submit(() -> getUnitByAlias(alias, waitForData, unitRemoteClass));
@@ -1100,7 +1097,6 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
-     *
      */
     public static Future<UnitRemote<?>> getFutureUnit(final String unitId, final boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnit(unitId, waitForData));
@@ -1127,7 +1123,6 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
-     *
      */
     public static Future<UnitRemote<?>> getFutureUnit(final UnitConfig unitConfig, final boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnit(unitConfig, waitForData));
@@ -1186,7 +1181,6 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
      *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
-     *
      */
     public static Future<List<UnitRemote<?>>> getFutureUnits(boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnits(waitForData));
@@ -1334,7 +1328,6 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
-     *
      */
     public static Future<UnitRemote<?>> getFutureUnitByScope(final ScopeType.Scope scope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByScope(scope, waitForData));
@@ -1361,7 +1354,6 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
-     *
      */
     public static Future<UnitRemote<?>> getFutureUnitByScope(final Scope scope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByScope(scope, waitForData));
@@ -1388,7 +1380,6 @@ public class Units {
      *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
-     *
      */
     public static Future<UnitRemote<?>> getFutureUnitByScope(final String scope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByScope(scope, waitForData));
@@ -1556,5 +1547,64 @@ public class Units {
      */
     public Future<UnitRemote<?>> getFutureUnitByLabelAndLocationScope(final String label, final String locationScope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByLabelAndLocationScope(label, locationScope, waitForData));
+    }
+
+    /**
+     * Method establishes a connection to the root location unit.
+     * The returned unit remote object is fully synchronized with
+     * the unit controller and all states locally cached. Use the
+     * {@code waitForData} flag to block the current thread until the unit
+     * remote is fully synchronized with the unit controller during the startup
+     * phase. This synchronization is just done once and the current thread will
+     * not block if the unit remote was already synchronized before. To force a
+     * resynchronization call
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
+     * remote instance. Please avoid polling unit states! If you want to get
+     * informed about unit config or unit data state changes, please register
+     * new config or data observer on this remote instance.
+     *
+     * @param waitForData if this flag is set to true the current thread will
+     *                    block until the unit remote is fully synchronized with the unit
+     *                    controller.
+     *
+     * @return a new or cached unit remote which can be used to control the unit
+     * or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not
+     *                               available.
+     * @throws InterruptedException  is thrown in case the thread is externally
+     *                               interrupted
+     */
+    public static LocationRemote getRootLocation(final boolean waitForData) throws NotAvailableException, InterruptedException {
+        try {
+            return getUnit(Registries.getUnitRegistry().getRootLocationConfig(), waitForData, Units.LOCATION);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("RootLocation", ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the root location unit.
+     * The returned unit remote object is fully synchronized
+     * with the unit controller and all states locally cached. Use
+     * the {@code waitForData} flag to block the current thread until the unit
+     * remote is fully synchronized with the unit controller during the startup
+     * phase. This synchronization is just done once and the current thread will
+     * not block if the unit remote was already synchronized before. To force a
+     * resynchronization call
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
+     * remote instance. Please avoid polling unit states! If you want to get
+     * informed about unit config or unit data state changes, please register
+     * new config or data observer on this remote instance.
+     *
+     * @param waitForData if this flag is set to true the current thread will
+     *                    block until the unit remote is fully synchronized with the unit
+     *                    controller.
+     *
+     * @return a new or cached unit remote which can be used to control the unit
+     * or request all current unit states.
+     */
+    public Future<LocationRemote> getFutureRootLocation(boolean waitForData) {
+        return GlobalCachedExecutorService.submit(() -> getRootLocation(waitForData));
     }
 }

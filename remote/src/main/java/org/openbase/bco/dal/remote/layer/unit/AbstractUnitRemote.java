@@ -712,19 +712,24 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         return infrastructure;
     }
 
+
+    public Future<AuthenticatedValue> queryAggregatedServiceStateAuthenticated(final AuthenticatedValue databaseQuery) {
+        return RPCHelper.callRemoteMethod(databaseQuery, this, AuthenticatedValue.class);
+    }
+
     @Override
     public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
-        return RPCHelper.callRemoteMethod(databaseQuery, this, AggregatedServiceStateType.AggregatedServiceState.class);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(databaseQuery, AggregatedServiceState.class, SessionManager.getInstance(), authenticatedValue -> queryAggregatedServiceStateAuthenticated(authenticatedValue));
 
     }
 
-    // todo: authenticate both queries! Please checkout: https://github.com/openbase/bco.dal/issues/154 for more details.
-//    public Future<AggregatedServiceState> queryAggregatedServiceStateAuthenticated(final DatabaseQuery databaseQuery);
+    public Future<AuthenticatedValue> queryRecordAuthenticated(final AuthenticatedValue databaseQuery) {
+        return RPCHelper.callRemoteMethod(databaseQuery, this, AuthenticatedValue.class);
+    }
 
     @Override
     public Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
-        return RPCHelper.callRemoteMethod(databaseQuery, this, RecordCollectionType.RecordCollection.class);
-
+        System.out.println("query["+databaseQuery.getRawQuery()+"]");
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(databaseQuery, RecordCollection.class, SessionManager.getInstance(), authenticatedValue -> queryRecordAuthenticated(authenticatedValue));
     }
-
 }

@@ -49,6 +49,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.rct.Transform;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType;
 import org.openbase.type.domotic.database.QueryType;
 import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordType;
@@ -751,8 +752,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     }
 
     @RPCMethod
+    Future<AuthenticatedValueType.AuthenticatedValue> queryAggregatedServiceStateAuthenticated(final AuthenticatedValueType.AuthenticatedValue databaseQuery);
+
     Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery);
 
     @RPCMethod
+    Future<AuthenticatedValueType.AuthenticatedValue> queryRecordAuthenticated(final AuthenticatedValueType.AuthenticatedValue databaseQuery);
+
     Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery);
 }
