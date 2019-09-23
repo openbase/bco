@@ -167,7 +167,7 @@ public class InfluxDbProcessor {
 
     public static char[] getInfluxdbToken() throws NotAvailableException {
         if (influxDbToken == null) {
-            throw new NotAvailableException(INFLUXDB_TOKEN, new InvalidStateException("MetaConfig entry " + INFLUXDB_TOKEN + " not configured for InfluxDbConnectorApp! Please have a look at https://basecubeone.org/developer/addon/bco-persistence.html,", ex));
+            throw new NotAvailableException(INFLUXDB_TOKEN, new InvalidStateException("MetaConfig entry " + INFLUXDB_TOKEN + " not configured for InfluxDbConnectorApp! Please have a look at https://basecubeone.org/developer/addon/bco-persistence.html,"));
         }
         return influxDbToken;
     }
