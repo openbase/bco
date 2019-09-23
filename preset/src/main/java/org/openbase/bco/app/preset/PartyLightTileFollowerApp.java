@@ -88,7 +88,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
         // init tile remotes
         locationRemoteMap.clear();
-        for (final UnitConfig locationUnitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LOCATION)) {
+        for (final UnitConfig locationUnitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.LOCATION)) {
             if (!locationUnitConfig.getLocationConfig().getLocationType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
                 continue;
             }

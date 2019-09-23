@@ -307,7 +307,7 @@ public class BCOConsole {
     }
 
     private void listUser(final Console console) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final List<UnitConfig> userUnitConfigs = Registries.getUnitRegistry().getUnitConfigs(UnitType.USER);
+        final List<UnitConfig> userUnitConfigs = Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.USER);
         System.out.println("");
         System.out.println(userUnitConfigs.size() + " user available");
         System.out.println("");
