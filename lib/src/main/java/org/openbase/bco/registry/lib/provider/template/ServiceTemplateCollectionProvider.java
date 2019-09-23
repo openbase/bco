@@ -28,7 +28,9 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public interface ServiceTemplateCollectionProvider {
 
@@ -101,10 +103,10 @@ public interface ServiceTemplateCollectionProvider {
      *
      * @return all types of which the given type is a super type
      *
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException in case the relation could not be computed.
      */
-    default List<ServiceType> getSubServiceTypes(final ServiceType type) throws CouldNotPerformException {
-        List<ServiceType> serviceTypes = new ArrayList<>();
+    default Set<ServiceType> getSubServiceTypes(final ServiceType type) throws CouldNotPerformException {
+        final Set<ServiceType> serviceTypes = new HashSet<>();
         for (ServiceTemplate template : getServiceTemplates()) {
             if (template.getSuperTypeList().contains(type)) {
                 serviceTypes.add(template.getServiceType());
@@ -122,11 +124,11 @@ public interface ServiceTemplateCollectionProvider {
      *
      * @return all super types of a given service type
      *
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException in case the relation could not be computed.
      */
-    default List<ServiceType> getSuperServiceTypes(final ServiceType type) throws CouldNotPerformException {
-        ServiceTemplate serviceTemplate = getServiceTemplateByType(type);
-        List<ServiceType> serviceTypes = new ArrayList<>();
+    default Set<ServiceType> getSuperServiceTypes(final ServiceType type) throws CouldNotPerformException {
+        final ServiceTemplate serviceTemplate = getServiceTemplateByType(type);
+        final Set<ServiceType> serviceTypes = new HashSet<>();
         for (ServiceTemplate template : getServiceTemplates()) {
             if (serviceTemplate.getSuperTypeList().contains(template.getServiceType())) {
                 serviceTypes.add(template.getServiceType());
@@ -134,5 +136,20 @@ public interface ServiceTemplateCollectionProvider {
             }
         }
         return serviceTypes;
+    }
+
+    /**
+     * Get all related types of a service type which is a set including the super and sub types of the given service type.
+     *
+     * @param type the type whose related types are returned.
+     *
+     * @return all related types of a given service type.
+     *
+     * @throws CouldNotPerformException in case the relation could not be computed.
+     */
+    default Set<ServiceType> getRelatedServiceTypes(final ServiceType type) throws CouldNotPerformException {
+        final Set<ServiceType> relatedTypeSet = getSubServiceTypes(type);
+        relatedTypeSet.addAll(getSuperServiceTypes(type));
+        return relatedTypeSet;
     }
 }

@@ -58,7 +58,7 @@ public class UnitGroupRegistryTest extends AbstractBCORegistryTest {
 
         UnitGroupConfig.Builder unitGroupConfig = unitConfig.getUnitGroupConfigBuilder();
         unitGroupConfig.setUnitType(UnitType.COLORABLE_LIGHT);
-        unitGroupConfig.addMemberId(Registries.getUnitRegistry().getUnitConfigs(UnitType.COLORABLE_LIGHT).get(0).getId());
+        unitGroupConfig.addMemberId(Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.COLORABLE_LIGHT).get(0).getId());
 
         UnitConfig registeredGroup = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
 

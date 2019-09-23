@@ -59,7 +59,7 @@ public class LocationRemovalTest extends AbstractBCORegistryTest {
             Registries.waitForData();
             while (true) {
                 // get current locations, cannot be generated at the beginning because removing a tile can cause regions to be removed as well
-                List<UnitConfig> locationConfigList = Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION);
+                List<UnitConfig> locationConfigList = Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.LOCATION);
                 // remove root
                 locationConfigList.remove(Registries.getUnitRegistry().getRootLocationConfig());
 

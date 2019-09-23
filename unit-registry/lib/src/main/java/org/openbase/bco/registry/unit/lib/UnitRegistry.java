@@ -434,7 +434,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitConfigsByUnitTypeAndServiceType(final UnitType unitType, final ServiceType serviceType) throws CouldNotPerformException {
-        final List<UnitConfig> unitConfigs = getUnitConfigs(unitType);
+        final List<UnitConfig> unitConfigs = getUnitConfigsByUnitType(unitType);
         boolean foundServiceType;
 
         for (final UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
@@ -462,7 +462,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType unitType, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        final List<UnitConfig> unitConfigs = getUnitConfigs(unitType);
+        final List<UnitConfig> unitConfigs = getUnitConfigsByUnitType(unitType);
         boolean foundServiceType;
 
         for (final UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
@@ -521,7 +521,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByUnitId(final String unitId) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
-        for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
+        for (UnitConfig unitGroupUnitConfig : getUnitConfigsByUnitType(UnitType.UNIT_GROUP)) {
             if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().contains(unitId)) {
                 unitConfigList.add(unitGroupUnitConfig);
             }
@@ -540,7 +540,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByUnitType(final UnitType unitType) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
-        for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
+        for (UnitConfig unitGroupUnitConfig : getUnitConfigsByUnitType(UnitType.UNIT_GROUP)) {
             if (unitGroupUnitConfig.getUnitType() == unitType || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(unitType).contains(unitGroupUnitConfig.getUnitType())) {
                 unitConfigList.add(unitGroupUnitConfig);
             }
@@ -596,7 +596,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
         List<UnitConfig> unitGroups = new ArrayList<>();
-        for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
+        for (UnitConfig unitGroupUnitConfig : getUnitConfigsByUnitType(UnitType.UNIT_GROUP)) {
             boolean skipGroup = false;
             for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
                 if (!serviceTypes.contains(serviceDescription.getServiceType())) {
