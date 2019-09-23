@@ -108,6 +108,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
         token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
         org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
+
         return config;
     }
 
@@ -231,7 +232,6 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
         super.stop(activationState);
     }
-
 
     public void startObservation() throws InitializationException, InterruptedException {
         try {
