@@ -23,14 +23,14 @@ package org.openbase.bco.app.influxdbconnector;
  */
 
 
-import org.influxdata.client.*;
-import org.influxdata.client.domain.WritePrecision;
-import org.influxdata.client.write.Point;
+import com.influxdb.client.*;
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import org.influxdata.client.domain.Bucket;
-import org.influxdata.client.write.events.WriteErrorEvent;
-import org.influxdata.client.write.events.WriteSuccessEvent;
+import com.influxdb.client.domain.Bucket;
+import com.influxdb.client.write.events.WriteErrorEvent;
+import com.influxdb.client.write.events.WriteSuccessEvent;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
