@@ -79,6 +79,7 @@ public class InfluxDbProcessor {
     public static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
     public static final String INFLUXDB_URL = "INFLUXDB_URL";
     public static final String INFLUXDB_URL_DEFAULT = "http://localhost:9999";
+    public static final String INFLUXDB_ORG_ID = "INFLUXDB_ORG_ID";
     public static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     public static final String INFLUXDB_ORG_DEFAULT = "openbase";
     public static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
@@ -91,6 +92,14 @@ public class InfluxDbProcessor {
     public static final String HEARTBEAT_FIELD = "alive";
 
     public static String INFLUXDB_APP_CLASS_ID = "e6d9a242-58de-4e44-8e56-64c8da560fe4";
+
+    private static String influxDbOrgId = null;
+    private static String influxDbOrg = null;
+    private static String influxDbUrl = null;
+    private static String influxDbBucket = null;
+    private static char[] influxDbToken = null;
+    private static String influxDbBatchTime = null;
+    private static String influxDbBatchLimit = null;
 
     private static MetaConfigPool metaConfigPool = new MetaConfigPool();
 
@@ -112,8 +121,27 @@ public class InfluxDbProcessor {
                 LOGGER.warn("More than one influxdbConnectorApp found!");
             }
             for (UnitConfigType.UnitConfig influxdbConnectorApp : influxdbConnectorApps) {
-                metaConfigPool.register(new MetaConfigVariableProvider(LabelProcessor.getBestMatch(influxdbConnectorApp.getLabel()), influxdbConnectorApp.getMetaConfig()));
+                metaConfigPool.register(new MetaConfigVariableProvider(influxdbConnectorApp.getAlias(0), influxdbConnectorApp.getMetaConfig()));
             }
+
+            try {
+                influxDbOrgId = metaConfigPool.getValue(INFLUXDB_ORG_ID);
+            } catch (NotAvailableException ex) {
+                influxDbOrgId = null;
+            }
+
+            influxDbBucket = metaConfigPool.getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
+            influxDbUrl = metaConfigPool.getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
+            influxDbOrg = metaConfigPool.getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
+            influxDbBatchTime = metaConfigPool.getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT);
+            influxDbBatchLimit = metaConfigPool.getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT);
+
+            try {
+                influxDbToken = metaConfigPool.getValue(INFLUXDB_TOKEN).toCharArray();
+            } catch (NotAvailableException ex) {
+                influxDbToken = null;
+            }
+
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not update configuration!", ex, LOGGER);
         } catch (InterruptedException ex) {
@@ -122,31 +150,37 @@ public class InfluxDbProcessor {
     }
 
     public static String getInfluxdbUrl() {
-        return metaConfigPool.getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
+        return influxDbUrl;
     }
 
     public static String getInfluxdbBucket() {
-        return metaConfigPool.getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
+        return influxDbBucket;
     }
 
     public static String getInfluxdbBatchTime() {
-        return metaConfigPool.getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT);
+        return influxDbBatchTime;
     }
 
     public static String getInfluxdbBatchLimit() {
-        return metaConfigPool.getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT);
+        return influxDbBatchLimit;
     }
 
-    public static String getInfluxdbToken() throws NotAvailableException {
-        try {
-            return metaConfigPool.getValue(INFLUXDB_TOKEN);
-        } catch (NotAvailableException ex) {
-            throw new NotAvailableException(INFLUXDB_TOKEN, new InvalidStateException("MetaConfig entry " + INFLUXDB_TOKEN + " not configured for InfluxDbConnectorApp!", ex));
+    public static char[] getInfluxdbToken() throws NotAvailableException {
+        if (influxDbToken == null) {
+            throw new NotAvailableException(INFLUXDB_TOKEN, new InvalidStateException("MetaConfig entry " + INFLUXDB_TOKEN + " not configured for InfluxDbConnectorApp! Please have a look at https://basecubeone.org/developer/addon/bco-persistence.html,", ex));
         }
+        return influxDbToken;
     }
 
-    public static String getInfluxdbOrg() throws NotAvailableException {
-        return metaConfigPool.getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
+    public static String getInfluxdbOrgId() throws NotAvailableException {
+        if (influxDbOrgId == null) {
+            throw new NotAvailableException("influxDbOrgId");
+        }
+        return influxDbOrgId;
+    }
+
+    public static String getInfluxdbOrg() {
+        return influxDbOrg;
     }
 
     /**
@@ -160,18 +194,20 @@ public class InfluxDbProcessor {
      */
     private static List<FluxTable> sendQuery(final String query) throws CouldNotPerformException {
 
-        System.out.println("request query[" + query + "]");
-
         try (InfluxDBClient influxDBClient = InfluxDBClientFactory
-                .create(getInfluxdbUrl() + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", getInfluxdbToken().toCharArray())) {
+                .create(getInfluxdbUrl() + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", getInfluxdbToken())) {
 
             if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
                 throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
             }
 
             final QueryApi queryApi = influxDBClient.getQueryApi();
-            return queryApi.query(query, getInfluxdbOrg());
 
+            if (influxDbOrgId != null) {
+                return queryApi.query(query, influxDbOrgId);
+            } else {
+                return queryApi.query(query);
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
@@ -380,7 +416,6 @@ public class InfluxDbProcessor {
                             serviceStateBuilder.addRepeatedField(aggregatedValueCoverageField, aggregatedValueBuilder.build());
                         }
                     }
-
                 } else if (fieldDescriptor.getJavaType() == Descriptors.FieldDescriptor.JavaType.DOUBLE) {
                     if (query == null) {
                         query = buildGetAggregatedQuery(databaseQuery, false);
@@ -400,5 +435,4 @@ public class InfluxDbProcessor {
             return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state", ex)));
         }
     }
-
 }
