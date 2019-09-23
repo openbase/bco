@@ -104,20 +104,6 @@
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>bonitoo-snapshot</id>
-            <name>Bonitoo.io snapshot repository</name>
-            <url>https://apitea.com/nexus/content/repositories/bonitoo-snapshot/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
@@ -140,10 +126,11 @@
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.influxdb/influxdb-client-java -->
         <dependency>
-            <groupId>org.influxdata</groupId>
+            <groupId>com.influxdb</groupId>
             <artifactId>influxdb-client-java</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${dependency.com.influxdb.influxdb-client-java.version}</version>
         </dependency>
     </dependencies>
 </project>
