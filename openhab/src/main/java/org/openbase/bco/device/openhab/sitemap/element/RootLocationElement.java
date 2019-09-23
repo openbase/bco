@@ -57,7 +57,7 @@ public class RootLocationElement extends LocationElement {
 
         // list location power consumption
         sitemap.openTextContext("Energieverbrauch", SitemapIconType.ENERGY);
-        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.LOCATION)) {
             sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), LabelProcessor.getBestMatch(unitConfig.getLabel(), "?") + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
             sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE, true));
         }
@@ -67,13 +67,13 @@ public class RootLocationElement extends LocationElement {
         sitemap.openTextContext("Wartung", SitemapIconType.PRESSURE);
 
         sitemap.openTextContext("Battery Level", SitemapIconType.NONE);
-        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.BATTERY)) {
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.BATTERY)) {
             sitemap.append(new GenericUnitSitemapElement(unitConfig, true));
         }
         sitemap.closeContext();
 
         sitemap.openTextContext("Manipulation", SitemapIconType.NONE);
-        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.TAMPER_DETECTOR)) {
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.TAMPER_DETECTOR)) {
             sitemap.append(new GenericUnitSitemapElement(unitConfig, true));
         }
         sitemap.closeContext();

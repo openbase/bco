@@ -166,7 +166,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
         }
 
         // if there is another device corresponding to this thing, do not delete it because the other device has taken over
-        for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
+        for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.DEVICE)) {
             try {
                 // check if another device has the same thing id
                 String thingId = SynchronizationProcessor.getThingIdFromDevice(unitConfig);

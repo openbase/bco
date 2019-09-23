@@ -67,7 +67,7 @@ public class ConfigUpdater {
                     companyDeviceClassMap.put(deviceClass.getCompany(), new ArrayList<>());
                 }
 
-                for (final UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
+                for (final UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.DEVICE)) {
                     if (deviceUnitConfig.getDeviceConfig().getDeviceClassId().equals(deviceClass.getId())) {
                         companyDeviceClassMap.get(deviceClass.getCompany()).add(deviceUnitConfig);
                     }
