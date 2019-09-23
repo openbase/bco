@@ -1277,7 +1277,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // if the given state is a provider service, than no further steps has to be performed
             // because only operation service action can be remapped
             if (!hasOperationServiceForType(serviceType)) {
-                System.out.println("no op so continue");
                 return serviceState;
             }
 
@@ -1295,14 +1294,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         // use the requested state but update the timestamp if not available
                         if (TimestampProcessor.hasTimestamp(serviceState)) {
                             Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTAMP_FIELD_NAME);
-                            System.out.println("use requested field");
                             return requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
                         } else {
-                            System.out.println("use requested field");
                             return requestedState;
                         }
                     } finally {
                         // remove requested state since it will be applied now and is no longer requested.
+                        System.out.println("use requested state");
                         requestedStateCache.remove(serviceType);
                     }
                 } else {
@@ -1325,7 +1323,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // skip if update is still compatible and would nothing change
             if (Services.isCompatible(serviceState, serviceType, Services.invokeProviderServiceMethod(serviceType, internalBuilder))) {
-                System.out.println("skip because compatible task found in requested state cache.");
+                System.out.println("skip because update is compatible with current state.");
                 throw new VerificationFailedException("Incoming state already applied!");
             }
 

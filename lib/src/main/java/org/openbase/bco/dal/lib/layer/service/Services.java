@@ -903,7 +903,7 @@ public class Services extends ServiceStateProcessor {
             // compare primitives
             if(field.getJavaType() != JavaType.MESSAGE) {
                 if (serviceState1.hasField(field) && serviceState2.hasField(field) && !(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
-                    System.out.println("field not equal: " + field.getName());
+                    //System.out.println("field not equal: " + field.getName());
                     return false;
                 }
             }
@@ -944,11 +944,8 @@ public class Services extends ServiceStateProcessor {
 
     public static boolean isCompatible(final Message serviceStateA, final ServiceType serviceTypeA, final Message serviceStateB) {
 
-        System.out.println("check copm of "+ serviceTypeA);
-
         // check if equals
         if (equalServiceStates(serviceStateA, serviceStateB)) {
-            System.out.println(serviceStateA +" is compatible to "+ serviceStateB);
             return true;
         }
 
@@ -962,8 +959,6 @@ public class Services extends ServiceStateProcessor {
             return (Boolean) method.invoke(null, serviceStateA, serviceStateB);
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException ex) {
             // compatibility not given when method could not be found or any other error occurs.
-            System.out.println(serviceStateA +" is not compatible to "+ serviceStateB);
-            ExceptionPrinter.printHistory("Could not compute compatebility!", ex, LOGGER);
             return false;
         }
     }
