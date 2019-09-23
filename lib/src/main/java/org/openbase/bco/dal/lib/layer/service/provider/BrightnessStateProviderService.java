@@ -28,6 +28,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState.Builder;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,8 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface BrightnessStateProviderService extends ProviderService {
+
+    double BRIGHTNESS_MARGIN = 0.1;
 
     @RPCMethod(legacy = true)
     default BrightnessState getBrightnessState() throws NotAvailableException {
@@ -64,6 +67,22 @@ public interface BrightnessStateProviderService extends ProviderService {
             return PowerState.newBuilder().setValue(State.OFF).build();
         } else {
             return PowerState.newBuilder().setValue(State.ON).build();
+        }
+    }
+
+    static Boolean isCompatible(final BrightnessState brightnessState, final ColorState colorState) {
+        return ColorStateProviderService.isCompatible(colorState, brightnessState);
+    }
+
+    static Boolean isCompatible(final BrightnessState brightnessState, final PowerState powerState) {
+        switch (powerState.getValue()) {
+            case ON:
+                return brightnessState.getBrightness() > 0;
+            case OFF:
+                return brightnessState.getBrightness() == 0;
+            case UNKNOWN:
+            default:
+                return false;
         }
     }
 }

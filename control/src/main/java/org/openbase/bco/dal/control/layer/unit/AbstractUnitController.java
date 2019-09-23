@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -163,7 +163,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final ActionComparator actionComparator;
     private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
     private final Map<ServiceType, Message> requestedStateCache;
-    private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
+    //    private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
     private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
@@ -210,7 +210,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         };
 
         this.requestedStateCache = new HashMap<>();
-        this.requestedStateCacheTimeouts = new HashMap<>();
+//        this.requestedStateCacheTimeouts = new HashMap<>();
+
         this.addDataObserver(ServiceTempus.REQUESTED, (source, data) -> {
             // update requested state cache and create timeouts
             for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
@@ -229,19 +230,20 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // put new value into the cache
                     requestedStateCache.put(serviceDescription.getServiceType(), Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), ServiceTempus.REQUESTED, data));
 
-                    // create or restart timeout to clear te cache
-                    if (requestedStateCacheTimeouts.containsKey(serviceDescription.getServiceType())) {
-                        requestedStateCacheTimeouts.get(serviceDescription.getServiceType()).restart();
-                    } else {
-                        requestedStateCacheTimeouts.put(serviceDescription.getServiceType(), new Timeout(REQUESTED_STATE_CACHE_TIMEOUT) {
-                            @Override
-                            public void expired() {
-                                synchronized (requestedStateCacheSync) {
-                                    requestedStateCache.remove(serviceDescription.getServiceType());
-                                }
-                            }
-                        });
-                    }
+                    // clear actually not required since service type is key updates will cleanup old states.
+//                    // create or restart timeout to clear te cache
+//                    if (requestedStateCacheTimeouts.containsKey(serviceDescription.getServiceType())) {
+//                        requestedStateCacheTimeouts.get(serviceDescription.getServiceType()).restart();
+//                    } else {
+//                        requestedStateCacheTimeouts.put(serviceDescription.getServiceType(), new Timeout(REQUESTED_STATE_CACHE_TIMEOUT) {
+//                            @Override
+//                            public void expired() {
+//                                synchronized (requestedStateCacheSync) {
+//                                    requestedStateCache.remove(serviceDescription.getServiceType());
+//                                }
+//                            }
+//                        });
+//                    }
                 }
             }
         });
@@ -343,15 +345,23 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         getParentLocationRemote(false).addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
-        if(getUnitType() == UnitType.LOCATION) {
+        if (getUnitType() == UnitType.LOCATION) {
             this.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
         }
     }
 
     @Override
     public synchronized void deactivate() throws InterruptedException, CouldNotPerformException {
-        getParentLocationRemote(false).removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
-        if(getUnitType() == UnitType.LOCATION) {
+
+        try {
+            getParentLocationRemote(false).removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
+        } catch (CouldNotPerformException ex) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not deregister parent location observation!", ex, logger, LogLevel.WARN);
+            }
+        }
+
+        if (getUnitType() == UnitType.LOCATION) {
             this.removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
         }
         super.deactivate();
@@ -957,7 +967,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         logger.debug("Reschedule scheduled in:" + rescheduleTimeout);
                         // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
                         // this should not cause any latency because new incoming actions are scheduled anyway.
-                        scheduleTimeout.restart(Math.max(rescheduleTimeout, 50));
+                        scheduleTimeout.restart(Math.max(rescheduleTimeout, 50), TimeUnit.MILLISECONDS);
                     }
                 } catch (ShutdownInProgressException ex) {
                     // skip reschedule when shutdown is initiated.
@@ -1176,12 +1186,17 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
-    public void applyDataUpdate(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException {
+    public void applyDataUpdate(Message newState, final ServiceType serviceType) throws CouldNotPerformException {
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
 
             // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
-            Message newState = computeNewState(serviceState, serviceType, internalBuilder);
+            try {
+                newState = computeNewState(newState, serviceType, internalBuilder);
+            } catch (VerificationFailedException ex) {
+                // update not required since verification failed. Therefore skip update...
+                return;
+            }
 
             // verify the service state
             newState = Services.verifyAndRevalidateServiceState(newState);
@@ -1210,7 +1225,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // do custom state depending update in sub classes
             applyCustomDataUpdate(internalBuilder, serviceType);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + serviceState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + newState + "] for " + this + "!", ex);
         }
     }
 
@@ -1256,146 +1271,168 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
 
+        System.out.println("compute new state");
+
         try {
-            Message newState = null;
+            // if the given state is a provider service, than no further steps has to be performed
+            // because only operation service action can be remapped
+            if (!hasOperationServiceForType(serviceType)) {
+                System.out.println("no op so continue");
+                return serviceState;
+            }
 
-            // only operation service action can be remapped
-            if (hasOperationServiceForType(serviceType)) {
-                boolean requestedStateDoesNotMatch;
+            Message requestedState = null;
 
-                // in case the new incoming state is related to the exist
-                if (Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
-                    final Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
+            // in case the new incoming state is matching the requested one we used the requested
+            // one since it probably contains more information about the actions origin like initiator
+            // and further fields which are lost during the hardware feedback loop like the executor and the action cain.
+            if (Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
+                requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
 
-                    // choose with which value to update
-                    if (Services.equalServiceStates(serviceState, requestedState)) {
-                        requestedStateDoesNotMatch = false;
-
+                // choose with which value to update
+                if (Services.equalServiceStates(serviceState, requestedState)) {
+                    try {
                         // use the requested state but update the timestamp if not available
                         if (TimestampProcessor.hasTimestamp(serviceState)) {
                             Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTAMP_FIELD_NAME);
-                            newState = requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
+                            System.out.println("use requested field");
+                            return requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
                         } else {
-                            newState = requestedState;
+                            System.out.println("use requested field");
+                            return requestedState;
                         }
-                    } else {
-                        // requested state does not match the current state
-                        requestedStateDoesNotMatch = true;
+                    } finally {
+                        // remove requested state since it will be applied now and is no longer requested.
+                        requestedStateCache.remove(serviceType);
                     }
                 } else {
-                    // requested state is not available so obviously it does not match
-                    requestedStateDoesNotMatch = true;
-                }
-
-                if (requestedStateDoesNotMatch) {
-                    // operation service but action was triggered outside BCO e.g. via openHAB
-                    // as a result the responsible action is set and it has to be rescheduled to maintain priorities from BCO
-                    newState = serviceState;
-
-
-                    // clear requested state because its not compatible any more to current state.
-                    //todo: please fix since the incomming state can still be compatible
-                    final Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
-                    internalBuilder.clearField(requestedStateField);
-
-                    // however, the problem remains that openHAB notifies all service states as new updates
-                    // e.g. if the power of a colorable light is set a brightness state and a color state are also updated
-                    // furthermore the power state is notified twice
-                    // this is a problem because it overwrites the scheduling of actions performed though bco
-                    // e.g. an agent controlling something would always be superseded by these actions scheduled through
-                    // the openHAB user
-                    // therefore, in the following a hack strategy is implemented which tests if a matching requested
-                    // state was cached and if yes this update will not be scheduled
-                    boolean schedulingRequired = true;
-                    synchronized (requestedStateCacheSync) {
-                        if (requestedStateCache.containsKey(serviceType) && Services.equalServiceStates(newState, requestedStateCache.get(serviceType))) {
-                            System.out.println("skip because compatible task found in requestet state cache.");
-                            schedulingRequired = false;
-                        }
-
-                        if (schedulingRequired) {
-                            System.out.println("request super service types for "+ serviceType.name());
-                            for (final ServiceType superServiceType : Registries.getTemplateRegistry().getSuperServiceTypes(serviceType)) {
-                                System.out.println("found "+ superServiceType.name());
-                                if (!requestedStateCache.containsKey(superServiceType)) {
-                                    System.out.println();
-                                    continue;
-                                }
-
-                                final Message superServiceState = Services.convertToSuperState(serviceType, newState, superServiceType);
-                                if (Services.equalServiceStates(superServiceState, requestedStateCache.get(superServiceType))) {
-                                    schedulingRequired = false;
-                                }
-                            }
-                        }
-                    }
-
-                    // todo release: why is the state always applied even when reschedule is initiated?
-                    if (schedulingRequired) {
-
-                        // retrieve the responsible action
-                        final Descriptors.FieldDescriptor responsibleActionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-                        final ActionDescription.Builder responsibleActionBuilder;
-
-                        // resolve required action
-                        if (newState.hasField(responsibleActionFieldDescriptor)) {
-                            // load required action from service state.
-                            responsibleActionBuilder = ((ActionDescription) newState.getField(responsibleActionFieldDescriptor)).toBuilder();
-                        } else {
-                            // recover required action out of service state.
-                            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(newState, serviceType, this);
-                            actionParameter.setInterruptible(false);
-                            actionParameter.setSchedulable(false);
-                            responsibleActionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
-                        }
-
-                        responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
-
-                        // add the new action as executing to the front of the stack
-                        final ActionImpl action = new ActionImpl(responsibleActionBuilder.build(), this, false);
-                        scheduledActionList.add(0, action);
-
-                        // if there was another action executing before, abort it
-                        if (scheduledActionList.size() > 1) {
-                            // locking this lock skips the notification by calling reject or abort below
-                            // else the builderSyncSetup is retrieved twice by the same thread which can cause a deadlock because the lock is held during the notification
-                            // if the applyDataUpdate method finished these new states are notified anyway
-                            actionListNotificationLock.writeLock().lock();
-                            try {
-                                final SchedulableAction schedulableAction = scheduledActionList.get(1);
-                                if (schedulableAction.getActionState() == State.EXECUTING) {
-                                    // only abort/reject action if the action is executing
-                                    if (schedulableAction.getActionDescription().getInterruptible()) {
-                                        schedulableAction.abort();
-                                    } else {
-                                        schedulableAction.reject();
-                                    }
-                                }
-
-                                // trigger a reschedule which can trigger the action with a higher priority again
-                                reschedule();
-
-                                // update action list in builder
-                                final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Action.TYPE_FIELD_NAME_ACTION);
-                                internalBuilder.clearField(actionFieldDescriptor);
-                                for (final SchedulableAction scheduledAction : scheduledActionList) {
-                                    internalBuilder.addRepeatedField(actionFieldDescriptor, scheduledAction.getActionDescription());
-
-                                }
-                            } finally {
-                                actionListNotificationLock.writeLock().unlock();
-                            }
-                        }
-                    }
+                    // requested state does not match the current state
                 }
             } else {
-                // no operation service so just update the current state
-                newState = serviceState;
+                // requested state is not available so obviously it does not match
             }
 
-            return newState;
+            // because the requested action does not match this action was triggered outside BCO e.g. via openHAB or is just a state sync.
+
+            // however, the problem remains that openHAB notifies all service states as new updates
+            // e.g. if the power of a colorable light is set a brightness state and a color state are also updated
+            // furthermore the power state is notified twice
+            // this is a problem because it overwrites the scheduling of actions performed though bco
+            // e.g. an agent controlling something would always be superseded by these actions scheduled through
+            // the openHAB user
+            // therefore, in the following a hack strategy is implemented which tests if a matching requested
+            // state was cached and if yes this update will not be scheduled
+
+            // skip if update is still compatible and would nothing change
+            if (Services.isCompatible(serviceState, serviceType, Services.invokeProviderServiceMethod(serviceType, internalBuilder))) {
+                System.out.println("skip because compatible task found in requested state cache.");
+                throw new VerificationFailedException("Incoming state already applied!");
+            }
+
+            // check if incoming state is compatible with the current one
+            synchronized (requestedStateCacheSync) {
+
+                // check if any requested service state is compatible to given one
+                if (requestedStateCache.containsKey(serviceType) && Services.isCompatible(serviceState, serviceType, requestedStateCache.get(serviceType))) {
+
+                    // there are two reasons why we can reach this state
+                    // 1. The incoming state update is just an update of an further affected state..
+                    // 2. Its just an additinal synchronization update
+                    // in case we are compatible with the current state we don't care about the update.
+                    System.out.println("just apply state.");
+                    //throw new VerificationFailedException("Incoming state already applied!");
+                    return serviceState;
+                }
+
+//                System.out.println("request super service types for " + serviceType.name());
+//                for (final ServiceType relatedServiceType : Registries.getTemplateRegistry().getRelatedServiceTypes(serviceType)) {
+//                    System.out.println("found " + relatedServiceType.name());
+//                    if (!requestedStateCache.containsKey(relatedServiceType)) {
+//                        continue;
+//                    }
+//
+//                    final Message superServiceState = Services.convertToSuperState(serviceType, serviceState, relatedServiceType);
+//                    final Message superServiceState = Services.convertToSuperState(serviceType, serviceState, relatedServiceType);
+//
+//                    if (Services.equalServiceStates(superServiceState, requestedStateCache.get(relatedServiceType))) {
+//                        throw new VerificationFailedException("Incoming state already applied!");
+//                    }
+//                }
+            }
+
+
+
+            // clear requested state if set but not compatible any more with the incoming one.
+            if (requestedState != null && !Services.isCompatible(serviceState, serviceType, requestedState)) {
+                System.out.println("clear requested field because its not compatible");
+                internalBuilder.clearField(ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED)));
+            }
+
+            // force execution to properly apply new state synchronized with the current action scheduling
+            return forceActionExecution(serviceState, serviceType, internalBuilder);
+        } catch (VerificationFailedException ex) {
+            // passthrough verification failed exception to make it compareable to the error case.
+            throw ex;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not compute new state!", ex);
+        }
+    }
+
+    private Message forceActionExecution(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
+
+        System.out.println("force execution");
+        try {
+            final Message.Builder serviceStateBuilder = serviceState.toBuilder();
+
+            // retrieve the responsible action field descriptor.
+            final Descriptors.FieldDescriptor responsibleActionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+            final ActionDescription.Builder responsibleActionBuilder;
+
+            // compute responsible action if not exist
+            if (!serviceStateBuilder.hasField(responsibleActionFieldDescriptor)) {
+                // recover responsible action out of service state.
+                final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceState, serviceType, this);
+                actionParameter.setInterruptible(false);
+                actionParameter.setSchedulable(false);
+                serviceStateBuilder.setField(responsibleActionFieldDescriptor, ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
+            }
+
+            responsibleActionBuilder = (ActionDescription.Builder) serviceStateBuilder.getFieldBuilder(responsibleActionFieldDescriptor);
+            responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
+
+            // add the new action as executing to the front of the stack
+            scheduledActionList.add(0, new ActionImpl(responsibleActionBuilder.build(), this, false));
+
+            // if there was another action executing before, abort it
+            if (scheduledActionList.size() > 1) {
+                // locking this lock skips the notification by calling reject or abort below
+                // else the builderSyncSetup is retrieved twice by the same thread which can cause a deadlock because the lock is held during the notification
+                // if the applyDataUpdate method finished these new states are notified anyway
+                actionListNotificationLock.writeLock().lock();
+                try {
+                    final SchedulableAction schedulableAction = scheduledActionList.get(1);
+                    if (schedulableAction.getActionState() == State.EXECUTING) {
+                        // only abort/reject action if the action is executing
+                        if (schedulableAction.getActionDescription().getInterruptible()) {
+                            schedulableAction.abort();
+                        } else {
+                            schedulableAction.reject();
+                        }
+                    }
+
+                    // trigger a reschedule which can trigger the action with a higher priority again
+                    reschedule();
+
+                    // update action list in builder
+                    syncActionList(internalBuilder);
+                } finally {
+                    actionListNotificationLock.writeLock().unlock();
+                }
+            }
+
+            return serviceStateBuilder.build();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not force execute action!", ex);
         }
     }
 

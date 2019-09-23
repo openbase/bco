@@ -153,7 +153,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
 
         LocalPositionState localPositionState;
         // create state with random location
-        localPositionState = LocalPositionState.newBuilder().addLocationId(Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION).get(0).getId()).build();
+        localPositionState = LocalPositionState.newBuilder().addLocationId(Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.LOCATION).get(0).getId()).build();
         Actions.waitForExecution(userRemote.setLocalPositionState(localPositionState));
         assertTrue("Local position state has not updated as expected",
                 userRemote.getLocalPositionState().getLocationIdList().contains(localPositionState.getLocationId(0)));

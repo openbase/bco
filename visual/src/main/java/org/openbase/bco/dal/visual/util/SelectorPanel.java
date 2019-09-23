@@ -175,7 +175,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             try {
                 ArrayList<LocationUnitConfigHolder> locationConfigHolderList = new ArrayList<>();
                 locationConfigHolderList.add(ALL_LOCATION);
-                for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
+                for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.LOCATION)) {
                     locationConfigHolderList.add(new LocationUnitConfigHolder(locationUnitConfig));
                 }
                 Collections.sort(locationConfigHolderList);

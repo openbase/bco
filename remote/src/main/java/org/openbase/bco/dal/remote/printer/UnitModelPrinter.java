@@ -174,7 +174,7 @@ public class UnitModelPrinter {
                         " * --> syntax: location(unit_id, unit_alias, location_type, [labels]).\n" +
                         " */");
             }
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LOCATION)) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.LOCATION)) {
                 outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
                         + "'" + unitConfig.getId() + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
@@ -194,7 +194,7 @@ public class UnitModelPrinter {
                         " * --> syntax: connection(unit_id, unit_alias, connection_type, [labels], [locations]).\n" +
                         " */");
             }
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.CONNECTION)) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.CONNECTION)) {
                 outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
                         + "'" + unitConfig.getId() + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
@@ -208,7 +208,7 @@ public class UnitModelPrinter {
                         unitConfig.getConnectionConfig().getTileIdList(),
                         tile_id -> {
                             try {
-                                return "'" + Registries.getUnitRegistry().getUnitConfigById(tile_id, UnitType.LOCATION).getId() + "'";
+                                return "'" + Registries.getUnitRegistry().getUnitConfigByIdAndUnitType(tile_id, UnitType.LOCATION).getId() + "'";
                             } catch (CouldNotPerformException e) {
                                 return "na";
                             }

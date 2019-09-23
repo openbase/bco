@@ -341,7 +341,7 @@ public class UnitSelectionPaneController extends AbstractFXController {
             try {
                 ObservableList<LocationUnitConfigHolder> locationConfigHolderList = FXCollections.observableArrayList();
                 locationConfigHolderList.add(ALL_LOCATION);
-                for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
+                for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.LOCATION)) {
 
                     // apply custom filter
                     if (locationFilter != null && locationFilter.match(locationUnitConfig)) {

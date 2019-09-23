@@ -123,4 +123,31 @@ public interface ColorStateProviderService extends ProviderService {
     static PowerState toPowerState(final ColorState colorState) {
         return BrightnessStateProviderService.toPowerState(toBrightnessState(colorState));
     }
+
+    static Boolean isCompatible(final ColorState colorState, final BrightnessState brightnessState) {
+        try {
+            // color verification is done to make sure the hsv color is at least available.
+            return OperationService.equals(verifyColor(colorState.getColor()).getHsbColor().getBrightness(), brightnessState.getBrightness(), BrightnessStateProviderService.BRIGHTNESS_MARGIN);
+        } catch (VerificationFailedException ex) {
+            return false;
+        }
+    }
+
+    static Boolean isCompatible(final ColorState colorState, final PowerState powerState) {
+        System.out.println("check color comp of "+ colorState+ " and "+ powerState);
+        try {
+            // color verification is done to make sure the hsv color is at least available.
+            switch (powerState.getValue()) {
+                case ON:
+                    return verifyColor(colorState.getColor()).getHsbColor().getBrightness() > 0;
+                case OFF:
+                    return verifyColor(colorState.getColor()).getHsbColor().getBrightness() == 0;
+                case UNKNOWN:
+                default:
+                    return false;
+            }
+        } catch (VerificationFailedException ex) {
+            return false;
+        }
+    }
 }

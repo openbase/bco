@@ -61,8 +61,21 @@ public interface OperationService extends Service {
      * @throws VerificationFailedException is thrown if the value is not within the default value margin.
      */
     static void verifyValue(final String name, final double value, final double defaultValue, final double margin) throws VerificationFailedException {
-        if (value < defaultValue - margin || value > defaultValue + margin) {
+        if (equals(value, defaultValue, margin)) {
             throw new VerificationFailedException("The value of " + name + " is " + value + " but should be " + defaultValue);
         }
+    }
+
+    /**
+     * Method checks if the given value is within the margin of the default value.
+     *
+     * @param valueA the value to check.
+     * @param valueB the value to compare to.
+     * @param margin the still valid distance between the valueA and the valueB.
+     *
+     * @return true if delta is within margin, otherwise false.
+     */
+    static boolean equals(final double valueA, final double valueB, final double margin) {
+        return valueA < valueB - margin || valueA > valueB + margin;
     }
 }

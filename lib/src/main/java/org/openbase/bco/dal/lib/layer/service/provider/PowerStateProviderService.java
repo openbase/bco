@@ -22,10 +22,17 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.vision.ColorType.Color.Type;
+import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.slf4j.LoggerFactory;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
@@ -42,5 +49,13 @@ public interface PowerStateProviderService extends ProviderService {
 
     static void verifyPowerState(final PowerState powerState) throws VerificationFailedException {
         Services.verifyServiceState(powerState);
+    }
+
+    static Boolean isCompatible(final PowerState powerState, final ColorState colorState) {
+        return ColorStateProviderService.isCompatible(colorState, powerState);
+    }
+
+    static Boolean isCompatible(final PowerState powerState, final BrightnessState brightnessState) {
+        return BrightnessStateProviderService.isCompatible(brightnessState, powerState);
     }
 }

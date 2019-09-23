@@ -388,7 +388,7 @@ public class Units {
         try {
 
             if (shutdownInitialized) {
-                throw new InvalidStateException("System shutdown is initialized!");
+                throw new ShutdownInProgressException("UnitPool");
             }
 
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();

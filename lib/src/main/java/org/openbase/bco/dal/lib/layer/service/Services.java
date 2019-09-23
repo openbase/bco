@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.service;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor.JavaType;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
@@ -35,6 +36,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.processing.MessageProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
@@ -852,6 +854,16 @@ public class Services extends ServiceStateProcessor {
             return false;
         }
 
+        // make sure total equals or both empty messages pass the check
+        if(serviceState1.equals(serviceState2)) {
+            return true;
+        }
+
+        // fail if only one is empty
+        if(serviceState1.equals(serviceState1.getDefaultInstanceForType()) || serviceState2.equals(serviceState2.getDefaultInstanceForType())) {
+            return false;
+        }
+
         //TODO: for performance reasons it would be nice if all the fields skipped below had the same field number in all
         // service states. It would reduce the string comparison to an integer comparison.
         for (final Descriptors.FieldDescriptor field : serviceState1.getDescriptorForType().getFields()) {
@@ -873,8 +885,27 @@ public class Services extends ServiceStateProcessor {
                 continue;
             }
 
-            if ((field.isRepeated() || (serviceState1.hasField(field) && serviceState2.hasField(field))) && !(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
-                return false;
+            // handle repeated fields
+            if(field.isRepeated()) {
+                if(!serviceState1.getField(field).equals(serviceState2.getField(field))) {
+                    return false;
+                }
+                continue;
+            }
+
+            // check recursive for messages
+            if(field.getJavaType() == JavaType.MESSAGE) {
+                if(!equalServiceStates((Message) serviceState1.getField(field), (Message) serviceState2.getField(field))) {
+                    return false;
+                }
+            }
+
+            // compare primitives
+            if(field.getJavaType() != JavaType.MESSAGE) {
+                if (serviceState1.hasField(field) && serviceState2.hasField(field) && !(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
+                    System.out.println("field not equal: " + field.getName());
+                    return false;
+                }
             }
         }
         return true;
@@ -908,6 +939,32 @@ public class Services extends ServiceStateProcessor {
             return (Message) method.invoke(null, serviceState);
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException ex) {
             throw new CouldNotPerformException("Could not convert state[" + serviceState.getClass().getSimpleName() + "] of serviceType[" + serviceType.name() + "] to state of superServiceType[" + superServiceType.name() + "]", ex);
+        }
+    }
+
+    public static boolean isCompatible(final Message serviceStateA, final ServiceType serviceTypeA, final Message serviceStateB) {
+
+        System.out.println("check copm of "+ serviceTypeA);
+
+        // check if equals
+        if (equalServiceStates(serviceStateA, serviceStateB)) {
+            System.out.println(serviceStateA +" is compatible to "+ serviceStateB);
+            return true;
+        }
+
+        // check if compatible
+        try {
+            // retrieve provider service class
+            final String simpleClassName = StringProcessor.transformUpperCaseToPascalCase(serviceTypeA.name()).replace(Service.class.getSimpleName(), ProviderService.class.getSimpleName());
+            final String className = ProviderService.class.getPackage().getName() + "." + simpleClassName;
+            final Class<?> providerClass = Services.class.getClassLoader().loadClass(className);
+            final Method method = providerClass.getMethod("isCompatible", serviceStateA.getClass(), serviceStateB.getClass());
+            return (Boolean) method.invoke(null, serviceStateA, serviceStateB);
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException ex) {
+            // compatibility not given when method could not be found or any other error occurs.
+            System.out.println(serviceStateA +" is not compatible to "+ serviceStateB);
+            ExceptionPrinter.printHistory("Could not compute compatebility!", ex, LOGGER);
+            return false;
         }
     }
 }

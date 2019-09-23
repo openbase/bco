@@ -283,11 +283,10 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                 removeServiceStateObserver(value, serviceType, observer);
             }
         } else {
-            System.out.println("serviceTempus "+ serviceTempus);
-            System.out.println("serviceType "+ serviceType);
-            System.out.println("serviceTempusServiceTypeObservableMap "+ serviceTempusServiceTypeObservableMap);
-            System.out.println("serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType) "+ serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType));
-            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+            final MessageObservable<ServiceStateProvider<Message>, Message> observable = serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType);
+            if(observable != null) {
+                observable.removeObserver(observer);
+            }
         }
     }
 

@@ -315,7 +315,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         stringRemoteActionPoolEntry.getValue().stop();
                     }
                 } else if ((activityMultiState.getActivityIdCount() > 0)) {
-                    // todo: why is only the first action validated and where are activities disabled and their actions canceled?
+                    // todo: why is only the first action validated and AbstractUnitControllerTest()where are activities disabled and their actions canceled?
                     final String activityId = activityMultiState.getActivityId(0);
                     for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
                         if (!stringRemoteActionPoolEntry.getKey().equals(activityId)) {

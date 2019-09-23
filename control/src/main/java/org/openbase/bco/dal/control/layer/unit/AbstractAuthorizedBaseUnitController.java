@@ -95,7 +95,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
     private AuthToken requestAuthToken(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         try {
             UnitConfig userUnitConfig = null;
-            for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigs(UnitType.USER)) {
+            for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.USER)) {
                 MetaConfigPool metaConfigPool = new MetaConfigPool();
                 metaConfigPool.register(new MetaConfigVariableProvider(UnitConfigProcessor.getDefaultAlias(config, config.getId()), config.getMetaConfig()));
                 try {

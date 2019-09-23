@@ -303,7 +303,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             UnitGroupConfig.Builder unitGroup = unitConfig.getUnitGroupConfigBuilder();
 
             unitGroup.setUnitType(UnitType.COLORABLE_LIGHT);
-            for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.COLORABLE_LIGHT)) {
+            for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.COLORABLE_LIGHT)) {
                 // filter disabled units
                 if (unit.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;

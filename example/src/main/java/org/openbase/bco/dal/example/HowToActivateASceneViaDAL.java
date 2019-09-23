@@ -65,7 +65,7 @@ public class HowToActivateASceneViaDAL {
             LOGGER.info("authenticate current session...");
             BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
 
-            final List<UnitConfig> sceneUnitConfigList = Registries.getUnitRegistry().getUnitConfigs(UnitType.SCENE);
+            final List<UnitConfig> sceneUnitConfigList = Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.SCENE);
 
             if(sceneUnitConfigList.isEmpty()) {
                 LOGGER.warn("No scenes available in your current setup! Please create a new one in order to activate it!");
