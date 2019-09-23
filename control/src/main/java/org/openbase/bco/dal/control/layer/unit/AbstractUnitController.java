@@ -1301,7 +1301,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     } finally {
                         // remove requested state since it will be applied now and is no longer requested.
                         System.out.println("use requested state");
-                        requestedStateCache.remove(serviceType);
+                        resetRequestedServiceState(serviceType, internalBuilder);
                     }
                 } else {
                     // requested state does not match the current state
@@ -1358,21 +1358,41 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 //                }
             }
 
-
-
             // clear requested state if set but not compatible any more with the incoming one.
             if (requestedState != null && !Services.isCompatible(serviceState, serviceType, requestedState)) {
                 System.out.println("clear requested field because its not compatible");
-                internalBuilder.clearField(ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED)));
+                resetRequestedServiceState(serviceType, internalBuilder);
+            }
+
+            // in case of a system update, we can just apply the service state if no actions are currently scheduled.
+            try {
+                // todo: maybe we need to filter actions which are already done as well but then we have to deal with the scheduling lock which is may not a good idea because of deadlocks.
+                if (scheduledActionList.isEmpty() && Services.getResponsibleAction(serviceState).getActionInitiator().getInitiatorType() == InitiatorType.SYSTEM) {
+                    // Because the service state update was not remapped we can be sure its triggered externally and not via bco.
+                    // If in this case the event is initiated by the system, we can be sure that it is caused by a hardware synchronization purpose.
+                    // Therefore we can just apply the update and can skip to force the action execution which could otherwise block some low priority future action for a certain amount of time..
+                    return serviceState;
+                }
+            } catch (NotAvailableException ex) {
+                // if responsible action is not available, than we should continue since this action was maybe externally triggered by a human.
             }
 
             // force execution to properly apply new state synchronized with the current action scheduling
             return forceActionExecution(serviceState, serviceType, internalBuilder);
         } catch (VerificationFailedException ex) {
-            // passthrough verification failed exception to make it compareable to the error case.
+            // passthrough verification failed exception to make it comparable to the error case.
             throw ex;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not compute new state!", ex);
+        }
+    }
+
+    private void resetRequestedServiceState(final ServiceType serviceType, final DB internalBuilder) {
+        try {
+            requestedStateCache.remove(serviceType);
+            internalBuilder.clearField(ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED)));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not reset requested service state of type "+ serviceType.name(), ex, logger);
         }
     }
 
