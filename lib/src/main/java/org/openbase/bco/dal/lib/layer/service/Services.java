@@ -773,6 +773,7 @@ public class Services extends ServiceStateProcessor {
             // filter general service fields
             switch (stateName) {
                 case "last_value_occurrence":
+                case "aggregated_value_coverage":
                 case "timestamp":
                 case "responsible_action":
                 case "type":

@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.printer;
  */
 
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -142,7 +143,7 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
         try {
             String initiator;
             try {
-                initiator = Services.getResponsibleAction(serviceState).getActionInitiator().getInitiatorType().name().toLowerCase();
+                initiator = ActionDescriptionProcessor.getInitialInitiator(Services.getResponsibleAction(serviceState)).getInitiatorType().name().toLowerCase();
             } catch (NotAvailableException ex) {
                 // in this case we use the system as initiator because responsible actions are not available for pure provider services and those are always system generated.
                 initiator = "system";
