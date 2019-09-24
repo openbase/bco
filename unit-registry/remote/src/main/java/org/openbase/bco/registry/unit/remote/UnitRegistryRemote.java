@@ -53,6 +53,7 @@ import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -481,17 +482,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public List<ServiceConfig> getServiceConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
+    public List<ServiceConfig> getServiceConfigsByServiceType(final ServiceType serviceType) throws CouldNotPerformException {
         validateData();
-        List<ServiceConfig> serviceConfigs = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigs()) {
-            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getServiceDescription().getServiceType() == serviceType) {
-                    serviceConfigs.add(serviceConfig);
-                }
-            }
-        }
-        return serviceConfigs;
+        return UnitRegistry.super.getServiceConfigsByServiceType(serviceType);
     }
 
 

@@ -371,7 +371,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     @Deprecated
     default List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
-        return getServiceConfigs(serviceType);
+        return getServiceConfigsByServiceType(serviceType);
     }
 
     /**
