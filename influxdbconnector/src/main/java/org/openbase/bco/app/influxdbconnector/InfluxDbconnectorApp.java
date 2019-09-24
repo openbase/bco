@@ -357,6 +357,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
             // filter general service fields
             switch (stateName) {
+                case "aggregated_value_coverage":
                 case "last_value_occurrence":
                 case "timestamp":
                 case "responsible_action":
