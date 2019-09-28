@@ -136,7 +136,7 @@ public class BCOSystemValidator {
             System.exit(253);
             return;
         } catch (Exception ex) {
-            if (ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not validate system!", ex), System.err);
                 System.exit(254);
             }
