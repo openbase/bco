@@ -680,8 +680,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
-    private void validateActionPermissions(final String userId, final Action action) throws CouldNotPerformException {
+    private void validateActionPermissions(String userId, final Action action) throws CouldNotPerformException {
         try {
+            if(userId.isEmpty()) {
+                userId = User.OTHER;
+            }
+
             if (Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(userId)) {
                 // user is an admin
                 return;
@@ -700,7 +704,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
 
             // build nice error description
-            final String cancelingInstance = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(userId).getLabel(), userId);
+            String cancelingInstance;
+            try {
+                cancelingInstance = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(userId).getLabel(), userId);
+            } catch (NotAvailableException ex) {
+                cancelingInstance = userId;
+            }
+
             final String ownerInstanceList = StringProcessor.transformCollectionToString(action.getActionDescription().getActionCauseList(), actionReference -> {
                 try {
                     return LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionReference.getActionInitiator().getInitiatorId()).getLabel());
