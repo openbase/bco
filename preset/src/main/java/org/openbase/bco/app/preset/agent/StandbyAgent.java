@@ -22,97 +22,76 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.control.layer.unit.agent.AbstractAgentController;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.ShutdownInProgressException;
+import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger;
+import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.PowerStateType;
 import org.openbase.type.domotic.state.PresenceStateType;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
+import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.location.LocationDataType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class StandbyAgent extends AbstractAgentController {
+public class StandbyAgent extends AbstractDelayedTriggerableAgent {
 
     /**
-     * 15 min default standby timeout
+     * 30 minutes max absence timeout
      */
-    public static final long TIMEOUT = 60000 * 15;
+    public static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(30);
 
     private LocationRemote locationRemote;
-    private final Timeout timeout;
-    private final SyncObject standbySync = new SyncObject("StandbySync");
-    private final Observer<DataProvider<LocationData>, LocationData> locationDataObserver;
+    private RemoteAction lastAction;
 
-
-    public StandbyAgent() throws CouldNotPerformException {
-        this.timeout = new Timeout(TIMEOUT) {
-
-            @Override
-            public void expired() {
-                try {
-                    locationRemote.setStandbyState(State.STANDBY).get();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
-                }
-            }
-        };
-
-        this.locationDataObserver = (source, data) -> triggerPresenceChange(data);
+    public StandbyAgent() throws InstantiationException {
+        super(AbstractDelayedTriggerableAgent.DelayMode.DELAY_ACTIVATION, MAX_TIMEOUT);
     }
 
     @Override
-    protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-        locationRemote.addDataObserver(locationDataObserver);
-        if(locationRemote.isDataAvailable()) {
-            triggerPresenceChange(locationRemote.getData());
+    public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        try {
+            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, PresenceStateType.PresenceState.State.ABSENT, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE), TriggerPool.TriggerAggregation.OR);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
         }
-        return activationState.getResponsibleAction();
     }
 
     @Override
-    protected void stop(final ActivationState activationState) throws InterruptedException, CouldNotPerformException {
-        if (locationRemote != null) {
-            locationRemote.removeDataObserver(locationDataObserver);
-            locationRemote = null;
+    protected void delayedTrigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+        switch (activationState.getValue()) {
+            case ACTIVE:
+                lastAction = observe(locationRemote.setPowerState(PowerStateType.PowerState.State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
+                break;
+            case DEACTIVE:
+                if (lastAction != null && !lastAction.isDone()) {
+                    lastAction.cancel();
+                }
+                break;
         }
-        timeout.cancel();
-        super.stop(activationState);
     }
 
-    public void triggerPresenceChange(LocationDataType.LocationData data) throws InterruptedException {
-        synchronized (standbySync) {
-            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && timeout.isActive()) {
-                timeout.cancel();
-                try {
-                    locationRemote.setStandbyState(State.RUNNING).get();
-                } catch (ExecutionException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
-                }
-            } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT) && !timeout.isActive()) {
-                try {
-                    timeout.start();
-                } catch (ShutdownInProgressException ex) {
-                    // ignore change
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not schedule presence timeout!", ex), logger);
-                }
-            }
-        }
+    @Override
+    protected double getDelayScaleFactor() throws NotAvailableException {
+        return locationRemote.getComfortToEconomyRatio();
     }
 }
