@@ -686,7 +686,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 userId = User.OTHER;
             }
 
-            if (Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(userId)) {
+            if (userId != User.OTHER && Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(userId)) {
                 // user is an admin
                 return;
             }
