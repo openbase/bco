@@ -139,7 +139,6 @@ public class RegistryRPCProcessor {
                 return newBuilder.build();
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | JsonProcessingException | JsonFormat.ParseException e) {
                 throw new CouldNotPerformException("Could not map parameterType[" + parameter.getClass().getSimpleName() + "] to message[" + parameterClass.getSimpleName() + "]");
-
             }
         } else if (ProtocolMessageEnum.class.isAssignableFrom(parameterClass)) {
             try {
