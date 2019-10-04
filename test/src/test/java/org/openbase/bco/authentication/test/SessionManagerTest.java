@@ -131,6 +131,46 @@ public class SessionManagerTest extends AuthenticationTest {
     }
 
     /**
+     * Test of SessionManager.login() for user.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void loginUserAfterSystemLoginFailure() throws Exception {
+        System.out.println("loginUserAfterSystemLoginFailure");
+        SessionManager manager = new SessionManager(clientStore);
+
+        // login admin
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
+
+        // register client
+        final LoginCredentials loginCredentials = manager.registerClient(MockClientStore.CLIENT_ID).get();
+
+        // login client
+        manager.loginClient(MockClientStore.CLIENT_ID, false);
+
+        // register invalid key
+        manager.storeCredentials(MockClientStore.CLIENT_ID, loginCredentials.toBuilder().clearCredentials().build());
+
+        // login client
+        manager.logout();
+
+        // login an invalid client should result in Exception
+        ExceptionPrinter.setBeQuit(Boolean.TRUE);
+
+        try {
+            manager.loginClient(MockClientStore.CLIENT_ID, true);
+            fail("Invalid client was successfully logged in.");
+        } catch (CouldNotPerformException ex) {
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+        }
+
+        // login admin shut still be possible
+        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, true);
+    }
+
+    /**
      * Test of SessionManager.isLoggedIn().
      *
      * @throws java.lang.Exception
@@ -166,7 +206,7 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-//    @Test(timeout = 5000)
+    @Test(timeout = 5000)
     public void registerClientAndLogin() throws Exception {
         System.out.println("registerClientAndLogin");
         SessionManager manager = new SessionManager(clientStore);
@@ -189,7 +229,7 @@ public class SessionManagerTest extends AuthenticationTest {
         try {
             manager.registerClient(MockClientStore.ADMIN_ID).get();
             fail("You should not be able to register the same client twice.");
-        } catch (CouldNotPerformException ex) {
+        } catch (ExecutionException ex) {
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
