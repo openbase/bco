@@ -103,8 +103,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
     private static final PowerState.State POWER_OFF = PowerState.State.OFF;
     private static final PowerState POWER_STATE_ON = PowerState.newBuilder().setValue(POWER_ON).build();
     private static final PowerState POWER_STATE_OFF = PowerState.newBuilder().setValue(POWER_OFF).build();
-    private static final HSBColor COLOR_VALUE = HSBColor.newBuilder().setBrightness(100).setSaturation(90).setHue(10).build();
-    private static final HSBColor GROUP_COLOR_VALUE = HSBColor.newBuilder().setBrightness(95).setSaturation(55).setHue(110).build();
+    private static final HSBColor COLOR_VALUE = HSBColor.newBuilder().setBrightness(.1d).setSaturation(.9d).setHue(10).build();
+    private static final HSBColor GROUP_COLOR_VALUE = HSBColor.newBuilder().setBrightness(.95d).setSaturation(.55d).setHue(110).build();
     private static final double TEMPERATURE = 21.3;
     private static SceneManagerLauncher sceneManagerLauncher;
     private static DeviceManagerLauncher deviceManagerLauncher;

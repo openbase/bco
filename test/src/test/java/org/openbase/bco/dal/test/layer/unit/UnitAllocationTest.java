@@ -376,7 +376,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         secondaryActionParameter.setPriority(Priority.LOW);
         secondaryActionParameter.setSchedulable(true);
         secondaryActionParameter.setInterruptible(true);
-        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(90, secondaryActionParameter.build()));
+        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(.90d, secondaryActionParameter.build()));
         secondaryAction.waitForExecution();
 
         assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getId());

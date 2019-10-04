@@ -51,7 +51,7 @@ public class ServicesTest {
      */
     @Test
     public void testSuperStateConversion() throws Exception {
-        final BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(50).build();
+        final BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(.5d).build();
         final Message expectedPowerState = BrightnessStateProviderService.toPowerState(brightnessState);
         final Message actualPowerState = Services.convertToSuperState(ServiceType.BRIGHTNESS_STATE_SERVICE, brightnessState, ServiceType.POWER_STATE_SERVICE);
         assertEquals("Conversion from brightness state to power state did not go as expected", expectedPowerState, actualPowerState);
