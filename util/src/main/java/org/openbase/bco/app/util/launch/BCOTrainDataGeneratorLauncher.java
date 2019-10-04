@@ -85,7 +85,7 @@ public class BCOTrainDataGeneratorLauncher {
                     ServiceType.PRESENCE_STATE_SERVICE,
                     location).build();
             //
-            location.setColor(HSBColor.newBuilder().setBrightness(100).setSaturation(0).build());
+            location.setColor(HSBColor.newBuilder().setBrightness(1).setSaturation(0).build());
             boolean present = false;
 
 

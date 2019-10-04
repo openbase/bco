@@ -50,7 +50,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
 
     private LocationRemote locationRemote;
     private final AlarmState.State triggerState = AlarmState.State.ALARM;
-    private final HSBColor HSBcolor = HSBColor.newBuilder().setBrightness(100).setSaturation(0).setHue(0).build();
+    private final HSBColor HSBcolor = HSBColor.newBuilder().setBrightness(1).setSaturation(0).setHue(0).build();
     private final Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBcolor).build();
     private ActionDescription taskActionDescriptionLightPower;
     private ActionDescription taskActionDescriptionLightBrightness;
@@ -81,7 +81,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
         // TODO: Set brightnessState as soon as it is supported
 //        taskActionDescriptionLightBrightness =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
 //                ServiceType.BRIGHTNESS_STATE_SERVICE,
-//                BrightnessState.newBuilder().setBrightness(100)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
+//                BrightnessState.newBuilder().setBrightness(1)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
         // TODO: Set color to white
 //        taskActionDescriptionLightColor =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
 //                ServiceType.COLOR_STATE_SERVICE,

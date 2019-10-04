@@ -140,7 +140,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
 
         // change color of the target which should also make the agent turn on the source
         LOGGER.info("Set color of target");
-        final HSBColor hsbColor = HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build();
+        final HSBColor hsbColor = HSBColor.newBuilder().setHue(0).setSaturation(1d).setBrightness(1d).build();
         Actions.waitForExecution(colorableLightRemote.setColor(hsbColor));
         assertEquals("Target 1 has not turned on", State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("Target 1 does not have the expected color", hsbColor, colorableLightRemote.getColorState().getColor().getHsbColor());
