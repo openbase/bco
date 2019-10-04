@@ -70,6 +70,12 @@
             <artifactId>bco.openapi</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.app.test</artifactId>
+            <version>${dependency.bco.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

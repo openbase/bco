@@ -47,62 +47,21 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractBCOAgentManagerTest extends AbstractBCOTest {
+public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractBCOAgentManagerTest.class);
-
-    protected static AgentManagerLauncher agentManagerLauncher;
-    protected static DeviceManagerLauncher deviceManagerLauncher;
-    protected static LocationManagerLauncher locationManagerLauncher;
 
     protected UnitConfig agentConfig = null;
     protected AgentRemote agentRemote = null;
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        try {
-            LOGGER.info("Start Agent test setup...");
-            AbstractBCOTest.setUpClass();
-
-            LOGGER.trace("Start device manager...");
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch().get();
-
-            LOGGER.trace("Start agent manager...");
-            agentManagerLauncher = new AgentManagerLauncher();
-            agentManagerLauncher.launch().get();
-
-            LOGGER.trace("Start location manager...");
-            locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch().get();
-
-            LOGGER.trace("Finally wait for registry...");
-            Registries.waitForData();
-            LOGGER.info("Ready to test...");
-
-        } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        BCOAppTest.setUpClass();
     }
 
     @AfterClass
     public static void tearDownClass() throws Throwable {
-        LOGGER.info("Tear down agent tests...");
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (agentManagerLauncher != null) {
-                agentManagerLauncher.shutdown();
-            }
-            if (locationManagerLauncher != null) {
-                locationManagerLauncher.shutdown();
-            }
-            AbstractBCOTest.tearDownClass();
-            LOGGER.info("Agent tests finished.");
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        BCOAppTest.tearDownClass();
     }
 
     @Before
