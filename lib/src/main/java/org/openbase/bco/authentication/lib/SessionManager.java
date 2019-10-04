@@ -319,107 +319,124 @@ public class SessionManager implements Shutdownable, Session {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     private synchronized void internalLogin(final String id, final LoginCredentials loginCredentials, final boolean stayLoggedIn, final boolean isUser) throws CouldNotPerformException, NotAvailableException {
-        // validate authentication property
         try {
-            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
-                throw new CouldNotPerformException("Could not login. Authentication is disabled");
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not check JPEnableAuthenticationProperty", ex);
-        }
-
-        // handle cases when somebody is already logged in
-        if (this.isLoggedIn()) {
-            // do nothing if same user or client is already logged in
-            if (id.equals(this.userClientPair.getUserId()) || id.equals(this.userClientPair.getClientId())) {
-                return;
+            // validate authentication property
+            try {
+                if (!JPService.getProperty(JPAuthentication.class).getValue()) {
+                    throw new CouldNotPerformException("Could not login. Authentication is disabled");
+                }
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Could not check JPEnableAuthenticationProperty", ex);
             }
 
-            // cancel current ticket renewal task
-            if (ticketRenewalTask != null && !ticketRenewalTask.isDone()) {
-                ticketRenewalTask.cancel(true);
-            }
+            // handle cases when somebody is already logged in
+            if (this.isLoggedIn()) {
+                // do nothing if same user or client is already logged in
+                if (id.equals(this.userClientPair.getUserId()) || id.equals(this.userClientPair.getClientId())) {
+                    return;
+                }
 
-            // if new client is logged in while a user is logged in the user has to be logged out
-            if (!userClientPair.getUserId().isEmpty() && !isUser) {
-                this.logout();
-            }
-        }
+                // cancel current ticket renewal task
+                if (ticketRenewalTask != null && !ticketRenewalTask.isDone()) {
+                    ticketRenewalTask.cancel(true);
+                }
 
-        // save the new id
-        if (isUser) {
-            userClientPair.setUserId(id);
-        } else {
-            userClientPair.setClientId(id);
-        }
-
-        // resolve user at client id and credentials
-        LoginCredentials userCredentials = null;
-        LoginCredentials clientCredentials = null;
-        if (isUser) {
-            // user is logged in so the parameters are his credentials
-            userCredentials = loginCredentials;
-
-            // if client was logged in get its credentials from the store
-            if (!userClientPair.getClientId().isEmpty()) {
-                clientCredentials = credentialStore.getCredentials(userClientPair.getClientId());
-            }
-        } else {
-            // client is logged in so the parameters are his credentials
-            clientCredentials = loginCredentials;
-        }
-
-        try {
-            // request ticket granting ticket
-            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(getUserClientPair()).get();
-            // handle response
-
-            TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(getUserClientPair(), userCredentials, clientCredentials, ticketSessionKeyWrapper);
-
-            // request client server ticket
-            ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get();
-            // handle response
-            ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleTicketGrantingServiceResponse(getUserClientPair(), ticketWrapperSessionKeyPair.getSessionKey(), ticketSessionKeyWrapper);
-            this.ticketAuthenticatorWrapper = ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper();
-            this.sessionKey = ticketWrapperSessionKeyPair.getSessionKey();
-
-            notifyLoginObserver();
-
-            // user wants to stay logged or is a client so trigger a ticket renewal task
-            if (stayLoggedIn || !isUser) {
-                try {
-                    final Long sessionTimeout = JPService.getProperty(JPSessionTimeout.class).getValue();
-                    final long delay = (long) ((2 * sessionTimeout) / 4.0d);
-                    ticketRenewalTask = GlobalScheduledExecutorService.scheduleWithFixedDelay(() -> {
-                        try {
-                            renewTicket();
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Could not renew ticket", ex, LOGGER, LogLevel.WARN);
-                        }
-                    }, delay, delay, TimeUnit.MILLISECONDS);
-                } catch (JPNotAvailableException ex) {
-                    ExceptionPrinter.printHistory("Could not start ticket renewal task", ex, LOGGER, LogLevel.WARN);
+                // if new client is logged in while a user is logged in the user has to be logged out
+                if (!userClientPair.getUserId().isEmpty() && !isUser) {
+                    this.logout();
                 }
             }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not login", ex);
-        } catch (ExecutionException ex) {
-            Throwable cause = ex.getCause();
 
-            // Ugly workaround, as RSB wraps the stacktrace into the message string.
-            Pattern pattern = Pattern.compile("NotAvailableException: (.*)[\n\r]");
-            Matcher matcher = pattern.matcher(cause.getMessage());
-
-            if (matcher.find()) {
-                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-                throw new NotAvailableException(matcher.group(1));
+            // save the new id
+            if (isUser) {
+                userClientPair.setUserId(id);
+            } else {
+                userClientPair.setClientId(id);
             }
 
-            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Internal server error.", cause);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not login", ex);
+            // resolve user at client id and credentials
+            LoginCredentials userCredentials = null;
+            LoginCredentials clientCredentials = null;
+            if (isUser) {
+                // user is logged in so the parameters are his credentials
+                userCredentials = loginCredentials;
+
+                // if client was logged in get its credentials from the store
+                if (!userClientPair.getClientId().isEmpty()) {
+                    clientCredentials = credentialStore.getCredentials(userClientPair.getClientId());
+                }
+            } else {
+                // client is logged in so the parameters are his credentials
+                clientCredentials = loginCredentials;
+            }
+
+            try {
+                // request ticket granting ticket
+                TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(getUserClientPair()).get();
+                // handle response
+
+                TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(getUserClientPair(), userCredentials, clientCredentials, ticketSessionKeyWrapper);
+
+                // request client server ticket
+                ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get();
+                // handle response
+                ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleTicketGrantingServiceResponse(getUserClientPair(), ticketWrapperSessionKeyPair.getSessionKey(), ticketSessionKeyWrapper);
+                this.ticketAuthenticatorWrapper = ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper();
+                this.sessionKey = ticketWrapperSessionKeyPair.getSessionKey();
+
+                notifyLoginObserver();
+
+                // user wants to stay logged or is a client so trigger a ticket renewal task
+                if (stayLoggedIn || !isUser) {
+                    try {
+                        final Long sessionTimeout = JPService.getProperty(JPSessionTimeout.class).getValue();
+                        final long delay = (long) ((2 * sessionTimeout) / 4.0d);
+                        ticketRenewalTask = GlobalScheduledExecutorService.scheduleWithFixedDelay(() -> {
+                            try {
+                                renewTicket();
+                            } catch (CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory("Could not renew ticket", ex, LOGGER, LogLevel.WARN);
+                            }
+                        }, delay, delay, TimeUnit.MILLISECONDS);
+                    } catch (JPNotAvailableException ex) {
+                        ExceptionPrinter.printHistory("Could not start ticket renewal task", ex, LOGGER, LogLevel.WARN);
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not login", ex);
+            } catch (ExecutionException ex) {
+                Throwable cause = ex.getCause();
+
+                // Ugly workaround, as RSB wraps the stacktrace into the message string.
+                Pattern pattern = Pattern.compile("NotAvailableException: (.*)[\n\r]");
+                Matcher matcher = pattern.matcher(cause.getMessage());
+
+                if (matcher.find()) {
+                    ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
+                    throw new NotAvailableException(matcher.group(1));
+                }
+
+                ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error.", cause);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Could not login", ex);
+            }
+        } catch (CouldNotPerformException ex) {
+            // clear id on failure
+            if (isUser) {
+                if (userClientPair.getUserId().equals(id)) {
+                    userClientPair.clearUserId();
+                }
+            } else {
+                if (userClientPair.getClientId().equals(id)) {
+                    userClientPair.clearClientId();
+                }
+            }
+            // todo: @pleminoq anything else the reset?
+            // e.g. ticketAuthenticatorWrapper, sessionKey
+
+            throw ex;
         }
     }
 
@@ -660,7 +677,7 @@ public class SessionManager implements Shutdownable, Session {
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException if the client could not registered
      */
-    public synchronized Future registerClient(final String clientId) throws CouldNotPerformException {
+    public synchronized Future<LoginCredentials> registerClient(final String clientId) throws CouldNotPerformException {
         // generate key pair
         final KeyPair keyPair = EncryptionHelper.generateKeyPair();
         // create credentials with private key and store locally
