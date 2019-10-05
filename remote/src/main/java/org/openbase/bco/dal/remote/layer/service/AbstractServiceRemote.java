@@ -133,7 +133,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         this.infrastructureUnitMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
         this.dataObserver = (source, data) -> {
-            updateServiceState();
+            try {
+                updateServiceState();
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Initial service state computation failed. This can be the case if any required date is not available yet.", ex, logger, LogLevel.DEBUG);
+            }
         };
         this.unitConfigObserver = (source, data) -> {
             final UnitConfig unitConfig = (UnitConfig) data;
@@ -164,7 +168,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     protected abstract ST computeServiceState() throws CouldNotPerformException;
 
     /**
-     * Compute the current service state and notify observer.
+     * Compute the current service state and notify observer if the update was successful.
      *
      * @throws CouldNotPerformException if the computation fails
      */
@@ -463,7 +467,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             remote.addDataObserver(dataObserver);
             remote.addConnectionStateObserver(connectionStateObserver);
         }
-        updateServiceState();
+
+        try {
+            updateServiceState();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Initial service state computation failed. This can be the case if any required date is not available yet.", ex, logger, LogLevel.DEBUG);
+        }
     }
 
     /**
