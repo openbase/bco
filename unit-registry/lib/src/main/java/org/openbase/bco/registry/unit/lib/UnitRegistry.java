@@ -1038,11 +1038,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @return a list of the requested unit configs.
      *
      * @throws CouldNotPerformException is thrown if the request fails.
-     * @deprecated since 2.0 and will be removed in 3.0: please use getLocationUnitConfigsByTypeLocation(...) instead.
+     * @deprecated since 2.0 and will be removed in 3.0: please use getLocationUnitConfigsByLocationType(...) instead.
      */
     @Deprecated
     default List<UnitConfig> getLocationUnitConfigsByType(final LocationType locationType) throws CouldNotPerformException {
-        return getLocationUnitConfigsByTypeLocation(locationType);
+        return getLocationUnitConfigsByLocationType(locationType);
     }
 
     /**
@@ -1054,7 +1054,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    default List<UnitConfig> getLocationUnitConfigsByTypeLocation(final LocationType locationType) throws CouldNotPerformException {
+    default List<UnitConfig> getLocationUnitConfigsByLocationType(final LocationType locationType) throws CouldNotPerformException {
         List<UnitConfig> list = new ArrayList<>();
         for (UnitConfig locationUnitConfig : getUnitConfigsByUnitType(UnitType.LOCATION)) {
             if (locationUnitConfig.getLocationConfig().getLocationType() == locationType) {
