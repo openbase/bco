@@ -147,7 +147,7 @@ public class ColorStateColorTemperatureMapper extends AbstractServiceStateTraitM
         blue = Math.max(Math.min(blue, 255), 0);
 
         RGBColor.Builder rgbColor = RGBColor.newBuilder();
-        rgbColor.setRed((int) red).setGreen((int) green).setBlue((int) blue);
+        rgbColor.setRed(red / 255d).setGreen(green / 255d).setBlue(blue / 255d);
         return rgbColor.build();
     }
 
@@ -162,11 +162,11 @@ public class ColorStateColorTemperatureMapper extends AbstractServiceStateTraitM
     public int RGBToColorTemperature(final RGBColor rgbColor) {
         //TODO: filter green 0
         // always use green for the conversion and switch over cases using red
-        if (rgbColor.getRed() == 255) {
-            double res = Math.exp((rgbColor.getGreen() + 161.1195681661) / 99.4708025861) * 100;
+        if (rgbColor.getRed() == 1) {
+            double res = Math.exp(((rgbColor.getGreen() * 255) + 161.1195681661) / 99.4708025861) * 100;
             return (int) res;
         } else {
-            double res = (Math.exp(Math.log(rgbColor.getGreen() / 288.1221695283) / -0.0755148492) + 60) * 100;
+            double res = (Math.exp(Math.log((rgbColor.getGreen()  * 255) / 288.1221695283) / -0.0755148492) + 60) * 100;
             return (int) res;
         }
     }
