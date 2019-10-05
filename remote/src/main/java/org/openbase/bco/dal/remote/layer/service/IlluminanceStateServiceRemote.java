@@ -74,6 +74,10 @@ public class IlluminanceStateServiceRemote extends AbstractServiceRemote<Illumin
                 continue;
             }
 
+            if (amount == 0) {
+                throw new NotAvailableException("IlluminanceState");
+            }
+
             averageIlluminance += service.getIlluminanceState().getIlluminance();
             timestamp = Math.max(timestamp, service.getIlluminanceState().getTimestamp().getTime());
         }

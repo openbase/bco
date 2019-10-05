@@ -68,6 +68,10 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
                 continue;
             }
 
+            if (amount == 0) {
+                throw new NotAvailableException("SmokeState");
+            }
+
             SmokeState smokeState = service.getSmokeState();
             if (smokeState.getValue() == SmokeState.State.SMOKE) {
                 smokeValue = SmokeState.State.SMOKE;

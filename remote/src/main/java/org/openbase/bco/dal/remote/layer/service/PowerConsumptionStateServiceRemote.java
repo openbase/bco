@@ -82,6 +82,10 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
             timestamp = Math.max(timestamp, service.getPowerConsumptionState().getTimestamp().getTime());
         }
 
+        if (voltageValueAmount == 0) {
+            throw new NotAvailableException("PowerConsumptionState");
+        }
+
         voltageAverage = voltageAverage / voltageValueAmount;
 
         return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(currentSum).setVoltage(voltageAverage), TimeUnit.MICROSECONDS, logger).build();

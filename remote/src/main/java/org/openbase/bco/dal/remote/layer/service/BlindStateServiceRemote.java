@@ -35,6 +35,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -62,13 +63,18 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     @Override
     public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
 
-        int serviceNumber = getServices(unitType).size(), stop = 0, down = 0, up = 0;
+        final Collection<BlindStateOperationService> blindStateOperationServiceCollection = getServices(unitType);
+        int amount = blindStateOperationServiceCollection.size(), stop = 0, down = 0, up = 0;
         long timestamp = 0;
         float openingRatioAverage = 0;
-        for (BlindStateOperationService service : getServices(unitType)) {
+        for (BlindStateOperationService service : blindStateOperationServiceCollection) {
             if (!((UnitRemote) service).isDataAvailable() || !service.getBlindState().hasValue()) {
-                serviceNumber--;
+                amount--;
                 continue;
+            }
+
+            if (amount == 0) {
+                throw new NotAvailableException("BlindState");
             }
 
             switch (service.getBlindState().getValue()) {
@@ -87,7 +93,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
             timestamp = Math.max(timestamp, service.getBlindState().getTimestamp().getTime());
         }
 
-        openingRatioAverage /= serviceNumber;
+        openingRatioAverage /= amount;
         BlindState.State mostOccurrences;
         if (stop >= up && stop >= down) {
             mostOccurrences = BlindState.State.STOP;

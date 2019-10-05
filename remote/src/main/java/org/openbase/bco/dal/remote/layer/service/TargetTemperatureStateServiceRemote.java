@@ -73,13 +73,17 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
     @Override
     public TemperatureState getTargetTemperatureState(final UnitType unitType) throws NotAvailableException {
         Double average = 0d;
-        Collection<TargetTemperatureStateOperationService> targetTemperatureStateOperationServices = getServices(unitType);
-        int amount = targetTemperatureStateOperationServices.size();
         long timestamp = 0;
+        final Collection<TargetTemperatureStateOperationService> targetTemperatureStateOperationServices = getServices(unitType);
+        int amount = targetTemperatureStateOperationServices.size();
         for (TargetTemperatureStateOperationService service : targetTemperatureStateOperationServices) {
             if (!((UnitRemote) service).isDataAvailable() || !service.getTargetTemperatureState().hasTemperature()) {
                 amount--;
                 continue;
+            }
+
+            if (amount == 0) {
+                throw new NotAvailableException("TargetTemperatureState");
             }
 
             average += service.getTargetTemperatureState().getTemperature();
