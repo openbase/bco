@@ -92,13 +92,13 @@ public class ServiceStateProcessorTest {
         final ColorState.Builder colorState1 = locationData1.getColorStateBuilder();
         final PresenceState.Builder presenceState1 = locationData1.getPresenceStateBuilder();
         powerState1.setValue(PowerState.State.ON).setTimestamp(Timestamp.newBuilder().setTime(100));
-        brightnessState1.setBrightness(65).setTimestamp(Timestamp.newBuilder().setTime(200));
+        brightnessState1.setBrightness(.65d).setTimestamp(Timestamp.newBuilder().setTime(200));
         motionState1.setValue(MotionState.State.MOTION).setTimestamp(Timestamp.newBuilder().setTime(300));
         colorState1.setTimestamp(Timestamp.newBuilder().setTime(400));
         final Color.Builder color1 = colorState1.getColorBuilder();
         color1.setType(Color.Type.HSB);
         final HSBColor.Builder hsbColor1 = color1.getHsbColorBuilder();
-        hsbColor1.setBrightness(10).setHue(20).setSaturation(30);
+        hsbColor1.setBrightness(.10d).setHue(20).setSaturation(.30d);
 
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 500, presenceState1);
         presenceState1.setTimestamp(Timestamp.newBuilder().setTime(500)).setValue(PresenceState.State.ABSENT);
@@ -110,13 +110,13 @@ public class ServiceStateProcessorTest {
         final ColorState.Builder colorState2 = locationData2.getColorStateBuilder();
         final PresenceState.Builder presenceState2 = locationData2.getPresenceStateBuilder();
         powerState2.setValue(PowerState.State.ON).setTimestamp(Timestamp.newBuilder().setTime(12));
-        brightnessState2.setBrightness(65).setTimestamp(Timestamp.newBuilder().setTime(15));
+        brightnessState2.setBrightness(.65d).setTimestamp(Timestamp.newBuilder().setTime(15));
         motionState2.setValue(MotionState.State.MOTION).setTimestamp(Timestamp.newBuilder().setTime(62));
         colorState2.setTimestamp(Timestamp.newBuilder().setTime(152));
         final Color.Builder color2 = colorState2.getColorBuilder();
         color2.setType(Color.Type.HSB);
         final HSBColor.Builder hsbColor2 = color2.getHsbColorBuilder();
-        hsbColor2.setBrightness(10).setHue(20).setSaturation(30);
+        hsbColor2.setBrightness(.10d).setHue(20).setSaturation(.30d);
 
 
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 1231, presenceState2);

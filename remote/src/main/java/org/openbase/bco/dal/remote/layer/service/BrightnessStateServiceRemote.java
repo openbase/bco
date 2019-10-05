@@ -74,18 +74,23 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
     public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException {
 
         Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(unitType);
-        int serviceNumber = brightnessStateOperationServices.size();
+        int amount = brightnessStateOperationServices.size();
         Double average = 0d;
         long timestamp = 0;
         for (BrightnessStateOperationService service : brightnessStateOperationServices) {
             if (!((UnitRemote) service).isDataAvailable() || !service.getBrightnessState().hasBrightness()) {
-                serviceNumber--;
+                amount--;
                 continue;
             }
+
+            if (amount == 0) {
+                throw new NotAvailableException("BrightnessState");
+            }
+
             average += service.getBrightnessState().getBrightness();
             timestamp = Math.max(timestamp, service.getBrightnessState().getTimestamp().getTime());
         }
-        average /= serviceNumber;
+        average /= amount;
         return TimestampProcessor.updateTimestamp(timestamp, BrightnessState.newBuilder().setBrightness(average), TimeUnit.MICROSECONDS, logger).build();
     }
 }

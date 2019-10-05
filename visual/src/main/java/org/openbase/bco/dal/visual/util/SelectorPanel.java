@@ -198,7 +198,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                 UnitType selectedUnitType = (selectedItem.getType() == null ? UnitType.UNKNOWN : selectedItem.getType());
                 if (selectedUnitType == UnitType.UNKNOWN) {
                     if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                        for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
+                        for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocationId(selectedLocationConfigHolder.getConfig().getId())) {
                             try {
                                 unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
@@ -222,7 +222,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                         }
                     }
                 } else if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
+                    for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(selectedLocationConfigHolder.getConfig().getId(), selectedUnitType)) {
                         try {
                             unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                         } catch (CouldNotPerformException ex) {

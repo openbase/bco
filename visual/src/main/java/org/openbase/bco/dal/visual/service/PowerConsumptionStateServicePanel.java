@@ -149,7 +149,7 @@ public class PowerConsumptionStateServicePanel extends AbstractServicePanel<Powe
             consumptionBar.setValue((int) (level * 100));
 
             double hue = Math.min(180, Math.max(0, 180 - level * 180));
-            colorPanel.setBackground(AWTColorToHSBColorTransformer.transform(HSBColor.newBuilder().setBrightness(80).setSaturation(100).setHue(hue).build()));
+            colorPanel.setBackground(AWTColorToHSBColorTransformer.transform(HSBColor.newBuilder().setBrightness(.80d).setSaturation(.100d).setHue(hue).build()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

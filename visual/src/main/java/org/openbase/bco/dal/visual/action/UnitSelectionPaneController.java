@@ -370,7 +370,7 @@ public class UnitSelectionPaneController extends AbstractFXController {
                 // generate unit config list
                 List<UnitConfig> selectedUnitConfigs = new ArrayList<>();
                 if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    selectedUnitConfigs.addAll(Registries.getUnitRegistry().getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId()));
+                    selectedUnitConfigs.addAll(Registries.getUnitRegistry().getUnitConfigsByLocationId(selectedLocationConfigHolder.getConfig().getId()));
                 } else {
                     selectedUnitConfigs.addAll(Registries.getUnitRegistry().getUnitConfigs());
                 }
@@ -763,7 +763,7 @@ public class UnitSelectionPaneController extends AbstractFXController {
 
             String locationLabel = null;
             try {
-                locationLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry(false).getUnitConfigById(config.getPlacementConfig().getLocationId(), UnitType.LOCATION).getLabel(), "?");
+                locationLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry(false).getUnitConfigByIdAndUnitType(config.getPlacementConfig().getLocationId(), UnitType.LOCATION).getLabel(), "?");
             } catch (CouldNotPerformException | InterruptedException ex) {
                 unitType = "?";
             }

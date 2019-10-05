@@ -67,7 +67,7 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
     @Override
     public EmphasisState getEmphasisState(UnitType unitType) throws NotAvailableException {
         Collection<EmphasisStateOperationService> emphasisStateOperationServices = getServices(unitType);
-        int serviceNumber = emphasisStateOperationServices.size();
+        int amount = emphasisStateOperationServices.size();
         Double averageComfort = 0d;
         Double averageEconomy = 0d;
         Double averageSecurity = 0d;
@@ -77,17 +77,22 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
                     service.getEmphasisState().hasComfort() ||
                     service.getEmphasisState().hasEconomy() ||
                     service.getEmphasisState().hasSecurity())) {
-                serviceNumber--;
+                amount--;
                 continue;
             }
+
+            if (amount == 0) {
+                throw new NotAvailableException("EmphasisState");
+            }
+
             averageComfort += service.getEmphasisState().getComfort();
             averageEconomy += service.getEmphasisState().getEconomy();
             averageSecurity += service.getEmphasisState().getSecurity();
             timestamp = Math.max(timestamp, service.getEmphasisState().getTimestamp().getTime());
         }
-        averageComfort /= serviceNumber;
-        averageEconomy /= serviceNumber;
-        averageSecurity /= serviceNumber;
+        averageComfort /= amount;
+        averageEconomy /= amount;
+        averageSecurity /= amount;
         return TimestampProcessor.updateTimestamp(timestamp, EmphasisState.newBuilder().setComfort(averageComfort).setEconomy(averageEconomy).setSecurity(averageSecurity), TimeUnit.MICROSECONDS, logger).build();
     }
 

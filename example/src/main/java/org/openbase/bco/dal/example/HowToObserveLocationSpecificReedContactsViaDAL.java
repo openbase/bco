@@ -64,7 +64,7 @@ public class HowToObserveLocationSpecificReedContactsViaDAL {
             final String locationId = Registries.getUnitRegistry().getRootLocationConfig().getId();
 
             LOGGER.info("register observer on all reed contacts to get informed about current data changes...");
-            for (UnitConfig reedContactUnitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.REED_CONTACT, locationId)) {
+            for (UnitConfig reedContactUnitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(locationId, UnitType.REED_CONTACT)) {
                 Units.getUnit(reedContactUnitConfig, false, Units.REED_CONTACT).addDataObserver(ServiceTempus.CURRENT, (source, data) -> {
                     LOGGER.info(source + " changed to " + data.getContactState().getValue().name());
                 });

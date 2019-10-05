@@ -67,6 +67,11 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
                 amount--;
                 continue;
             }
+
+            if (amount == 0) {
+                throw new NotAvailableException("HandleState");
+            }
+
             position += service.getHandleState().getPosition();
             timestamp = Math.max(timestamp, service.getHandleState().getTimestamp().getTime());
         }

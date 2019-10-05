@@ -74,10 +74,10 @@ public class UnitModelPrinter {
     }
 
     public static void printStaticRelations(final PrintStream printStream) {
-        printStaticRelations(data -> printStream.println(data), true);
+        printStaticRelations(data -> printStream.println(data), true, false);
     }
 
-    public static void printStaticRelations(final Consumer<String> outputConsumer, final boolean printHeader) {
+    public static void printStaticRelations(final Consumer<String> outputConsumer, final boolean printHeader, final boolean filterContinuousServiceValues) {
         try {
             // print unit templates
             if (printHeader) {
@@ -126,15 +126,17 @@ public class UnitModelPrinter {
                             Services.getServiceStateEnumValues(serviceTemplate.getServiceType())
                             , (ProtocolMessageEnum o) -> o.getValueDescriptor().getName().toLowerCase(),
                             ", ",
-                            type -> type.getValueDescriptor().getName().equals("UNKNOWN")) + "]).");
+                            type -> type.getValueDescriptor().getName().toLowerCase().equals("unknown")) + "]).");
                 } catch (CouldNotPerformException ex) {
                     try {
                         // print continuous service state values
-                        outputConsumer.consume("service_template(" +
-                                serviceTemplate.getServiceType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
-                                Services.getServiceStateFieldDataTypes(serviceTemplate.getServiceType()),
-                                (String o) -> o.toLowerCase(),
-                                ", ") + "]).");
+                        if(!filterContinuousServiceValues) {
+                            outputConsumer.consume("service_template(" +
+                                    serviceTemplate.getServiceType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
+                                    Services.getServiceStateFieldDataTypes(serviceTemplate.getServiceType()),
+                                    (String o) -> o.toLowerCase(),
+                                    ", ") + "]).");
+                        }
                     } catch (CouldNotPerformException exx) {
                         try {
                             MultiException.checkAndThrow(() -> "Skip ServiceState[" + serviceTemplate.getServiceType().name() + "]", MultiException.push(UnitModelPrinter.class, ex, MultiException.push(UnitModelPrinter.class, exx, null)));

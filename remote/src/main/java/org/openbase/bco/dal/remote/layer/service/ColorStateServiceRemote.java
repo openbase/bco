@@ -83,9 +83,10 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             double averageRed = 0;
             double averageGreen = 0;
             double averageBlue = 0;
-            int amount = getServices(unitType).size();
             long timestamp = 0;
-            Collection<ColorStateOperationService> colorStateOperationServiceCollection = getServices(unitType);
+            final Collection<ColorStateOperationService> colorStateOperationServiceCollection = getServices(unitType);
+            int amount = colorStateOperationServiceCollection.size();
+
             for (ColorStateOperationService service : colorStateOperationServiceCollection) {
                 if (!((UnitRemote) service).isDataAvailable()
                         || !service.getColorState().hasColor()
@@ -103,11 +104,16 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
                 averageBlue += rgbColor.getBlue();
                 timestamp = Math.max(timestamp, service.getColorState().getTimestamp().getTime());
             }
+
+            if (amount == 0) {
+                throw new NotAvailableException("ColorState");
+            }
+
             averageRed = averageRed / amount;
             averageGreen = averageGreen / amount;
             averageBlue = averageBlue / amount;
 
-            HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(RGBColor.newBuilder().setRed((int) averageRed).setGreen((int) averageGreen).setBlue((int) averageBlue).build());
+            HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(RGBColor.newBuilder().setRed(averageRed).setGreen(averageGreen).setBlue(averageBlue).build());
             return TimestampProcessor.updateTimestamp(timestamp, ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)), TimeUnit.MICROSECONDS, logger).build();
         } catch (CouldNotTransformException ex) {
             throw new NotAvailableException("Could not transform from HSB to RGB or vice-versa!", ex);

@@ -34,6 +34,7 @@ import org.openbase.bco.dal.remote.layer.service.ServiceRemoteFactoryImpl;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -188,7 +189,7 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
                 try {
                     if (UnitProcessor.isDalUnit(remote)) {
                         if (!remote.isConnected()) {
-                            throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
+                            throw new InvalidStateException("Unit[" + remote.getLabel() + "] is currently not reachable!");
                         }
                         snapshotFutureMap.put(remote, remote.recordSnapshot());
                     }
