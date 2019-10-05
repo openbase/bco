@@ -88,26 +88,26 @@ public class LocationElement extends AbstractUnitSitemapElement {
         List<UnitConfig> unitConfigList;
 
         // add scenes
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.SCENE, unitConfig.getId(), false);
+        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.SCENE, false);
         if (!unitConfigList.isEmpty()) {
             sitemap.openFrameContext("Scenen");
-            for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.SCENE, unitConfig.getId())) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.SCENE)) {
                 sitemap.append(new GenericUnitSitemapElement(unitConfig));
             }
             sitemap.closeContext();
         }
 
         // add apps
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.APP, unitConfig.getId(), false);
+        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.APP, false);
         if (!unitConfigList.isEmpty()) {
             sitemap.openFrameContext("Apps");
-            for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.APP, unitConfig.getId())) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.APP)) {
                 sitemap.append(new GenericUnitSitemapElement(unitConfig));
             }
             sitemap.closeContext();
         }
 
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.AGENT, unitConfig.getId(), false);
+        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.AGENT,false);
         if (!unitConfigList.isEmpty() || !unitConfig.getLocationConfig().getUnitIdList().isEmpty()) {
             sitemap.openFrameContext("Sonstiges");
             // add agents
@@ -126,7 +126,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
 
 
                 // load unit configs
-                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(unitConfig.getId(), false)) {
+                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdRecursive(unitConfig.getId(), false)) {
 
                     // filter devices
                     if (unitConfig.getUnitType() == UnitType.DEVICE) {
