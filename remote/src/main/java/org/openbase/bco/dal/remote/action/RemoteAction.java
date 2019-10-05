@@ -405,7 +405,9 @@ public class RemoteAction implements Action {
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 } catch (Exception ex) {
-                    ExceptionPrinter.printHistory("Could not auto extend " + RemoteAction.this.toString(), ex, LOGGER);
+                    if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                        ExceptionPrinter.printHistory("Could not auto extend " + RemoteAction.this.toString(), ex, LOGGER);
+                    }
                 }
             }, AUTO_EXTENSION_INTERVAL, AUTO_EXTENSION_INTERVAL, TimeUnit.MILLISECONDS);
 
