@@ -801,7 +801,7 @@ public class Services extends ServiceStateProcessor {
                             }
                             types.add(repeatedFieldEntry.toString());
                         }
-                        stateType = types.toString().toLowerCase();
+                        stateValue = types.toString().toLowerCase();
                     } else {
                         stateValue = resolveStateValue((Message) serviceState.getField(fieldDescriptor)).toString();
                     }
@@ -812,9 +812,10 @@ public class Services extends ServiceStateProcessor {
             }
 
             // filter values
-            switch (stateValue) {
+            switch (stateValue.toLowerCase()) {
                 case "":
-                case "NaN":
+                case "unknown":
+                case "nan":
                     continue;
                 default:
                     break;
