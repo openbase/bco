@@ -40,6 +40,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -159,7 +160,10 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                         Message serviceData = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
                         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
                     } catch (CouldNotPerformException ex) {
-                        logger.warn("Could not notify state update for service[" + serviceDescription.getServiceType() + "] in tempus[" + serviceTempus.name() + "]", ex);
+                        // todo: implement handling of super types which not always support all fields. e.g. A LightRemote can receive a ColorableLightData but can for sure not handle all field.
+                        // checkout log output of test ColorableLightRemoteTest:testControllingViaLightRemote to reproduce the issue.
+                        // close issue openbase/bco.dal#147 after fix
+                        ExceptionPrinter.printHistory("Could not notify state update for service[" + serviceDescription.getServiceType() + "] in tempus[" + serviceTempus.name() + "]", ex, logger, LogLevel.WARN);
                     }
                 }
             });
