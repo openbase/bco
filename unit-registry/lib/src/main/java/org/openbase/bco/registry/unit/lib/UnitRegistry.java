@@ -1199,7 +1199,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @deprecated since 2.0 and will be removed in 3.0: please use getUnitConfigsByLocationId(...) instead.
      */
     @Deprecated
-    default List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
+    default List<UnitConfig> getUnitConfigsByLocationIdAndUnitType(final String locationId) throws CouldNotPerformException {
         return getUnitConfigsByLocationId(locationId);
     }
 
@@ -1213,7 +1213,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLocationId(final String locationId) throws CouldNotPerformException {
-        return getUnitConfigsByLocation(locationId, true);
+        return getUnitConfigsByLocationIdRecursive(locationId, true);
     }
 
     /**
@@ -1286,7 +1286,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLocationIdAndUnitType(final String locationId, final UnitType unitType) throws CouldNotPerformException {
-        return getUnitConfigsByLocation(unitType, locationId, true);
+        return getUnitConfigsByLocationIdAndUnitTypeRecursive(locationId, unitType, true);
     }
 
     /**
@@ -1442,7 +1442,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<ServiceConfig> getServiceConfigsByLocationId(final String locationId) throws CouldNotPerformException {
         List<ServiceConfig> serviceConfigList = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigsByLocation(locationId)) {
+        for (UnitConfig unitConfig : getUnitConfigsByLocationId(locationId)) {
             serviceConfigList.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigList;
@@ -1461,7 +1461,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<UnitConfig> getUnitConfigsByLocationAlias(final String locationAlias) throws CouldNotPerformException {
         final HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
-        for (UnitConfig unitConfig : getUnitConfigsByLocation(getUnitConfigByAlias(locationAlias).getId())) {
+        for (UnitConfig unitConfig : getUnitConfigsByLocationId(getUnitConfigByAlias(locationAlias).getId())) {
             unitConfigMap.put(unitConfig.getId(), unitConfig);
         }
         return new ArrayList<>(unitConfigMap.values());
