@@ -122,16 +122,18 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
             // test if the initial state was synced correctly
             assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
-
             // test controlling vid light remote
             Actions.waitForExecution(lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()));
+            lightRemote.requestData().get();
             while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
                 Thread.sleep(10);
             }
             assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
 
+
             // test controlling via colorable light remote
             Actions.waitForExecution(colorableLightRemote.setPowerState(State.OFF));
+            lightRemote.requestData().get();
             while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
                 Thread.sleep(10);
             }
