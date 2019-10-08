@@ -52,7 +52,10 @@ public class SmokeStateDecimalTypeTransformer implements ServiceStateCommandTran
     }
 
     @Override
-    public DecimalType transform(final SmokeState smokeState) {
+    public DecimalType transform(final SmokeState smokeState) throws CouldNotTransformException {
+        if(!smokeState.isInitialized() || Double.isNaN(smokeState.getSmokeLevel())) {
+            throw new CouldNotTransformException("Given smoke state is not initialized!");
+        }
         return new DecimalType(smokeState.getSmokeLevel() * 100d);
     }
 }
