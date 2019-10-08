@@ -78,7 +78,6 @@ public class InfluxDbProcessor {
     public static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
     public static final String INFLUXDB_URL = "INFLUXDB_URL";
     public static final String INFLUXDB_URL_DEFAULT = "http://localhost:9999";
-    public static final String INFLUXDB_ORG_ID = "INFLUXDB_ORG_ID";
     public static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     public static final String INFLUXDB_ORG_DEFAULT = "openbase";
     public static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
@@ -92,7 +91,6 @@ public class InfluxDbProcessor {
 
     public static String INFLUXDB_APP_CLASS_ID = "e6d9a242-58de-4e44-8e56-64c8da560fe4";
 
-    private static String influxDbOrgId = null;
     private static String influxDbOrg = null;
     private static String influxDbUrl = null;
     private static String influxDbBucket = null;
@@ -121,12 +119,6 @@ public class InfluxDbProcessor {
             }
             for (UnitConfigType.UnitConfig influxdbConnectorApp : influxdbConnectorApps) {
                 metaConfigPool.register(new MetaConfigVariableProvider(influxdbConnectorApp.getAlias(0), influxdbConnectorApp.getMetaConfig()));
-            }
-
-            try {
-                influxDbOrgId = metaConfigPool.getValue(INFLUXDB_ORG_ID);
-            } catch (NotAvailableException ex) {
-                influxDbOrgId = null;
             }
 
             influxDbBucket = metaConfigPool.getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
@@ -171,13 +163,6 @@ public class InfluxDbProcessor {
         return influxDbToken;
     }
 
-    public static String getInfluxdbOrgId() throws NotAvailableException {
-        if (influxDbOrgId == null) {
-            throw new NotAvailableException("influxDbOrgId");
-        }
-        return influxDbOrgId;
-    }
-
     public static String getInfluxdbOrg() {
         return influxDbOrg;
     }
@@ -200,13 +185,7 @@ public class InfluxDbProcessor {
                 throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
             }
 
-            final QueryApi queryApi = influxDBClient.getQueryApi();
-
-            if (influxDbOrgId != null) {
-                return queryApi.query(query, influxDbOrgId);
-            } else {
-                return queryApi.query(query);
-            }
+            return influxDBClient.getQueryApi().query(query, getInfluxdbOrg());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
@@ -310,27 +289,26 @@ public class InfluxDbProcessor {
     private static RecordType.Record convertFluxRecordToProtoRecord(FluxRecord record) {
         RecordType.Record.Builder builder = RecordType.Record.newBuilder();
         if (record.getTime() != null) {
-
             builder.setTimestamp(TimestampType.Timestamp.newBuilder().setTime(record.getTime().getEpochSecond()).build());
         }
-        if (record.getStart() != null) {
 
+        if (record.getStart() != null) {
             builder.setTimeRangeStart(TimestampType.Timestamp.newBuilder().setTime(record.getStart().getEpochSecond()).build());
         }
-        if (record.getStop() != null) {
 
+        if (record.getStop() != null) {
             builder.setTimeRangeStop(TimestampType.Timestamp.newBuilder().setTime(record.getStop().getEpochSecond()).build());
         }
-        if (record.getMeasurement() != null) {
 
+        if (record.getMeasurement() != null) {
             builder.setMeasurement(record.getMeasurement());
         }
-        if (record.getField() != null) {
 
+        if (record.getField() != null) {
             builder.setField(record.getField());
         }
-        if (record.getValue() != null) {
 
+        if (record.getValue() != null) {
             builder.setValue(Double.valueOf(record.getValue().toString()));
         } else {
             builder.setValue(0);
