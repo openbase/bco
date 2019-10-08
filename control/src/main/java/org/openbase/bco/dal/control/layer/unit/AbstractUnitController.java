@@ -951,7 +951,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // if new action is not schedulable and not immediately scheduled reject it
                 if (actionToSchedule != null && !actionToSchedule.equals(nextAction)) {
                     if (actionToSchedule.getActionDescription().getSchedulable()) {
-                        actionToSchedule.schedule();
+                        if(!actionToSchedule.isDone()) {
+                            actionToSchedule.schedule();
+                        }
                     } else {
                         actionToSchedule.reject();
                         atLeastOneDoneActionOnList = true;
