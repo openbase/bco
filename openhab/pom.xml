@@ -115,27 +115,27 @@
         <dependency>
             <groupId>org.eclipse.smarthome.io</groupId>
             <artifactId>org.eclipse.smarthome.io.rest.core</artifactId>
-            <version>0.9.0</version>
+            <version>${dependency.eclipse.smarthome.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.smarthome.core</groupId>
             <artifactId>org.eclipse.smarthome.core</artifactId>
-            <version>0.9.0</version>
+            <version>${dependency.eclipse.smarthome.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.smarthome.core</groupId>
             <artifactId>org.eclipse.smarthome.core.thing</artifactId>
-            <version>0.9.0</version>
+            <version>${dependency.eclipse.smarthome.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.smarthome.config</groupId>
             <artifactId>org.eclipse.smarthome.config.core</artifactId>
-            <version>0.9.0</version>
+            <version>${dependency.eclipse.smarthome.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.smarthome.config</groupId>
             <artifactId>org.eclipse.smarthome.config.discovery</artifactId>
-            <version>0.9.0</version>
+            <version>${dependency.eclipse.smarthome.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
@@ -143,6 +143,11 @@
             <version>${dependency.bco.registry.version}</version>
         </dependency>
     </dependencies>
+
+    <properties>
+        <dependency.eclipse.smarthome.version>0.10.0</dependency.eclipse.smarthome.version>
+    </properties>
+
 
     <repositories>
         <repository>
