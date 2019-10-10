@@ -89,11 +89,11 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                         try {
                             commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue(), true);
                         } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "] because unit not available", ex, LOGGER, LogLevel.WARN);
+                            ExceptionPrinter.printHistory("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "]", ex, LOGGER, LogLevel.WARN);
                         }
                     }
-                } catch (CouldNotPerformException e) {
-                    LOGGER.error("Could not retrieve item states from openHAB");
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not retrieve item states from openHAB!", ex, LOGGER);
                 }
             }
         };

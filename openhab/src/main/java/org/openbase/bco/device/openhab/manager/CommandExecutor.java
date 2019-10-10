@@ -37,11 +37,13 @@ import org.openbase.bco.device.openhab.registry.synchronizer.OpenHABItemProcesso
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.type.domotic.action.ActionInitiatorType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +67,9 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
 
     @Override
     public void update(Object source, JsonObject payload) {
+
+        //System.out.println("payload: "+payload.toString());
+
         // extract item name from topic
         final String topic = payload.get(OpenHABRestCommunicator.TOPIC_KEY).getAsString();
         // topic structure: smarthome/items/{itemName}/command
@@ -118,13 +123,9 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             // update the responsible action to show that it was triggered by openHAB and add other parameters
             // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
             if (systemSync) {
-                //TODO: verify that this does not break anything
-                // this is mostly a hack so that updates triggered by updates on the unit controller registry (e.g. initial sync)
-                // do not cause actions which block system components for 30 minutes. Still this could cause issues when
-                // it supersedes non interruptible and non schedulable actions.
-                ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 1, TimeUnit.SECONDS);
+                ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 5, TimeUnit.MINUTES, ActionInitiatorType.ActionInitiator.newBuilder().setInitiatorType(ActionInitiatorType.ActionInitiator.InitiatorType.SYSTEM).build());
             } else {
-                ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES);
+                ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, ActionInitiatorType.ActionInitiator.newBuilder().setInitiatorType(ActionInitiatorType.ActionInitiator.InitiatorType.HUMAN).build());
             }
 
             unitController.applyDataUpdate(serviceStateBuilder, metaData.getServiceType());
@@ -148,22 +149,38 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
 
         try {
             Command command = null;
+            MultiException.ExceptionStack exceptionStack = null;
             for (Class<? extends Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
                 try {
                     command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString);
                     break;
                 } catch (IllegalAccessException | NoSuchMethodException ex) {
-                    LOGGER.error("Command class[" + commandClass.getSimpleName() + "] does not posses a valueOf(String) method", ex);
+                    exceptionStack = MultiException.push(CommandExecutor.class, new InvalidStateException("Command class[" + commandClass.getSimpleName() + "] does not posses a valueOf(String) method", ex), exceptionStack);
                 } catch (IllegalArgumentException ex) {
                     // continue with the next command class, exception will be thrown if none is found
+                    exceptionStack = MultiException.push(CommandExecutor.class, ex, exceptionStack);
                 } catch (InvocationTargetException ex) {
                     // ignore because the value of method threw an exception, this can happen if e.g. 0 is returned for
                     // a roller shutter as the opening ratio and the stopMoveType is tested
+
+                    exceptionStack = MultiException.push(CommandExecutor.class, ex, exceptionStack);
+
+                    //apply workaround for temperature values
+                    try {
+                        command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString.replace(" °C", ""));
+                    } catch (Exception exx) {
+                        exceptionStack = MultiException.push(CommandExecutor.class, exx, exceptionStack);
+                    }
                 }
             }
 
             if (command == null) {
-                throw new CouldNotPerformException("Could not transform [" + commandString + "] into a state for service type[" + serviceType.name() + "]");
+
+                if(exceptionStack == null) {
+                    exceptionStack = MultiException.push(CommandExecutor.class, new InvalidStateException("Command class not available! Please configure the eclipse smart home command class within the meta config of service template of type "+ serviceType.name()), exceptionStack);
+                }
+
+                MultiException.checkAndThrow(() -> "Could not transform [" + commandString + "] into a state for service type[" + serviceType.name() + "]", exceptionStack);
             }
 
             Message serviceData = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceType, command.getClass()).transform(command);
