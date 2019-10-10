@@ -42,7 +42,7 @@ public class BatteryStateDecimalTypeTransformer implements ServiceStateCommandTr
     @Override
     public BatteryState transform(final DecimalType decimalType) {
         BatteryState.Builder state = BatteryState.newBuilder();
-        state.setLevel(decimalType.doubleValue());
+        state.setLevel(decimalType.doubleValue() / 100d);
 
         return state.build();
     }
@@ -56,6 +56,6 @@ public class BatteryStateDecimalTypeTransformer implements ServiceStateCommandTr
      */
     @Override
     public DecimalType transform(BatteryState batteryState) {
-        return new DecimalType(batteryState.getLevel());
+        return new DecimalType(batteryState.getLevel() * 100d);
     }
 }

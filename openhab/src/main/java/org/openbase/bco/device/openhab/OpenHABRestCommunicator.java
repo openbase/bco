@@ -292,14 +292,6 @@ public class OpenHABRestCommunicator implements Shutdownable {
         post(ITEMS_TARGET + SEPARATOR + itemName, command, MediaType.TEXT_PLAIN_TYPE);
     }
 
-    public Map<String, String> getStates() throws CouldNotPerformException {
-        final Map<String, String> itemNameStateMap = new HashMap<>();
-        for (final EnrichedItemDTO enrichedItemDTO : getItems()) {
-            itemNameStateMap.put(enrichedItemDTO.name, enrichedItemDTO.state);
-        }
-        return itemNameStateMap;
-    }
-
     // ==========================================================================================================================================
     // ITEM_CHANNEL_LINK
     // ==========================================================================================================================================

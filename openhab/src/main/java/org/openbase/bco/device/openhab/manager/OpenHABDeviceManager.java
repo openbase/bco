@@ -22,6 +22,7 @@ package org.openbase.bco.device.openhab.manager;
  * #L%
  */
 
+import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerImpl;
 import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.device.openhab.manager.service.OpenHABOperationServiceFactory;
@@ -54,6 +55,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
      * Synchronization observer that triggers resynchronization of all units if their configuration changes.
      */
     private final Observer synchronizationObserver;
+    private final RecurrenceEventFilter<Object> unitChangeSynchronizationFilter;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
         this.deviceManager = new DeviceManagerImpl(new OpenHABOperationServiceFactory() ,false) {
@@ -81,19 +83,19 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
         // the sync observer triggers a lot when the device manager is initially activated and all unit controllers are created
         // thus add an event filter
-        final RecurrenceEventFilter<Object> unitChangeSynchronizationFilter = new RecurrenceEventFilter<Object>(5000) {
+        this.unitChangeSynchronizationFilter = new RecurrenceEventFilter<Object>(5000) {
             @Override
             public void relay() {
                 try {
-                    for (final Entry<String, String> entry : OpenHABRestCommunicator.getInstance().getStates().entrySet()) {
+                    for (final EnrichedItemDTO item : OpenHABRestCommunicator.getInstance().getItems()) {
                         try {
-                            commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue(), true);
+                            commandExecutor.applyStateUpdate(item.name, item.type, item.state, true);
                         } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "]", ex, LOGGER, LogLevel.WARN);
+                            ExceptionPrinter.printHistory("Skip synchronization of item[name:" + item.name + ", label:" + item.label + ", type:" + item.type + ", " + ", state:" + item.state + ", " + item.stateDescription + ", transformedState:" + item.transformedState + ", category:" + item.category+ ", editable:" + item.editable+ "]", ex, LOGGER, LogLevel.WARN);
                         }
                     }
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not retrieve item states from openHAB!", ex, LOGGER);
+                    ExceptionPrinter.printHistory("Could not retrieve item states from openHAB!", ex, LOGGER, LogLevel.WARN);
                 }
             }
         };
@@ -111,6 +113,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
         deviceManager.getUnitControllerRegistry().addObserver(synchronizationObserver);
         deviceManager.activate();
         OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
+        unitChangeSynchronizationFilter.trigger();
     }
 
     @Override

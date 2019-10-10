@@ -10,12 +10,12 @@ package org.openbase.bco.device.openhab.manager;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -54,6 +54,8 @@ import java.util.concurrent.TimeUnit;
 public class CommandExecutor implements Observer<Object, JsonObject> {
 
     public static final String PAYLOAD_KEY = "payload";
+    public static final String PAYLOAD_STATE_KEY = "value";
+    public static final String PAYLOAD_STATE_TYPE_KEY = "type";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutor.class);
 
@@ -68,33 +70,35 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
     @Override
     public void update(Object source, JsonObject payload) {
 
-        //System.out.println("payload: "+payload.toString());
+        //System.out.println("payload: " + payload.toString());
 
         // extract item name from topic
         final String topic = payload.get(OpenHABRestCommunicator.TOPIC_KEY).getAsString();
+
         // topic structure: smarthome/items/{itemName}/command
         final String itemName = topic.split(OpenHABRestCommunicator.TOPIC_SEPARATOR)[2];
 
         // extract payload
-        final String state = jsonParser.parse(payload.get(PAYLOAD_KEY).getAsString()).getAsJsonObject().get("value").getAsString();
+        final String state = jsonParser.parse(payload.get(PAYLOAD_KEY).getAsString()).getAsJsonObject().get(PAYLOAD_STATE_KEY).getAsString();
+        final String type = jsonParser.parse(payload.get(PAYLOAD_KEY).getAsString()).getAsJsonObject().get(PAYLOAD_STATE_TYPE_KEY).getAsString();
 
         try {
-            applyStateUpdate(itemName, state);
+            applyStateUpdate(itemName, type, state);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not apply state update[" + state + "] for item[" + itemName + "]", ex, LOGGER, LogLevel.WARN);
         }
     }
 
     /**
-     * Call {@link #applyStateUpdate(String, String, boolean)} with false.
+     * Call {@link #applyStateUpdate(String, String, String, boolean)} with false.
      *
-     * @param itemName the item identifying the unit whose the state should be updated.
-     * @param state    a string serializing the state to be set.
+     * @param itemName  the item identifying the unit whose the state should be updated.
+     * @param stateType a string serializing the state to be set.
      *
      * @throws CouldNotPerformException if applying the state update fails.
      */
-    public void applyStateUpdate(final String itemName, final String state) throws CouldNotPerformException {
-        applyStateUpdate(itemName, state, false);
+    public void applyStateUpdate(final String itemName, final String stateType, final String state) throws CouldNotPerformException {
+        applyStateUpdate(itemName, stateType, state, false);
     }
 
     /**
@@ -103,12 +107,13 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
      * Else the update is handled as a human action.
      *
      * @param itemName   the item identifying the unit whose the state should be updated.
+     * @param stateType  defines the type class.
      * @param state      a string serializing the state to be set.
      * @param systemSync flag determining if the state update is the result of a system sync.
      *
      * @throws CouldNotPerformException
      */
-    public void applyStateUpdate(final String itemName, final String state, final boolean systemSync) throws CouldNotPerformException {
+    public void applyStateUpdate(final String itemName, final String stateType, final String state, final boolean systemSync) throws CouldNotPerformException {
         OpenHABItemNameMetaData metaData;
         try {
             metaData = OpenHABItemProcessor.getMetaData(itemName);
@@ -118,7 +123,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
         }
         try {
             final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
-            final Message.Builder serviceStateBuilder = getServiceData(state, metaData.getServiceType()).toBuilder();
+            final Message.Builder serviceStateBuilder = getServiceData(stateType, state, metaData.getServiceType()).toBuilder();
 
             // update the responsible action to show that it was triggered by openHAB and add other parameters
             // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
@@ -142,7 +147,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
 
     private static final String EMPTY_COMMAND_STRING = "null";
 
-    public static Message getServiceData(final String commandString, final ServiceType serviceType) throws CouldNotPerformException {
+    public static Message getServiceData(final String stateType, final String commandString, final ServiceType serviceType) throws CouldNotPerformException {
         if (commandString.equalsIgnoreCase(EMPTY_COMMAND_STRING)) {
             throw new InvalidStateException("Received null for state update");
         }
@@ -150,34 +155,37 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
         try {
             Command command = null;
             MultiException.ExceptionStack exceptionStack = null;
-            for (Class<? extends Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
+
+            Class<? extends Command> commandClass = ServiceTypeCommandMapping.lookupCommandClass(stateType);
+            try {
+                command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString);
+            } catch (IllegalAccessException | NoSuchMethodException ex) {
+                exceptionStack = MultiException.push(CommandExecutor.class, new InvalidStateException("Command class[" + commandClass.getSimpleName() + "] does not posses a valueOf(String) method", ex), exceptionStack);
+            } catch (IllegalArgumentException ex) {
+                // continue with the next command class, exception will be thrown if none is found
+                exceptionStack = MultiException.push(CommandExecutor.class, ex, exceptionStack);
+            } catch (InvocationTargetException ex) {
+                // ignore because the value of method threw an exception, this can happen if e.g. 0 is returned for
+                // a roller shutter as the opening ratio and the stopMoveType is tested
+
+                exceptionStack = MultiException.push(CommandExecutor.class, ex, exceptionStack);
+
+                //apply workaround for temperature values
+                // todo: implement valueOf() method in all transformer and individually parse the string and setup the physical unit as well
                 try {
-                    command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString);
-                    break;
-                } catch (IllegalAccessException | NoSuchMethodException ex) {
-                    exceptionStack = MultiException.push(CommandExecutor.class, new InvalidStateException("Command class[" + commandClass.getSimpleName() + "] does not posses a valueOf(String) method", ex), exceptionStack);
-                } catch (IllegalArgumentException ex) {
-                    // continue with the next command class, exception will be thrown if none is found
-                    exceptionStack = MultiException.push(CommandExecutor.class, ex, exceptionStack);
-                } catch (InvocationTargetException ex) {
-                    // ignore because the value of method threw an exception, this can happen if e.g. 0 is returned for
-                    // a roller shutter as the opening ratio and the stopMoveType is tested
-
-                    exceptionStack = MultiException.push(CommandExecutor.class, ex, exceptionStack);
-
-                    //apply workaround for temperature values
-                    try {
-                        command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString.replace(" °C", ""));
-                    } catch (Exception exx) {
-                        exceptionStack = MultiException.push(CommandExecutor.class, exx, exceptionStack);
-                    }
+                    command = (Command) commandClass.getMethod("valueOf", commandString.getClass()).invoke(null, commandString
+                            .replace(" °C", "")
+                            .replace(" %", "")
+                    );
+                } catch (Exception exx) {
+                    exceptionStack = MultiException.push(CommandExecutor.class, exx, exceptionStack);
                 }
             }
 
             if (command == null) {
 
-                if(exceptionStack == null) {
-                    exceptionStack = MultiException.push(CommandExecutor.class, new InvalidStateException("Command class not available! Please configure the eclipse smart home command class within the meta config of service template of type "+ serviceType.name()), exceptionStack);
+                if (exceptionStack == null) {
+                    exceptionStack = MultiException.push(CommandExecutor.class, new InvalidStateException("Command class not available! Please configure the eclipse smart home command class within the meta config of service template of type " + serviceType.name()), exceptionStack);
                 }
 
                 MultiException.checkAndThrow(() -> "Could not transform [" + commandString + "] into a state for service type[" + serviceType.name() + "]", exceptionStack);
@@ -186,7 +194,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             Message serviceData = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceType, command.getClass()).transform(command);
             return TimestampProcessor.updateTimestamp(System.currentTimeMillis(), serviceData, TimeUnit.MILLISECONDS);
         } catch (NotAvailableException ex) {
-            throw new CouldNotPerformException("Could not transform [" + commandString + "] of class ["+ commandString.getClass().getSimpleName() +"] into a state for service type[" + serviceType.name() + "]", ex);
+            throw new CouldNotPerformException("Could not transform [" + commandString + "] of class [" + commandString.getClass().getSimpleName() + "] into a state for service type[" + serviceType.name() + "]", ex);
         }
     }
 }

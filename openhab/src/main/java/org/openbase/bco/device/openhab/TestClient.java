@@ -42,7 +42,7 @@ public class TestClient {
                 for (ServiceTemplate serviceTemplate : data.getServiceTemplateList()) {
                     String commandClasses = "";
                     try {
-                        for (Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceTemplate.getServiceType())) {
+                        for (Class<? extends Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceTemplate.getServiceType())) {
                             commandClasses += commandClass.getSimpleName() + ", ";
                         }
                         LOGGER.info(serviceTemplate.getServiceType().name() + ": " + commandClasses);

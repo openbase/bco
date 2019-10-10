@@ -10,19 +10,19 @@ package org.openbase.bco.device.openhab.manager.transform;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.eclipse.smarthome.core.library.types.*;
 import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -61,7 +61,7 @@ public class ServiceTypeCommandMapping {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTypeCommandMapping.class);
 
     private static final SyncObject UPDATE_LOCK = new SyncObject("ServiceTypeCommandMappingLock");
-    private static Map<ServiceType, Set<Class<Command>>> MAP = new HashMap<>();
+    private static Map<ServiceType, Set<Class<? extends Command>>> MAP = new HashMap<>();
 
     /**
      * Get a set of command classes which can be handled by a service type.
@@ -72,7 +72,7 @@ public class ServiceTypeCommandMapping {
      *
      * @throws NotAvailableException if no command classes are available for the service type.
      */
-    public static Set<Class<Command>> getCommandClasses(final ServiceType serviceType) throws NotAvailableException {
+    public static Set<Class<? extends Command>> getCommandClasses(final ServiceType serviceType) throws NotAvailableException {
         synchronized (UPDATE_LOCK) {
             if (MAP.isEmpty()) {
                 Registries.getTemplateRegistry().addDataObserver((provider, data) -> buildMap());
@@ -113,17 +113,48 @@ public class ServiceTypeCommandMapping {
                     continue;
                 }
 
-                final String commandTypePackage = OnOffType.class.getPackage().getName();
                 for (String commandTypeClass : commandTypeClasses.split(",")) {
                     try {
-                        final String className = commandTypePackage + "." + commandTypeClass.trim();
-                        Class<Command> commandClass = (Class<Command>) ServiceTypeCommandMapping.class.getClassLoader().loadClass(className);
-                        MAP.get(serviceTemplate.getServiceType()).add(commandClass);
-                    } catch (ClassNotFoundException ex) {
+                        MAP.get(serviceTemplate.getServiceType()).add(generateCommandClass(commandTypeClass.trim()));
+                    } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory("Command class[" + commandTypeClass + "] for service type[" + serviceTemplate.getServiceType().name() + "] not available", ex, LOGGER, LogLevel.WARN);
                     }
                 }
             }
         }
+    }
+
+    public static final String COMMAND_TYPE_PACKAGE = OnOffType.class.getPackage().getName();
+
+    public static Class<? extends Command> generateCommandClass(final String simpleClassName) throws CouldNotPerformException {
+        try {
+            final String className = COMMAND_TYPE_PACKAGE + "." + simpleClassName;
+            return (Class<Command>) ServiceTypeCommandMapping.class.getClassLoader().loadClass(className);
+        } catch (ClassNotFoundException ex) {
+            throw new CouldNotPerformException("Could not generate command class based on class name [" + simpleClassName + "Type]", ex);
+        }
+    }
+
+    public static Class<? extends Command> lookupCommandClass(final String stateType) throws CouldNotPerformException {
+
+        switch (stateType.split(":")[0]) {
+            case "Color":
+                return HSBType.class;
+            case "Number":
+                return DecimalType.class;
+            case "Switch":
+                return OnOffType.class;
+            case "Contact":
+                return OpenClosedType.class;
+            case "Dimmer":
+                return PercentType.class;
+            default:
+                try {
+                    return generateCommandClass(stateType + "Type");
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not lookup command class based on communication type [" + stateType + "]", ex);
+                }
+        }
+
     }
 }

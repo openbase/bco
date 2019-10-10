@@ -22,6 +22,8 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  * #L%
  */
 
+import org.eclipse.smarthome.core.library.types.HSBType;
+import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.core.consistency.UnitAliasGenerationConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -48,6 +50,29 @@ public class OpenHABItemProcessor {
     public static final String OPENHAB_ROLLERSHUTTER_TYPE = "Rollershutter"; // Roller shutter Item, typically used for blinds;	UpDown, StopMove, Percent
     public static final String OPENHAB_STRING_TYPE = "String"; // Stores texts;	String
     public static final String OPENHAB_SWITCH_TYPE = "Switch"; //Switch Item, typically used for lights (on/off);	OnOff
+
+//    enum ItemStateType {
+//        COLOR("Color", HSBType.class),
+//        CONTACT("Contact",org.eclipse.smarthome.core.library.types.RawType),
+//        DATE_TIME("DateTime"),
+//        DIMMER("Dimmer"),
+//        GROUP("Group"),
+//        IMAGER("Image"),
+//        LOCATION("Location"),
+//        NUMBER("Number"),
+//        PLAYER("Player"),
+//        ROLLERSHUTTER("Rollershutter"),
+//        STRING("String"),
+//        SWITCH("Switch");
+//
+//        public final String name;
+//        public final Class<? extends Command> commandClass;
+//
+//        ItemStateType(String name, Class<? extends Command> commandClass) {
+//            this.name = name;
+//            this.commandClass = commandClass;
+//        }
+//    }
 
     public static String generateItemName(final UnitConfig unitConfig, final ServiceType serviceType) {
         // openHAB only supports underscores as special characters in item names

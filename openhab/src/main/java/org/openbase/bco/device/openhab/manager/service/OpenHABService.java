@@ -110,7 +110,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         try {
             boolean success = false;
             MultiException.ExceptionStack exceptionStack = null;
-            for (final Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
+            for (final Class<? extends Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
                 Command command = ServiceStateCommandTransformerPool.getInstance().getTransformer(state.getClass(), commandClass).transform(state);
                 try {
                     OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
