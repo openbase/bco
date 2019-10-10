@@ -93,7 +93,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     @Override
     public void register(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
-        logger.info("Register {} ...", identifiableEnrichedThingDTO.getDTO().UID);
+        logger.debug("Synchronize {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         final ThingDTO thingDTO = identifiableEnrichedThingDTO.getDTO();
 
         // handle initial sync
