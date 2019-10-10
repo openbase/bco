@@ -99,7 +99,11 @@ public class ItemUnitSynchronization extends AbstractSynchronizer<String, Identi
         boolean modification = false;
         final String label = SynchronizationProcessor.generateItemLabel(unitConfig, serviceType);
         if (item.label == null || !item.label.equals(label)) {
-            logger.warn("ItemName change from {} to {}", item.label, label);
+
+            if (item.name != null) {
+                logger.info("ItemName change from {} to {}", item.label, label);
+            }
+
             item.label = label;
             modification = true;
         }

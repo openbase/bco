@@ -31,10 +31,10 @@ import org.openbase.bco.device.openhab.registry.synchronizer.OpenHABItemProcesso
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.SyncObject;
@@ -108,15 +108,29 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
 
     public Future<ActionDescription> setState(final Message state) {
         try {
+            boolean success = false;
+            MultiException.ExceptionStack exceptionStack = null;
             for (final Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
                 Command command = ServiceStateCommandTransformerPool.getInstance().getTransformer(state.getClass(), commandClass).transform(state);
                 try {
                     OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
+                    success = true;
                 } catch (CouldNotPerformException ex) {
                     if (ex.getCause() instanceof NotAvailableException) {
                         throw new CouldNotPerformException("Thing may not be configured or openHAB not reachable", ex);
                     }
-                    throw ex;
+                    exceptionStack = MultiException.push("Could not apply state via " + commandClass.getSimpleName() + "!", ex, exceptionStack);
+                }
+            }
+
+            if (!success) {
+                MultiException.checkAndThrow(() -> "Could not apply state!", exceptionStack);
+            } else {
+                // if at least one command reached its target, then we just print a warning
+                try {
+                    MultiException.checkAndThrow(() -> "Some command classes could not be used to apply the state:", exceptionStack);
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(ex , logger, LogLevel.WARN);
                 }
             }
 

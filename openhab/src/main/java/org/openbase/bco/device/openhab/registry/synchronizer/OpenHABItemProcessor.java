@@ -35,7 +35,7 @@ public class OpenHABItemProcessor {
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
 
-    //TODO: maybe these values are somewhere available in eclipse smart home
+    //TODO: maybe these values are somewhere available in eclipse smart home project
     public static final String OPENHAB_COLOR_TYPE = "Color"; // Color information (RGB);	OnOff, IncreaseDecrease, Percent, HSB
     public static final String OPENHAB_CONTACT_TYPE = "Contact"; // Status of contacts, e.g. door/window contacts;	OpenClose
     public static final String OPENHAB_DATE_TIME_TYPE = "DateTime"; // Stores date and time;
