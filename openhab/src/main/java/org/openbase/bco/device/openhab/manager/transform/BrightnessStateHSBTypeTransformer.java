@@ -22,6 +22,8 @@ package org.openbase.bco.device.openhab.manager.transform;
  * #L%
  */
 
+import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.HSBType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState.Builder;
@@ -31,19 +33,19 @@ import java.math.BigDecimal;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BrightnessStatePercentTypeTransformer implements ServiceStateCommandTransformer<BrightnessState, PercentType> {
+public class BrightnessStateHSBTypeTransformer implements ServiceStateCommandTransformer<BrightnessState, HSBType> {
 
     /**
      * Transform a number to a brightness state by setting the number as the brightness value.
      *
-     * @param percentType the brightness value
+     * @param hsbType the brightness value
      *
      * @return the corresponding brightness state
      */
     @Override
-    public BrightnessState transform(final PercentType percentType) {
+    public BrightnessState transform(final HSBType hsbType) {
         Builder state = BrightnessState.newBuilder();
-        state.setBrightness(percentType.doubleValue() / 100d);
+        state.setBrightness(hsbType.getBrightness().doubleValue() / 100d);
         return state.build();
     }
 
@@ -55,7 +57,7 @@ public class BrightnessStatePercentTypeTransformer implements ServiceStateComman
      * @return the current brightness value
      */
     @Override
-    public PercentType transform(BrightnessState brightnessState) {
-        return new PercentType(BigDecimal.valueOf(brightnessState.getBrightness() * 100d));
+    public HSBType transform(BrightnessState brightnessState) {
+        return new HSBType(new DecimalType(0), new PercentType(0), new PercentType(BigDecimal.valueOf(brightnessState.getBrightness() * 100d)));
     }
 }

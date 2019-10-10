@@ -23,7 +23,7 @@ package org.openbase.bco.device.openhab.manager.transform;
  */
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
-import org.eclipse.smarthome.core.library.types.HSBType;
+import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
@@ -33,25 +33,23 @@ import org.openbase.type.vision.HSBColorType.HSBColor;
 
 import java.math.BigDecimal;
 
-public class ColorStateHSBTypeTransformer implements ServiceStateCommandTransformer<ColorState, HSBType> {
+public class ColorStatePercentTypeTransformer implements ServiceStateCommandTransformer<ColorState, PercentType> {
 
     @Override
-    public ColorState transform(final HSBType hsbType) throws CouldNotTransformException {
+    public ColorState transform(final PercentType percentType) throws CouldNotTransformException {
         try {
             ColorState.Builder colorState = ColorState.newBuilder();
             colorState.getColorBuilder().setType(Type.HSB);
             HSBColor.Builder hsbColor = colorState.getColorBuilder().getHsbColorBuilder();
-            hsbColor.setHue(hsbType.getHue().doubleValue());
-            hsbColor.setSaturation(hsbType.getSaturation().doubleValue() / 100d);
-            hsbColor.setBrightness(hsbType.getBrightness().doubleValue() / 100d);
+            hsbColor.setBrightness(percentType.doubleValue() / 100d);
             return colorState.build();
         } catch (Exception ex) {
-            throw new CouldNotTransformException("Could not transform " + HSBType.class.getName() + " to " + ColorState.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + PercentType.class.getName() + " to " + ColorState.class.getName() + "!", ex);
         }
     }
 
     @Override
-    public HSBType transform(final ColorState colorState) throws CouldNotTransformException {
+    public PercentType transform(final ColorState colorState) throws CouldNotTransformException {
         try {
             HSBColor hsbColor;
             if (colorState.getColor().getType() == Type.RGB) {
@@ -59,12 +57,9 @@ public class ColorStateHSBTypeTransformer implements ServiceStateCommandTransfor
             } else {
                 hsbColor = colorState.getColor().getHsbColor();
             }
-            DecimalType hue = new DecimalType(hsbColor.getHue());
-            PercentType saturation = new PercentType(BigDecimal.valueOf(hsbColor.getSaturation() * 100d));
-            PercentType brightness = new PercentType(BigDecimal.valueOf(hsbColor.getBrightness() * 100d));
-            return new HSBType(hue, saturation, brightness);
+            return new PercentType(BigDecimal.valueOf(hsbColor.getBrightness() * 100d));
         } catch (Exception ex) {
-            throw new CouldNotTransformException("Could not transform " + ColorState.class.getName() + " to " + HSBType.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + ColorState.class.getName() + " to " + PercentType.class.getName() + "!", ex);
         }
     }
 }

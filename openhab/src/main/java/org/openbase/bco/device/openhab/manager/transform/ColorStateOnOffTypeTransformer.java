@@ -24,47 +24,63 @@ package org.openbase.bco.device.openhab.manager.transform;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.HSBType;
+import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.openbase.jul.exception.CouldNotTransformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.TypeNotSupportedException;
 import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.PowerStateType;
 import org.openbase.type.vision.ColorType.Color.Type;
-import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.openbase.type.vision.HSBColorType;
 
 import java.math.BigDecimal;
 
-public class ColorStateHSBTypeTransformer implements ServiceStateCommandTransformer<ColorState, HSBType> {
+public class ColorStateOnOffTypeTransformer implements ServiceStateCommandTransformer<ColorState, OnOffType> {
 
     @Override
-    public ColorState transform(final HSBType hsbType) throws CouldNotTransformException {
+    public ColorState transform(final OnOffType onOffType) throws CouldNotTransformException {
+
         try {
             ColorState.Builder colorState = ColorState.newBuilder();
             colorState.getColorBuilder().setType(Type.HSB);
-            HSBColor.Builder hsbColor = colorState.getColorBuilder().getHsbColorBuilder();
-            hsbColor.setHue(hsbType.getHue().doubleValue());
-            hsbColor.setSaturation(hsbType.getSaturation().doubleValue() / 100d);
-            hsbColor.setBrightness(hsbType.getBrightness().doubleValue() / 100d);
+
+            switch (onOffType) {
+                case OFF:
+                    colorState.getColorBuilder().getHsbColorBuilder().setBrightness(0);
+                    break;
+                case ON:
+                    colorState.getColorBuilder().getHsbColorBuilder().setBrightness(1);
+                    break;
+                default:
+                    throw new CouldNotTransformException("Could not transform " + OnOffType.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
+            }
             return colorState.build();
         } catch (Exception ex) {
-            throw new CouldNotTransformException("Could not transform " + HSBType.class.getName() + " to " + ColorState.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + OnOffType.class.getName() + " to " + ColorState.class.getName() + "!", ex);
         }
     }
 
     @Override
-    public HSBType transform(final ColorState colorState) throws CouldNotTransformException {
+    public OnOffType transform(final ColorState colorState) throws CouldNotTransformException {
         try {
-            HSBColor hsbColor;
+            HSBColorType.HSBColor hsbColor;
             if (colorState.getColor().getType() == Type.RGB) {
                 hsbColor = HSBColorToRGBColorTransformer.transform(colorState.getColor().getRgbColor());
             } else {
                 hsbColor = colorState.getColor().getHsbColor();
             }
-            DecimalType hue = new DecimalType(hsbColor.getHue());
-            PercentType saturation = new PercentType(BigDecimal.valueOf(hsbColor.getSaturation() * 100d));
-            PercentType brightness = new PercentType(BigDecimal.valueOf(hsbColor.getBrightness() * 100d));
-            return new HSBType(hue, saturation, brightness);
+
+            if (hsbColor.getBrightness() > 0) {
+                return OnOffType.ON;
+            } else if (hsbColor.getBrightness() == 0) {
+                return OnOffType.OFF;
+            } else {
+                throw new InvalidStateException("Brightness has an invalid value: "+hsbColor.getBrightness());
+            }
         } catch (Exception ex) {
-            throw new CouldNotTransformException("Could not transform " + ColorState.class.getName() + " to " + HSBType.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + ColorState.class.getName() + " to " + OnOffType.class.getName() + "!", ex);
         }
     }
 }

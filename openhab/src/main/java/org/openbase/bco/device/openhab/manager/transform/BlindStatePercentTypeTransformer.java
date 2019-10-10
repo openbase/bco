@@ -25,6 +25,8 @@ package org.openbase.bco.device.openhab.manager.transform;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 
+import java.math.BigDecimal;
+
 public class BlindStatePercentTypeTransformer implements ServiceStateCommandTransformer<BlindState, PercentType> {
 
     @Override
@@ -34,6 +36,6 @@ public class BlindStatePercentTypeTransformer implements ServiceStateCommandTran
 
     @Override
     public PercentType transform(final BlindState blindState) {
-        return new PercentType((int) (blindState.getOpeningRatio() * 100d));
+        return new PercentType(BigDecimal.valueOf(blindState.getOpeningRatio() * 100d));
     }
 }
