@@ -10,12 +10,12 @@ package org.openbase.bco.app.openapiserver.spring;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -72,6 +72,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -150,6 +151,18 @@ public class UnitApiController implements UnitApi {
                 }
             }
 
+            sseEmitter.onError(throwable -> {
+                logger.debug("Remove emitter from sse observers because of an error:", throwable);
+                synchronized (observerMapLock) {
+                    for (final UnitRemote<?> unitRemote : unitRemoteList) {
+                        try {
+                            observerMap.get(unitRemote.getId()).removeEmitter(sseEmitter);
+                        } catch (NotAvailableException e) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove SSEEmitter from observer", e), logger);
+                        }
+                    }
+                }
+            });
             // remove emitters from observers on completion
             sseEmitter.onCompletion(() -> {
                 logger.debug("Remove emitter from sse observers");
@@ -167,6 +180,7 @@ public class UnitApiController implements UnitApi {
             // return emitter
             return sseEmitter;
         } catch (NotAvailableException e) {
+            ExceptionPrinter.printHistory(e, logger);
             throw new UnitNotAvailableException(e);
         } catch (InterruptedException e) {
             // this should never happen, since it not waited for data
@@ -174,6 +188,7 @@ public class UnitApiController implements UnitApi {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         } catch (NullPointerException e) {
+            ExceptionPrinter.printHistory(e, logger);
             //TODO: remove and handle correctly when issue https://github.com/openbase/bco.dal/issues/158 is solved
             throw new IllegalArgumentException("ServiceType[" + serviceType.name() + "] is not available!", e);
         }
