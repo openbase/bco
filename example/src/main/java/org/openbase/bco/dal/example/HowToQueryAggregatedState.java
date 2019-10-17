@@ -22,8 +22,6 @@ package org.openbase.bco.dal.example;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.action.RemoteAction;
-import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -31,25 +29,23 @@ import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.database.QueryType;
 import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
-import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
-import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.timing.TimestampType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * This howto shows how to control a colorable light via the bco-dal-remote api.
- *
+ * <p>
  * Note: This howto requires a running bco platform provided by your network.
  * Note: If your setup does not provide a light unit called \"TestUnit_0"\ you
  * can use the command-line tool \"bco-query ColorableLight\" to get a list of available colorable lights
@@ -57,22 +53,14 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class HowToQueryUnitLongTermStateUpdates {
+public class HowToQueryAggregatedState {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HowToQueryUnitLongTermStateUpdates.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HowToQueryAggregatedState.class);
 
     public static void howto() throws InterruptedException {
 
         final LocationRemote testLocation;
         try {
-
-            Date date = new Date();
-            // Get current time in seconds
-            long time = TimeUnit.MILLISECONDS.toSeconds(date.getTime());
-
-            String query = "from(bucket: \"bco-persistence\")\n" +
-                    "  |> range(start:" + (time - 3600) + ", stop: " + time + ")\n" +
-                    "  |> filter(fn: (r) => r._measurement == \"power_consumption_state_service\")";
 
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
@@ -80,14 +68,34 @@ public class HowToQueryUnitLongTermStateUpdates {
             LOGGER.info("authenticate current session...");
             BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
 
-            LOGGER.info("request the root location");
+            Date date = new Date();
+
+            long time = TimeUnit.MILLISECONDS.toSeconds(date.getTime());
 
             testLocation = Units.getRootLocation(true);
+            // Query for continuous data
+            Query query = Query.newBuilder()
+                    .setMeasurement("power_consumption_state_service")
+                    .setServiceType(ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE)
+                    .setTimeRangeStart(TimestampType.Timestamp.newBuilder().setTime(time - 3600).build())
+                    .setTimeRangeStop(TimestampType.Timestamp.newBuilder().setTime(time).build())
+                    .setAggregatedWindow("1m")
+                    .build();
 
-            RecordCollectionType.RecordCollection recordCollection = testLocation.queryRecord(Query.newBuilder().setRawQuery(query).build()).get();
+            // Query for enum data
+            Query enumQuery = Query.newBuilder()
+                    .setMeasurement("button_state_service")
+                    .setServiceType(ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_STATE_SERVICE)
+                    .setTimeRangeStart(TimestampType.Timestamp.newBuilder().setTime(time - 3600).build())
+                    .setTimeRangeStop(TimestampType.Timestamp.newBuilder().setTime(time).build())
+                    .setAggregatedWindow("1m")
+                    .build();
+            AggregatedServiceStateType.AggregatedServiceState aggregatedServiceState = testLocation.queryAggregatedServiceState(query).get();
+            AggregatedServiceStateType.AggregatedServiceState aggregatedEnumServiceState = testLocation.queryAggregatedServiceState(enumQuery).get();
 
+            LOGGER.info(aggregatedServiceState.toString());
+            LOGGER.info(aggregatedEnumServiceState.toString());
 
-            LOGGER.info(recordCollection.toString());
 
         } catch (CouldNotPerformException | CancellationException | ExecutionException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
