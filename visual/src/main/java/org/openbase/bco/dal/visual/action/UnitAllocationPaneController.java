@@ -397,7 +397,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 try {
                     initiatorLabel = ActionDescriptionProcessor.getInitiatorName(ActionDescriptionProcessor.getInitialInitiator(actionDescription));
                 } catch (CouldNotPerformException e) {
-                    initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "");
+                    initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? User.OTHER : "");
                 }
 
                 this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";
@@ -595,7 +595,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 try {
                     initiatorLabel = ActionDescriptionProcessor.getInitiatorName(actionReference.getActionInitiator());
                 } catch (CouldNotPerformException e) {
-                    initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? "Other" : "");
+                    initiatorLabel = (actionInitiator.getInitiatorId().equals(User.OTHER) ? User.OTHER : "");
                 }
 
                 this.initiator = initiatorLabel + " (" + actionInitiator.getInitiatorType().name() + " )";

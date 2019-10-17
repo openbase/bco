@@ -230,7 +230,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                         }
                     }
                 } else {
-                    for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigs(selectedUnitType)) {
+                    for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByUnitType(selectedUnitType)) {
                         try {
                             // ignore disabled units
                             if (config.getEnablingState().getValue() != EnablingState.State.ENABLED) {

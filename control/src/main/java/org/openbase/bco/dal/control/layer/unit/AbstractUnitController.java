@@ -951,7 +951,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // if new action is not schedulable and not immediately scheduled reject it
                 if (actionToSchedule != null && !actionToSchedule.equals(nextAction)) {
                     if (actionToSchedule.getActionDescription().getSchedulable()) {
-                        actionToSchedule.schedule();
+                        if(!actionToSchedule.isDone()) {
+                            actionToSchedule.schedule();
+                        }
                     } else {
                         actionToSchedule.reject();
                         atLeastOneDoneActionOnList = true;
@@ -1281,7 +1283,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
 
-        System.out.println("compute new state");
+        //System.out.println("compute new state");
 
         try {
             // if the given state is a provider service, than no further steps has to be performed
@@ -1310,7 +1312,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         }
                     } finally {
                         // remove requested state since it will be applied now and is no longer requested.
-                        System.out.println("use requested state");
+                        //System.out.println("use requested state");
                         resetRequestedServiceState(serviceType, internalBuilder);
                     }
                 } else {
@@ -1333,7 +1335,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // skip if update is still compatible and would nothing change
             if (Services.isCompatible(serviceState, serviceType, Services.invokeProviderServiceMethod(serviceType, internalBuilder))) {
-                System.out.println("skip because update is compatible with current state.");
+                //System.out.println("skip because update is compatible with current state.");
                 throw new VerificationFailedException("Incoming state already applied!");
             }
 
@@ -1347,7 +1349,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // 1. The incoming state update is just an update of an further affected state..
                     // 2. Its just an additinal synchronization update
                     // in case we are compatible with the current state we don't care about the update.
-                    System.out.println("just apply state.");
+                    //System.out.println("just apply state.");
                     //throw new VerificationFailedException("Incoming state already applied!");
                     return serviceState;
                 }
@@ -1370,7 +1372,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // clear requested state if set but not compatible any more with the incoming one.
             if (requestedState != null && !Services.isCompatible(serviceState, serviceType, requestedState)) {
-                System.out.println("clear requested field because its not compatible");
+                //System.out.println("clear requested field because its not compatible");
                 resetRequestedServiceState(serviceType, internalBuilder);
             }
 
@@ -1408,7 +1410,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     private Message forceActionExecution(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
 
-        System.out.println("force execution");
+        //System.out.println("force execution");
         try {
             final Message.Builder serviceStateBuilder = serviceState.toBuilder();
 

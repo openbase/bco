@@ -78,7 +78,6 @@ public class InfluxDbProcessor {
     public static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
     public static final String INFLUXDB_URL = "INFLUXDB_URL";
     public static final String INFLUXDB_URL_DEFAULT = "http://localhost:9999";
-    public static final String INFLUXDB_ORG_ID = "INFLUXDB_ORG_ID";
     public static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     public static final String INFLUXDB_ORG_DEFAULT = "openbase";
     public static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
@@ -92,7 +91,6 @@ public class InfluxDbProcessor {
 
     public static String INFLUXDB_APP_CLASS_ID = "e6d9a242-58de-4e44-8e56-64c8da560fe4";
 
-    private static String influxDbOrgId = null;
     private static String influxDbOrg = null;
     private static String influxDbUrl = null;
     private static String influxDbBucket = null;
@@ -123,12 +121,6 @@ public class InfluxDbProcessor {
                 metaConfigPool.register(new MetaConfigVariableProvider(influxdbConnectorApp.getAlias(0), influxdbConnectorApp.getMetaConfig()));
             }
 
-            try {
-                influxDbOrgId = metaConfigPool.getValue(INFLUXDB_ORG_ID);
-            } catch (NotAvailableException ex) {
-                influxDbOrgId = null;
-            }
-
             influxDbBucket = metaConfigPool.getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
             influxDbUrl = metaConfigPool.getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
             influxDbOrg = metaConfigPool.getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
@@ -150,6 +142,7 @@ public class InfluxDbProcessor {
 
     /**
      * Get the InfluxDb Url.
+     *
      * @return url
      */
     public static String getInfluxdbUrl() {
@@ -158,6 +151,7 @@ public class InfluxDbProcessor {
 
     /**
      * Get the InfluxDb bucket name.
+     *
      * @return bucket name
      */
     public static String getInfluxdbBucket() {
@@ -166,6 +160,7 @@ public class InfluxDbProcessor {
 
     /**
      * Get the Influxdb batch time.
+     *
      * @return batch time
      */
     public static String getInfluxdbBatchTime() {
@@ -174,6 +169,7 @@ public class InfluxDbProcessor {
 
     /**
      * Get the Influxdb batch limit.
+     *
      * @return batch limit
      */
     public static String getInfluxdbBatchLimit() {
@@ -182,7 +178,9 @@ public class InfluxDbProcessor {
 
     /**
      * Get the influxdb token.
+     *
      * @return influxdb token
+     *
      * @throws NotAvailableException
      */
     public static char[] getInfluxdbToken() throws NotAvailableException {
@@ -193,19 +191,8 @@ public class InfluxDbProcessor {
     }
 
     /**
-     * Get the influxdb org id.
-     * @return org id
-     * @throws NotAvailableException
-     */
-    public static String getInfluxdbOrgId() throws NotAvailableException {
-        if (influxDbOrgId == null) {
-            throw new NotAvailableException("influxDbOrgId");
-        }
-        return influxDbOrgId;
-    }
-
-    /**
      * Get the influxdb org name.
+     *
      * @return org name
      */
     public static String getInfluxdbOrg() {
@@ -229,14 +216,7 @@ public class InfluxDbProcessor {
             if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
                 throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
             }
-
-            final QueryApi queryApi = influxDBClient.getQueryApi();
-
-            if (influxDbOrg != null) {
-                return queryApi.query(query, influxDbOrg);
-            } else {
-                return queryApi.query(query);
-            }
+            return influxDBClient.getQueryApi().query(query, getInfluxdbOrg());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
@@ -330,7 +310,9 @@ public class InfluxDbProcessor {
 
     /**
      * Send a query to the influxdb and get a record collection.
+     *
      * @param databaseQuery
+     *
      * @return recordcollection
      */
     public static Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
@@ -345,27 +327,26 @@ public class InfluxDbProcessor {
     private static RecordType.Record convertFluxRecordToProtoRecord(FluxRecord record) {
         RecordType.Record.Builder builder = RecordType.Record.newBuilder();
         if (record.getTime() != null) {
-
             builder.setTimestamp(TimestampType.Timestamp.newBuilder().setTime(record.getTime().getEpochSecond()).build());
         }
-        if (record.getStart() != null) {
 
+        if (record.getStart() != null) {
             builder.setTimeRangeStart(TimestampType.Timestamp.newBuilder().setTime(record.getStart().getEpochSecond()).build());
         }
-        if (record.getStop() != null) {
 
+        if (record.getStop() != null) {
             builder.setTimeRangeStop(TimestampType.Timestamp.newBuilder().setTime(record.getStop().getEpochSecond()).build());
         }
-        if (record.getMeasurement() != null) {
 
+        if (record.getMeasurement() != null) {
             builder.setMeasurement(record.getMeasurement());
         }
-        if (record.getField() != null) {
 
+        if (record.getField() != null) {
             builder.setField(record.getField());
         }
-        if (record.getValue() != null) {
 
+        if (record.getValue() != null) {
             builder.setValue(Double.valueOf(record.getValue().toString()));
         } else {
             builder.setValue(0);

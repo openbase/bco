@@ -22,6 +22,10 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +54,7 @@ public interface ProviderService extends Service {
 
     static double oldValueNormalization(final double value, final double oldMaxValue) {
         if(value > 1d) {
-            LoggerFactory.getLogger(ProviderService.class).warn("Outdated value found which will be normalized!");
+            ExceptionPrinter.printHistory(new InvalidStateException("Outdated value found which will be normalized!"), LoggerFactory.getLogger(ProviderService.class), LogLevel.WARN);
             return value / oldMaxValue;
         }
         return value;

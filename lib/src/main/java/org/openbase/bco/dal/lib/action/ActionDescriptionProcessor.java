@@ -835,7 +835,7 @@ public class ActionDescriptionProcessor {
                 return LabelProcessor.getBestMatch(initiatorUnitConfig.getLabel());
             }
         } else {
-            return "Other";
+            return User.OTHER;
         }
     }
 
@@ -853,6 +853,24 @@ public class ActionDescriptionProcessor {
      * @throws CouldNotPerformException is thrown if the setup failed.
      */
     public static <MB extends Message.Builder> MB generateResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit) throws CouldNotPerformException {
+        return generateResponsibleAction(serviceStateBuilder, serviceType, targetUnit, executionTimePeriod, timeUnit, null);
+    }
+
+    /**
+     * Method generates and set a new responsible action of a service state.
+     *
+     * @param serviceStateBuilder the builder where the responsible action should be set for.
+     * @param serviceType         the type of service which is controlled.
+     * @param targetUnit          the unit where this action takes place.
+     * @param executionTimePeriod defines how long this action is valid in time.
+     * @param timeUnit            the time unit of the @{executionTimePeriod} argument.
+     * @param actionInitiator     prototype of the action initiator.
+     *
+     * @return the builder instance in just returned.
+     *
+     * @throws CouldNotPerformException is thrown if the setup failed.
+     */
+    public static <MB extends Message.Builder> MB generateResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit, final ActionInitiator actionInitiator) throws CouldNotPerformException {
         try {
             // generate action parameter
             final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
@@ -860,6 +878,10 @@ public class ActionDescriptionProcessor {
             actionParameter.setInterruptible(false);
             actionParameter.setSchedulable(false);
             actionParameter.setExecutionTimePeriod(timeUnit.toMicros(executionTimePeriod));
+
+            if (actionInitiator != null) {
+                actionParameter.getActionInitiatorBuilder().mergeFrom(actionInitiator);
+            }
 
             // generate responsible action
             final Builder builder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
