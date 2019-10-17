@@ -140,22 +140,49 @@ public class InfluxDbProcessor {
         }
     }
 
+    /**
+     * Get the InfluxDb Url.
+     *
+     * @return url
+     */
     public static String getInfluxdbUrl() {
         return influxDbUrl;
     }
 
+    /**
+     * Get the InfluxDb bucket name.
+     *
+     * @return bucket name
+     */
     public static String getInfluxdbBucket() {
         return influxDbBucket;
     }
 
+    /**
+     * Get the Influxdb batch time.
+     *
+     * @return batch time
+     */
     public static String getInfluxdbBatchTime() {
         return influxDbBatchTime;
     }
 
+    /**
+     * Get the Influxdb batch limit.
+     *
+     * @return batch limit
+     */
     public static String getInfluxdbBatchLimit() {
         return influxDbBatchLimit;
     }
 
+    /**
+     * Get the influxdb token.
+     *
+     * @return influxdb token
+     *
+     * @throws NotAvailableException
+     */
     public static char[] getInfluxdbToken() throws NotAvailableException {
         if (influxDbToken == null) {
             throw new NotAvailableException(INFLUXDB_TOKEN, new InvalidStateException("MetaConfig entry " + INFLUXDB_TOKEN + " not configured for InfluxDbConnectorApp! Please have a look at https://basecubeone.org/developer/addon/bco-persistence.html,"));
@@ -163,6 +190,11 @@ public class InfluxDbProcessor {
         return influxDbToken;
     }
 
+    /**
+     * Get the influxdb org name.
+     *
+     * @return org name
+     */
     public static String getInfluxdbOrg() {
         return influxDbOrg;
     }
@@ -184,7 +216,6 @@ public class InfluxDbProcessor {
             if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
                 throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
             }
-
             return influxDBClient.getQueryApi().query(query, getInfluxdbOrg());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -277,6 +308,13 @@ public class InfluxDbProcessor {
         return percentages;
     }
 
+    /**
+     * Send a query to the influxdb and get a record collection.
+     *
+     * @param databaseQuery
+     *
+     * @return recordcollection
+     */
     public static Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
         try {
             List<FluxTable> fluxTableList = sendQuery(databaseQuery.getRawQuery());
@@ -327,7 +365,6 @@ public class InfluxDbProcessor {
     }
 
     private static RecordCollectionType.RecordCollection convertFluxTablesToRecordCollections(List<FluxTable> tables) {
-        //todo fix aggregatedValues
         RecordCollectionType.RecordCollection.Builder builder = RecordCollectionType.RecordCollection.newBuilder();
         for (FluxTable table : tables) {
 
