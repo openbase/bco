@@ -70,10 +70,8 @@ import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.processing.VariableProvider;
 import org.openbase.jul.schedule.*;
 import org.openbase.type.communication.ScopeType;
-import org.openbase.type.configuration.EntryType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
@@ -99,7 +97,6 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
-import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -110,7 +107,6 @@ import rsb.converter.ProtocolBufferConverter;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -122,7 +118,6 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -438,7 +433,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // create observable if new
                 if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getServiceType())) {
-                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable<>(new ServiceStateProvider<>(serviceDescription.getServiceType(), this)));
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable<>(new ServiceStateProvider<>(serviceDescription.getServiceType(), serviceTempus, this)));
                 }
             }
         }
@@ -642,9 +637,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
-     *
      * @return the action identified by the provided id as described above.
-     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
@@ -676,13 +669,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
-     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
     private void validateActionPermissions(String userId, final Action action) throws CouldNotPerformException {
         try {
-            if(userId.isEmpty()) {
+            if (userId.isEmpty()) {
                 userId = User.OTHER;
             }
 
@@ -841,7 +833,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
-     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
      */
@@ -951,7 +942,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // if new action is not schedulable and not immediately scheduled reject it
                 if (actionToSchedule != null && !actionToSchedule.equals(nextAction)) {
                     if (actionToSchedule.getActionDescription().getSchedulable()) {
-                        if(!actionToSchedule.isDone()) {
+                        if (!actionToSchedule.isDone()) {
                             actionToSchedule.schedule();
                         }
                     } else {
@@ -1040,7 +1031,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
-     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1276,9 +1266,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param serviceState
      * @param serviceType
      * @param internalBuilder
-     *
      * @return
-     *
      * @throws CouldNotPerformException
      */
     private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
@@ -1404,7 +1392,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             requestedStateCache.remove(serviceType);
             internalBuilder.clearField(ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED)));
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not reset requested service state of type "+ serviceType.name(), ex, logger);
+            ExceptionPrinter.printHistory("Could not reset requested service state of type " + serviceType.name(), ex, logger);
         }
     }
 
@@ -1638,9 +1626,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
-     *
      * @return a location remote instance.
-     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1688,7 +1674,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
-     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1722,7 +1707,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override

@@ -25,19 +25,26 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.Message;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 
 public class ServiceStateProvider<ST extends Message> {
 
     private final ServiceType serviceType;
+    private final ServiceTempus serviceTempus;
     private final ServiceProvider<ST> serviceProvider;
 
-    public ServiceStateProvider(ServiceType serviceType, ServiceProvider<ST> serviceProvider) {
+    public ServiceStateProvider(final ServiceType serviceType, final ServiceTempus serviceTempus, final ServiceProvider<ST> serviceProvider) {
         this.serviceType = serviceType;
+        this.serviceTempus = serviceTempus;
         this.serviceProvider = serviceProvider;
     }
 
     public ServiceType getServiceType() {
         return serviceType;
+    }
+
+    public ServiceTempus getServiceTempus() {
+        return serviceTempus;
     }
 
     public ServiceProvider<ST> getServiceProvider() {
