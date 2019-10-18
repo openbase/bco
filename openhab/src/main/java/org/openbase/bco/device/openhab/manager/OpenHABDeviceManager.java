@@ -91,7 +91,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                         try {
                             commandExecutor.applyStateUpdate(item.name, item.type, item.state, true);
                         } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Skip synchronization of item[name:" + item.name + ", label:" + item.label + ", type:" + item.type + ", " + ", state:" + item.state + ", " + item.stateDescription + ", transformedState:" + item.transformedState + ", category:" + item.category+ ", editable:" + item.editable+ "]", ex, LOGGER, LogLevel.WARN);
+                            ExceptionPrinter.printHistory("Skip synchronization of item[name:" + item.name + ", label:" + item.label + ", type:" + item.type + ", " + ", state:" + item.state + ", " + item.stateDescription + ", transformedState:" + item.transformedState + ", category:" + item.category+  "]", ex, LOGGER, LogLevel.WARN);
                         }
                     }
                 } catch (CouldNotPerformException ex) {
