@@ -31,13 +31,17 @@ import com.google.protobuf.ProtocolMessageEnum;
 import com.googlecode.protobuf.format.JsonFormat;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import javax.validation.constraints.Null;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -55,7 +59,7 @@ public class RegistryRPCProcessor {
         try {
             return ResponseEntity.ok(invokeMethod(parameter, returnClass, 3));
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger, LogLevel.DEBUG);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -97,7 +101,8 @@ public class RegistryRPCProcessor {
 
         Method method = null;
         for (final Method registryMethod : registry.getClass().getMethods()) {
-            if (registryMethod.getName().equals(methodName)) {
+            if (registryMethod.getName().equals(methodName)
+                    && !(parameter == null && registryMethod.getParameters().length > 0)) {
                 method = registryMethod;
             }
         }
@@ -167,13 +172,13 @@ public class RegistryRPCProcessor {
 
                 return OBJECT_MAPPER.readValue(JSON_FORMAT.printToString((Message) returnValue), returnClass);
             } catch (IOException e) {
-                throw new CouldNotPerformException("Could not convert value of type[" + returnValue.getClass().getSimpleName() + "] to type[" + returnClass.getSimpleName() + "]");
+                throw new CouldNotPerformException("Could not convert value of type[" + returnValue.getClass().getSimpleName() + "] to type[" + returnClass.getSimpleName() + "]", e);
             }
         } else if (ProtocolMessageEnum.class.isAssignableFrom(returnValue.getClass())) {
             try {
                 return OBJECT_MAPPER.readValue(((ProtocolMessageEnum) returnValue).getValueDescriptor().getName(), returnClass);
             } catch (IOException e) {
-                throw new CouldNotPerformException("Could not convert enum[" + returnValue.getClass().getSimpleName() + "] to type[" + returnClass.getSimpleName() + "]");
+                throw new CouldNotPerformException("Could not convert enum[" + returnValue.getClass().getSimpleName() + "] to type[" + returnClass.getSimpleName() + "]", e);
             }
         } else if (List.class.isAssignableFrom(returnClass)) {
             if (!List.class.isAssignableFrom(returnValue.getClass())) {
