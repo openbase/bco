@@ -56,10 +56,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.validation.Valid;
@@ -97,6 +94,7 @@ public class UnitApiController implements UnitApi {
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<OpenbaseActionDescription> unitApplyActionPost(@Valid @RequestBody OpenbaseActionParameter openbaseActionParameter) {
         final ActionParameter.Builder actionParameterBuilder = ActionParameter.newBuilder();
         try {
@@ -105,7 +103,7 @@ public class UnitApiController implements UnitApi {
             return ResponseEntity.ok(OBJECT_MAPPER.readValue(JSON_FORMAT.printToString(actionDescription), OpenbaseActionDescription.class));
         } catch (IOException | InstantiationException | ExecutionException | TimeoutException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
