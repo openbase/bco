@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
@@ -44,65 +45,83 @@ public class RegistryApiController implements RegistryApi {
     private final Logger logger = LoggerFactory.getLogger(RegistryApiController.class);
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseActivityTemplate>> registryTemplateGetActivityTemplatesGet() {
         class Tmp extends ArrayList<OpenbaseActivityTemplate> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseServiceTemplate>> registryTemplateGetServiceTemplatesGet() {
         class Tmp extends ArrayList<OpenbaseServiceTemplate> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseUnitTemplate>> registryTemplateGetUnitTemplatesGet() {
         class Tmp extends ArrayList<OpenbaseUnitTemplate> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseDeviceClass>> registryClassGetDeviceClassesGet() {
         class Tmp extends ArrayList<OpenbaseDeviceClass> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseAgentClass>> registryClassGetAgentClassesGet() {
         class Tmp extends ArrayList<OpenbaseAgentClass> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseAppClass>> registryClassGetAppClassesGet() {
         class Tmp extends ArrayList<OpenbaseAppClass> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseUnitConfig>> registryUnitGetDalUnitConfigsGet() {
         class Tmp extends ArrayList<OpenbaseUnitConfig> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<List<OpenbaseUnitConfig>> registryUnitGetUnitConfigsGet() {
+        class Tmp extends ArrayList<OpenbaseUnitConfig> {}
+        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
+    }
+
+    @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseUnitConfig>> registryUnitGetUnitConfigsByUnitTypePost(@Valid @RequestBody InlineObject133 inlineObject133) {
         class Tmp extends ArrayList<OpenbaseUnitConfig> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject133, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<List<OpenbaseActivityConfig>> registryActivityGetActivityConfigsGet() {
         class Tmp extends ArrayList<OpenbaseActivityConfig> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<OpenbaseUnitConfig> registryUnitGetUnitConfigByAliasPost(@Valid @RequestBody InlineObject106 inlineObject106) {
         return RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject106, OpenbaseUnitConfig.class, logger);
     }
 
     @Override
+    @CrossOrigin(origins = "*")
     public ResponseEntity<Boolean> registryClassContainsAppClassByIdPost(@Valid @RequestBody InlineObject44 inlineObject44) {
         return RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject44, Boolean.class, logger);
     }
