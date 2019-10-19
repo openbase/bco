@@ -158,7 +158,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
             LabelProcessor.addLabel(unitConfig.getLabelBuilder().clear(), Locale.getDefault(), unitLabel);
             // check if label is already taken
-            for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLabelAndLocation(unitLabel, locationId, false)) {
+            for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitLabelRecursive(unitLabel, locationId, false)) {
                 // only check if a device has the same label
                 if (config.getUnitType() == UnitType.DEVICE) {
                     if (!config.getDeviceConfig().getDeviceClassId().equalsIgnoreCase(deviceClass.getId())) {
