@@ -53,21 +53,6 @@ public interface UnitConfigCollectionProvider {
      * @return the unit configs stored in this registry.
      *
      * @throws CouldNotPerformException is thrown if the request fails.
-     * @deprecated since 2.0 and will be removed in 3.0: please use getUnitConfigsFiltered(...) instead.
-     */
-    @Deprecated
-    default List<UnitConfig> getUnitConfigs(final boolean filterDisabledUnits) throws CouldNotPerformException {
-        return getUnitConfigsFiltered(filterDisabledUnits);
-    }
-
-    /**
-     * Method returns all registered unit configs. It allows to filter disabled unit configs.
-     *
-     * @param filterDisabledUnits if true all unit configs which are disabled will be skipped.
-     *
-     * @return the unit configs stored in this registry.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
      */
     List<UnitConfig> getUnitConfigsFiltered(final boolean filterDisabledUnits) throws CouldNotPerformException;
 
