@@ -289,7 +289,7 @@ public class UnitSelectionPaneController extends AbstractFXController {
                 // precompute location supported services
                 final Set<ServiceType> locationSupportedServiceConfigList;
                 if (!selectedLocationConfigHolder.isNotSpecified()) {
-                    locationSupportedServiceConfigList = Registries.getUnitRegistry().getServiceTypesByLocation(selectedLocationConfigHolder.getConfig().getId());
+                    locationSupportedServiceConfigList = Registries.getUnitRegistry().getServiceTypesByLocationId(selectedLocationConfigHolder.getConfig().getId());
                 } else {
                     locationSupportedServiceConfigList = null;
                 }
