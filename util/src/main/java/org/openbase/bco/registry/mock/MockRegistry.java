@@ -547,8 +547,8 @@ public class MockRegistry {
     private void registerConnections() throws CouldNotPerformException, InterruptedException {
         try {
             List<String> tileIds = new ArrayList<>();
-            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
-            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAlias(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(ALIAS_LOCATION_HEAVEN, UnitType.LOCATION).getId());
+            tileIds.add(Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(ALIAS_LOCATION_HELL, UnitType.LOCATION).getId());
             String reedContactId = Registries.getUnitRegistry().getUnitConfigByAlias(getUnitAlias(UnitType.REED_CONTACT)).getId();
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setConnectionType(ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             registerUnitConfig(generateConnectionUnitConfig(ALIAS_DOOR_GATE, connectionConfig));
@@ -733,7 +733,7 @@ public class MockRegistry {
             final ArrayList<UnitConfig> dalUnits = new ArrayList();
 
             // iterate over provided dal units
-            for (String dalUnitId : Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getId(), UnitType.DEVICE).getDeviceConfig().getUnitIdList()) {
+            for (String dalUnitId : Registries.getUnitRegistry().getUnitConfigByIdAndUnitType(deviceUnitConfig.getId(), UnitType.DEVICE).getDeviceConfig().getUnitIdList()) {
                 // lookup dal unit
                 final UnitConfig dalUnitConfig = Registries.getUnitRegistry().getUnitConfigById(dalUnitId);
 
