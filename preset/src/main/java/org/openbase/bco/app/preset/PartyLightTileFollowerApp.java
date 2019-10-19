@@ -167,7 +167,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
                 // process neighbors
                 LocationRemote neighborRemote;
-                for (UnitConfig neighborConfig : Registries.getUnitRegistry().getNeighborLocations(locationRemote.getId())) {
+                for (UnitConfig neighborConfig : Registries.getUnitRegistry().getNeighborLocationsByLocationId(locationRemote.getId())) {
                     // skip if already processed
                     if (processedLocations.contains(neighborConfig.getId())) {
                         continue;
