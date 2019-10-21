@@ -186,6 +186,7 @@
 
     <modules>
         <module>openhab</module>
+        <module>proxy</module>
     </modules>
     
     <properties>
