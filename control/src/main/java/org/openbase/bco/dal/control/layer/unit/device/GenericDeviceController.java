@@ -56,7 +56,7 @@ public class GenericDeviceController extends AbstractDeviceController {
 
     @Override
     public UnitDataSourceFactory getUnitDataSourceFactory() throws NotAvailableException {
-        if (operationServiceFactory == null) {
+        if (unitDataSourceFactory == null) {
             throw new NotAvailableException(UnitDataSourceFactory.class);
         }
         return unitDataSourceFactory;
