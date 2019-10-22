@@ -32,5 +32,5 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
  */
 public interface OperationServiceFactory {
 
-    <UNIT extends Unit> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException;
+    <UNIT extends Unit<?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException;
 }
