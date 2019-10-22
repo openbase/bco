@@ -145,6 +145,7 @@ public class ActionDescriptionProcessor {
         actionReference.setSchedulable(actionDescription.getSchedulable());
         actionReference.setTimestamp(actionDescription.getTimestamp());
         actionReference.addAllCategory(actionDescription.getCategoryList());
+        actionReference.setIntermediary(actionDescription.getIntermediary());
         return actionReference.build();
     }
 
@@ -827,7 +828,7 @@ public class ActionDescriptionProcessor {
      * @throws NotAvailableException is thrown when the name is not available.
      */
     public static String getInitiatorName(final ActionInitiator initialInitiator) throws NotAvailableException {
-        if (initialInitiator.hasInitiatorId() && !initialInitiator.getInitiatorId().isEmpty() && initialInitiator.getInitiatorId() != User.OTHER) {
+        if (initialInitiator.hasInitiatorId() && !initialInitiator.getInitiatorId().isEmpty() && !initialInitiator.getInitiatorId().equals(User.OTHER)) {
             final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(initialInitiator.getInitiatorId());
             if (initiatorUnitConfig.getUnitType() == UnitType.USER) {
                 return initiatorUnitConfig.getUserConfig().getUserName();
@@ -891,5 +892,16 @@ public class ActionDescriptionProcessor {
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup responsible action!", ex);
         }
+    }
+
+    public static String toString(final ActionReference actionReference) {
+        if(actionReference == null) {
+            return "Action[?]";
+        }
+        return "Action["
+                +(actionReference.hasActionId() ? actionReference.getActionId() + "|" : "")
+                +(actionReference.hasIntermediary() ? "Intermediary:"+ actionReference.getIntermediary() + "|" : "")
+                +(actionReference.hasServiceStateDescription() ? (actionReference.getServiceStateDescription().getServiceType().name() + "=" + actionReference.getServiceStateDescription().getServiceState()+ "|") : "")
+        +"]";
     }
 }
