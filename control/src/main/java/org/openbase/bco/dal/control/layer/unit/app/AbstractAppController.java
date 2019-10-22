@@ -23,6 +23,7 @@ package org.openbase.bco.dal.control.layer.unit.app;
  */
 import org.openbase.bco.dal.control.layer.unit.AbstractAuthorizedBaseUnitController;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.registry.remote.Registries;
@@ -53,14 +54,16 @@ public abstract class AbstractAppController extends AbstractAuthorizedBaseUnitCo
     }
 
     private final OperationServiceFactory operationServiceFactory;
+    private final UnitDataSourceFactory unitDataSourceFactory;
 
     public AbstractAppController() throws org.openbase.jul.exception.InstantiationException {
-        this(null);
+        this(null, null);
     }
 
-    public AbstractAppController(final OperationServiceFactory operationServiceFactory) throws org.openbase.jul.exception.InstantiationException {
+    public AbstractAppController(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws org.openbase.jul.exception.InstantiationException {
         super(AppData.newBuilder());
         this.operationServiceFactory = operationServiceFactory;
+        this.unitDataSourceFactory = unitDataSourceFactory;
     }
 
     @Override
@@ -69,6 +72,14 @@ public abstract class AbstractAppController extends AbstractAuthorizedBaseUnitCo
             throw new NotAvailableException("ServiceFactory", new NotSupportedException("Unit hosting", this));
         }
         return operationServiceFactory;
+    }
+
+    @Override
+    public UnitDataSourceFactory getUnitDataSourceFactory() throws NotAvailableException {
+        if (unitDataSourceFactory == null) {
+            throw new NotAvailableException("UnitDataSourceFactory", new NotSupportedException("UnitDataSource", this));
+        }
+        return unitDataSourceFactory;
     }
 
     @Override

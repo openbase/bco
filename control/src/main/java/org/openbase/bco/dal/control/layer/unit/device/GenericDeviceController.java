@@ -22,6 +22,7 @@ package org.openbase.bco.dal.control.layer.unit.device;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -34,23 +35,30 @@ import org.openbase.jul.exception.NotAvailableException;
 public class GenericDeviceController extends AbstractDeviceController {
 
     private final OperationServiceFactory operationServiceFactory;
+    private final UnitDataSourceFactory unitDataSourceFactory;
 
-    public GenericDeviceController(final OperationServiceFactory operationServiceFactory) throws CouldNotPerformException {
+    public GenericDeviceController(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws CouldNotPerformException {
         try {
             if (operationServiceFactory == null) {
                 throw new NotAvailableException("service factory");
             }
             this.operationServiceFactory = operationServiceFactory;
+            this.unitDataSourceFactory = unitDataSourceFactory;
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     @Override
-    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
-        if (operationServiceFactory == null) {
-            throw new NotAvailableException(OperationServiceFactory.class);
-        }
+    public OperationServiceFactory getOperationServiceFactory() {
         return operationServiceFactory;
+    }
+
+    @Override
+    public UnitDataSourceFactory getUnitDataSourceFactory() throws NotAvailableException {
+        if (operationServiceFactory == null) {
+            throw new NotAvailableException(UnitDataSourceFactory.class);
+        }
+        return unitDataSourceFactory;
     }
 }

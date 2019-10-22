@@ -25,12 +25,12 @@ package org.openbase.bco.dal.control.layer.unit;
 import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
 import org.openbase.bco.dal.lib.layer.unit.HostUnit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Activatable;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -43,14 +43,13 @@ import java.util.Set;
 /**
  * @param <M>  Underling message type.
  * @param <MB> Message related builder.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractDALUnitController<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>> extends AbstractUnitController<M, MB> implements OperationServiceFactoryProvider {
 
-
-
     private final HostUnitController hostUnit;
-    private final OperationServiceFactory operationServiceFactory;
+    private Activatable dataSource;
 
     public AbstractDALUnitController(final HostUnitController hostUnitController, final MB builder) throws InstantiationException {
         super(builder);
@@ -59,7 +58,6 @@ public abstract class AbstractDALUnitController<M extends AbstractMessage & Seri
                 throw new NotAvailableException("service factory");
             }
             this.hostUnit = hostUnitController;
-            this.operationServiceFactory = hostUnitController.getOperationServiceFactory();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -97,8 +95,39 @@ public abstract class AbstractDALUnitController<M extends AbstractMessage & Seri
     }
 
     @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+
+        // bind data source
+        if(dataSource == null) {
+            try {
+                dataSource = hostUnit.getUnitDataSourceFactory().newInstance(this);
+            } catch (NotAvailableException ex) {
+                // not all unit require a data source.
+            } catch (InstantiationException ex) {
+                throw new InvalidStateException("Could not bind datasource!", ex);
+            }
+        }
+
+        // activate datasource
+        if(dataSource != null) {
+            dataSource.activate();
+        }
+    }
+
+    @Override
+    public synchronized void deactivate() throws InterruptedException, CouldNotPerformException {
+        super.deactivate();
+
+        // deactivate data source
+        if(dataSource != null) {
+            dataSource.deactivate();
+        }
+    }
+
+    @Override
     public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
-        return operationServiceFactory;
+        return hostUnit.getOperationServiceFactory();
     }
 
     public HostUnit getHostUnit() {

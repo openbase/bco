@@ -24,6 +24,7 @@ package org.openbase.bco.dal.control.layer.unit.app;
 
 import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
@@ -95,6 +96,11 @@ public class AppManagerImpl implements AppManager, Launchable<Void>, VoidInitial
     @Override
     public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
         throw new NotAvailableException("OperationServiceFactory", new NotSupportedException("OperationServiceFactory", this));
+    }
+
+    @Override
+    public UnitDataSourceFactory getUnitDataSourceFactory() throws NotAvailableException {
+        throw new NotAvailableException("UnitDataSourceFactory", new NotSupportedException("UnitDataSourceFactory", this));
     }
 
     @Override

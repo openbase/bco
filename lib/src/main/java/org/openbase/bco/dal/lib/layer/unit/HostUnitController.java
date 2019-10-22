@@ -24,12 +24,13 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactoryProvider;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.List;
 
-public interface HostUnitController<D extends AbstractMessage, DB extends D.Builder<DB>> extends BaseUnitController<D, DB>, HostUnit<D>, OperationServiceFactoryProvider {
+public interface HostUnitController<D extends AbstractMessage, DB extends D.Builder<DB>> extends BaseUnitController<D, DB>, HostUnit<D>, OperationServiceFactoryProvider, UnitDataSourceFactoryProvider {
 
     UnitController<?, ?> getHostedUnitController(String id) throws NotAvailableException;
 

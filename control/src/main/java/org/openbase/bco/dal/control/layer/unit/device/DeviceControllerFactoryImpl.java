@@ -23,6 +23,7 @@ package org.openbase.bco.dal.control.layer.unit.device;
  */
 
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -34,14 +35,16 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 public class DeviceControllerFactoryImpl extends AbstractDeviceControllerFactory {
 
     private final OperationServiceFactory operationServiceFactory;
+    private final UnitDataSourceFactory unitDataSourceFactory;
 
-    public DeviceControllerFactoryImpl(final OperationServiceFactory operationServiceFactory) throws InstantiationException {
+    public DeviceControllerFactoryImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws InstantiationException {
         assert operationServiceFactory != null;
         this.operationServiceFactory = operationServiceFactory;
+        this.unitDataSourceFactory = unitDataSourceFactory;
     }
 
     @Override
     public DeviceController newInstance(final UnitConfig config) throws InstantiationException, InterruptedException {
-        return newInstance(config, operationServiceFactory);
+        return newInstance(config, operationServiceFactory, unitDataSourceFactory);
     }
 }

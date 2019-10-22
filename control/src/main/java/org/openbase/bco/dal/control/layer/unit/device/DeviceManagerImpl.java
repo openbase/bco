@@ -24,6 +24,7 @@ package org.openbase.bco.dal.control.layer.unit.device;
 
 import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
 import org.openbase.bco.dal.lib.layer.service.mock.OperationServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
@@ -33,10 +34,8 @@ import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
@@ -54,6 +53,7 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
     private final DeviceControllerFactory deviceControllerFactory;
     private final OperationServiceFactory operationServiceFactory;
+    private final UnitDataSourceFactory unitDataSourceFactory;
 
     private final UnitControllerRegistryImpl<DeviceController> deviceControllerRegistry;
     private final UnitControllerRegistryImpl<UnitController<?, ?>> unitControllerRegistry;
@@ -71,10 +71,14 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     }
 
     public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final boolean autoLogin) throws InstantiationException, InterruptedException {
-        this(operationServiceFactory, new DeviceControllerFactoryImpl(operationServiceFactory), autoLogin);
+        this(operationServiceFactory, null, autoLogin);
     }
 
-    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final DeviceControllerFactory deviceControllerFactory, final boolean autoLogin) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory, final boolean autoLogin) throws InstantiationException, InterruptedException {
+        this(operationServiceFactory, unitDataSourceFactory, new DeviceControllerFactoryImpl(operationServiceFactory, unitDataSourceFactory), autoLogin);
+    }
+
+    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory, final DeviceControllerFactory deviceControllerFactory, final boolean autoLogin) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             if(autoLogin) {
                 BCOLogin.getSession().loginBCOUser();
@@ -83,6 +87,7 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
             this.deviceControllerFactory = deviceControllerFactory;
             this.operationServiceFactory = operationServiceFactory;
+            this.unitDataSourceFactory = unitDataSourceFactory;
 
             this.unitControllerRegistry = new UnitControllerRegistryImpl<>();
             this.deviceControllerRegistry = new UnitControllerRegistryImpl<>();
@@ -151,6 +156,14 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     @Override
     public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
         return operationServiceFactory;
+    }
+
+    @Override
+    public UnitDataSourceFactory getUnitDataSourceFactory() throws NotAvailableException {
+        if (unitDataSourceFactory == null) {
+            throw new NotAvailableException("UnitDataSourceFactory", new NotSupportedException("UnitDataSource", this));
+        }
+        return unitDataSourceFactory;
     }
 
     @Override

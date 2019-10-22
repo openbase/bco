@@ -678,7 +678,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 userId = User.OTHER;
             }
 
-            if (userId != User.OTHER && Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(userId)) {
+            if (!userId.equals(User.OTHER) && Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(userId)) {
                 // user is an admin
                 return;
             }
@@ -851,6 +851,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // test if there is another action already in the list by the same initiator
                 try {
                     final ActionInitiator newInitiator = ActionDescriptionProcessor.getInitialInitiator(actionToSchedule.getActionDescription());
+
+                    logger.debug("schedule new incoming action: {}", MultiLanguageTextProcessor.getBestMatch(actionToSchedule.getActionDescription().getDescription(), "?"));
+
                     for (final SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
                         if (schedulableAction.isDone()) {
                             // skip actions which are done and remain on the stack for notification purposes
