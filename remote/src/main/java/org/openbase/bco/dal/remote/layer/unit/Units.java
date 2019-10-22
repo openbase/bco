@@ -246,7 +246,9 @@ public class Units {
                 UNIT_DIFF.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
             }
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
+            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
+            }
         }
     }
 
