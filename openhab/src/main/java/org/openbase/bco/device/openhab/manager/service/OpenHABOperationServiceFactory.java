@@ -41,7 +41,7 @@ public class OpenHABOperationServiceFactory implements OperationServiceFactory {
     }
 
     @Override
-    public <UNIT extends Unit> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
+    public <UNIT extends Unit<?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
         String serviceImplClassName = OpenHABService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(operationServiceType.name()) + "Impl";
         try {
             final Class<?> serviceImplClass = Class.forName(serviceImplClassName);
