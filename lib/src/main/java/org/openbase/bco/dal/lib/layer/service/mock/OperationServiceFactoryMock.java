@@ -70,7 +70,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
     }
 
     @Override
-    public <UNIT extends Unit> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
+    public <UNIT extends Unit<?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
         try {
             final Class<?> operationServiceClass = Services.loadOperationServiceClass(operationServiceType);
             String mockClassName = StringProcessor.transformUpperCaseToPascalCase(operationServiceType.name());
