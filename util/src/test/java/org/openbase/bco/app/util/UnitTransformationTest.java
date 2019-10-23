@@ -96,7 +96,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
 
             Assert.assertEquals("Positions are not synchronized!", lightUnitConfig.getPlacementConfig().getPose(), hostUnitConfig.getPlacementConfig().getPose());
             Assert.assertNotEquals("TransformationFrameId are not unique!", lightUnitConfig.getPlacementConfig().getTransformationFrameId(), hostUnitConfig.getPlacementConfig().getTransformationFrameId());
-            Assert.assertEquals("Transformations are not synchronized!", Units.getRootToUnitTransformationFuture(lightUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), Units.getRootToUnitTransformationFuture(hostUnitConfig).get(5, TimeUnit.SECONDS).getTransform());
+            Assert.assertEquals("Transformations are not synchronized!", Units.getRootToUnitTransformation(lightUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), Units.getRootToUnitTransformation(hostUnitConfig).get(5, TimeUnit.SECONDS).getTransform());
 
             // verify that all other unit transformations are available
             verifyTransformations();
@@ -122,10 +122,10 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
                 // request new transformation...
                 try {
 //                    System.out.println("waiting for transformation of " + unitConfig.getLabel());
-                    Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
+                    Units.getRootToUnitTransformation(unitConfig).get(5000, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException ex) {
                     LOGGER.error("transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " NOT AVAILABLE!");
-                    Units.getRootToUnitTransformationFuture(unitConfig).get();
+                    Units.getRootToUnitTransformation(unitConfig).get();
                 }
 
 //                System.out.println("transformation of" + LabelProcessor.getBestMatch(unitConfig.getLabel())+ " is available.");
@@ -156,10 +156,10 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             // request new transformation...
             try {
                 // System.out.println("waiting for transformation of " + unitConfig.getLabel());
-                Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
+                Units.getRootToUnitTransformation(unitConfig).get(5000, TimeUnit.MILLISECONDS);
             } catch (TimeoutException ex) {
                 LOGGER.error("transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " NOT AVAILABLE!");
-                Units.getRootToUnitTransformationFuture(unitConfig).get();
+                Units.getRootToUnitTransformation(unitConfig).get();
             }
         }
     }
