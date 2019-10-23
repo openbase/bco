@@ -71,11 +71,12 @@ public class UserUnitLabelConsistencyHandler extends DefaultUnitLabelConsistency
      * Return the label to make sure user label are unique.
      *
      * @param label      the label for which the key is generated
+     * @param languageKey the language key of the label.
      * @param unitConfig the unit having the label
      * @return the label
      */
     @Override
-    protected String generateKey(String label, UnitConfig unitConfig) {
-        return label;
+    protected String generateKey(String label, final String languageKey, UnitConfig unitConfig) {
+        return label + "_" + languageKey;
     }
 }

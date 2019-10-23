@@ -130,12 +130,14 @@ public class DalUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyH
     /**
      * Make sure that the label is unique per unit type and per location.
      *
-     * @param label      the label for which the key is generated
-     * @param unitConfig the unit having the label
+     * @param label       the label for which the key is generated
+     * @param languageKey the language key of the label.
+     * @param unitConfig  the unit having the label
+     *
      * @return a key unique per unit type per location
      */
     @Override
-    protected String generateKey(String label, UnitConfig unitConfig) {
-        return label + unitConfig.getUnitType().name() + unitConfig.getPlacementConfig().getLocationId();
+    protected String generateKey(final String label, final String languageKey, final UnitConfig unitConfig) {
+        return label + "_" + languageKey + "_" + unitConfig.getUnitType().name() + "_" + unitConfig.getPlacementConfig().getLocationId();
     }
 }

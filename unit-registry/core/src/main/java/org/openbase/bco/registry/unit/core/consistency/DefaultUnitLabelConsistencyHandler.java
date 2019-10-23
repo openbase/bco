@@ -77,7 +77,7 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
         // check if every label of this unit are unique for its location
         for (Label.MapFieldEntry mapEntry : unitConfig.getLabel().getEntryList()) {
             for (final String label : mapEntry.getValueList()) {
-                final String key = generateKey(label, unitConfig);
+                final String key = generateKey(label, mapEntry.getKey(), unitConfig);
 
                 if (unitMap.containsKey(key)) {
                     final String typeName = StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name());
@@ -99,7 +99,9 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
      * It can be overwritten by sub classes to generate different default label.
      *
      * @param unitConfig the unit config for which a label is generated
+     *
      * @return a default label
+     *
      * @throws CouldNotPerformException if no alias is available
      */
     protected String generateDefaultLabel(final UnitConfig unitConfig) throws CouldNotPerformException {
@@ -116,12 +118,14 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
      * exists only once per location.
      * This method can be overwritten by sub classes to guarantee other things.
      *
-     * @param label      the label for which the key is generated
-     * @param unitConfig the unit having the label
+     * @param label       the label for which the key is generated
+     * @param languageKey the language key of the label.
+     * @param unitConfig  the unit having the label
+     *
      * @return a key for this label and unit
      */
-    protected String generateKey(final String label, final UnitConfig unitConfig) {
-        return label + unitConfig.getPlacementConfig().getLocationId();
+    protected String generateKey(final String label, final String languageKey, final UnitConfig unitConfig) {
+        return label + "_" + languageKey + "_" + unitConfig.getPlacementConfig().getLocationId();
     }
 
     @Override
