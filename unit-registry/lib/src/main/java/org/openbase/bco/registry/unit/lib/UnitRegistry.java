@@ -35,14 +35,15 @@ import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderReg
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RegistryService;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -69,8 +70,11 @@ import javax.vecmath.Point3d;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable, RegistryService {
+
+    long RCT_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
     /**
      * This alias can be used for fast lookups of the admin authorization group.
@@ -923,24 +927,8 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     @RPCMethod
     Boolean isObjectUnitRegistryConsistent();
 
-    default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException {
-        return getUnitConfigsByCoordinate(coordinate, DEFAULT_RADIUS, UnitType.UNKNOWN);
-    }
-
-    /**
-     * Returns all units which are placed within the sphere which center is defined by the given {@code coordinate} and the size defined by the {@code radius}.
-     *
-     * @param coordinate the center of the sphere.
-     * @param radius     the radius of the sphere.
-     *
-     * @return all units placed in the sphere.
-     *
-     * @throws CouldNotPerformException thrown if the computation fails.
-     * @deprecated since 2.0 and will be removed in 3.0: please use getUnitConfigsByCoordinateAndRadius(...) instead.
-     */
-    @Deprecated
-    default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius) throws CouldNotPerformException {
-        return getUnitConfigsByCoordinateAndRadius(coordinate, radius);
+    default Future<List<UnitConfig>> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) {
+        return getUnitConfigsByCoordinateAndRadiusAndUnitType(coordinate, DEFAULT_RADIUS, UnitType.UNKNOWN);
     }
 
     /**
@@ -950,31 +938,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param radius     the radius of the sphere.
      *
      * @return all units included in the sphere.
-     *
-     * @throws CouldNotPerformException thrown if the computation fails.
      */
-    default List<UnitConfig> getUnitConfigsByCoordinateAndRadius(final Vec3DDouble coordinate, final double radius) throws CouldNotPerformException {
-        return getUnitConfigsByCoordinate(coordinate, radius, UnitType.UNKNOWN);
-    }
-
-    /**
-     * Method detects Returns all units which are placed within the sphere which center is defined by the given {@code coordinate} and the size defined by the {@code radius}.
-     * Method returns a list of {@code UnitConfig} instances sorted by the distance to the given {@code coordinate} starting with the lowest one.
-     * The lookup time can be reduced by filtering the results with a {@code UnitType} where the {@code UnitType.UNKNOWN} is used as wildcard.
-     * The given radius can be used to limit the result as well but will not speed up the lookup.
-     *
-     * @param coordinate
-     * @param radius
-     * @param unitType
-     *
-     * @return
-     *
-     * @throws CouldNotPerformException
-     * @deprecated since 2.0 and will be removed in 3.0: please use getUnitConfigsByCoordinateAndRadiusAndUnitType(...) instead.
-     */
-    @Deprecated
-    default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius, final UnitType unitType) throws CouldNotPerformException {
-        return getUnitConfigsByCoordinateAndRadiusAndUnitType(coordinate, radius, unitType);
+    default Future<List<UnitConfig>> getUnitConfigsByCoordinateAndRadius(final Vec3DDouble coordinate, final double radius) {
+        return getUnitConfigsByCoordinateAndRadiusAndUnitType(coordinate, radius, UnitType.UNKNOWN);
     }
 
     /**
@@ -987,23 +953,24 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param unitType   filter lets only pass units of this declared type.
      *
      * @return all units placed in the sphere.
-     *
-     * @throws CouldNotPerformException thrown if the computation fails.
      */
-    default List<UnitConfig> getUnitConfigsByCoordinateAndRadiusAndUnitType(final Vec3DDouble coordinate, final double radius, final UnitType unitType) throws CouldNotPerformException {
+    default Future<List<UnitConfig>> getUnitConfigsByCoordinateAndRadiusAndUnitType(final Vec3DDouble coordinate, final double radius, final UnitType unitType) {
 
-        // init
-        TreeMap<Double, UnitConfig> result = new TreeMap<>();
-        final Point3d unitPosition = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+        return GlobalCachedExecutorService.submit(() -> {
 
-        // lookup distances
-        for (final UnitConfig unitConfig : getUnitConfigsByUnitType(unitType)) {
-            final double distance = unitPosition.distance(getUnitPositionGlobalPoint3d(unitConfig));
-            if (distance <= radius) {
-                result.put(radius, unitConfig);
+            // init
+            TreeMap<Double, UnitConfig> result = new TreeMap<>();
+            final Point3d unitPosition = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+
+            // lookup distances
+            for (final UnitConfig unitConfig : getUnitConfigsByUnitType(unitType)) {
+                final double distance = unitPosition.distance(getUnitPositionGlobalPoint3d(unitConfig).get(RCT_TIMEOUT, TimeUnit.MILLISECONDS));
+                if (distance <= radius) {
+                    result.put(radius, unitConfig);
+                }
             }
-        }
-        return new ArrayList<>(result.values());
+            return new ArrayList<>(result.values());
+        });
     }
 
     /**
@@ -1070,11 +1037,8 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param coordinate the coordinate for which it is checked if it is inside a location.
      *
      * @return a list of the requested unit configs sorted by location type.
-     *
-     * @throws CouldNotPerformException       is thrown if the request fails.
-     * @throws java.lang.InterruptedException is thrown if the process is interrupted
      */
-    default List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException, InterruptedException {
+    default Future<List<UnitConfig>> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate) {
         return getLocationUnitConfigsByCoordinateAndLocationType(coordinate, LocationType.UNKNOWN);
     }
 
@@ -1087,105 +1051,86 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param coordinate   the coordinate for which it is checked if it is inside a location
      * @param locationType the type of locations checked, unknown means all locations
      *
-     * @return a list of the requested unit configs sorted by location type
-     *
-     * @throws CouldNotPerformException       is thrown if the request fails.
-     * @throws java.lang.InterruptedException is thrown if the process is interrupted
-     * @deprecated since 2.0 and will be removed in 3.0: please use getLocationUnitConfigsByCoordinateAndLocationType(...) instead.
+     * @return a future of a list of the requested unit configs sorted by location type
      */
-    @Deprecated
-    default List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate, final LocationType locationType) throws CouldNotPerformException, InterruptedException {
-        return getLocationUnitConfigsByCoordinateAndLocationType(coordinate, locationType);
-    }
+    default Future<List<UnitConfig>> getLocationUnitConfigsByCoordinateAndLocationType(final Vec3DDouble coordinate, final LocationType locationType) {
 
-    /**
-     * Method returns all the locations which contain the given coordinate and
-     * belong to the given location type.
-     * In case the location type is unknown all locations are considered and the resulting
-     * list is sorted so that regions are in the front followed by a tile and zones.
-     *
-     * @param coordinate   the coordinate for which it is checked if it is inside a location
-     * @param locationType the type of locations checked, unknown means all locations
-     *
-     * @return a list of the requested unit configs sorted by location type
-     *
-     * @throws CouldNotPerformException       is thrown if the request fails.
-     * @throws java.lang.InterruptedException is thrown if the process is interrupted
-     */
-    default List<UnitConfig> getLocationUnitConfigsByCoordinateAndLocationType(final Vec3DDouble coordinate, final LocationType locationType) throws CouldNotPerformException, InterruptedException {
-        validateData();
-        List<UnitConfig> result = new ArrayList<>();
+        return GlobalCachedExecutorService.submit(() -> {
 
-        try {
-            for (UnitConfig locationUnitConfig : getUnitConfigsByUnitType(UnitType.LOCATION)) {
-                // Check if the unit meets the requirements of the filter
-                if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(locationUnitConfig.getLocationConfig().getLocationType())) {
-                    continue;
+            validateData();
+            List<UnitConfig> result = new ArrayList<>();
+
+            try {
+                for (UnitConfig locationUnitConfig : getUnitConfigsByUnitType(UnitType.LOCATION)) {
+                    // Check if the unit meets the requirements of the filter
+                    if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(locationUnitConfig.getLocationConfig().getLocationType())) {
+                        continue;
+                    }
+
+                    // Get the shape of the floor
+                    List<Vec3DDoubleType.Vec3DDouble> floorList = locationUnitConfig.getPlacementConfig().getShape().getFloorList();
+
+                    // Convert the shape into a PolygonsSet
+                    List<Vector2D> vertices = new ArrayList<>();
+                    for (Vec3DDouble vec3DDouble : floorList) {
+                        Vector2D vector2D = new Vector2D(vec3DDouble.getX(), vec3DDouble.getY());
+                        vertices.add(vector2D);
+                    }
+                    PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
+
+                    // Transform the given coordinate
+                    Transform3D unitTransform = getRootToUnitTransformation(locationUnitConfig).get(RCT_TIMEOUT, TimeUnit.MILLISECONDS).getTransform();
+                    Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+                    unitTransform.transform(transformedCoordinate);
+
+                    // NOTE: Hence apache-math builds its polygons counter clockwise unlike bco, the resulting polygon is inverted.
+                    // Therefore we check whether the point lies on the outside of the polygon.
+                    if (polygonsSet.checkPoint(new Vector2D(transformedCoordinate.x, transformedCoordinate.y)) == Location.OUTSIDE) {
+                        result.add(locationUnitConfig);
+                    }
                 }
-
-                // Get the shape of the floor
-                List<Vec3DDoubleType.Vec3DDouble> floorList = locationUnitConfig.getPlacementConfig().getShape().getFloorList();
-
-                // Convert the shape into a PolygonsSet
-                List<Vector2D> vertices = new ArrayList<>();
-                for (Vec3DDouble vec3DDouble : floorList) {
-                    Vector2D vector2D = new Vector2D(vec3DDouble.getX(), vec3DDouble.getY());
-                    vertices.add(vector2D);
-                }
-                PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
-
-                // Transform the given coordinate
-                Transform3D unitTransform = getRootToUnitTransformationFuture(locationUnitConfig).get().getTransform();
-                Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
-                unitTransform.transform(transformedCoordinate);
-
-                // NOTE: Hence apache-math builds its polygons counter clockwise unlike bco, the resulting polygon is inverted.
-                // Therefore we check whether the point lies on the outside of the polygon.
-                if (polygonsSet.checkPoint(new Vector2D(transformedCoordinate.x, transformedCoordinate.y)) == Location.OUTSIDE) {
-                    result.add(locationUnitConfig);
-                }
+            } catch (ExecutionException | TimeoutException ex) {
+                throw new CouldNotPerformException("Could not resolve location configs by coordinate", ex);
             }
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not resolve location configs by coordinate", ex);
-        }
 
-        if (locationType == LocationType.UNKNOWN) {
-            Collections.sort(result, (o1, o2) -> {
-                switch (o1.getLocationConfig().getLocationType()) {
-                    case REGION:
-                        switch (o2.getLocationConfig().getLocationType()) {
-                            case REGION:
-                                return 0;
-                            default:
-                                // o1 is smaller than o2
-                                return -1;
-                        }
-                    case TILE:
-                        switch (o2.getLocationConfig().getLocationType()) {
-                            case REGION:
-                                // o1 is bigger than o2
-                                return 1;
-                            case TILE:
-                                return 0;
-                            case ZONE:
-                                // o1 is smaller than o2
-                                return -1;
-                        }
-                    case ZONE:
-                        switch (o2.getLocationConfig().getLocationType()) {
-                            case REGION:
-                            case TILE:
-                                return 1;
-                            case ZONE:
-                                return 0;
-                        }
-                }
-                // location type is unknown so move to the end
-                return 1;
-            });
-        }
+            if (locationType == LocationType.UNKNOWN) {
+                Collections.sort(result, (o1, o2) -> {
+                    switch (o1.getLocationConfig().getLocationType()) {
+                        case REGION:
+                            switch (o2.getLocationConfig().getLocationType()) {
+                                case REGION:
+                                    return 0;
+                                default:
+                                    // o1 is smaller than o2
+                                    return -1;
+                            }
+                        case TILE:
+                            switch (o2.getLocationConfig().getLocationType()) {
+                                case REGION:
+                                    // o1 is bigger than o2
+                                    return 1;
+                                case TILE:
+                                    return 0;
+                                case ZONE:
+                                    // o1 is smaller than o2
+                                    return -1;
+                            }
+                        case ZONE:
+                            switch (o2.getLocationConfig().getLocationType()) {
+                                case REGION:
+                                case TILE:
+                                    return 1;
+                                case ZONE:
+                                    return 0;
+                            }
+                    }
+                    // location type is unknown so move to the end
+                    return 1;
+                });
+            }
 
-        return result;
+            return result;
+        });
     }
 
     /**
@@ -1287,25 +1232,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     default List<UnitConfig> getUnitConfigsByLocationIdAndUnitType(final String locationId, final UnitType unitType) throws CouldNotPerformException {
         return getUnitConfigsByLocationIdAndUnitTypeRecursive(locationId, unitType, true);
-    }
-
-    /**
-     * Method returns all unit configurations which are direct related to the given location id and an
-     * instance of the given unit type. If the unit type is unknown or location, all child locations of the provided
-     * locations are resolved. In case the {@code recursive} flag is set to true than recursive related units are included as well.
-     *
-     * @param unitType   the unit type after which unit configs are filtered.
-     * @param locationId the location inside which unit configs are resolved.
-     * @param recursive  defines if recursive related unit should be included as well.
-     *
-     * @return A collection of unit configs.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
-     * @deprecated since 2.0 and will be removed in 3.0: please use getUnitConfigsByCoordinateAndRadiusAndUnitType(...) instead.
-     */
-    @Deprecated
-    default List<UnitConfig> getUnitConfigsByLocation(final UnitType unitType, final String locationId, final boolean recursive) throws CouldNotPerformException {
-        return getUnitConfigsByLocationIdAndUnitTypeRecursive(locationId, unitType, recursive);
     }
 
     /**
