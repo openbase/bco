@@ -327,9 +327,9 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      *
      * @return a transformation future
      */
-    default Future<Transform> getRootToUnitTransformationFuture() {
+    default Future<Transform> getRootToUnitTransformation() {
         try {
-            return Registries.getUnitRegistry().getRootToUnitTransformationFuture(getConfig());
+            return Registries.getUnitRegistry().getRootToUnitTransformation(getConfig());
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
@@ -340,41 +340,11 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      *
      * @return a transformation future
      */
-    default Future<Transform> getUnitToRootTransformationFuture() {
-        try {
-            return Registries.getUnitRegistry().getUnitToRootTransformationFuture(getConfig());
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
-        }
-    }
-
-    /**
-     * Method returns the transformation leading from the root location to this unit.
-     *
-     * @return the transformation
-     *
-     * @throws org.openbase.jul.exception.NotAvailableException
-     */
-    default Transform getRootToUnitTransformation() throws NotAvailableException {
-        try {
-            return Registries.getUnitRegistry().getRootToUnitTransformation(getConfig());
-        } catch (final CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTransformation", ex);
-        }
-    }
-
-    /**
-     * Method returns the transformation leading from the unit to the root location.
-     *
-     * @return the transformation
-     *
-     * @throws org.openbase.jul.exception.NotAvailableException
-     */
-    default Transform getUnitToRootTransformation() throws NotAvailableException {
+    default Future<Transform> getUnitToRootTransformation() {
         try {
             return Registries.getUnitRegistry().getUnitToRootTransformation(getConfig());
-        } catch (final CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTransformation", ex);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
     }
 
@@ -382,14 +352,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * Gets the Transform3D of the transformation from root to unit coordinate system.
      *
      * @return transform relative to root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default Transform3D getRootToUnitTransform3D() throws NotAvailableException {
+    default Future<Transform3D> getRootToUnitTransform3D() {
         try {
             return Registries.getUnitRegistry().getRootToUnitTransform3D(getConfig());
         } catch (final CouldNotPerformException ex) {
-            throw new NotAvailableException("Transform3D", ex);
+            return FutureProcessor.canceledFuture(new NotAvailableException("Transform3D", ex));
         }
     }
 
@@ -399,14 +367,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * and thereby the inverse transformation to the one returned by getTransform3D().
      *
      * @return transform relative to root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default Transform3D getUnitToRootTransform3D() throws NotAvailableException {
+    default Future<Transform3D> getUnitToRootTransform3D() {
         try {
             return Registries.getUnitRegistry().getUnitToRootTransform3D(getConfig());
         } catch (NotAvailableException ex) {
-            throw new NotAvailableException("Transform3Dinverse", ex);
+            return FutureProcessor.canceledFuture(new NotAvailableException("Transform3Dinverse", ex));
         }
     }
 
@@ -414,14 +380,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * Gets the position of the unit relative to the root location as a Point3d object.
      *
      * @return position relative to the root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default Point3d getUnitPositionGlobalPoint3d() throws NotAvailableException {
+    default Future<Point3d> getUnitPositionGlobalPoint3d() {
         try {
             return Registries.getUnitRegistry().getUnitPositionGlobalPoint3d(getConfig());
         } catch (NotAvailableException ex) {
-            throw new NotAvailableException("GlobalPositionVector", ex);
+            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalPositionVector", ex));
         }
     }
 
@@ -429,14 +393,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * Gets the position of the unit relative to the root location as a Translation object.
      *
      * @return position relative to the root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default Translation getUnitPositionGlobal() throws NotAvailableException {
+    default Future<Translation> getUnitPositionGlobal() {
         try {
             return Registries.getUnitRegistry().getUnitPositionGlobal(getConfig());
         } catch (NotAvailableException ex) {
-            throw new NotAvailableException("GlobalPosition", ex);
+            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalPosition", ex));
         }
     }
 
@@ -444,14 +406,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * Gets the rotation of the unit relative to the root location as a Quat4d object.
      *
      * @return rotation relative to the root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default Quat4d getUnitRotationGlobalQuat4d() throws NotAvailableException {
+    default Future<Quat4d> getUnitRotationGlobalQuat4d() {
         try {
             return Registries.getUnitRegistry().getUnitRotationGlobalQuat4d(getConfig());
         } catch (final NotAvailableException ex) {
-            throw new NotAvailableException("GlobalRotationQuat", ex);
+            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalRotationQuat", ex));
         }
     }
 
@@ -459,14 +419,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * Gets the rotation of the unit relative to the root location as a Rotation object.
      *
      * @return rotation relative to the root location
-     *
-     * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default Rotation getUnitRotationGlobal() throws NotAvailableException {
+    default Future<Rotation> getUnitRotationGlobal() {
         try {
             return Registries.getUnitRegistry().getUnitRotationGlobal(getConfig());
         } catch (final NotAvailableException ex) {
-            throw new NotAvailableException("GlobalRotation", ex);
+            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalRotation", ex));
         }
     }
 
@@ -485,14 +443,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * Gets the center coordinates of this unit's BoundingBox in the coordinate system of the root location as a Point3d object.
      *
      * @return center coordinates of this unit's BoundingBox relative to root location
-     *
-     * @throws NotAvailableException is thrown if the center can not be calculate.
      */
-    default Point3d getUnitBoundingBoxCenterGlobalPoint3d() throws NotAvailableException {
+    default Future<Point3d> getUnitBoundingBoxCenterGlobalPoint3d() {
         try {
             return Registries.getUnitRegistry().getUnitBoundingBoxCenterGlobalPoint3d(getConfig());
         } catch (NotAvailableException ex) {
-            throw new NotAvailableException("GlobalBoundingBoxCenter", ex);
+            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalBoundingBoxCenter", ex));
         }
     }
 

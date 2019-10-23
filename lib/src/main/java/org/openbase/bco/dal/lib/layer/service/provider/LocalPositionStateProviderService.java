@@ -23,10 +23,12 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.LocalPositionStateType.LocalPositionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -34,6 +36,9 @@ import org.openbase.type.geometry.TranslationType.Translation;
 import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -59,7 +64,7 @@ public interface LocalPositionStateProviderService extends ProviderService {
             final Vec3DDouble vec3DDouble = Vec3DDouble.newBuilder().setX(translation.getX()).setY(translation.getY()).setZ(translation.getZ()).build();
             try {
                 // retrieve location list sorted by location type
-                List<UnitConfig> locationUnitConfigsByCoordinate = Registries.getUnitRegistry().getLocationUnitConfigsByCoordinate(vec3DDouble);
+                List<UnitConfig> locationUnitConfigsByCoordinate = Registries.getUnitRegistry().getLocationUnitConfigsByCoordinate(vec3DDouble).get(UnitRegistry.RCT_TIMEOUT, TimeUnit.MILLISECONDS);
                 // if the list is empty the position is invalid so trigger a verification fail
                 if (locationUnitConfigsByCoordinate.isEmpty()) {
                     throw new NotAvailableException("Locations for position[" + vec3DDouble + "]");
@@ -68,7 +73,7 @@ public interface LocalPositionStateProviderService extends ProviderService {
                 for (final UnitConfig locationUnitConfig : locationUnitConfigsByCoordinate) {
                     builder.addLocationId(locationUnitConfig.getId());
                 }
-            } catch (CouldNotPerformException ex) {
+            } catch (CouldNotPerformException | TimeoutException | ExecutionException ex) {
                 throw new VerificationFailedException("Could not find location ids for position", ex);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();

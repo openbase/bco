@@ -1428,11 +1428,11 @@ public class Units {
      *
      * @return a transformation future
      */
-    public static Future<Transform> getUnitToRootTransformationFuture(final UnitConfig unitConfig) {
+    public static Future<Transform> getUnitToRootTransformation(final UnitConfig unitConfig) {
         final Future<UnitRegistryData> dataFuture;
         try {
             dataFuture = Registries.getUnitRegistry().getDataFuture();
-            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitToRootTransformationFuture(unitConfig), dataFuture);
+            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitToRootTransformation(unitConfig), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1445,11 +1445,11 @@ public class Units {
      *
      * @return a transformation future
      */
-    public static Future<Transform> getRootToUnitTransformationFuture(final UnitConfig unitConfig) {
+    public static Future<Transform> getRootToUnitTransformation(final UnitConfig unitConfig) {
         final Future<UnitRegistryData> dataFuture;
         try {
             dataFuture = Registries.getUnitRegistry().getDataFuture();
-            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
+            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getRootToUnitTransformation(unitConfig), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1464,11 +1464,11 @@ public class Units {
      *
      * @return a transformation future
      */
-    public static Future<Transform> getUnitTransformationFuture(final UnitConfig unitConfigA, final UnitConfig unitConfigB) {
+    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) {
         final Future<UnitRegistryData> dataFuture;
         try {
             dataFuture = Registries.getUnitRegistry().getDataFuture();
-            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
+            return FutureProcessor.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformation(unitConfigA, unitConfigB), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
