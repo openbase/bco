@@ -94,7 +94,7 @@ public class BCORegistryPrinter {
         // prepare services
         for (ServiceType serviceType : ServiceType.values()) {
             maxUnitLabelLength = Math.max(maxUnitLabelLength, serviceType.name().length());
-            int servicesPerType = Registries.getUnitRegistry().getServiceConfigs(serviceType).size();
+            int servicesPerType = Registries.getUnitRegistry().getServiceConfigsByServiceType(serviceType).size();
             serviceNumberByTypeMap.put(serviceType, servicesPerType);
         }
 
