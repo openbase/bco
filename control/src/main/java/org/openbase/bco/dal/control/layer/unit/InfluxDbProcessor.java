@@ -29,6 +29,7 @@ import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.QueryApi;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import com.sun.tools.jdi.LockObject;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -39,6 +40,7 @@ import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.domotic.database.QueryType;
 import org.openbase.type.domotic.database.RecordCollectionType;
@@ -199,6 +201,9 @@ public class InfluxDbProcessor {
         return influxDbOrg;
     }
 
+    private static final SyncObject queryLock = new SyncObject("QueryLock");
+    private transient static boolean queryInProgress = false;
+
     /**
      * Creates a connection to the influxdb and sends a query.
      *
@@ -209,19 +214,28 @@ public class InfluxDbProcessor {
      * @throws CouldNotPerformException
      */
     private static List<FluxTable> sendQuery(final String query) throws CouldNotPerformException {
+        if (queryInProgress) {
+            throw new CouldNotPerformException("No many queries at once, skip to avoid DOS.");
+        }
+        synchronized (queryLock) {
+            try {
+                queryInProgress = true;
+                try (InfluxDBClient influxDBClient = InfluxDBClientFactory
+                        .create(getInfluxdbUrl() + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", getInfluxdbToken())) {
 
-        try (InfluxDBClient influxDBClient = InfluxDBClientFactory
-                .create(getInfluxdbUrl() + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", getInfluxdbToken())) {
-
-            if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
-                throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
+                    if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
+                        throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
+                    }
+                    return influxDBClient.getQueryApi().query(query, getInfluxdbOrg());
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
+                } catch (Exception ex) {
+                    throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
+                }
+            } finally {
+                queryInProgress = false;
             }
-            return influxDBClient.getQueryApi().query(query, getInfluxdbOrg());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
         }
     }
 
