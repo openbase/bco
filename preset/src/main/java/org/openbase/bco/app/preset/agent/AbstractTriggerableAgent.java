@@ -22,10 +22,7 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.control.layer.unit.agent.AbstractAgentController;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -161,19 +158,8 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.debug("Activating [{}]", LabelProcessor.getBestMatch(getConfig().getLabel()));
-
-        // do not activate agents that need the resource allocation to work properly if the resource allocation is turned off
-        try {
-            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
-                logger.warn("Skip activation of agent [" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "] because unit allocation is disabled.");
-                return activationState.getResponsibleAction();
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
-        }
         activationTriggerPool.activate();
         deactivationTriggerPool.activate();
-
         return activationState.getResponsibleAction();
     }
 
