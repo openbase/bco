@@ -25,7 +25,6 @@ package org.openbase.bco.app.preset.agent;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.Test;
 import org.openbase.bco.dal.control.layer.unit.LightSensorController;
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.lib.layer.unit.LightSensor;
 import org.openbase.bco.dal.remote.action.RemoteAction;

@@ -24,7 +24,6 @@ package org.openbase.bco.app.preset.agent;
 import org.junit.Test;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.openbase.bco.dal.control.layer.unit.SmokeDetectorController;
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.RollerShutterRemote;
 import org.openbase.bco.dal.remote.layer.unit.SmokeDetectorRemote;
@@ -33,8 +32,6 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.state.BlindStateType.BlindState.State;
@@ -71,19 +68,10 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
      */
     @Test(timeout = 10000)
     public void testFireAlarmAgent() throws Exception {
-        // TODO: turn back on when resource allocation is integrated for unit tests
-        try {
-            if (!JPService.getProperty(JPUnitAllocation.class).getValue()) {
-                return;
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
-        }
-
         System.out.println("testFireAlarmAgent");
 
         // It can take some time until the execute() method of the agent has finished
-        // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
+        // TODO: enable to access controller instances via remoteRegistry to check and wait for the execution of the agent
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
