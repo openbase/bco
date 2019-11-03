@@ -338,27 +338,27 @@ public class ActionDescriptionProcessor {
      * @throws CouldNotPerformException is thrown if the passed action parameter are invalid, e.g. if the service description is missing.
      */
     public static ActionDescription.Builder generateActionDescriptionBuilder(ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescription.newBuilder();
+        ActionDescription.Builder actionDescriptionBuilder = ActionDescription.newBuilder();
 
         // validate
         actionParameter = verifyActionParameter(actionParameter);
 
         // add values from ActionParameter
-        actionDescription.addAllCategory(actionParameter.getCategoryList());
-        actionDescription.setLabel(actionParameter.getLabel());
-        actionDescription.setActionInitiator(actionParameter.getActionInitiator());
-        actionDescription.setServiceStateDescription(actionParameter.getServiceStateDescription());
-        actionDescription.setExecutionTimePeriod(actionParameter.getExecutionTimePeriod());
-        actionDescription.setPriority(actionParameter.getPriority());
-        actionDescription.setInterruptible(actionParameter.getInterruptible());
-        actionDescription.setSchedulable(actionParameter.getSchedulable());
+        actionDescriptionBuilder.addAllCategory(actionParameter.getCategoryList());
+        actionDescriptionBuilder.setLabel(actionParameter.getLabel());
+        actionDescriptionBuilder.setActionInitiator(actionParameter.getActionInitiator());
+        actionDescriptionBuilder.setServiceStateDescription(actionParameter.getServiceStateDescription());
+        actionDescriptionBuilder.setExecutionTimePeriod(actionParameter.getExecutionTimePeriod());
+        actionDescriptionBuilder.setPriority(actionParameter.getPriority());
+        actionDescriptionBuilder.setInterruptible(actionParameter.getInterruptible());
+        actionDescriptionBuilder.setSchedulable(actionParameter.getSchedulable());
 
         // if an initiator action is defined in ActionParameter the actionChain is updated
         if (actionParameter.hasCause()) {
-            updateActionCause(actionDescription, actionParameter.getCause());
+            updateActionCause(actionDescriptionBuilder, actionParameter.getCause());
         }
 
-        return actionDescription;
+        return actionDescriptionBuilder;
     }
 
     public static <AP extends ActionParameterOrBuilder> AP verifyActionParameter(final AP actionParameterOrBuilder) throws VerificationFailedException {
@@ -489,20 +489,32 @@ public class ActionDescriptionProcessor {
      *
      * @throws CouldNotPerformException if preparing fails.
      */
-    public static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final Unit unit) throws CouldNotPerformException {
-        prepare(actionDescriptionBuilder, unit, JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName()));
+    public static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final Unit<?> unit) throws CouldNotPerformException {
+        prepare(actionDescriptionBuilder, unit.getConfig(), JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName()));
     }
 
     /**
      * Prepare an action description. This sets the timestamp, the action initiator type, the id, labels and descriptions.
      *
      * @param actionDescriptionBuilder the action description builder which is prepared.
-     * @param unit                     the unit on which the action description is applied.
+     * @param unitConfig               the config of the unit on which the action description is applied.
+     *
+     * @throws CouldNotPerformException if preparing fails.
+     */
+    public static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final UnitConfig unitConfig) throws CouldNotPerformException {
+        prepare(actionDescriptionBuilder, unitConfig, JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName()));
+    }
+
+    /**
+     * Prepare an action description. This sets the timestamp, the action initiator type, the id, labels and descriptions.
+     *
+     * @param actionDescriptionBuilder the action description builder which is prepared.
+     * @param unitConfig               the config of the unit on which the action description is applied.
      * @param serviceState             the de-serialized service state as contained in the action description.
      *
      * @throws CouldNotPerformException if preparing fails.
      */
-    private static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final Unit unit, final Message serviceState) throws CouldNotPerformException {
+    private static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final UnitConfig unitConfig, final Message serviceState) throws CouldNotPerformException {
 
         // setup creation time
         TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
@@ -547,7 +559,7 @@ public class ActionDescriptionProcessor {
         LabelProcessor.addLabel(actionDescriptionBuilder.getLabelBuilder(), Locale.ENGLISH, GENERIC_ACTION_LABEL);
 
         // generate or update action description
-        generateDescription(actionDescriptionBuilder, serviceState, unit);
+        generateDescription(actionDescriptionBuilder, serviceState, unitConfig);
     }
 
     /**
@@ -697,7 +709,7 @@ public class ActionDescriptionProcessor {
      *
      * @throws VerificationFailedException if verifying the action description failed.
      */
-    public static Message verifyActionDescription(final ActionDescriptionOrBuilder actionDescription, final Unit unit) throws VerificationFailedException {
+    public static Message verifyActionDescription(final ActionDescriptionOrBuilder actionDescription, final Unit<?> unit) throws VerificationFailedException {
         ActionDescription.Builder actionDescriptionBuilder;
         if (actionDescription instanceof ActionDescription.Builder) {
             actionDescriptionBuilder = (ActionDescription.Builder) actionDescription;
@@ -708,7 +720,29 @@ public class ActionDescriptionProcessor {
     }
 
     /**
-     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, Unit, Message)}
+     * Verify an action description. This triggers an internal call to {@link #verifyActionDescription(Builder, UnitConfig, boolean)}
+     * with prepare set to false.
+     *
+     * @param actionDescription the action description which is verified.
+     * @param unitConfig        the config of the unit on which the action description is applied.
+     *
+     * @return a de-serialized and updated service state.
+     *
+     * @throws VerificationFailedException if verifying the action description failed.
+     */
+    public static Message verifyActionDescription(final ActionDescriptionOrBuilder actionDescription, final UnitConfig unitConfig) throws VerificationFailedException {
+        ActionDescription.Builder actionDescriptionBuilder;
+        if (actionDescription instanceof ActionDescription.Builder) {
+            actionDescriptionBuilder = (ActionDescription.Builder) actionDescription;
+        } else {
+            actionDescriptionBuilder = ((ActionDescription) actionDescription).toBuilder();
+        }
+        return verifyActionDescription(actionDescriptionBuilder, unitConfig, false);
+    }
+
+
+    /**
+     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message)}
      * is called to update the action description. Therefore, this method only allows to verify a builder.
      * In addition, this method returns a de-serialized and updated service state contained in the action description.
      * The reason for this is to minimize de-serializing operations because verifying a service state also updates it.
@@ -723,6 +757,28 @@ public class ActionDescriptionProcessor {
      */
     public static Message verifyActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final Unit<?> unit, final boolean prepare) throws VerificationFailedException {
         try {
+            return verifyActionDescription(actionDescriptionBuilder, unit.getConfig(), prepare);
+        } catch (NotAvailableException ex) {
+            throw new VerificationFailedException("Given target unit seems not to be ready!", ex);
+        }
+    }
+
+    /**
+     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message)}
+     * is called to update the action description. Therefore, this method only allows to verify a builder.
+     * In addition, this method returns a de-serialized and updated service state contained in the action description.
+     * The reason for this is to minimize de-serializing operations because verifying a service state also updates it.
+     *
+     * @param actionDescriptionBuilder the action description builder which is verified and updated if prepare is set.
+     * @param unitConfig               the config of the unit on which the action description is applied.
+     * @param prepare                  flag determining if the action description should be prepared.
+     *
+     * @return a de-serialized and updated service state.
+     *
+     * @throws VerificationFailedException if verifying the action description failed.
+     */
+    public static Message verifyActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final UnitConfig unitConfig, final boolean prepare) throws VerificationFailedException {
+        try {
             if (actionDescriptionBuilder == null) {
                 throw new NotAvailableException("ActionDescription");
             }
@@ -735,14 +791,18 @@ public class ActionDescriptionProcessor {
                 throw new NotAvailableException("ActionDescription.ServiceStateDescription.UnitId");
             }
 
-            if (!actionDescriptionBuilder.getServiceStateDescription().getUnitId().equals(unit.getId())) {
+            if (!unitConfig.hasId() || unitConfig.getId().isEmpty()) {
+                throw new NotAvailableException("executor unit id");
+            }
+
+            if (!actionDescriptionBuilder.getServiceStateDescription().getUnitId().equals(unitConfig.getId())) {
                 String targetUnitLabel;
                 try {
                     targetUnitLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getServiceStateDescription().getUnitId()).getLabel());
                 } catch (CouldNotPerformException ex) {
                     targetUnitLabel = actionDescriptionBuilder.getServiceStateDescription().getUnitId();
                 }
-                throw new InvalidStateException("Referred Unit[" + targetUnitLabel + ":" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "] is not compatible with the registered UnitController[" + unit.getLabel("?") + ":" + unit.getId() + "]!");
+                throw new InvalidStateException("Referred Unit[" + targetUnitLabel + ":" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "] is not compatible with the registered UnitController[" + LabelProcessor.getBestMatch(unitConfig.getLabel(), unitConfig.getId()) + "]!");
             }
 
             for (ActionReference actionReference : actionDescriptionBuilder.getActionCauseList()) {
@@ -765,7 +825,7 @@ public class ActionDescriptionProcessor {
             Message serviceState = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName());
             serviceState = Services.verifyAndRevalidateServiceState(serviceState);
             if (prepare) {
-                prepare(actionDescriptionBuilder, unit, serviceState);
+                prepare(actionDescriptionBuilder, unitConfig, serviceState);
             }
 
             // validate that execution time period is set
@@ -784,15 +844,15 @@ public class ActionDescriptionProcessor {
      *
      * @param actionDescriptionBuilder the action description builder in which descriptions are generated.
      * @param serviceState             the de-serialized service state as contained in the action description.
-     * @param unit                     the unit on which the action is applied.
+     * @param unitConfig               the config of the unit on which the action is applied.
      */
-    private static void generateDescription(final ActionDescription.Builder actionDescriptionBuilder, final Message serviceState, final Unit unit) {
+    private static void generateDescription(final ActionDescription.Builder actionDescriptionBuilder, final Message serviceState, final UnitConfig unitConfig) {
         final MultiLanguageText.Builder multiLanguageTextBuilder = MultiLanguageText.newBuilder();
         for (Entry<String, String> languageDescriptionEntry : GENERIC_ACTION_DESCRIPTION_MAP.entrySet()) {
             String description = languageDescriptionEntry.getValue();
             try {
                 // setup unit label
-                description = description.replace(UNIT_LABEL_KEY, unit.getLabel());
+                description = description.replace(UNIT_LABEL_KEY, LabelProcessor.getBestMatch(languageDescriptionEntry.getKey(), unitConfig.getLabel()));
 
                 // setup service type
                 description = description.replace(SERVICE_TYPE_KEY,
@@ -895,13 +955,13 @@ public class ActionDescriptionProcessor {
     }
 
     public static String toString(final ActionReference actionReference) {
-        if(actionReference == null) {
+        if (actionReference == null) {
             return "Action[?]";
         }
         return "Action["
-                +(actionReference.hasActionId() ? actionReference.getActionId() + "|" : "")
-                +(actionReference.hasIntermediary() ? "Intermediary:"+ actionReference.getIntermediary() + "|" : "")
-                +(actionReference.hasServiceStateDescription() ? (actionReference.getServiceStateDescription().getServiceType().name() + "=" + actionReference.getServiceStateDescription().getServiceState()+ "|") : "")
-        +"]";
+                + (actionReference.hasActionId() ? actionReference.getActionId() + "|" : "")
+                + (actionReference.hasIntermediary() ? "Intermediary:" + actionReference.getIntermediary() + "|" : "")
+                + (actionReference.hasServiceStateDescription() ? (actionReference.getServiceStateDescription().getServiceType().name() + "=" + actionReference.getServiceStateDescription().getServiceState() + "|") : "")
+                + "]";
     }
 }
