@@ -223,7 +223,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    public static class TargetTemperatureStateOperationServiceMock<UNIT extends TargetTemperatureStateOperationService & Unit> implements TargetTemperatureStateOperationService {
+    public static class TargetTemperatureStateOperationServiceMock<UNIT extends TargetTemperatureStateOperationService & Unit<?>> implements TargetTemperatureStateOperationService {
 
         final UNIT unit;
 
@@ -251,7 +251,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    private static Future<ActionDescription> update(final Message argument, final Unit unit, final ServiceType serviceType) {
+    private static Future<ActionDescription> update(final Message argument, final Unit<?> unit, final ServiceType serviceType) {
         try {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             if (stackTrace == null) {
