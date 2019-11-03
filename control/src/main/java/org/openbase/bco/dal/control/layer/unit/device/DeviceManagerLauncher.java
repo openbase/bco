@@ -24,7 +24,6 @@ package org.openbase.bco.dal.control.layer.unit.device;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
@@ -46,7 +45,6 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerImpl> {
         JPService.registerProperty(JPPrefix.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.registerProperty(JPBenchmarkMode.class);
-        JPService.registerProperty(JPUnitAllocation.class);
         JPService.registerProperty(JPProviderControlMode.class);
     }
 
