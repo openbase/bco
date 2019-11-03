@@ -29,6 +29,7 @@ import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReferenceOrBuilder;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -554,6 +555,11 @@ public class ActionDescriptionProcessor {
             actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
         }
 
+        //
+        if (actionDescriptionBuilder.hasId()) {
+            throw new InvalidStateException(toString(actionDescriptionBuilder) + " is already initialized!");
+        }
+
         // prepare
         actionDescriptionBuilder.setId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
         LabelProcessor.addLabel(actionDescriptionBuilder.getLabelBuilder(), Locale.ENGLISH, GENERIC_ACTION_LABEL);
@@ -954,7 +960,27 @@ public class ActionDescriptionProcessor {
         }
     }
 
-    public static String toString(final ActionReference actionReference) {
+    public static String toString(final ActionParameterOrBuilder actionParameter) {
+        if (actionParameter == null) {
+            return "Action[?]";
+        }
+        return "Action["
+                + (actionParameter.hasServiceStateDescription() ? (actionParameter.getServiceStateDescription().getServiceType().name() + "=" + actionParameter.getServiceStateDescription().getServiceState() + "|") : "")
+                + "]";
+    }
+
+    public static String toString(final ActionDescriptionOrBuilder actionDescription) {
+        if (actionDescription == null) {
+            return "Action[?]";
+        }
+        return "Action["
+                + (actionDescription.hasId() ? actionDescription.getId() + "|" : "")
+                + (actionDescription.hasIntermediary() ? "Intermediary:" + actionDescription.getIntermediary() + "|" : "")
+                + (actionDescription.hasServiceStateDescription() ? (actionDescription.getServiceStateDescription().getServiceType().name() + "=" + actionDescription.getServiceStateDescription().getServiceState() + "|") : "")
+                + "]";
+    }
+
+    public static String toString(final ActionReferenceOrBuilder actionReference) {
         if (actionReference == null) {
             return "Action[?]";
         }
