@@ -573,7 +573,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         }
 
         if ((!actionDescription.getCancel() && !actionDescription.getExtend()) && actionDescription.hasId()) {
-            logger.warn("New action offers an id and will be overwritten by controller!");
+            logger.warn("New action offers an id which will be overwritten by controller!");
         }
 
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), authenticatedValue -> applyActionAuthenticated(authenticatedValue));
