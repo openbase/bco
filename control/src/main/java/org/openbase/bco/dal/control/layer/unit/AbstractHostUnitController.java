@@ -77,7 +77,6 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         }
     }
 
-    //TODO mpohling: implement unit factory instead!
     protected void registerUnit(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         try {
             Message.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
