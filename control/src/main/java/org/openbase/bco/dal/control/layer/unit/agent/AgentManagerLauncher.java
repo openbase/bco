@@ -24,10 +24,8 @@ package org.openbase.bco.dal.control.layer.unit.agent;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentManager;
 import org.openbase.bco.authentication.lib.BCO;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jul.exception.InstantiationException;
 
@@ -39,7 +37,6 @@ public class AgentManagerLauncher extends AbstractLauncher<AgentManagerImpl> {
 
     @Override
     protected void loadProperties() {
-        JPService.registerProperty(JPUnitAllocation.class);
     }
 
     /**

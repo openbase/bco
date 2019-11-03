@@ -22,7 +22,6 @@ package org.openbase.bco.dal.control.layer.unit.device;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
 import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.authentication.lib.BCO;
@@ -46,7 +45,6 @@ public class FallbackDeviceManagerLauncher extends AbstractLauncher<FallbackDevi
         JPService.registerProperty(JPPrefix.class);
         JPService.registerProperty(JPUnitRegistryScope.class);
         JPService.registerProperty(JPClassRegistryScope.class);
-        JPService.registerProperty(JPUnitAllocation.class);
     }
 
     public static void main(String[] args) throws Throwable {
