@@ -35,6 +35,7 @@ import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -123,7 +124,7 @@ public class RemoteActionPool {
      *
      * @return a future object referring the submission state.
      */
-    public MultiFuture<ActionDescription> execute(final ActionDescription causeActionDescription) {
+    public MultiFuture<ActionDescription> execute(final ActionDescriptionOrBuilder causeActionDescription) {
         return execute(causeActionDescription, false);
     }
 
@@ -135,7 +136,7 @@ public class RemoteActionPool {
      *
      * @return a future object referring the submission state.
      */
-    public MultiFuture<ActionDescription> execute(final ActionDescription causeActionDescription, final boolean cancelSubmissionAfterTimeout) {
+    public MultiFuture<ActionDescription> execute(final ActionDescriptionOrBuilder causeActionDescription, final boolean cancelSubmissionAfterTimeout) {
         final List<Future<ActionDescription>> submissionFutureList = new ArrayList<>();
 
         synchronized (actionListSync) {
@@ -144,7 +145,7 @@ public class RemoteActionPool {
             }
 
             for (final RemoteAction action : remoteActionList) {
-                submissionFutureList.add(action.execute(causeActionDescription));
+                submissionFutureList.add(action.execute(causeActionDescription, true));
             }
         }
 
