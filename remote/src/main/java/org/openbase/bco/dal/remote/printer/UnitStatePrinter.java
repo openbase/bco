@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
@@ -36,12 +37,16 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.iface.DefaultInitializable;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.consumer.Consumer;
+import org.openbase.jul.processing.StringProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType;
+import org.openbase.type.domotic.action.ActionReferenceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -51,9 +56,8 @@ import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig>>> {
 
@@ -105,7 +109,7 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
                 try {
                     for (ServiceDescription serviceDescription : unit.getUnitTemplate().getServiceDescriptionList()) {
 
-                        if(serviceDescription.getPattern() != ServicePattern.PROVIDER) {
+                        if (serviceDescription.getPattern() != ServicePattern.PROVIDER) {
                             continue;
                         }
                         print(unit, serviceDescription.getServiceType(), Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), ServiceTempus.CURRENT, unit));
@@ -141,21 +145,44 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
                     " */");
         }
         try {
-            String initiator;
+
+            ActionDescriptionType.ActionDescription responsibleAction;
+
             try {
-                initiator = ActionDescriptionProcessor.getInitialInitiator(Services.getResponsibleAction(serviceState)).getInitiatorType().name().toLowerCase();
-            } catch (NotAvailableException ex) {
-                // in this case we use the system as initiator because responsible actions are not available for pure provider services and those are always system generated.
-                initiator = "system";
+                responsibleAction = Services.getResponsibleAction(serviceState);
+                if (responsibleAction.toString().isEmpty()) {
+                    throw new NotAvailableException("ResponsibleAction");
+                }
+            } catch (Exception ex) {
+                responsibleAction = null;
             }
 
-            final List<String> states = Services.generateServiceStateStringRepresentation(serviceState, serviceType);
-//            if (!states.isEmpty()) {
-//                printStream.println("===========================================================================================================");
-//            }
-            for (String extractServiceState : states) {
+            // in case the responsible action is not available, we use the system as initiator because responsible actions are not available for pure provider services and those are always system generated.
+            final String initiator = responsibleAction != null ? ActionDescriptionProcessor.getInitialInitiator(responsibleAction).getInitiatorType().name().toLowerCase() : "system";
 
-                final String transition = "transition('" + unit.getId() + "', '" + unit.getConfig().getAlias(0) + "', " + unit.getUnitType().name().toLowerCase() + ", " + initiator + ", " + extractServiceState + ").";
+            final HashSet<String> relatedUnitIds = new HashSet<>();
+
+            if (responsibleAction != null) {
+
+                // compute related units to filter
+                for (ActionReferenceType.ActionReference cause : responsibleAction.getActionCauseList()) {
+                    relatedUnitIds.add(cause.getServiceStateDescription().getUnitId());
+                }
+
+                for (ActionReferenceType.ActionReference impact : responsibleAction.getActionImpactList()) {
+                    relatedUnitIds.add(impact.getServiceStateDescription().getUnitId());
+                }
+            }
+
+            for (String extractServiceState : Services.generateServiceStateStringRepresentation(serviceState, serviceType)) {
+
+                final String transition = "transition("
+                        + "'" + unit.getId() + "', "
+                        + "'" + unit.getConfig().getAlias(0) + "', "
+                        + unit.getUnitType().name().toLowerCase() + ", "
+                        + initiator + ", " + extractServiceState + ", "
+                        + "[" + StringProcessor.transformCollectionToString(relatedUnitIds, ", ") + "]).";
+
                 if (printStream != null) {
                     printStream.println(transition);
                 }
