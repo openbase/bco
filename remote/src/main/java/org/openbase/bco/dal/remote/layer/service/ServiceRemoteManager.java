@@ -526,7 +526,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
 
-    protected abstract void notifyServiceUpdate(final Unit source, final Message data) throws NotAvailableException, InterruptedException;
+    protected abstract void notifyServiceUpdate(final Unit<?> source, final Message data) throws NotAvailableException, InterruptedException;
 
     @Override
     public boolean isDataAvailable() {
