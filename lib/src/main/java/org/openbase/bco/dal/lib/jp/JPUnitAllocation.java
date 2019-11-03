@@ -28,7 +28,9 @@ import org.openbase.jps.preset.AbstractJPBoolean;
 /**
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
- */
+ * @deprecated is deprecated since bco 2.0 fully builds on unit allocation and its not longer optionally.
+ * */
+@Deprecated
 public class JPUnitAllocation extends AbstractJPBoolean {
 
     public final static String[] COMMAND_IDENTIFIERS = {"--unit-allocation"};
