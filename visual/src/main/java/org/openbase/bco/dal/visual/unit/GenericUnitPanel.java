@@ -33,6 +33,7 @@ import org.openbase.bco.dal.visual.util.UnitRemoteView;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -58,10 +59,12 @@ import java.util.*;
 import java.util.List;
 
 import static org.openbase.bco.dal.visual.service.AbstractServicePanel.SERVICE_PANEL_SUFFIX;
+
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 
 /**
  * @param <RS>
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class GenericUnitPanel<RS extends AbstractUnitRemote<Message>> extends UnitRemoteView<RS> {
@@ -217,8 +220,8 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote<Message>> extends Un
             HashMap<ServiceType, AbstractServicePanel> servicePanelMap = new HashMap<>();
 
             for (ServiceDescription serviceDescription : unitRemote.getAvailableServiceDescriptions()) {
-                            
-                
+
+
                 try {
                     // filter by service type
                     // in case the service type is unknown, all services are loaded, in case the service type is defined only this type will be loaded and all other types are filtered.
@@ -277,7 +280,9 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote<Message>> extends Un
             validate();
             revalidate();
         } catch (CouldNotPerformException | NullPointerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update config for unit panel!", ex), logger);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update config for unit panel!", ex), logger);
+            }
         }
     }
 
