@@ -22,24 +22,18 @@ package org.openbase.bco.dal.lib.simulation.service;
  * #L%
  */
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
-import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
-import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -122,7 +116,7 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Me
             // apply random service manipulation
             try {
                 // generate responsible action
-                ActionDescriptionProcessor.generateResponsibleAction(serviceStateBuilder, serviceType, unitController, 3, TimeUnit.MINUTES);
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, unitController, 3, TimeUnit.MINUTES);
 
                 // randomly select one of the registered service states, update the service state timestamp and apply the state update on unit controller.
                 unitController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder), serviceType);
