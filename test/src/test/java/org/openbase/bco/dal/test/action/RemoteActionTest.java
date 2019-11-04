@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test.action;
 
 import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -107,7 +108,8 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
             sessionManager.loginUser(mrPinkUserId, password, false);
 
             // request authentication token for new user
-            mrPinkUserToken = TokenGenerator.generateAuthToken(sessionManager);;
+            mrPinkUserToken = TokenGenerator.generateAuthToken(sessionManager);
+            ;
             mrPinkActionParameter = ActionParameterType.ActionParameter.newBuilder().setAuthToken(mrPinkUserToken).build();
 
             // logout user
@@ -137,13 +139,17 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         for (int i = 0; i < 10; i++) {
             PowerStateType.PowerState.State powerState = (i % 2 == 0) ? PowerStateType.PowerState.State.ON : PowerStateType.PowerState.State.OFF;
 
-            final RemoteAction remoteAction = new RemoteAction(locationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT, mrPinkActionParameter), mrPinkUserToken);
-            remoteAction.waitForExecution();
+            final RemoteAction locationRemoteAction = new RemoteAction(locationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT, mrPinkActionParameter), mrPinkUserToken);
+
+            locationRemoteAction.waitForExecution();
+
+            assertTrue("Action of location does not offer an id after submission!", !locationRemoteAction.getId().isEmpty());
 
             for (ColorableLightRemote unit : units) {
                 boolean actionIsExecuting = false;
                 for (ActionReferenceType.ActionReference actionReference : unit.getActionList().get(0).getActionCauseList()) {
-                    if (actionReference.getActionId().equals(remoteAction.getId())) {
+                    assertTrue("Subaction of location does not offer an id after submission!", !actionReference.getActionId().isEmpty());
+                    if (actionReference.getActionId().equals(locationRemoteAction.getId())) {
                         actionIsExecuting = true;
                         break;
                     }
@@ -153,22 +159,27 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
                 assertEquals("Action was not authenticated by the correct user", mrPinkUserId, unit.getActionList().get(0).getActionInitiator().getAuthenticatedBy());
             }
 
-            remoteAction.cancel().get();
+            locationRemoteAction.cancel().get();
 
             // validate that action is cancelled on all units
             for (final ColorableLightRemote colorableLightRemote : units) {
+//                System.out.println("process: " + colorableLightRemote);
                 ActionDescriptionType.ActionDescription causedAction = null;
                 for (final ActionDescriptionType.ActionDescription description : colorableLightRemote.getActionList()) {
-                    for (ActionReferenceType.ActionReference actionReference : description.getActionCauseList()) {
-                        if (actionReference.getActionId().equals(remoteAction.getId())) {
+//                    System.out.println("    action: " + ActionDescriptionProcessor.toString(description));
+                    for (ActionReferenceType.ActionReference cause : description.getActionCauseList()) {
+//                        System.out.println("        reference: " + ActionDescriptionProcessor.toString(cause));
+//                        System.out.println("        compare  : " + locationRemoteAction.getId());
+                        if (cause.getActionId().equals(locationRemoteAction.getId())) {
                             causedAction = description;
+//                            System.out.println("            match: " + ActionDescriptionProcessor.toString(causedAction));
                             break;
                         }
                     }
                 }
 
                 if (causedAction == null) {
-                    fail("Caused action on unit[" + colorableLightRemote + "]could not be found!");
+                    fail("Caused action on unit[" + colorableLightRemote + "] could not be found!");
                 }
 
                 Assert.assertEquals("Action on unit[" + colorableLightRemote + "] was not cancelled!", ActionStateType.ActionState.State.CANCELED, causedAction.getActionState().getValue());
@@ -200,7 +211,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
         System.out.println("apply normal prio action...");
         Flag dominantActionExtentionFlag = new Flag();
-        final RemoteAction dominantAction = new RemoteAction(locationRemote.setPowerState(State.ON, mrPinkActionParameter), mrPinkUserToken,() -> {
+        final RemoteAction dominantAction = new RemoteAction(locationRemote.setPowerState(State.ON, mrPinkActionParameter), mrPinkUserToken, () -> {
             System.out.println("dominant action is extended");
             dominantActionExtentionFlag.setValue(true);
             return true;
@@ -239,7 +250,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
             for (ActionDescription actionDescription : unit.getActionList()) {
-                Assert.assertEquals("Zombie["+actionDescription.getActionState().getValue().name()+"] actions detected: "+ MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()), true, new RemoteAction(actionDescription).isDone());
+                Assert.assertEquals("Zombie[" + actionDescription.getActionState().getValue().name() + "] actions detected: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()), true, new RemoteAction(actionDescription).isDone());
             }
         }
 
@@ -250,7 +261,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         System.out.println("validate if still everything is done");
         for (ColorableLightRemote unit : units) {
             for (ActionDescription actionDescription : unit.getActionList()) {
-                Assert.assertEquals("Zombie["+actionDescription.getActionState().getValue().name()+"] actions detected: "+ MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()), true, new RemoteAction(actionDescription).isDone());
+                Assert.assertEquals("Zombie[" + actionDescription.getActionState().getValue().name() + "] actions detected: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()), true, new RemoteAction(actionDescription).isDone());
             }
         }
 
