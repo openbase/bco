@@ -50,29 +50,29 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
     }
 
     @Override
-    public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
-        AbstractServiceRemote serviceRemote = newInstance(serviceType);
+    public AbstractServiceRemote<?, ?> newInitializedInstance(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
+        AbstractServiceRemote<?, ?> serviceRemote = newInstance(serviceType);
         serviceRemote.init(unitConfigs);
         return serviceRemote;
     }
 
     @Override
-    public AbstractServiceRemote newInitializedInstance(ServiceType serviceType, Collection<UnitConfig> unitConfigs, boolean filterInfrastructureUnits) throws CouldNotPerformException, InterruptedException {
-        AbstractServiceRemote serviceRemote = newInstance(serviceType);
+    public AbstractServiceRemote<?, ?> newInitializedInstance(ServiceType serviceType, Collection<UnitConfig> unitConfigs, boolean filterInfrastructureUnits) throws CouldNotPerformException, InterruptedException {
+        AbstractServiceRemote<?, ?> serviceRemote = newInstance(serviceType);
         serviceRemote.setInfrastructureFilter(filterInfrastructureUnits);
         serviceRemote.init(unitConfigs);
         return serviceRemote;
     }
 
     @Override
-    public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        AbstractServiceRemote serviceRemote = newInstance(serviceType);
+    public AbstractServiceRemote<?, ?> newInitializedInstance(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        AbstractServiceRemote<?, ?> serviceRemote = newInstance(serviceType);
         serviceRemote.init(unitConfig);
         return serviceRemote;
     }
 
     @Override
-    public AbstractServiceRemote newInitializedInstanceByIds(final ServiceType serviceType, final Collection<String> unitIDs) throws CouldNotPerformException, InterruptedException {
+    public AbstractServiceRemote<?, ?> newInitializedInstanceByIds(final ServiceType serviceType, final Collection<String> unitIDs) throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
         final Collection<UnitConfig> unitRemotes = new ArrayList<>();
         for (String unitId : unitIDs) {
@@ -82,13 +82,13 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
     }
 
     @Override
-    public AbstractServiceRemote newInitializedInstanceById(final ServiceType serviceType, final String unitID) throws CouldNotPerformException, InterruptedException {
+    public AbstractServiceRemote<?, ?> newInitializedInstanceById(final ServiceType serviceType, final String unitID) throws CouldNotPerformException, InterruptedException {
         Registries.waitForData();
         return newInitializedInstance(serviceType, Registries.getUnitRegistry().getUnitConfigById(unitID));
     }
 
     @Override
-    public AbstractServiceRemote newInstance(final ServiceType serviceType) throws org.openbase.jul.exception.InstantiationException {
+    public AbstractServiceRemote<?, ?> newInstance(final ServiceType serviceType) throws org.openbase.jul.exception.InstantiationException {
         try {
             return instantiateServiceRemote(loadServiceRemoteClass(serviceType));
         } catch (CouldNotPerformException ex) {
@@ -105,9 +105,9 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         }
     }
 
-    private static AbstractServiceRemote instantiateServiceRemote(final Class<? extends AbstractServiceRemote> serviceRemoteClass) throws org.openbase.jul.exception.InstantiationException {
+    private static AbstractServiceRemote<?, ?> instantiateServiceRemote(final Class<? extends AbstractServiceRemote> serviceRemoteClass) throws org.openbase.jul.exception.InstantiationException {
         try {
-            AbstractServiceRemote remote = serviceRemoteClass.newInstance();
+            AbstractServiceRemote<?, ?> remote = serviceRemoteClass.newInstance();
             return remote;
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new org.openbase.jul.exception.InstantiationException(serviceRemoteClass, ex);
