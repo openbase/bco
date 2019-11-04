@@ -36,6 +36,7 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
@@ -56,10 +57,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractExecutableBaseUnitController<D, DB> {
 
@@ -163,12 +161,17 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
      */
     protected RemoteAction observe(final Future<ActionDescription> futureAction) {
 
+        if(!isValid()) {
+            new FatalImplementationErrorException(getLabel(getClass().getSimpleName()) + " observes action state even when not active!", this);
+        }
+
         // generate remote action
-        final RemoteAction remoteAction = new RemoteAction(futureAction, getToken(), () -> isEnabled() && isActive() && getActivationState().getValue() == State.ACTIVE);
+        final RemoteAction remoteAction = new RemoteAction(futureAction, getToken(), () -> isValid());
 
         // cleanup done actions
         for (RemoteAction action : new ArrayList<>(observedTaskList)) {
             if (action.isDone()) {
+                action.reset();
                 observedTaskList.remove(action);
             }
         }
@@ -177,6 +180,14 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         observedTaskList.add(remoteAction);
 
         return remoteAction;
+    }
+
+    private boolean isValid() {
+        try {
+            return isEnabled() && isActive() && getActivationState().getValue() == State.ACTIVE;
+        } catch (NotAvailableException e) {
+            return false;
+        }
     }
 
 
@@ -195,10 +206,15 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         for (Future<ActionDescription> cancelTask : cancelTaskList) {
             try {
                 cancelTask.get(10, TimeUnit.SECONDS);
-            } catch (ExecutionException | TimeoutException ex) {
-                ExceptionPrinter.printHistory("Could not cancel action!", ex, logger);
+            } catch (ExecutionException | TimeoutException | CancellationException ex) {
+                ExceptionPrinter.printHistory("Could not cancel action!", ex, logger, LogLevel.WARN);
             }
-            observedTaskList.remove(cancelTask);
+        }
+
+        // cleanup actions
+        for (RemoteAction action : new ArrayList<>(observedTaskList)) {
+            action.reset();
+            observedTaskList.remove(action);
         }
     }
 }
