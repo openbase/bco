@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.lib.future;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
@@ -239,8 +240,9 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * @param internalType The result from the internal future.
      *
      * @return Ticket extracted from the internal type.
+     * @throws NotAvailableException is thrown in case the internal type does not offer an ticket.
      */
-    protected abstract TicketAuthenticatorWrapper getTicketFromInternal(INTERNAL internalType);
+    protected abstract TicketAuthenticatorWrapper getTicketFromInternal(INTERNAL internalType) throws NotAvailableException;
 
     /**
      * Method defining how to get the return value from the result of the internal future.
