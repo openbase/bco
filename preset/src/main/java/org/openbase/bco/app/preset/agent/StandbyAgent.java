@@ -33,14 +33,16 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.pattern.trigger.TriggerPool;
+import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.PowerStateType;
 import org.openbase.type.domotic.state.PresenceStateType;
-import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.location.LocationDataType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
@@ -70,7 +72,8 @@ public class StandbyAgent extends AbstractDelayedTriggerableAgent {
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, PresenceStateType.PresenceState.State.ABSENT, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE), TriggerPool.TriggerAggregation.OR);
+            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, PresenceStateType.PresenceState.State.ABSENT, ServiceType.PRESENCE_STATE_SERVICE),  TriggerAggregation.OR);
+            //registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, State.UNKNOWN, ServiceType.MOTION_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
