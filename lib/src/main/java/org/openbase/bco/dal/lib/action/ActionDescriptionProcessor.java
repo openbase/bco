@@ -27,6 +27,7 @@ import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReferenceOrBuilder;
@@ -919,8 +920,8 @@ public class ActionDescriptionProcessor {
      *
      * @throws CouldNotPerformException is thrown if the setup failed.
      */
-    public static <MB extends Message.Builder> MB generateResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit) throws CouldNotPerformException {
-        return generateResponsibleAction(serviceStateBuilder, serviceType, targetUnit, executionTimePeriod, timeUnit, null);
+    public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit) throws CouldNotPerformException {
+        return generateAndSetResponsibleAction(serviceStateBuilder, serviceType, targetUnit, executionTimePeriod, timeUnit, true, true, Priority.NORMAL, null);
     }
 
     /**
@@ -931,19 +932,23 @@ public class ActionDescriptionProcessor {
      * @param targetUnit          the unit where this action takes place.
      * @param executionTimePeriod defines how long this action is valid in time.
      * @param timeUnit            the time unit of the @{executionTimePeriod} argument.
+     * @param interruptible       defines if this action can be interrupted.
+     * @param schedulable         defines if this action can be scheduled.
+     * @param priority            defines the priority of this action.
      * @param actionInitiator     prototype of the action initiator.
      *
      * @return the builder instance in just returned.
      *
      * @throws CouldNotPerformException is thrown if the setup failed.
      */
-    public static <MB extends Message.Builder> MB generateResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit, final ActionInitiator actionInitiator) throws CouldNotPerformException {
+    public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit, final boolean interruptible, final boolean schedulable, final ActionPriority.Priority priority, final ActionInitiator actionInitiator) throws CouldNotPerformException {
         try {
             // generate action parameter
             final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateBuilder.build(), serviceType, targetUnit);
-            actionParameter.setInterruptible(false);
-            actionParameter.setSchedulable(false);
+            actionParameter.setInterruptible(interruptible);
+            actionParameter.setSchedulable(schedulable);
+            actionParameter.setPriority(priority);
             actionParameter.setExecutionTimePeriod(timeUnit.toMicros(executionTimePeriod));
 
             if (actionInitiator != null) {
