@@ -85,7 +85,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
             }
 
             @Override
-            protected void notifyServiceUpdate(Unit source, Message data) throws NotAvailableException {
+            protected void notifyServiceUpdate(final Unit<?> source, Message data) throws NotAvailableException {
                 try {
                     unitEventFilter.trigger();
                 } catch (final CouldNotPerformException ex) {
@@ -185,54 +185,56 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         try {
+
+            // verify that the service type is set
             if (actionDescription.getServiceStateDescription().getServiceType() == ServiceType.UNKNOWN) {
                 throw new InvalidStateException("Service type of applied action is unknown!");
             }
 
+            // verify that the service type is available
             if (!isServiceAvailable(actionDescription.getServiceStateDescription().getServiceType())) {
                 throw new NotAvailableException("ServiceType[" + actionDescription.getServiceStateDescription().getServiceType().name() + "] is not available for " + this);
             }
 
+            // if service is not aggregated handle action directly via native action scheduling
+            // this means we are ready and no special action handling is required
             if (!isServiceAggregated(actionDescription.getServiceStateDescription().getServiceType())) {
                 return super.applyAction(actionDescription);
             }
 
-            // skip verification when action is not new
-            if (actionDescription.getCancel() || actionDescription.getExtend()) {
-                return serviceRemoteManager.applyAction(actionDescription);
-            }
-
-            // prepare and validate new action
-            final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
-            ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
-            return serviceRemoteManager.applyAction(actionDescriptionBuilder.build());
+            // apply action on all service remotes
+            return serviceRemoteManager.applyAction(actionDescription);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
         }
     }
 
     @Override
-    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
-        if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() == ServiceType.UNKNOWN) {
-            throw new InvalidStateException("Service type of applied action is unknown!");
-        }
+    protected Future<ActionDescription> internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) {
 
-        if (!isServiceAvailable(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
-            throw new NotAvailableException("ServiceType[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for " + this);
-        }
+        try {
+            // verify that the service type is set
+            if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() == ServiceType.UNKNOWN) {
+                throw new InvalidStateException("Service type of applied action is unknown!");
+            }
 
-        if (!isServiceAggregated(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
-            return super.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
-        }
+            // verify that the service type is available
+            if (!isServiceAvailable(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
+                throw new NotAvailableException("ServiceType[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for " + this);
+            }
 
-        // only perform validation if action is new
-        if (!(actionDescriptionBuilder.getCancel() || actionDescriptionBuilder.getExtend())) {
-            ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true);
-        }
+            // if service is not aggregated handle action directly via native action scheduling
+            // this means we are ready and no special action handling is required
+            if (!isServiceAggregated(actionDescriptionBuilder.getServiceStateDescription().getServiceType())) {
+                return super.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
+            }
 
-        final byte[] sessionKey = (authenticationBaseData != null) ? authenticationBaseData.getSessionKey() : null;
-        serviceRemoteManager.applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey).get();
-        return actionDescriptionBuilder.build();
+            // apply action on all service remotes, action impact in set via the actionDescriptionBuilder.
+            final byte[] sessionKey = (authenticationBaseData != null) ? authenticationBaseData.getSessionKey() : null;
+            return FutureProcessor.postProcess((result) -> actionDescriptionBuilder.build(), serviceRemoteManager.applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
     @Override

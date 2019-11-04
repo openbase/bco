@@ -652,34 +652,39 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             // only setup id of this intermediary action if this is an new submission
             if (newSubmission) {
 
-                // validate that the id in not already set
+                // validate that the action is really a new one
                 if (!actionDescriptionBuilder.getId().isEmpty()) {
-                    // todo release: pleminoq why the id is not empty, is this a feature?
-                    //throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
+                    throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
                 }
 
-                // setup id for this intermediary action by overwriting the id of the cause unit.
-                actionDescriptionBuilder.setId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
+                // resolve responsible unit
+                final UnitConfig responsibleUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getServiceStateDescription().getUnitId());
+
+                // setup new intermediary action
+                ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, responsibleUnitConfig, true);
+
+                // mark this actions as intermediary
+                actionDescriptionBuilder.setIntermediary(true);
             }
 
             // generate and apply impact actions
             final List<Future<ActionDescription>> actionTaskList = new ArrayList<>();
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
-                final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
 
+                // prepare impact action by copy cause action description and setup individual
+                final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
                 unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
                 // update action cause if this is a new submission
                 if (newSubmission) {
+                    unitActionDescriptionBuilder.clearId();
+                    unitActionDescriptionBuilder.clearIntermediary();
                     ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
                 }
 
                 // apply action on remote
                 actionTaskList.add(unitRemote.applyAction(unitActionDescriptionBuilder));
             }
-
-            // mark this actions as intermediary after impacts are prepared
-            actionDescriptionBuilder.setIntermediary(true);
 
             // collect results and setup action impact list of intermediary action
             return FutureProcessor.allOf(input -> {
@@ -691,7 +696,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
                 for (final Future<ActionDescription> actionTask : input) {
                     try {
-                        // todo release: clarify which strategy to use (see auth version todo below)
                         ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, actionTask.get());
                     } catch (ExecutionException ex) {
                         throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
@@ -767,30 +771,38 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             // only setup id of this intermediary action if this is an new submission
             if (newSubmission) {
 
-                // validate that the id in not already set
+                // validate that the action is really a new one
                 if (!actionDescriptionBuilder.getId().isEmpty()) {
-                    // todo release: pleminoq why the id is not empty, is this a feature?
-                    //throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
+                    throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
                 }
 
-                // setup id for this intermediary action by overwriting the id of the cause unit.
-                actionDescriptionBuilder.setId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
+                // resolve responsible unit
+                final UnitConfig responsibleUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getServiceStateDescription().getUnitId());
+
+                // setup new intermediary action
+                ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, responsibleUnitConfig, true);
+
+                // mark this actions as intermediary
+                actionDescriptionBuilder.setIntermediary(true);
             }
 
             // generate and apply impact actions
             final List<Future<AuthenticatedValue>> actionTaskList = new ArrayList<>();
             for (final UnitRemote<?> unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
-                final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
 
+                // prepare impact action by copy cause action description and setup individual
+                final Builder unitActionDescriptionBuilder = ActionDescription.newBuilder(actionDescriptionBuilder.build());
                 unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
                 // update action cause if this is a new submission
                 if (newSubmission) {
+                    unitActionDescriptionBuilder.clearId();
+                    unitActionDescriptionBuilder.clearIntermediary();
                     ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
                 }
 
-                final AuthenticatedValue authValue;
                 // encrypt action description again
+                final AuthenticatedValue authValue;
                 if (sessionKey != null) {
                     final ByteString encrypt = EncryptionHelper.encryptSymmetric(unitActionDescriptionBuilder.build(), sessionKey);
                     authValue = authenticatedValue.toBuilder().setValue(encrypt).build();
@@ -802,10 +814,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 actionTaskList.add(unitRemote.applyActionAuthenticated(authValue));
             }
 
-            // mark this actions as intermediary after impacts are prepared
-            actionDescriptionBuilder.setIntermediary(true);
-
-            // collect results and setup action impact list of intermediary action
+            // collect results and setup action impact list of intermediary cause action
             return FutureProcessor.allOf(input -> {
 
                 // we are done if this is not a new action
@@ -818,6 +827,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                     try {
                         final AuthenticatedValue unitAuthenticatedValue = future.get();
                         final ActionDescription unitActionResponse;
+
                         // validate responses and decrypt results
                         if (sessionKey != null) {
                             AuthenticationClientHandler.handleServiceServerResponse(sessionKey, authenticatedValue.getTicketAuthenticatorWrapper(), unitAuthenticatedValue.getTicketAuthenticatorWrapper());
@@ -825,9 +835,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                         } else {
                             unitActionResponse = ActionDescription.parseFrom(unitAuthenticatedValue.getValue());
                         }
+
                         // add resulting actions as impacts
-                        // todo release: clarify which strategy to use
-                        //actionDescriptionBuilder.addActionImpact(ActionDescriptionProcessor.generateActionReference(unitActionResponse));
                         ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, unitActionResponse);
 
                     } catch (ExecutionException ex) {
@@ -836,6 +845,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                         throw new CouldNotPerformException("Could not parse result from unauthenticated applyAction request as action description", ex);
                     }
                 }
+
+                // encrypt and return result
                 final AuthenticatedValue.Builder responseAuthValue = authenticatedValue.toBuilder();
                 if (sessionKey != null) {
                     responseAuthValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));

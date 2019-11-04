@@ -35,10 +35,8 @@ import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -72,6 +70,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -250,26 +249,52 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     }
 
     @Override
-    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
+    protected Future<ActionDescription> internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) {
 
-        // verify that the service type matches
-        if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
-            throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
+        // todo: remove this method to avoid bypassing the action scheduling of this unit after openbase/bco.dal#159 has been solved.
+
+        try {
+            // verify that the service type matches
+            if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
+                throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
+            }
+
+            // mark this action as intermediary because its bypassing the action scheduling and therefore not directly requestable via the scene unit.
+            actionDescriptionBuilder.setIntermediary(true);
+
+            // verify and prepare action description and retrieve the service state
+            final ActivationState.Builder activationStateBuilder = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
+
+            // needs to be set before calling "setActivationState" because cause is used
+            activationStateBuilder.setResponsibleAction(actionDescriptionBuilder);
+
+            return FutureProcessor.postProcess((result) -> {
+
+                // update builder with updated action impact
+                final ActionDescription.Builder actionDescriptionBuilderNew = result.toBuilder();
+
+                // needs to be updated again to update the action impact in the responsible action as well.
+                // This has be done before calling "applyDataUpdate" because action is recovered via the responsible action.
+                activationStateBuilder.setResponsibleAction(actionDescriptionBuilderNew);
+
+                // publish new state as requested
+                try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+                    dataBuilder.getInternalBuilder().setActivationStateRequested(activationStateBuilder);
+                }
+
+                // update transition id
+                updateTransactionId();
+
+                // update the internal data model
+                applyDataUpdate(activationStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE);
+
+                // return the generated action description
+                return actionDescriptionBuilder.build();
+
+            } , activationStateOperationService.setActivationState(activationStateBuilder.build()));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
-
-        // verify and prepare action description and retrieve the service state
-        final ActivationState.Builder activationStateBuilder = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
-        activationStateBuilder.setResponsibleAction(actionDescriptionBuilder.build());
-        TimestampProcessor.updateTimestampWithCurrentTime(activationStateBuilder);
-
-        updateTransactionId();
-
-        // publish new state as requested
-        try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setActivationStateRequested(activationStateBuilder);
-        }
-
-        return activationStateOperationService.setActivationState(activationStateBuilder.build()).get();
     }
 
     private void stop() {
@@ -279,17 +304,26 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
     public class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
 
+
+        /**
+         * Sets the activation state of the scene
+         *
+         * @param activationState the state to apply which offers the action description in its responsible action field.
+         *
+         * @return the responsible action of the given {@code activationState} with an updated list of impact actions.
+         */
         @Override
         public Future<ActionDescription> setActivationState(final ActivationState activationState) {
-            final ActionDescription.Builder actionDescriptionBuilder = activationState.getResponsibleAction().toBuilder();
-            actionDescriptionBuilder.setIntermediary(true);
+
+            final ActionDescription.Builder responsibleActionBuilder = activationState.getResponsibleAction().toBuilder();
+
             switch (activationState.getValue()) {
                 case DEACTIVE:
                     stop();
                     break;
                 case ACTIVE:
-                    final MultiFuture<ActionDescription> requiredActionsFuture = requiredActionPool.execute(activationState.getResponsibleAction());
-                    final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(activationState.getResponsibleAction());
+                    final MultiFuture<ActionDescription> requiredActionsFuture = requiredActionPool.execute(responsibleActionBuilder);
+                    final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(responsibleActionBuilder);
 
                     // legacy handling
 //                    final ActivationState deactivated = ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build();
@@ -353,7 +387,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
                     // add all action impacts
                     for (final ActionDescription actionDescription : actionList) {
-                        ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, actionDescription);
+                        ActionDescriptionProcessor.updateActionImpacts(responsibleActionBuilder, actionDescription);
                     }
 
                     // register an observer which will deactivate the scene if one required action is now longer running
@@ -369,14 +403,12 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                             }
                         }
                     }
+                    break;
+                default:
+                    return FutureProcessor.canceledFuture(ActionDescription.class, new EnumNotSupportedException(activationState.getValue(), this));
             }
 
-            try {
-                applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(activationState), ServiceType.ACTIVATION_STATE_SERVICE);
-            } catch (CouldNotPerformException ex) {
-                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
-            }
-            return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
+            return FutureProcessor.completedFuture(responsibleActionBuilder.build());
         }
 
         @Override

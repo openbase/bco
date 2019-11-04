@@ -28,6 +28,7 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.*;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalIdentifiedProcessable;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
@@ -37,7 +38,6 @@ import org.openbase.bco.dal.lib.action.ActionComparator;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.SchedulableAction;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
-import org.openbase.bco.dal.lib.jp.JPUnitAllocation;
 import org.openbase.bco.dal.lib.layer.service.*;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
@@ -110,6 +110,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
@@ -118,6 +119,7 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -615,16 +617,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         try {
-            final ActionImpl action = new ActionImpl(actionDescription, this);
-            try {
-                if (JPService.getProperty(JPUnitAllocation.class).getValue()) {
-                    return scheduleAction(action);
-                } else {
-                    return action.execute();
-                }
-            } catch (JPNotAvailableException ex) {
-                throw new CouldNotPerformException("Could not check unit allocation flag.", ex);
-            }
+            return scheduleAction(new ActionImpl(actionDescription, this));
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not apply action!", ex), logger));
         }
@@ -637,7 +630,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
+     *
      * @return the action identified by the provided id as described above.
+     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
@@ -669,6 +664,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
+     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
@@ -833,6 +829,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
+     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
      */
@@ -1034,6 +1031,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
+     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1051,9 +1049,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, authenticationBaseData) -> {
+
+        final InternalIdentifiedProcessable<ActionDescription, ActionDescription> internalIdentifiedProcessable = (actionDescription, authenticationBaseData) -> {
             try {
-                final AuthPair authPair = verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
+                final AuthPair authPair = AbstractUnitController.this.verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
 
                 final Builder actionDescriptionBuilder = actionDescription.toBuilder();
 
@@ -1091,40 +1090,56 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
                 }
 
-                return internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
+                return AbstractUnitController.this.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair).get(30, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
-            } catch (ExecutionException ex) {
+            } catch (ExecutionException | TimeoutException ex) {
                 throw new CouldNotPerformException("Could not apply authenticated action!", ex);
             }
-        }));
+        };
+
+        // build result
+        try {
+            return FutureProcessor.completedFuture(AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, AbstractUnitController.this, internalIdentifiedProcessable));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
     }
 
-    protected ActionDescription internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) throws InterruptedException, CouldNotPerformException, ExecutionException {
-        if (actionDescriptionBuilder.getCancel()) {
-            try {
-                if (!actionDescriptionBuilder.hasId() && actionDescriptionBuilder.getId().isEmpty()) {
-                    throw new NotAvailableException("ActionId");
-                }
-                return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy()).get();
-            } catch (ExecutionException ex) {
-                throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
-            }
-        }
+    protected Future<ActionDescription> internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) {
 
-        // if action description has last extension and an id find it and extend it
-        if (actionDescriptionBuilder.getExtend()) {
-            try {
-                if (!actionDescriptionBuilder.hasId() && actionDescriptionBuilder.getId().isEmpty()) {
-                    throw new NotAvailableException("ActionId");
+        try {
+            // handle action cancellation
+            if (actionDescriptionBuilder.getCancel()) {
+                try {
+                    if (!actionDescriptionBuilder.hasId() || actionDescriptionBuilder.getId().isEmpty()) {
+                        throw new NotAvailableException("ActionId");
+                    }
+                    return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
                 }
-                return extendAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy()).get();
-            } catch (ExecutionException ex) {
-                throw new CouldNotPerformException("Could not extend authenticated action!", ex);
             }
+
+            // handle action execution time extension
+            if (actionDescriptionBuilder.getExtend()) {
+                try {
+                    if (!actionDescriptionBuilder.hasId() || actionDescriptionBuilder.getId().isEmpty()) {
+                        throw new NotAvailableException("ActionId");
+                    }
+                    return extendAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not extend authenticated action!", ex);
+                }
+            }
+
+            // handle new actions
+            return applyAction(actionDescriptionBuilder.build());
+
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
-        return applyAction(actionDescriptionBuilder.build()).get();
     }
 
     @Override
@@ -1269,7 +1284,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param serviceState
      * @param serviceType
      * @param internalBuilder
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
@@ -1629,7 +1646,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     *
      * @return a location remote instance.
+     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1677,6 +1696,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
+     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1710,6 +1730,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
