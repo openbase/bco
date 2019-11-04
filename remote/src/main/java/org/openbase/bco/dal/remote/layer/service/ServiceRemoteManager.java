@@ -24,11 +24,9 @@ package org.openbase.bco.dal.remote.layer.service;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.AuthenticationBaseData;
-import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.authentication.lib.iface.AuthenticatedSnapshotable;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
@@ -39,27 +37,22 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.communication.controller.AbstractRemoteClient;
 import org.openbase.jul.iface.Activatable;
-import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.*;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionParameterType.ActionParameter.Builder;
 import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
-import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.domotic.unit.dal.LightDataType.LightData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +65,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class ServiceRemoteManager<D extends Message> implements Activatable, Snapshotable<Snapshot>, PingProvider, DataProvider<D> {
+public abstract class ServiceRemoteManager<D extends Message> implements Activatable, AuthenticatedSnapshotable, PingProvider, DataProvider<D> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRemoteManager.class);
 
@@ -81,16 +74,16 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     private final ServiceRemoteFactory serviceRemoteFactory;
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
     private final Observer<Unit, Message> serviceDataObserver;
-    private final Unit<D> responsibleInstance;
+    private final Unit<D> responsibleUnit;
     private boolean filterInfrastructureUnits;
     private final CloseableLockProvider lockProvider;
 
-    public ServiceRemoteManager(final Unit<D> responsibleInstance, final CloseableLockProvider lockProvider) {
-        this(responsibleInstance, lockProvider, true);
+    public ServiceRemoteManager(final Unit<D> responsibleUnit, final CloseableLockProvider lockProvider) {
+        this(responsibleUnit, lockProvider, true);
     }
 
-    public ServiceRemoteManager(final Unit<D> responsibleInstance, final CloseableLockProvider lockProvider, final boolean filterInfrastructureUnits) {
-        this.responsibleInstance = responsibleInstance;
+    public ServiceRemoteManager(final Unit<D> responsibleUnit, final CloseableLockProvider lockProvider, final boolean filterInfrastructureUnits) {
+        this.responsibleUnit = responsibleUnit;
         this.lockProvider = lockProvider;
         this.filterInfrastructureUnits = filterInfrastructureUnits;
         this.serviceRemoteMap = new HashMap<>();
@@ -126,6 +119,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
             // initialize service remotes
             for (final ServiceType serviceType : getManagedServiceTypes()) {
                 final AbstractServiceRemote serviceRemote = serviceRemoteFactory.newInitializedInstance(serviceType, serviceMap.get(serviceType), filterInfrastructureUnits);
+                serviceRemote.setServiceRemoteManager(this);
                 serviceRemoteMap.put(serviceType, serviceRemote);
 
                 // if already active than update the current location state.
@@ -164,12 +158,6 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         return active;
     }
 
-    public List<AbstractServiceRemote> getServiceRemoteList() {
-        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
-            return new ArrayList<>(serviceRemoteMap.values());
-        }
-    }
-
     /**
      * Method checks if the given {@code ServiceType} is currently available by this {@code ServiceRemoteManager}
      *
@@ -186,11 +174,44 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         }
     }
 
-    public AbstractServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
+    /**
+     * Generates a list of all internal service remotes of this service remote manager.
+     *
+     * @return a list of service remotes
+     */
+    public List<AbstractServiceRemote> getServiceRemoteList() {
         try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
-            AbstractServiceRemote serviceRemote = serviceRemoteMap.get(serviceType);
+            return new ArrayList<>(serviceRemoteMap.values());
+        }
+    }
+
+    /**
+     * Generates a list of all unit remotes used by the internal service remotes of this service remote manager.
+     *
+     * @return a list of unit remotes.
+     */
+    public List<UnitRemote<?>> getInternalUnitRemoteList() {
+        final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
+        for (AbstractServiceRemote serviceRemote : getServiceRemoteList()) {
+            unitRemoteList.addAll(serviceRemote.getInternalUnits());
+        }
+        return unitRemoteList;
+    }
+
+    /**
+     * Returns the service remote responsible for the aggregation and control of the given service type.
+     *
+     * @param serviceType the service type used to identify the remote instance.
+     *
+     * @return the requested service remote
+     *
+     * @throws NotAvailableException is thrown if the remotes are not available yet.
+     */
+    public AbstractServiceRemote<?, ?> getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
+        try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
+            AbstractServiceRemote<?, ?> serviceRemote = serviceRemoteMap.get(serviceType);
             if (serviceRemote == null) {
-                final String responsible = (responsibleInstance != null ? responsibleInstance.toString() : "the underlying instance");
+                final String responsible = (responsibleUnit != null ? responsibleUnit.toString() : "the underlying instance");
                 throw new NotAvailableException("ServiceRemote", serviceType.name(), new NotSupportedException("ServiceType[" + serviceType + "]", responsible));
             }
             return serviceRemote;
@@ -198,7 +219,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
     }
 
     public <B> B updateBuilderWithAvailableServiceStates(final B builder) throws InterruptedException, CouldNotPerformException {
-        return updateBuilderWithAvailableServiceStates(builder, responsibleInstance.getDataClass(), getManagedServiceTypes());
+        return updateBuilderWithAvailableServiceStates(builder, responsibleUnit.getDataClass(), getManagedServiceTypes());
     }
 
     public <B> B updateBuilderWithAvailableServiceStates(final B builder, final Class dataClass, final Set<ServiceType> supportedServiceTypeSet) throws CouldNotPerformException {
@@ -209,7 +230,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
                 // compute current service state
                 try {
-                    final AbstractServiceRemote serviceRemote = getServiceRemote(serviceType);
+                    final AbstractServiceRemote<?, ?> serviceRemote = getServiceRemote(serviceType);
                     /* When the locationRemote is active and a config update occurs the serviceRemoteManager clears
                      * its map of service remotes and fills it with new ones. When they are activated an update is triggered while
                      * the map is not completely filled. Therefore the serviceRemote can be null.
@@ -267,7 +288,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
                 if (unitType == UnitType.UNKNOWN) {
                     // if the type is unknown then take the snapshot for all units
-                    for (AbstractServiceRemote abstractServiceRemote : getServiceRemoteList()) {
+                    for (AbstractServiceRemote<?, ?> abstractServiceRemote : getServiceRemoteList()) {
                         unitRemoteSet.addAll(abstractServiceRemote.getInternalUnits());
                     }
                 } else {
@@ -281,7 +302,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                         return snapshotBuilder.build();
                     }
 
-                    for (final AbstractServiceRemote abstractServiceRemote : getServiceRemoteList()) {
+                    for (final AbstractServiceRemote<?, ?> abstractServiceRemote : getServiceRemoteList()) {
                         if (!(serviceType == abstractServiceRemote.getServiceType())) {
                             continue;
                         }
@@ -328,76 +349,16 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) {
-        return restoreSnapshotAuthenticated(snapshot, null);
+        return UnitProcessor.restoreSnapshot(snapshot, LOGGER, getInternalUnitRemoteList());
     }
 
-    public Future<Void> restoreSnapshotAuthenticated(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) {
+    @Override
+    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) {
         try {
-            if (authenticationBaseData != null) {
-                try {
-                    final TicketAuthenticatorWrapper initializedTicket = AuthenticationClientHandler.initServiceServerRequest(authenticationBaseData.getSessionKey(), authenticationBaseData.getTicketAuthenticatorWrapper());
-
-                    return FutureProcessor.allOf(input -> {
-                        try {
-                            for (Future<AuthenticatedValue> authenticatedValueFuture : input) {
-                                AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, authenticatedValueFuture.get().getTicketAuthenticatorWrapper());
-                            }
-                        } catch (ExecutionException ex) {
-                            throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
-                        }
-                        return null;
-                    }, generateSnapshotActions(snapshot, initializedTicket, authenticationBaseData.getSessionKey()));
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not update ticket for further requests", ex);
-                }
-            } else {
-                return FutureProcessor.allOf(input -> null, generateSnapshotActions(snapshot, null, null));
-            }
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not record snapshot authenticated!", ex));
+            return UnitProcessor.restoreSnapshotAuthenticated(authenticatedSnapshot, LOGGER, responsibleUnit.getConfig() ,getInternalUnitRemoteList());
+        } catch (NotAvailableException ex) {
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, new CouldNotPerformException("Could not restore authenticated snapshot!", ex));
         }
-    }
-
-    private Collection<Future<AuthenticatedValue>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final byte[] sessionKey) {
-        final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
-        for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
-            for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
-                try {
-                    unitRemoteMap.put(unitRemote.getId(), unitRemote);
-                } catch (NotAvailableException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve id to acquire unit state for snapshot", ex), LOGGER, LogLevel.WARN);
-                }
-            }
-        }
-
-        final Collection<Future<AuthenticatedValue>> futureCollection = new ArrayList<>();
-        for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-            final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
-
-            if (unitRemote == null) {
-                LOGGER.error("Could not resolve unit {} from snapshot", serviceStateDescription.getUnitId());
-                continue;
-            }
-
-            try {
-                final Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateDescription);
-                final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder);
-
-                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
-                if (ticketAuthenticatorWrapper != null) {
-                    // prepare authenticated value to request action
-                    authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
-                    authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescriptionBuilder.build(), sessionKey));
-                } else {
-                    authenticatedValue.setValue(actionDescriptionBuilder.build().toByteString());
-                }
-                futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not acquire unit state for snapshot", ex), LOGGER, LogLevel.WARN);
-            }
-        }
-
-        return futureCollection;
     }
 
     /**
@@ -454,7 +415,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     public Future<ActionDescription> applyAction(ActionDescription actionDescription) {
         try {
-            if (actionDescription.getServiceStateDescription().getUnitType().equals(responsibleInstance.getUnitType())) {
+            if (actionDescription.getServiceStateDescription().getUnitType().equals(responsibleUnit.getUnitType())) {
                 ActionDescription.Builder builder = actionDescription.toBuilder();
                 builder.getServiceStateDescriptionBuilder().setUnitType(UnitType.UNKNOWN);
                 actionDescription = builder.build();
@@ -530,22 +491,22 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public boolean isDataAvailable() {
-        return responsibleInstance.isDataAvailable();
+        return responsibleUnit.isDataAvailable();
     }
 
     @Override
     public Class<D> getDataClass() {
-        return responsibleInstance.getDataClass();
+        return responsibleUnit.getDataClass();
     }
 
     @Override
     public D getData() throws NotAvailableException {
-        return responsibleInstance.getData();
+        return responsibleUnit.getData();
     }
 
     @Override
     public Future<D> getDataFuture() {
-        return responsibleInstance.getDataFuture();
+        return responsibleUnit.getDataFuture();
     }
 
     @Override
@@ -603,9 +564,13 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         }
     }
 
+    public Unit<D> getResponsibleUnit() {
+        return responsibleUnit;
+    }
+
     public void validateMiddleware() throws InvalidStateException {
         try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
-            for (AbstractServiceRemote value : serviceRemoteMap.values()) {
+            for (AbstractServiceRemote<?, ?> value : serviceRemoteMap.values()) {
                 for (Object internalUnit : value.getInternalUnits()) {
                     ((AbstractRemoteClient) internalUnit).validateMiddleware();
                 }
