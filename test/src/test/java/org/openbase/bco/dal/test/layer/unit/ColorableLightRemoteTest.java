@@ -107,7 +107,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testControllingViaLightRemote() throws Exception {
         System.out.println("testControllingViaLightRemote");
 
-        colorableLightRemote.setPowerState(State.OFF).get();
+        Actions.waitForExecution(colorableLightRemote.setPowerState(State.OFF));
         final LightRemote lightRemote = new LightRemote();
         try {
             // create a light remote from colorable light config and wait for data
@@ -129,7 +129,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
                 Thread.sleep(10);
             }
             assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
-
 
             // test controlling via colorable light remote
             Actions.waitForExecution(colorableLightRemote.setPowerState(State.OFF));
