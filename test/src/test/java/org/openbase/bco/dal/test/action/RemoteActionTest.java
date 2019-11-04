@@ -224,7 +224,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         List<? extends ColorableLightRemote> units = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
 
         for (ColorableLightRemote unit : units) {
-            unit.requestData();
+            unit.requestData().get();
             Assert.assertEquals("Light not on", State.ON, unit.getPowerState().getValue());
         }
 
