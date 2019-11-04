@@ -28,7 +28,10 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.Timeout;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 
 import java.util.concurrent.ExecutionException;
 
@@ -86,7 +89,7 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
                 try {
                     delayedTrigger(lastActivationState);
                 } catch (InterruptedException ex) {
-                    return;
+                    Thread.currentThread().interrupt();
                 } catch (CouldNotPerformException | ExecutionException ex) {
                     ExceptionPrinter.printHistory("Could not trigger agent after delay!", ex, logger);
                 }
@@ -110,6 +113,12 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
         } catch (NotAvailableException e) {
             return minDelay + (long) (delta * 0.5d);
         }
+    }
+
+    @Override
+    protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+        super.stop(activationState);
+        timeout.cancel();
     }
 
     @Override
