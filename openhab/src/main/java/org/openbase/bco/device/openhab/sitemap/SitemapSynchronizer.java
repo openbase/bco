@@ -49,14 +49,14 @@ public class SitemapSynchronizer implements Launchable<Void>, VoidInitializable 
     public static final long TIMEOUT = 15000;
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SitemapSynchronizer.class);
     private final SitemapGenerator sidemapGenerator;
-    private final RecurrenceEventFilter recurrenceGenerationFilter;
+    private final RecurrenceEventFilter<Void> recurrenceGenerationFilter;
     private boolean active;
 
     public SitemapSynchronizer() throws InstantiationException, InterruptedException {
         try {
             Registries.waitForData();
             this.sidemapGenerator = new SitemapGenerator();
-            this.recurrenceGenerationFilter = new RecurrenceEventFilter(TIMEOUT) {
+            this.recurrenceGenerationFilter = new RecurrenceEventFilter<Void>(TIMEOUT) {
 
                 @Override
                 public void relay() throws Exception {
