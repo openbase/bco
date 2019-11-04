@@ -59,7 +59,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
 
     public static final long MINIMAL_UPDATE_FREQUENCY = 10;
 
-    private final RecurrenceEventFilter unitEventFilter;
+    private final RecurrenceEventFilter<Void> unitEventFilter;
     private final ServiceRemoteManager<D> serviceRemoteManager;
 
     public AbstractAggregatedBaseUnitController(final DB builder) throws InstantiationException {
@@ -70,9 +70,9 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         super(builder);
 
         // filter updates through internal units by the provided frequency
-        unitEventFilter = new RecurrenceEventFilter(Math.max(maxUpdateFrequency, MINIMAL_UPDATE_FREQUENCY)) {
+        unitEventFilter = new RecurrenceEventFilter<Void>(Math.max(maxUpdateFrequency, MINIMAL_UPDATE_FREQUENCY)) {
             @Override
-            public void relay() throws Exception {
+            public void relay() {
                 updateUnitData();
             }
         };
@@ -85,7 +85,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
             }
 
             @Override
-            protected void notifyServiceUpdate(final Unit<?> source, Message data) throws NotAvailableException {
+            protected void notifyServiceUpdate(final Unit<?> source, final Message data) throws NotAvailableException {
                 try {
                     unitEventFilter.trigger();
                 } catch (final CouldNotPerformException ex) {
@@ -178,8 +178,8 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     }
 
     @Override
-    protected Future<Void> internalRestoreSnapshot(Snapshot snapshot, AuthenticationBaseData authenticationBaseData) {
-        return serviceRemoteManager.restoreSnapshotAuthenticated(snapshot, authenticationBaseData);
+    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) {
+        return serviceRemoteManager.restoreSnapshotAuthenticated(authenticatedSnapshot);
     }
 
     @Override
