@@ -31,6 +31,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.iface.Activatable;
@@ -218,7 +219,9 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
             }
             //unitRemote.addDataObserver(unitDataObserver);
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not add " + unitId, ex, LOGGER);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not add " + unitId, ex, LOGGER);
+            }
         }
     }
 
@@ -237,7 +240,9 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
             //unitRemote.removeDataObserver(unitDataObserver);
             unitRemoteRegistry.remove(unitRemote);
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not remove " + unitId, ex, LOGGER);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not remove " + unitId, ex, LOGGER);
+            }
         }
     }
 
