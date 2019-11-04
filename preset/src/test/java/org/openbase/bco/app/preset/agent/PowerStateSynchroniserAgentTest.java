@@ -34,6 +34,9 @@ import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.type.configuration.EntryType.Entry;
 import org.openbase.type.configuration.MetaConfigType.MetaConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -103,17 +106,23 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         final Boolean[] deliveredUnknownRequestedState = new Boolean[1];
         deliveredUnknownRequestedState[0] = false;
         powerSwitchRemote.addDataObserver(ServiceTempus.REQUESTED,(source, data) -> {
-            final boolean unknown = data.getPowerStateRequested().getValue().name().equals("UNKNOWN");
+            final boolean unknown = data.getPowerStateRequested().getValue().name().equalsIgnoreCase("UNKNOWN");
             if (unknown) {
-                LOGGER.error("Incoming requested state via unit was unknown: " + data.getPowerStateRequested());
+                if(data.toString().isEmpty()) {
+                    ExceptionPrinter.printHistory(new InvalidStateException("Invalid data package received!"), LOGGER);
+                }
+                LOGGER.error("Incoming requested state via unit was unknown: [" + data+"]");
                 deliveredUnknownRequestedState[0] = true;
             }
         });
         powerSwitchRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE,(source, data) -> {
             LOGGER.warn("Incoming requested state via service ob: " + ((PowerState) data).getValue().name());
-            final boolean unknown = ((PowerState) data).getValue().name().equals("UNKNOWN");
+            final boolean unknown = ((PowerState) data).getValue().name().equalsIgnoreCase("UNKNOWN");
             if (unknown) {
-                LOGGER.error("Incoming requested state via unit is unknown! "+ data);
+                if(data.toString().isEmpty()) {
+                    ExceptionPrinter.printHistory(new InvalidStateException("Invalid data package received!"), LOGGER);
+                }
+                LOGGER.error("Incoming requested state via unit is unknown! ["+ data+"]");
                 deliveredUnknownRequestedState[0] = true;
             }
         });
