@@ -521,6 +521,11 @@ public class ActionDescriptionProcessor {
         // setup creation time
         TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
 
+        // setup service state time if still missing
+        if(!TimestampProcessor.hasTimestamp(serviceState)) {
+            TimestampProcessor.copyTimestamp(actionDescriptionBuilder, serviceState);
+        }
+
         // prepare parameters from causes if required.
         // prepare execution time period from cause if not available
         actionDescriptionBuilder.setExecutionTimePeriod(getExecutionTimePeriod(actionDescriptionBuilder));
