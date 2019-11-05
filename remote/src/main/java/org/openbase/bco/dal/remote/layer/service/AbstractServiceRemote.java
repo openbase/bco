@@ -869,27 +869,29 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
         try {
             // generate builder
-            final Message.Builder stateBuilder = Services.generateServiceStateBuilder(getCommunicationType(), neutralState);
+            final Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(getCommunicationType(), neutralState);
 
             // lookup field descriptors
-            final FieldDescriptor valueDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
-            final FieldDescriptor mapFieldDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_VALUE_OCCURRENCE);
-            final FieldDescriptor timestampDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_TIMESTAMP);
+            final FieldDescriptor valueDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
+            final FieldDescriptor mapFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_VALUE_OCCURRENCE);
+            final FieldDescriptor timestampDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_TIMESTAMP);
 
             // verify field descriptors
             if (valueDescriptor == null) {
-                throw new NotAvailableException("Field[" + FIELD_NAME_VALUE + "] does not exist for type " + stateBuilder.getClass().getName());
+                throw new NotAvailableException("Field[" + FIELD_NAME_VALUE + "] does not exist for type " + serviceStateBuilder.getClass().getName());
             } else if (mapFieldDescriptor == null) {
-                throw new NotAvailableException("Field[" + FIELD_NAME_LAST_VALUE_OCCURRENCE + "] does not exist for type " + stateBuilder.getClass().getName());
+                throw new NotAvailableException("Field[" + FIELD_NAME_LAST_VALUE_OCCURRENCE + "] does not exist for type " + serviceStateBuilder.getClass().getName());
             } else if (timestampDescriptor == null) {
-                throw new NotAvailableException("Field[" + FIELD_NAME_TIMESTAMP + "] does not exist for type " + stateBuilder.getClass().getName());
+                throw new NotAvailableException("Field[" + FIELD_NAME_TIMESTAMP + "] does not exist for type " + serviceStateBuilder.getClass().getName());
             }
 
-            // pre init timestamp
+            // pre init fields to collect
             long timestamp = 0;
+            ActionDescription latestAction = null;
 
             FieldDescriptor mapEntryKeyDescriptor = null;
             FieldDescriptor mapEntryValueDescriptor = null;
+
             for (S service : getServices(unitType)) {
 
                 // do not handle if data is not synced yet.
@@ -900,7 +902,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // handle state
                 final Message state = Services.invokeProviderServiceMethod(getServiceType(), service);
                 if (state.hasField(valueDescriptor) && state.getField(valueDescriptor).equals(effectiveState.getValueDescriptor())) {
-                    stateBuilder.setField(valueDescriptor, state.getField(valueDescriptor));
+                    serviceStateBuilder.setField(valueDescriptor, state.getField(valueDescriptor));
                 }
 
                 // handle latest occurrence timestamps
@@ -919,7 +921,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                     }
 
                     try {
-                        ServiceStateProcessor.updateLatestValueOccurrence((EnumValueDescriptor) entry.getField(mapEntryKeyDescriptor), (Timestamp) entry.getField(mapEntryValueDescriptor), stateBuilder);
+                        ServiceStateProcessor.updateLatestValueOccurrence((EnumValueDescriptor) entry.getField(mapEntryKeyDescriptor), (Timestamp) entry.getField(mapEntryValueDescriptor), serviceStateBuilder);
                     } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory("Could not update latest occurrence timestamp of Entry[" + entry + "]", ex, logger);
                     }
@@ -927,13 +929,40 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
                 // handle timestamp
                 timestamp = Math.max(timestamp, ((Timestamp) state.getField(timestampDescriptor)).getTime());
+
+                // select latest action
+                final ActionDescription responsibleAction = Services.getResponsibleAction(state);
+                if (latestAction == null || latestAction.getTimestamp().getTime() < responsibleAction.getTimestamp().getTime()) {
+                    latestAction = responsibleAction;
+                }
             }
 
             // update final timestamp
-            TimestampProcessor.updateTimestamp(timestamp, stateBuilder, TimeUnit.MICROSECONDS, logger);
+            TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger);
+
+            // setup responsible action with latest action as cause.
+            if (hasServiceRemoteManager()) {
+                try {
+
+                    // generate responsible action
+                    final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceStateBuilder.build(), getServiceType(), getServiceRemoteManager().getResponsibleUnit());
+                    ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, getServiceRemoteManager().getResponsibleUnit(), true);
+
+                    // if available set last action as cause
+                    if (latestAction != null) {
+                        ActionDescriptionProcessor.updateActionCause(actionDescriptionBuilder, latestAction);
+                    }
+
+                    // register responsible action
+                    Services.setResponsibleAction(actionDescriptionBuilder, serviceStateBuilder);
+
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not generate responsible action for aggregated service state!", ex, logger);
+                }
+            }
 
             // return merged state
-            return stateBuilder;
+            return serviceStateBuilder;
         } catch (final CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not fuse service state!", ex);
         }

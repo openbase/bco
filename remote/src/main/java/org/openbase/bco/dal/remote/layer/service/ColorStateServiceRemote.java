@@ -108,6 +108,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
                 averageBlue += rgbColor.getBlue();
                 timestamp = Math.max(timestamp, service.getColorState().getTimestamp().getTime());
 
+                // select latest action
                 if(latestAction == null || latestAction.getTimestamp().getTime() < service.getColorState().getResponsibleAction().getTimestamp().getTime()) {
                     latestAction = service.getColorState().getResponsibleAction();
                 }
@@ -129,11 +130,17 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
                     .setResponsibleAction(latestAction);
             TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
 
+            // setup responsible action with latest action as cause.
             if(hasServiceRemoteManager()) {
                 try {
                     final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceStateBuilder.build(), getServiceType(), getServiceRemoteManager().getResponsibleUnit());
                     ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, getServiceRemoteManager().getResponsibleUnit(), true);
-                    actionDescriptionBuilder.addActionCause(ActionDescriptionProcessor.generateActionReference(latestAction));
+
+                    // if available set last action as cause
+                    if (latestAction != null) {
+                        ActionDescriptionProcessor.updateActionCause(actionDescriptionBuilder, latestAction);
+                    }
+
                     serviceStateBuilder.setResponsibleAction(actionDescriptionBuilder);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not generate responsible action for aggregated service state!", ex, logger);
