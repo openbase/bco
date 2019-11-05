@@ -166,11 +166,11 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
 
                 // compute related units to filter
                 for (ActionReferenceType.ActionReference cause : responsibleAction.getActionCauseList()) {
-                    relatedUnitIds.add(cause.getServiceStateDescription().getUnitId());
+                    relatedUnitIds.add("'" + cause.getServiceStateDescription().getUnitId() + "'");
                 }
 
                 for (ActionReferenceType.ActionReference impact : responsibleAction.getActionImpactList()) {
-                    relatedUnitIds.add(impact.getServiceStateDescription().getUnitId());
+                    relatedUnitIds.add("'" + impact.getServiceStateDescription().getUnitId()+ "'");
                 }
             }
 
