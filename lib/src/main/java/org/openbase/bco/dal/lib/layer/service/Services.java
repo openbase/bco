@@ -41,6 +41,7 @@ import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -586,6 +587,36 @@ public class Services extends ServiceStateProcessor {
     /**
      * Method set the responsible action of the service state.
      *
+     * @param responsibleActionBuilder the action to setup.
+     * @param serviceState             the message which is updated with the given responsible action.
+     * @param <M>                      the type of the service state message.
+     *
+     * @return the modified message instance.
+     *
+     * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
+     */
+    public static <M extends Message> M setResponsibleAction(final ActionDescription.Builder responsibleActionBuilder, final M serviceState) throws NotAvailableException {
+        return setResponsibleAction(responsibleActionBuilder.build(), serviceState);
+    }
+
+    /**
+     * Method set the responsible action of the service state.
+     *
+     * @param responsibleActionBuilder the action to setup.
+     * @param serviceStateBuilder      the builder which is updated with the given responsible action.
+     * @param <B>                      the type of the service state builder.
+     *
+     * @return the modified builder instance.
+     *
+     * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
+     */
+    public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription.Builder responsibleActionBuilder, final B serviceStateBuilder) throws NotAvailableException {
+        return setResponsibleAction(responsibleActionBuilder.build(), serviceStateBuilder);
+    }
+
+    /**
+     * Method set the responsible action of the service state.
+     *
      * @param responsibleAction the action to setup.
      * @param serviceState      the message which is updated with the given responsible action.
      * @param <M>               the type of the service state message.
@@ -857,12 +888,12 @@ public class Services extends ServiceStateProcessor {
         }
 
         // make sure total equals or both empty messages pass the check
-        if(serviceState1.equals(serviceState2)) {
+        if (serviceState1.equals(serviceState2)) {
             return true;
         }
 
         // fail if only one is empty
-        if(serviceState1.equals(serviceState1.getDefaultInstanceForType()) || serviceState2.equals(serviceState2.getDefaultInstanceForType())) {
+        if (serviceState1.equals(serviceState1.getDefaultInstanceForType()) || serviceState2.equals(serviceState2.getDefaultInstanceForType())) {
             return false;
         }
 
@@ -888,22 +919,22 @@ public class Services extends ServiceStateProcessor {
             }
 
             // handle repeated fields
-            if(field.isRepeated()) {
-                if(!serviceState1.getField(field).equals(serviceState2.getField(field))) {
+            if (field.isRepeated()) {
+                if (!serviceState1.getField(field).equals(serviceState2.getField(field))) {
                     return false;
                 }
                 continue;
             }
 
             // check recursive for messages
-            if(field.getJavaType() == JavaType.MESSAGE) {
-                if(!equalServiceStates((Message) serviceState1.getField(field), (Message) serviceState2.getField(field))) {
+            if (field.getJavaType() == JavaType.MESSAGE) {
+                if (!equalServiceStates((Message) serviceState1.getField(field), (Message) serviceState2.getField(field))) {
                     return false;
                 }
             }
 
             // compare primitives
-            if(field.getJavaType() != JavaType.MESSAGE) {
+            if (field.getJavaType() != JavaType.MESSAGE) {
                 if (serviceState1.hasField(field) && serviceState2.hasField(field) && !(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
                     //System.out.println("field not equal: " + field.getName());
                     return false;
