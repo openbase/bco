@@ -26,7 +26,6 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -40,7 +39,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
-import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Pair;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -56,7 +55,6 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractExecutableBaseUnitController<D, DB> {
@@ -192,22 +190,22 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
 
 
     @Override
-    protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        final ArrayList<Future<ActionDescription>> cancelTaskList = new ArrayList<>();
-        for (RemoteAction remoteAction : observedTaskList) {
+    protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+        final ArrayList<Pair<RemoteAction, Future<ActionDescription>>> cancelTaskList = new ArrayList<>();
+        for (final RemoteAction remoteAction : observedTaskList) {
             final Future<ActionDescription> cancel = remoteAction.cancel();
             if (cancel == null) {
                 new FatalImplementationErrorException("null task in observer list", this);
                 continue;
             }
-            cancelTaskList.add(cancel);
+            cancelTaskList.add(new Pair<>(remoteAction, cancel));
         }
 
-        for (Future<ActionDescription> cancelTask : cancelTaskList) {
+        for (final Pair<RemoteAction, Future<ActionDescription>> remoteTaskPair : cancelTaskList) {
             try {
-                cancelTask.get(10, TimeUnit.SECONDS);
+                remoteTaskPair.getValue().get(10, TimeUnit.SECONDS);
             } catch (ExecutionException | TimeoutException | CancellationException ex) {
-                ExceptionPrinter.printHistory("Could not cancel action!", ex, logger, LogLevel.WARN);
+                ExceptionPrinter.printHistory("Could not cancel "+remoteTaskPair.getKey()+"!", ex, logger, LogLevel.WARN);
             }
         }
 
