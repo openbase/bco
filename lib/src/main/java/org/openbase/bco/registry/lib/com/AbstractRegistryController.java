@@ -384,7 +384,9 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
                 logger.debug("Trigger initial consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
                 registry.checkConsistency();
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
+                if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
+                }
                 notifyChange();
             }
         }
