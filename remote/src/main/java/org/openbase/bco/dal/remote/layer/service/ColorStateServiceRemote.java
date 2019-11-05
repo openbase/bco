@@ -25,16 +25,19 @@ package org.openbase.bco.dal.remote.layer.service;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.ColorStateType.ColorState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.vision.ColorType;
 import org.openbase.type.vision.HSBColorType.HSBColor;
@@ -84,6 +87,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             double averageGreen = 0;
             double averageBlue = 0;
             long timestamp = 0;
+            ActionDescription latestAction = null;
             final Collection<ColorStateOperationService> colorStateOperationServiceCollection = getServices(unitType);
             int amount = colorStateOperationServiceCollection.size();
 
@@ -103,6 +107,10 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
                 averageGreen += rgbColor.getGreen();
                 averageBlue += rgbColor.getBlue();
                 timestamp = Math.max(timestamp, service.getColorState().getTimestamp().getTime());
+
+                if(latestAction == null || latestAction.getTimestamp().getTime() < service.getColorState().getResponsibleAction().getTimestamp().getTime()) {
+                    latestAction = service.getColorState().getResponsibleAction();
+                }
             }
 
             if (amount == 0) {
@@ -114,7 +122,25 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             averageBlue = averageBlue / amount;
 
             HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(RGBColor.newBuilder().setRed(averageRed).setGreen(averageGreen).setBlue(averageBlue).build());
-            return TimestampProcessor.updateTimestamp(timestamp, ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)), TimeUnit.MICROSECONDS, logger).build();
+
+            final Builder serviceStateBuilder = ColorState.newBuilder();
+            serviceStateBuilder
+                    .setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor))
+                    .setResponsibleAction(latestAction);
+            TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+            if(hasServiceRemoteManager()) {
+                try {
+                    final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceStateBuilder.build(), getServiceType(), getServiceRemoteManager().getResponsibleUnit());
+                    ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, getServiceRemoteManager().getResponsibleUnit(), true);
+                    actionDescriptionBuilder.addActionCause(ActionDescriptionProcessor.generateActionReference(latestAction));
+                    serviceStateBuilder.setResponsibleAction(actionDescriptionBuilder);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not generate responsible action for aggregated service state!", ex, logger);
+                }
+            }
+
+            return serviceStateBuilder.build();
         } catch (CouldNotTransformException ex) {
             throw new NotAvailableException("Could not transform from HSB to RGB or vice-versa!", ex);
         }
