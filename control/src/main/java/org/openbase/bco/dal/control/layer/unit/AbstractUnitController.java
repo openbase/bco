@@ -43,9 +43,7 @@ import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
+import org.openbase.bco.dal.lib.layer.unit.*;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
@@ -85,11 +83,9 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType.Authentic
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.database.QueryType;
 import org.openbase.type.domotic.database.QueryType.Query;
-import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
-import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -129,10 +125,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
     private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
-    /**
-     * Timeout defining how long a requested state for a given service is cached.
-     */
-    private static final long REQUESTED_STATE_CACHE_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
     private static final String LOCK_CONSUMER_SCHEDULEING = AbstractUnitController.class.getSimpleName() + ".reschedule(..)";
     private static final String LOCK_CONSUMER_INDEX_LOOKUP = AbstractUnitController.class.getSimpleName() + ".getSchedulingIndex()";
@@ -155,12 +147,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
-    //private final SyncObject scheduledActionListLock = new SyncObject("ScheduledActionListLock");
     private final ReentrantReadWriteLock actionListNotificationLock = new ReentrantReadWriteLock();
     private final ActionComparator actionComparator;
     private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
     private final Map<ServiceType, Message> requestedStateCache;
-    //    private final Map<ServiceType, Timeout> requestedStateCacheTimeouts;
     private Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
@@ -207,7 +197,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         };
 
         this.requestedStateCache = new HashMap<>();
-//        this.requestedStateCacheTimeouts = new HashMap<>();
 
         this.addDataObserver(ServiceTempus.REQUESTED, (source, data) -> {
             // update requested state cache and create timeouts
@@ -226,21 +215,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 synchronized (requestedStateCacheSync) {
                     // put new value into the cache
                     requestedStateCache.put(serviceDescription.getServiceType(), Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), ServiceTempus.REQUESTED, data));
-
-                    // clear actually not required since service type is key updates will cleanup old states.
-//                    // create or restart timeout to clear te cache
-//                    if (requestedStateCacheTimeouts.containsKey(serviceDescription.getServiceType())) {
-//                        requestedStateCacheTimeouts.get(serviceDescription.getServiceType()).restart();
-//                    } else {
-//                        requestedStateCacheTimeouts.put(serviceDescription.getServiceType(), new Timeout(REQUESTED_STATE_CACHE_TIMEOUT) {
-//                            @Override
-//                            public void expired() {
-//                                synchronized (requestedStateCacheSync) {
-//                                    requestedStateCache.remove(serviceDescription.getServiceType());
-//                                }
-//                            }
-//                        });
-//                    }
                 }
             }
         });
@@ -987,9 +961,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
                 actionListNotificationLock.writeLock().unlock();
                 notifyScheduledActionList();
-                // update action description list in unit builder
-//                notifyScheduledActionListUnlocked();
-                // unlock notification lock so that notifications for action state changes are notified again
             }
         } finally {
             // unlock but do not notify because it has already performed.
@@ -1546,66 +1517,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) {
-//        return internalRestoreSnapshot(snapshot, null);
-        Collection<Future<?>> futureCollection = new ArrayList<>();
-        for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-            ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
-            futureCollection.add(applyAction(actionDescription));
-        }
-        return FutureProcessor.allOf(futureCollection);
-    }
-
-    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final AuthenticationBaseData authenticationBaseData) {
-        return restoreSnapshot(snapshot);
-        //TODO: implementation has to be fixed like in ServiceRemoteManager
-        //        try {
-//            Collection<Future<ActionDescription>> futureCollection = new ArrayList<>();
-//            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-//                ActionDescription.Builder actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription);
-//
-//                if (ticketEvaluationWrapper != null) {
-//                    actionDescription.getActionAuthorityBuilder().setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
-//                }
-//
-//                futureCollection.add(applyAction(actionDescription.build()));
-//            }
-//            return GlobalCachedExecutorService.allOf(input -> {
-//                if (ticketEvaluationWrapper != null) {
-//                    try {
-//                        for (Future<ActionDescription> ActionDescription : input) {
-//                            AuthenticationClientHandler.handleServiceServerResponse(ticketEvaluationWrapper.getSessionKey(), ticketEvaluationWrapper.getTicketAuthenticatorWrapper(), ActionDescription.get().getTicketAuthenticatorWrapper());
-//                        }
-//                    } catch (IOException | BadPaddingException ex) {
-//                        throw new CouldNotPerformException("Could not validate response because it could not be decrypted", ex);
-//                    } catch (ExecutionException ex) {
-//                        throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
-//                    }
-//                }
-//                return null;
-//            }, futureCollection);
-//        } catch (CouldNotPerformException ex) {
-//            throw new CouldNotPerformException("Could not record snapshot!", ex);
-//        }
+        return UnitProcessor.restoreSnapshot(snapshot, logger, this);
     }
 
     @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, authenticationBaseData) -> {
-            try {
-                verifyAccessPermission(authenticationBaseData, ServiceType.UNKNOWN);
-//
-                try {
-//                    internalRestoreSnapshot(snapshot, ticketEvaluationWrapper).get();
-                    restoreSnapshot(snapshot).get();
-                } catch (ExecutionException ex) {
-                    throw new CouldNotPerformException("Could not restore snapshot authenticated", ex);
-                }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-
-            return null;
-        }));
+        try {
+            return UnitProcessor.restoreSnapshotAuthenticated(authenticatedSnapshot, logger, getConfig(), this);
+        } catch (NotAvailableException ex) {
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, new CouldNotPerformException("Could not restore authenticated snapshot!", ex));
+        }
     }
 
     protected AuthPair verifyAccessPermission(final AuthenticationBaseData authenticationBaseData, final ServiceType serviceType) throws CouldNotPerformException {
@@ -1764,19 +1685,24 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 AuthenticatedServiceProcessor.authenticatedAction(databaseQuery, QueryType.Query.class, (message, authenticationBaseData) -> {
                     AuthorizationWithTokenHelper.canDo(authenticationBaseData, getConfig(), PermissionType.READ, Registries.getUnitRegistry(), getUnitType(), ServiceType.UNKNOWN);
 
+                    final Future<AggregatedServiceState> aggregatedServiceStateFuture = queryAggregatedServiceState(message);
                     try {
-                        return queryAggregatedServiceState(message).get();
+                        return aggregatedServiceStateFuture.get(5, TimeUnit.SECONDS);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
-                    } catch (ExecutionException ex) {
+                    } catch (ExecutionException | TimeoutException ex) {
                         throw new CouldNotPerformException("Authenticated action failed!", ex);
+                    } finally {
+                        if (!aggregatedServiceStateFuture.isDone()) {
+                            aggregatedServiceStateFuture.cancel(true);
+                        }
                     }
                 }));
     }
 
     @Override
-    public Future<RecordCollectionType.RecordCollection> queryRecord(QueryType.Query databaseQuery) {
+    public Future<RecordCollection> queryRecord(QueryType.Query databaseQuery) {
         return InfluxDbProcessor.queryRecord(databaseQuery);
     }
 
@@ -1786,13 +1712,18 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 AuthenticatedServiceProcessor.authenticatedAction(databaseQuery, QueryType.Query.class, (message, authenticationBaseData) -> {
                     AuthorizationWithTokenHelper.canDo(authenticationBaseData, getConfig(), PermissionType.READ, Registries.getUnitRegistry(), getUnitType(), ServiceType.UNKNOWN);
 
+                    final Future<RecordCollection> recordCollectionFuture = queryRecord(message);
                     try {
-                        return queryRecord(message).get();
+                        return recordCollectionFuture.get(5, TimeUnit.SECONDS);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
-                    } catch (ExecutionException ex) {
+                    } catch (ExecutionException | TimeoutException ex) {
                         throw new CouldNotPerformException("Authenticated action failed!", ex);
+                    } finally {
+                        if (!recordCollectionFuture.isDone()) {
+                            recordCollectionFuture.cancel(true);
+                        }
                     }
                 }));
     }
