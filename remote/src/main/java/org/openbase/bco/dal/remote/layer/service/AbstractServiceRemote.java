@@ -104,6 +104,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     private final SyncObject maintainerLock = new SyncObject("MaintainerLock");
     private final SyncObject connectionStateLock = new SyncObject("ConnectionStateLock");
     protected Object maintainer;
+    private ServiceRemoteManager<?> serviceRemoteManager;
 
     /**
      * AbstractServiceRemote constructor.
@@ -154,7 +155,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         this.serviceStateObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
         this.serviceStateProviderObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
     }
-
 
     /**
      * Compute the service state of this service collection if an underlying
@@ -510,26 +510,16 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void shutdown() {
-        try {
-            verifyMaintainability();
-            deactivate();
-            for (UnitRemote<?> unitRemote : unitRemoteMap.values()) {
-                unitRemote.removeConfigObserver(unitConfigObserver);
-            }
-            for (UnitRemote<?> unitRemote : disabledUnitRemoteMap.values()) {
-                unitRemote.removeConfigObserver(unitConfigObserver);
-            }
-            for (UnitRemote<?> remote : infrastructureUnitMap.values()) {
-                remote.removeConfigObserver(unitConfigObserver);
-            }
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(new ShutdownException(this, ex), logger);
-        }
+    public <D extends Message> void setServiceRemoteManager(final ServiceRemoteManager<D> serviceRemoteManager) {
+        this.serviceRemoteManager = serviceRemoteManager;
+    }
+
+    public boolean hasServiceRemoteManager() {
+        return serviceRemoteManager != null;
+    }
+
+    public ServiceRemoteManager<?> getServiceRemoteManager() {
+        return serviceRemoteManager;
     }
 
     /**
@@ -762,6 +752,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue, final ActionDescription.Builder actionDescriptionBuilder, final byte[] sessionKey) {
         try {
+            if (authenticatedValue == null) {
+                throw new NotAvailableException("AuthenticatedValue");
+            }
+
             if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
@@ -1231,5 +1225,27 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
         }
         return serviceTemplate;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void shutdown() {
+        try {
+            verifyMaintainability();
+            deactivate();
+            for (UnitRemote<?> unitRemote : unitRemoteMap.values()) {
+                unitRemote.removeConfigObserver(unitConfigObserver);
+            }
+            for (UnitRemote<?> unitRemote : disabledUnitRemoteMap.values()) {
+                unitRemote.removeConfigObserver(unitConfigObserver);
+            }
+            for (UnitRemote<?> remote : infrastructureUnitMap.values()) {
+                remote.removeConfigObserver(unitConfigObserver);
+            }
+        } catch (CouldNotPerformException | InterruptedException ex) {
+            ExceptionPrinter.printHistory(new ShutdownException(this, ex), logger);
+        }
     }
 }
