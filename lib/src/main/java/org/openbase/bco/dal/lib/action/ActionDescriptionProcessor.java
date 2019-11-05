@@ -9,6 +9,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -158,14 +159,14 @@ public class ActionDescriptionProcessor {
      * action and the causing action.
      *
      * @param actionDescription the ActionDescription which is updated
-     * @param parentAction      the ActionDescription of the action which is the cause for the new action
+     * @param cause             the ActionDescription of the action which is the cause for the new action
      *
      * @return the updated ActionDescription
      */
-    public static ActionDescription.Builder updateActionCause(final ActionDescription.Builder actionDescription, final ActionDescriptionOrBuilder parentAction) {
+    public static ActionDescription.Builder updateActionCause(final ActionDescription.Builder actionDescription, final ActionDescriptionOrBuilder cause) {
         actionDescription.clearActionCause();
-        actionDescription.addActionCause(generateActionReference(parentAction));
-        actionDescription.addAllActionCause(parentAction.getActionCauseList());
+        actionDescription.addActionCause(generateActionReference(cause));
+        actionDescription.addAllActionCause(cause.getActionCauseList());
         return actionDescription;
     }
 
@@ -522,7 +523,7 @@ public class ActionDescriptionProcessor {
         TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
 
         // setup service state time if still missing
-        if(!TimestampProcessor.hasTimestamp(serviceState)) {
+        if (!TimestampProcessor.hasTimestamp(serviceState)) {
             TimestampProcessor.copyTimestamp(actionDescriptionBuilder, serviceState);
         }
 
@@ -975,6 +976,7 @@ public class ActionDescriptionProcessor {
             return "Action[?]";
         }
         return "Action["
+                + "Unit:" + resolveUnitLabel(actionParameter.getServiceStateDescription().getUnitId())
                 + (actionParameter.hasServiceStateDescription() ? (actionParameter.getServiceStateDescription().getServiceType().name() + "=" + actionParameter.getServiceStateDescription().getServiceState() + "|") : "")
                 + "]";
     }
@@ -983,10 +985,13 @@ public class ActionDescriptionProcessor {
         if (actionDescription == null) {
             return "Action[?]";
         }
+
         return "Action["
                 + (actionDescription.hasId() ? actionDescription.getId() + "|" : "")
                 + (actionDescription.hasIntermediary() ? "Intermediary:" + actionDescription.getIntermediary() + "|" : "")
+                + "Unit:" + resolveUnitLabel(actionDescription.getServiceStateDescription().getUnitId())
                 + (actionDescription.hasServiceStateDescription() ? (actionDescription.getServiceStateDescription().getServiceType().name() + "=" + actionDescription.getServiceStateDescription().getServiceState() + "|") : "")
+                + "State:" + actionDescription.getActionState().getValue().name()
                 + "]";
     }
 
@@ -997,7 +1002,16 @@ public class ActionDescriptionProcessor {
         return "Action["
                 + (actionReference.hasActionId() ? actionReference.getActionId() + "|" : "")
                 + (actionReference.hasIntermediary() ? "Intermediary:" + actionReference.getIntermediary() + "|" : "")
+                + "Unit:" + resolveUnitLabel(actionReference.getServiceStateDescription().getUnitId())
                 + (actionReference.hasServiceStateDescription() ? (actionReference.getServiceStateDescription().getServiceType().name() + "=" + actionReference.getServiceStateDescription().getServiceState() + "|") : "")
                 + "]";
+    }
+
+    private static String resolveUnitLabel(final String unitId) {
+        try {
+            return LabelProcessor.getBestMatch(Registries.getUnitRegistry(false).getUnitConfigById(unitId).getLabel());
+        } catch (CouldNotPerformException | InterruptedException ex) {
+            return unitId;
+        }
     }
 }
