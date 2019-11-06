@@ -931,40 +931,49 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 timestamp = Math.max(timestamp, ((Timestamp) state.getField(timestampDescriptor)).getTime());
 
                 // select latest action
-                final ActionDescription responsibleAction = Services.getResponsibleAction(state);
-                if (latestAction == null || latestAction.getTimestamp().getTime() < responsibleAction.getTimestamp().getTime()) {
-                    latestAction = responsibleAction;
-                }
+                latestAction = selectLatestAction(state, latestAction);
             }
 
             // update final timestamp
             TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger);
 
             // setup responsible action with latest action as cause.
-            if (hasServiceRemoteManager()) {
-                try {
-
-                    // generate responsible action
-                    final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceStateBuilder.build(), getServiceType(), getServiceRemoteManager().getResponsibleUnit());
-                    ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, getServiceRemoteManager().getResponsibleUnit(), true);
-
-                    // if available set last action as cause
-                    if (latestAction != null) {
-                        ActionDescriptionProcessor.updateActionCause(actionDescriptionBuilder, latestAction);
-                    }
-
-                    // register responsible action
-                    Services.setResponsibleAction(actionDescriptionBuilder, serviceStateBuilder);
-
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not generate responsible action for aggregated service state!", ex, logger);
-                }
-            }
+            setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
 
             // return merged state
             return serviceStateBuilder;
         } catch (final CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not fuse service state!", ex);
+        }
+    }
+
+    protected ActionDescription selectLatestAction(final Message state, final ActionDescription latestAction) {
+        try {
+            final ActionDescription responsibleAction = Services.getResponsibleAction(state);
+            if (latestAction == null || latestAction.getTimestamp().getTime() < responsibleAction.getTimestamp().getTime()) {
+                return responsibleAction;
+            }
+        } catch (NotAvailableException ex) {
+            // just return the current latest action...
+        }
+        return latestAction;
+    }
+
+    protected void setupResponsibleActionForNewAggregatedServiceState(final Message.Builder serviceStateBuilder, ActionDescription latestActionCause) {
+        if (hasServiceRemoteManager()) {
+            try {
+
+                if(latestActionCause != null && (!latestActionCause.hasId() || latestActionCause.getId().isEmpty())) {
+                    logger.warn("Skip latest action since it does not offer an action id!");
+                    latestActionCause = null;
+                }
+
+                // generate and set responsible action and set last action as cause if available.
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, getServiceType(), getServiceRemoteManager().getResponsibleUnit(), latestActionCause);
+
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not generate responsible action for aggregated service state!", ex, logger);
+            }
         }
     }
 

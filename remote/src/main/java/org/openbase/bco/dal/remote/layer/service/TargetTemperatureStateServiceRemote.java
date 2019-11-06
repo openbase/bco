@@ -33,6 +33,7 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
@@ -72,25 +73,46 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
 
     @Override
     public TemperatureState getTargetTemperatureState(final UnitType unitType) throws NotAvailableException {
+
+        // prepare fields
         Double average = 0d;
         long timestamp = 0;
         final Collection<TargetTemperatureStateOperationService> targetTemperatureStateOperationServices = getServices(unitType);
         int amount = targetTemperatureStateOperationServices.size();
+        ActionDescription latestAction = null;
+
+        // iterate over all services and collect available states
         for (TargetTemperatureStateOperationService service : targetTemperatureStateOperationServices) {
-            if (!((UnitRemote) service).isDataAvailable() || !service.getTargetTemperatureState().hasTemperature()) {
+            final TemperatureState state = service.getTargetTemperatureState();
+
+            if (!((UnitRemote) service).isDataAvailable() || !state.hasTemperature()) {
                 amount--;
                 continue;
             }
 
-            if (amount == 0) {
-                throw new NotAvailableException("TargetTemperatureState");
-            }
+            average += state.getTemperature();
+            timestamp = Math.max(timestamp, state.getTimestamp().getTime());
 
-            average += service.getTargetTemperatureState().getTemperature();
-            timestamp = Math.max(timestamp, service.getTargetTemperatureState().getTimestamp().getTime());
+            // select latest action
+            latestAction = selectLatestAction(state, latestAction);
         }
+
+        if (amount == 0) {
+            throw new NotAvailableException("TargetTemperatureState");
+        }
+
+        // finally compute average
         average /= amount;
 
-        return TimestampProcessor.updateTimestamp(timestamp, TemperatureState.newBuilder().setTemperature(average), TimeUnit.MICROSECONDS, logger).build();
+        // setup state
+        final Builder serviceStateBuilder = TemperatureState.newBuilder().setTemperature(average);
+
+        // setup timestamp
+        TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+        // setup responsible action with latest action as cause.
+        setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
+
+        return serviceStateBuilder.build();
     }
 }

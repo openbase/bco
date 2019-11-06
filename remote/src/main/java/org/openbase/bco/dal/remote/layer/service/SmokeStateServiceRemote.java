@@ -28,8 +28,10 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.SmokeStateType.SmokeState;
+import org.openbase.type.domotic.state.SmokeStateType.SmokeState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -57,22 +59,24 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
 
     @Override
     public SmokeState getSmokeState(final UnitType unitType) throws NotAvailableException {
+
+        // prepare fields
         boolean someSmoke = false;
         SmokeState.State smokeValue = SmokeState.State.NO_SMOKE;
         int amount = getServices(unitType).size();
         double averageSmokeLevel = 0;
         long timestamp = 0;
+        ActionDescription latestAction = null;
+
+        // iterate over all services and collect available states
         for (SmokeStateProviderService service : getServices(unitType)) {
-            if (!((UnitRemote) service).isDataAvailable() || !service.getSmokeState().hasValue()) {
+            final SmokeState state = service.getSmokeState();
+            if (!((UnitRemote) service).isDataAvailable() || !state.hasValue()) {
                 amount--;
                 continue;
             }
 
-            if (amount == 0) {
-                throw new NotAvailableException("SmokeState");
-            }
-
-            SmokeState smokeState = service.getSmokeState();
+            SmokeState smokeState = state;
             if (smokeState.getValue() == SmokeState.State.SMOKE) {
                 smokeValue = SmokeState.State.SMOKE;
                 break;
@@ -82,13 +86,30 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
 
             averageSmokeLevel += smokeState.getSmokeLevel();
             timestamp = Math.max(timestamp, smokeState.getTimestamp().getTime());
+
+            // select latest action
+            latestAction = selectLatestAction(state, latestAction);
         }
 
+        if (amount == 0) {
+            throw new NotAvailableException("SmokeState");
+        }
+
+        // finally compute average
         if (someSmoke) {
             smokeValue = SmokeState.State.SOME_SMOKE;
         }
         averageSmokeLevel /= amount;
 
-        return TimestampProcessor.updateTimestamp(timestamp, SmokeState.newBuilder().setValue(smokeValue).setSmokeLevel(averageSmokeLevel), TimeUnit.MICROSECONDS, logger).build();
+        // setup state
+        final Builder serviceStateBuilder = SmokeState.newBuilder().setValue(smokeValue).setSmokeLevel(averageSmokeLevel);
+
+        // setup timestamp
+        TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+        // setup responsible action with latest action as cause.
+        setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
+
+        return serviceStateBuilder.build();
     }
 }

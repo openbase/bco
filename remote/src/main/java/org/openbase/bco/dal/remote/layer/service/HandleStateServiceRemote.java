@@ -29,8 +29,11 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.HandleStateType.HandleState;
+import org.openbase.type.domotic.state.HandleStateType.HandleState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -56,27 +59,49 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
 
     @Override
     public HandleState getHandleState(final UnitType unitType) throws NotAvailableException {
+
+
+        // prepare fields
         // TODO: rethink position in handle state
         int position = 0;
         //boolean tilted = false;
         Collection<HandleStateProviderService> handleStateProviderServices = getServices(unitType);
         int amount = handleStateProviderServices.size();
         long timestamp = 0;
+        ActionDescription latestAction = null;
+
+        // iterate over all services and collect available states
         for (HandleStateProviderService service : handleStateProviderServices) {
-            if (!((UnitRemote) service).isDataAvailable() || !service.getHandleState().hasPosition()) {
+            final HandleState state = service.getHandleState();
+
+            if (!((UnitRemote) service).isDataAvailable() || !state.hasPosition()) {
                 amount--;
                 continue;
             }
 
-            if (amount == 0) {
-                throw new NotAvailableException("HandleState");
-            }
+            position += state.getPosition();
+            timestamp = Math.max(timestamp, state.getTimestamp().getTime());
 
-            position += service.getHandleState().getPosition();
-            timestamp = Math.max(timestamp, service.getHandleState().getTimestamp().getTime());
+            // select latest action
+            latestAction = selectLatestAction(state, latestAction);
         }
 
+        if (amount == 0) {
+            throw new NotAvailableException("HandleState");
+        }
+
+        // finally compute average
         position /= amount;
-        return TimestampProcessor.updateTimestamp(timestamp, HandleState.newBuilder().setPosition(position), TimeUnit.MICROSECONDS, logger).build();
+
+        // setup state
+        final Builder serviceStateBuilder = HandleState.newBuilder().setPosition(position);
+
+        // setup timestamp
+        TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+        // setup responsible action with latest action as cause.
+        setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
+
+        return serviceStateBuilder.build();
     }
 }

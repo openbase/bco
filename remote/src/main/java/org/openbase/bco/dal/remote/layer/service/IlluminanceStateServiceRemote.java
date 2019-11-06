@@ -36,8 +36,11 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
+import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -64,26 +67,46 @@ public class IlluminanceStateServiceRemote extends AbstractServiceRemote<Illumin
 
     @Override
     public IlluminanceState getIlluminanceState(final UnitType unitType) throws NotAvailableException {
+
+        // prepare fields
         double averageIlluminance = 0;
         long timestamp = 0;
         Collection<IlluminanceStateProviderService> illuminanceStateProviderServices = getServices(unitType);
         int amount = illuminanceStateProviderServices.size();
+        ActionDescription latestAction = null;
+
+        // iterate over all services and collect available states
         for (IlluminanceStateProviderService service : illuminanceStateProviderServices) {
-            if (!((UnitRemote) service).isDataAvailable() || !service.getIlluminanceState().hasIlluminance()) {
+            final IlluminanceState state = service.getIlluminanceState();
+
+            if (!((UnitRemote) service).isDataAvailable() || !state.hasIlluminance()) {
                 amount--;
                 continue;
             }
 
-            if (amount == 0) {
-                throw new NotAvailableException("IlluminanceState");
-            }
+            averageIlluminance += state.getIlluminance();
+            timestamp = Math.max(timestamp, state.getTimestamp().getTime());
 
-            averageIlluminance += service.getIlluminanceState().getIlluminance();
-            timestamp = Math.max(timestamp, service.getIlluminanceState().getTimestamp().getTime());
+            // select latest action
+            latestAction = selectLatestAction(state, latestAction);
         }
+
+        if (amount == 0) {
+            throw new NotAvailableException("IlluminanceState");
+        }
+
+        // finally compute average
         averageIlluminance = averageIlluminance / amount;
 
-        return TimestampProcessor.updateTimestamp(timestamp, IlluminanceState.newBuilder().setIlluminance(averageIlluminance).setIlluminanceDataUnit(IlluminanceState.DataUnit.LUX), TimeUnit.MICROSECONDS, logger).build();
-    }
+        // setup state
+        final Builder serviceStateBuilder = IlluminanceState.newBuilder().setIlluminance(averageIlluminance).setIlluminanceDataUnit(IlluminanceState.DataUnit.LUX);
 
+        // setup timestamp
+        TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+        // setup responsible action with latest action as cause.
+        setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
+
+        return serviceStateBuilder.build();
+    }
 }

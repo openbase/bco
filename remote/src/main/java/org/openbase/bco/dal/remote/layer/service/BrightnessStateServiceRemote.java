@@ -32,7 +32,9 @@ import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
@@ -73,24 +75,44 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
     @Override
     public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException {
 
+        // prepare fields
         Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(unitType);
         int amount = brightnessStateOperationServices.size();
         Double average = 0d;
         long timestamp = 0;
+        ActionDescription latestAction = null;
+
+        // iterate over all services and collect available states
         for (BrightnessStateOperationService service : brightnessStateOperationServices) {
-            if (!((UnitRemote) service).isDataAvailable() || !service.getBrightnessState().hasBrightness()) {
+            final BrightnessState state = service.getBrightnessState();
+            if (!((UnitRemote) service).isDataAvailable() || !state.hasBrightness()) {
                 amount--;
                 continue;
             }
 
-            if (amount == 0) {
-                throw new NotAvailableException("BrightnessState");
-            }
+            average += state.getBrightness();
+            timestamp = Math.max(timestamp, state.getTimestamp().getTime());
 
-            average += service.getBrightnessState().getBrightness();
-            timestamp = Math.max(timestamp, service.getBrightnessState().getTimestamp().getTime());
+            // select latest action
+            latestAction = selectLatestAction(state, latestAction);
         }
+
+        if (amount == 0) {
+            throw new NotAvailableException("BrightnessState");
+        }
+
+        // finally compute average
         average /= amount;
-        return TimestampProcessor.updateTimestamp(timestamp, BrightnessState.newBuilder().setBrightness(average), TimeUnit.MICROSECONDS, logger).build();
+
+        // setup state
+        final Builder serviceStateBuilder = BrightnessState.newBuilder().setBrightness(average);
+
+        // setup timestamp
+        TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+        // setup responsible action with latest action as cause.
+        setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
+
+        return serviceStateBuilder.build();
     }
 }

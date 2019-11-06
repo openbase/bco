@@ -30,8 +30,10 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -59,35 +61,52 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
     @Override
     public PowerConsumptionState getPowerConsumptionState(final UnitType unitType) throws NotAvailableException {
 
+        // prepare fields
         long timestamp = 0;
         int voltageValueAmount = 0;
         double voltageAverage = 0;
         double currentSum = 0;
         double consumptionSum = 0;
+        ActionDescription latestAction = null;
 
+        // iterate over all services and collect available states
         for (PowerConsumptionStateProviderService service : getServices(unitType)) {
+            final PowerConsumptionState state = service.getPowerConsumptionState();
 
             // skip service if data is not available
             if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
             }
 
-            if (service.getPowerConsumptionState().hasVoltage() && service.getPowerConsumptionState().getVoltage() > 0) {
+            if (state.hasVoltage() && state.getVoltage() > 0) {
                 voltageValueAmount++;
-                voltageAverage += service.getPowerConsumptionState().getVoltage();
+                voltageAverage += state.getVoltage();
             }
 
-            currentSum += service.getPowerConsumptionState().getCurrent();
-            consumptionSum += service.getPowerConsumptionState().getConsumption();
-            timestamp = Math.max(timestamp, service.getPowerConsumptionState().getTimestamp().getTime());
+            currentSum += state.getCurrent();
+            consumptionSum += state.getConsumption();
+            timestamp = Math.max(timestamp, state.getTimestamp().getTime());
+
+            // select latest action
+            latestAction = selectLatestAction(state, latestAction);
         }
 
         if (voltageValueAmount == 0) {
             throw new NotAvailableException("PowerConsumptionState");
         }
 
+        // finally compute average
         voltageAverage = voltageAverage / voltageValueAmount;
 
-        return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(currentSum).setVoltage(voltageAverage), TimeUnit.MICROSECONDS, logger).build();
+        // setup state
+        final Builder serviceStateBuilder = PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(currentSum).setVoltage(voltageAverage);
+
+        // setup timestamp
+        TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+        // setup responsible action with latest action as cause.
+        setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
+
+        return serviceStateBuilder.build();
     }
 }

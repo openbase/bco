@@ -33,6 +33,7 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.state.BlindStateType.BlindState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
@@ -63,21 +64,23 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     @Override
     public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
 
+        // prepare fields
         final Collection<BlindStateOperationService> blindStateOperationServiceCollection = getServices(unitType);
         int amount = blindStateOperationServiceCollection.size(), stop = 0, down = 0, up = 0;
         long timestamp = 0;
         float openingRatioAverage = 0;
+        ActionDescription latestAction = null;
+
+        // iterate over all services and collect available states
         for (BlindStateOperationService service : blindStateOperationServiceCollection) {
-            if (!((UnitRemote) service).isDataAvailable() || !service.getBlindState().hasValue()) {
+            final BlindState state = service.getBlindState();
+
+            if (!((UnitRemote) service).isDataAvailable() || !state.hasValue()) {
                 amount--;
                 continue;
             }
 
-            if (amount == 0) {
-                throw new NotAvailableException("BlindState");
-            }
-
-            switch (service.getBlindState().getValue()) {
+            switch (state.getValue()) {
                 case DOWN:
                     down++;
                     break;
@@ -89,10 +92,18 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
                     break;
             }
 
-            openingRatioAverage += service.getBlindState().getOpeningRatio();
-            timestamp = Math.max(timestamp, service.getBlindState().getTimestamp().getTime());
+            openingRatioAverage += state.getOpeningRatio();
+            timestamp = Math.max(timestamp, state.getTimestamp().getTime());
+
+            // select latest action
+            latestAction = selectLatestAction(state, latestAction);
         }
 
+        if (amount == 0) {
+            throw new NotAvailableException("BlindState");
+        }
+
+        // finally compute color average in rgb space
         openingRatioAverage /= amount;
         BlindState.State mostOccurrences;
         if (stop >= up && stop >= down) {
@@ -103,7 +114,16 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
             mostOccurrences = BlindState.State.DOWN;
         }
 
-        return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setValue(mostOccurrences).setOpeningRatio(openingRatioAverage), TimeUnit.MICROSECONDS, logger).build();
+        // setup state
+        final Builder serviceStateBuilder = BlindState.newBuilder().setValue(mostOccurrences).setOpeningRatio(openingRatioAverage);
+
+        // setup timestamp
+        TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+        // setup responsible action with latest action as cause.
+        setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
+
+        return serviceStateBuilder.build();
     }
 
     @Override

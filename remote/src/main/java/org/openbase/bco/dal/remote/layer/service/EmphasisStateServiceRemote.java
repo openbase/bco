@@ -33,7 +33,9 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
+import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
@@ -66,34 +68,56 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
 
     @Override
     public EmphasisState getEmphasisState(UnitType unitType) throws NotAvailableException {
+
+        // prepare fields
         Collection<EmphasisStateOperationService> emphasisStateOperationServices = getServices(unitType);
         int amount = emphasisStateOperationServices.size();
         Double averageComfort = 0d;
         Double averageEconomy = 0d;
         Double averageSecurity = 0d;
         long timestamp = 0;
+        ActionDescription latestAction = null;
+
+        // iterate over all services and collect available states
         for (EmphasisStateOperationService service : emphasisStateOperationServices) {
+            final EmphasisState state = service.getEmphasisState();
+
             if (!((UnitRemote) service).isDataAvailable()|| !(
-                    service.getEmphasisState().hasComfort() ||
-                    service.getEmphasisState().hasEconomy() ||
-                    service.getEmphasisState().hasSecurity())) {
+                    state.hasComfort() ||
+                    state.hasEconomy() ||
+                    state.hasSecurity())) {
                 amount--;
                 continue;
             }
 
-            if (amount == 0) {
-                throw new NotAvailableException("EmphasisState");
-            }
+            // finally compute average
+            averageComfort += state.getComfort();
+            averageEconomy += state.getEconomy();
+            averageSecurity += state.getSecurity();
+            timestamp = Math.max(timestamp, state.getTimestamp().getTime());
 
-            averageComfort += service.getEmphasisState().getComfort();
-            averageEconomy += service.getEmphasisState().getEconomy();
-            averageSecurity += service.getEmphasisState().getSecurity();
-            timestamp = Math.max(timestamp, service.getEmphasisState().getTimestamp().getTime());
+            // select latest action
+            latestAction = selectLatestAction(state, latestAction);
         }
+
+        if (amount == 0) {
+            throw new NotAvailableException("EmphasisState");
+        }
+
+        // finally compute average
         averageComfort /= amount;
         averageEconomy /= amount;
         averageSecurity /= amount;
-        return TimestampProcessor.updateTimestamp(timestamp, EmphasisState.newBuilder().setComfort(averageComfort).setEconomy(averageEconomy).setSecurity(averageSecurity), TimeUnit.MICROSECONDS, logger).build();
-    }
 
+        // setup state
+        final Builder serviceStateBuilder = EmphasisState.newBuilder().setComfort(averageComfort).setEconomy(averageEconomy).setSecurity(averageSecurity);
+
+        // setup timestamp
+        TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
+
+        // setup responsible action with latest action as cause.
+        setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
+
+        return serviceStateBuilder.build();
+    }
 }

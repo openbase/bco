@@ -83,6 +83,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     @Override
     public ColorState getColorState(final UnitType unitType) throws NotAvailableException {
         try {
+            // prepare fields
             double averageRed = 0;
             double averageGreen = 0;
             double averageBlue = 0;
@@ -91,61 +92,50 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             final Collection<ColorStateOperationService> colorStateOperationServiceCollection = getServices(unitType);
             int amount = colorStateOperationServiceCollection.size();
 
+            // iterate over all services and collect available states
             for (ColorStateOperationService service : colorStateOperationServiceCollection) {
+                final ColorState state = service.getColorState();
+
                 if (!((UnitRemote) service).isDataAvailable()
-                        || !service.getColorState().hasColor()
-                        || !service.getColorState().getColor().hasHsbColor()
-                        || !service.getColorState().getColor().getHsbColor().hasHue()
-                        || !service.getColorState().getColor().getHsbColor().hasSaturation()
-                        || !service.getColorState().getColor().getHsbColor().hasBrightness()) {
+                        || !state.hasColor()
+                        || !state.getColor().hasHsbColor()
+                        || !state.getColor().getHsbColor().hasHue()
+                        || !state.getColor().getHsbColor().hasSaturation()
+                        || !state.getColor().getHsbColor().hasBrightness()) {
                     amount--;
                     continue;
                 }
 
-                RGBColor rgbColor = HSBColorToRGBColorTransformer.transform(service.getColorState().getColor().getHsbColor());
+                RGBColor rgbColor = HSBColorToRGBColorTransformer.transform(state.getColor().getHsbColor());
                 averageRed += rgbColor.getRed();
                 averageGreen += rgbColor.getGreen();
                 averageBlue += rgbColor.getBlue();
-                timestamp = Math.max(timestamp, service.getColorState().getTimestamp().getTime());
+                timestamp = Math.max(timestamp, state.getTimestamp().getTime());
 
                 // select latest action
-                if(latestAction == null || latestAction.getTimestamp().getTime() < service.getColorState().getResponsibleAction().getTimestamp().getTime()) {
-                    latestAction = service.getColorState().getResponsibleAction();
-                }
+                latestAction = selectLatestAction(state, latestAction);
             }
 
             if (amount == 0) {
                 throw new NotAvailableException("ColorState");
             }
 
+            // finally compute color average in rgb space
             averageRed = averageRed / amount;
             averageGreen = averageGreen / amount;
             averageBlue = averageBlue / amount;
 
-            HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(RGBColor.newBuilder().setRed(averageRed).setGreen(averageGreen).setBlue(averageBlue).build());
-
             final Builder serviceStateBuilder = ColorState.newBuilder();
-            serviceStateBuilder
-                    .setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor))
-                    .setResponsibleAction(latestAction);
+
+            // setup color value
+            HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(RGBColor.newBuilder().setRed(averageRed).setGreen(averageGreen).setBlue(averageBlue).build());
+            serviceStateBuilder.setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor));
+
+            // setup timestamp
             TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
 
             // setup responsible action with latest action as cause.
-            if(hasServiceRemoteManager()) {
-                try {
-                    final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceStateBuilder.build(), getServiceType(), getServiceRemoteManager().getResponsibleUnit());
-                    ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, getServiceRemoteManager().getResponsibleUnit(), true);
-
-                    // if available set last action as cause
-                    if (latestAction != null) {
-                        ActionDescriptionProcessor.updateActionCause(actionDescriptionBuilder, latestAction);
-                    }
-
-                    serviceStateBuilder.setResponsibleAction(actionDescriptionBuilder);
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not generate responsible action for aggregated service state!", ex, logger);
-                }
-            }
+            setupResponsibleActionForNewAggregatedServiceState(serviceStateBuilder, latestAction);
 
             return serviceStateBuilder.build();
         } catch (CouldNotTransformException ex) {
