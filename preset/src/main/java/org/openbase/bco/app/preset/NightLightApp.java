@@ -77,7 +77,13 @@ public class NightLightApp extends AbstractAppController {
         this.absenceActionLocationMap = new HashMap<>();
     }
 
-    private void update(final LocationRemote location, final Timeout timeout) {
+    /**
+     *
+     * @param location the location to process
+     * @param eventSource the source which has triggered the update: location / childlocation / timeout / init (null)
+     * @param timeout the timeout of the location
+     */
+    private void update(final LocationRemote location, final Object eventSource, final Timeout timeout) {
         try {
 
             // skip update when not active
@@ -106,8 +112,11 @@ public class NightLightApp extends AbstractAppController {
 
             switch (presentState) {
                 case PRESENT:
-                    if (timeout != null) {
-                        timeout.restart();
+
+                    if(eventSource == location) {
+                        timeout.restart(10, TimeUnit.MINUTES);
+                    } else {
+                        timeout.restart(2, TimeUnit.MINUTES);
                     }
 
                     // if ongoing action skip the update.
@@ -132,8 +141,7 @@ public class NightLightApp extends AbstractAppController {
                         return;
                     }
 
-                    if (timeout == null || timeout.isExpired() || !timeout.isActive()) {
-                        // System.out.println("Location power State[" + location.getPowerState().getValue() + ". " + location.getPowerState(UnitType.LIGHT).getValue() + "]");
+                    if (timeout.isExpired() || !timeout.isActive()) {
                         // System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
                         absenceActionLocationMap.put(location, observe(location.setPowerState(State.OFF, UnitType.LIGHT, getDefaultActionParameter())));
                     }
@@ -259,22 +267,6 @@ public class NightLightApp extends AbstractAppController {
                 observer.deactivate();
             });
 
-            final ArrayList<Future<ActionDescription>> cancelTaskList = new ArrayList<>();
-            for (Entry<Unit, RemoteAction> unitActionEntry : presentsActionLocationMap.entrySet()) {
-                cancelTaskList.add(unitActionEntry.getValue().cancel());
-            }
-            for (Entry<Unit, RemoteAction> unitActionEntry : absenceActionLocationMap.entrySet()) {
-                cancelTaskList.add(unitActionEntry.getValue().cancel());
-            }
-
-            for (Future<ActionDescription> cancelTask : cancelTaskList) {
-                try {
-                    cancelTask.get(10, TimeUnit.SECONDS);
-                } catch (ExecutionException | TimeoutException ex) {
-                    ExceptionPrinter.printHistory("Could not cancel action!", ex, logger);
-                }
-            }
-
             // clear actions list
             presentsActionLocationMap.clear();
             absenceActionLocationMap.clear();
@@ -297,11 +289,11 @@ public class NightLightApp extends AbstractAppController {
                 this.timeout = new Timeout(1, TimeUnit.MINUTES) {
                     @Override
                     public void expired() {
-                        NightLightApp.this.update(remote, this);
+                        NightLightApp.this.update(remote, this, this);
                     }
                 };
                 this.neighborLocationRemoteList = remote.getNeighborLocationList(false);
-                this.internalObserver = (source, data) -> NightLightApp.this.update(remote, timeout);
+                this.internalObserver = (source, data) -> NightLightApp.this.update(remote, source, timeout);
             } catch (CouldNotPerformException ex) {
                 throw new InstantiationException(this, ex);
             }
@@ -317,7 +309,7 @@ public class NightLightApp extends AbstractAppController {
                 neighbor.addDataObserver(internalObserver);
             }
 
-            NightLightApp.this.update(remote, timeout);
+            NightLightApp.this.update(remote, null, timeout);
         }
 
         @Override
