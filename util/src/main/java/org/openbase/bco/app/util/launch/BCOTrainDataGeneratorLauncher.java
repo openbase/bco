@@ -65,7 +65,7 @@ public class BCOTrainDataGeneratorLauncher {
         BCOLogin.getSession().autoLogin(true);
 
         try {
-
+            LOGGER.info("please make sure bco is started with the --provider-control flag, otherwise no provider services can be synthesised.");
             LOGGER.info("waiting for registry synchronization...");
             Registries.waitUntilReady();
 
