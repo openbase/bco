@@ -578,9 +578,18 @@ public class Services extends ServiceStateProcessor {
      */
     public static ActionDescription getResponsibleAction(final MessageOrBuilder serviceState) throws NotAvailableException {
         try {
-            return (ActionDescription) serviceState.getField(getResponsibleActionField(serviceState));
-        } catch (NotAvailableException ex) {
-            throw new NotAvailableException("ActionDescription", ex);
+            // resolve field descriptor
+            final FieldDescriptor responsibleActionField = getResponsibleActionField(serviceState);
+
+            // validate if field is set
+            if (!serviceState.hasField(responsibleActionField)) {
+                throw new InvalidStateException("Given service state has no responsible action declared!");
+            }
+
+            // resolve value
+            return (ActionDescription) serviceState.getField(responsibleActionField);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ResponsibleAction", ex);
         }
     }
 
