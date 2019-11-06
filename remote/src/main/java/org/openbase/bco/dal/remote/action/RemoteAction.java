@@ -254,6 +254,7 @@ public class RemoteAction implements Action {
 
             if (isRunning()) {
                 if (force) {
+                    // we do not need to cancel the action since its rejected on the target unit anyway when a the new action is executed.
                     reset();
                 } else {
                     throw new InvalidStateException("Action is still running and can not be executed twice! Use the force flag to continue the execution.");
@@ -737,7 +738,7 @@ public class RemoteAction implements Action {
             } else {
                 builder = actionDescription.toBuilder();
             }
-            // force termination
+            // set state as unknown since action will no longer be observed.
             builder.getActionStateBuilder().setValue(State.UNKNOWN);
             actionDescription = builder.build();
         }
@@ -788,7 +789,7 @@ public class RemoteAction implements Action {
             }
         }
 
-        // this action is not listed on its target unit, therefore we are an outdated and the remote action can be cleaned up.
+        // this action is not listed on its target unit, therefore its an outdated one and the remote action can be cleaned up.
         cleanup();
     }
 
