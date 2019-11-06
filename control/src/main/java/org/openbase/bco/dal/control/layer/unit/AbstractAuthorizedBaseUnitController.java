@@ -169,7 +169,6 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         // cleanup done actions
         for (RemoteAction action : new ArrayList<>(observedTaskList)) {
             if (action.isDone()) {
-                action.reset();
                 observedTaskList.remove(action);
             }
         }
