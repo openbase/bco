@@ -519,8 +519,10 @@ public class ActionDescriptionProcessor {
      */
     private static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final UnitConfig unitConfig, final Message serviceState) throws CouldNotPerformException {
 
-        // setup creation time
-        TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
+        // setup creation time if still missing
+        if (!TimestampProcessor.hasTimestamp(actionDescriptionBuilder)) {
+            TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
+        }
 
         // setup service state time if still missing
         if (!TimestampProcessor.hasTimestamp(serviceState)) {
@@ -950,7 +952,6 @@ public class ActionDescriptionProcessor {
     public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit, final boolean interruptible, final boolean schedulable, final ActionPriority.Priority priority, final ActionInitiator actionInitiator) throws CouldNotPerformException {
         try {
             // generate action parameter
-            final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateBuilder.build(), serviceType, targetUnit);
             actionParameter.setInterruptible(interruptible);
             actionParameter.setSchedulable(schedulable);
@@ -961,15 +962,49 @@ public class ActionDescriptionProcessor {
                 actionParameter.getActionInitiatorBuilder().mergeFrom(actionInitiator);
             }
 
+            return generateAndSetResponsibleAction(serviceStateBuilder, targetUnit, actionParameter);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not setup responsible action!", ex);
+        }
+    }
+
+    public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final ActionDescription cause) throws CouldNotPerformException {
+        // prepare action parameter
+        final ActionParameter.Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateBuilder.build(), serviceType, targetUnit);
+
+        // set cause
+        if(cause != null) {
+            actionParameterBuilder.setCause(cause);
+        }
+
+        // generate responsible action
+        return generateAndSetResponsibleAction(serviceStateBuilder, targetUnit, actionParameterBuilder);
+    }
+
+    /**
+     * Method generates and set a new responsible action of a service state.
+     *
+     * @param serviceStateBuilder the builder where the responsible action should be set for.
+     * @param targetUnit          the unit where this action takes place.
+     *
+     * @return the builder instance in just returned.
+     *
+     * @throws CouldNotPerformException is thrown if the setup failed.
+     */
+    public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final Unit<?> targetUnit, final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+        try {
             // generate responsible action
-            final Builder builder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
-            builder.setId(ActionDescriptionProcessor.ACTION_ID_GENERATOR.generateId(builder.build()));
-            serviceStateBuilder.setField(descriptor, builder.build());
+            final Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
+            ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, targetUnit, true);
+
+            // register as responsible action
+            Services.setResponsibleAction(actionDescriptionBuilder, serviceStateBuilder);
             return serviceStateBuilder;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup responsible action!", ex);
         }
     }
+
 
     public static String toString(final ActionParameterOrBuilder actionParameter) {
         if (actionParameter == null) {
