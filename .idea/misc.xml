@@ -7,20 +7,19 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/module/jul/pom.xml" />
-        <option value="$PROJECT_DIR$/module/bco.authentication/pom.xml" />
-        <option value="$PROJECT_DIR$/module/bco.registry/pom.xml" />
-        <option value="$PROJECT_DIR$/module/bco.registry.editor/pom.xml" />
-        <option value="$PROJECT_DIR$/module/bco.dal/pom.xml" />
-        <option value="$PROJECT_DIR$/module/bco.device/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.app/pom.xml" />
-        <option value="$PROJECT_DIR$/module/bco.bcozy/pom.xml" />
-        <option value="$PROJECT_DIR$/module/bco.eveson/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.dal/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.psc/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.bcozy/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.stage/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.device/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.eveson/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.ontology/pom.xml" />
-        <option value="$PROJECT_DIR$/../bco.app.adhoc/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.registry/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.authentication/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.registry.editor/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_12" default="false" project-jdk-name="11" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="false" project-jdk-name="11" project-jdk-type="JavaSDK" />
 </project>

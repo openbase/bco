@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <excludeFromCompile>
-      <file url="file://$PROJECT_DIR$/module/jul/pattern/trigger/src/main/java/org/openbase/jul/pattern/trigger/TriggerPool.java" />
-    </excludeFromCompile>
     <annotationProcessing>
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -15,32 +12,32 @@
         <module name="bco.dal.remote" />
         <module name="jul.extension.type.util" />
         <module name="jul.extension.type.processing" />
-        <module name="jul.visual.swing" />
-        <module name="bco.registry.lib" />
+        <module name="jul.pattern.controller" />
+        <module name="jul.extension.type.interface" />
         <module name="bco.dal.lib" />
         <module name="bco.registry.unit.test" />
         <module name="bco.registry.unit.lib" />
-        <module name="jul.communication.controller" />
         <module name="bco.registry.message.lib" />
         <module name="bco.dal.test" />
         <module name="jul.pattern.launch" />
-        <module name="bco.dal.control" />
         <module name="jul.extension.type.storage" />
         <module name="bco.app.util" />
+        <module name="jul.audio" />
         <module name="bco.registry.unit.remote" />
+        <module name="bco.registry.template.core" />
         <module name="jul.pattern.trigger" />
-        <module name="bco.app.adhoc.model" />
+        <module name="jul.visual.swing" />
         <module name="bco.registry.template.remote" />
         <module name="bco.dal.visual" />
-        <module name="bco.registry.class.remote" />
+        <module name="bco.registry.lib" />
         <module name="bco.registry.message.remote" />
         <module name="bco.app.preset" />
         <module name="bco.ontology.owl" />
         <module name="jul.extension.rsb.com" />
         <module name="bco.authentication.lib" />
-        <module name="bco.psc.dummyintent" />
         <module name="jul.exception" />
         <module name="bco.registry.message.test" />
+        <module name="jul.extension.type.transform" />
         <module name="bco.psc.ray-extractor" />
         <module name="jul.extension.rsb.processing" />
         <module name="bco.registry.unit.core" />
@@ -50,7 +47,7 @@
         <module name="bco.authentication.test" />
         <module name="jul.storage" />
         <module name="bco.psc.skeleton-merging" />
-        <module name="bco.eveson" />
+        <module name="jul.extension.rsb.container" />
         <module name="jul.extension.protobuf" />
         <module name="jul.extension.rsb.util" />
         <module name="bco.registry.class.test" />
@@ -60,53 +57,45 @@
         <module name="jul.processing" />
         <module name="bco.registry.class.lib" />
         <module name="bco.registry.template.test" />
-        <module name="bco.app.influxdb.connector" />
         <module name="bco.bcozy" />
         <module name="jul.pattern" />
         <module name="jul.visual.javafx" />
         <module name="bco.registry.activity.test" />
-        <module name="bco.device.proxy" />
+        <module name="jul.annotation" />
         <module name="bco.psc.control" />
         <module name="jul.processing.json" />
-        <module name="bco.psc.lib" />
-        <module name="jul.pattern.controller" />
+        <module name="bco.eveson" />
         <module name="bco.app.openapiserver" />
         <module name="bco.registry.util" />
         <module name="bco.stage" />
-        <module name="jul.extension.type.transform" />
-        <module name="jul.schedule" />
-        <module name="bco.dal.task" />
+        <module name="bco.psc.identification" />
         <module name="bco.ontology.lib" />
         <module name="bco.registry.message.core" />
-        <module name="jul.extension.rsb.container" />
+        <module name="bco.dal.task" />
         <module name="bco.registry.remote" />
-        <module name="jul.annotation" />
-        <module name="bco.app.adhoc.connector" />
+        <module name="bco.dal.control" />
+        <module name="bco.ontology.visual" />
         <module name="bco.app.manager" />
-        <module name="bco.psc.identification" />
+        <module name="bco.psc.dummyintent" />
         <module name="bco.authentication.core" />
         <module name="bco.device.openhab" />
-        <module name="bco.app.adhoc.learner" />
         <module name="jul.communication" />
         <module name="bco.psc.speech" />
-        <module name="jul.extension.type.interface" />
+        <module name="jul.schedule" />
         <module name="bco.registry.class.core" />
         <module name="bco.registry.activity.lib" />
         <module name="jul.extension.rsb.scope" />
-        <module name="jul.audio" />
+        <module name="bco.psc.lib" />
         <module name="bco.registry.activity.remote" />
-        <module name="bco.registry.template.core" />
-        <module name="bco.ontology.visual" />
+        <module name="bco.registry.class.remote" />
+        <module name="jul.communication.controller" />
+        <module name="bco.app.influxdb.connector" />
         <module name="bco.psc.util" />
         <module name="bco.registry.activity.core" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="bco.app" target="1.8" />
-      <module name="bco.app.adhoc" target="1.8" />
-      <module name="bco.app.adhoc.connector" target="1.8" />
-      <module name="bco.app.adhoc.learner" target="1.8" />
-      <module name="bco.app.adhoc.model" target="1.8" />
       <module name="bco.app.cloud.connector" target="1.8" />
       <module name="bco.app.influxdb.connector" target="1.8" />
       <module name="bco.app.manager" target="1.8" />
@@ -129,7 +118,6 @@
       <module name="bco.dal.visual" target="1.8" />
       <module name="bco.device" target="1.8" />
       <module name="bco.device.openhab" target="1.8" />
-      <module name="bco.device.proxy" target="1.8" />
       <module name="bco.eveson" target="1.8" />
       <module name="bco.ontology" target="1.8" />
       <module name="bco.ontology.lib" target="1.8" />
