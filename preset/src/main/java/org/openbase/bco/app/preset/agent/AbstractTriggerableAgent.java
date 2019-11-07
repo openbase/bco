@@ -22,24 +22,32 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.agent.AbstractAgentController;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -56,12 +64,28 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
 
     private ActivationState.State currentTriggerActivationState;
 
+    private final RecurrenceEventFilter<Void> parentLocationEmphasisRescheduleEventFilter;
+    private final Observer<ServiceStateProvider<Message>, Message> emphasisStateObserver;
+
     public AbstractTriggerableAgent() throws InstantiationException {
 
         this.currentTriggerActivationState = State.UNKNOWN;
 
         this.activationTriggerPool = new TriggerPool();
         this.deactivationTriggerPool = new TriggerPool();
+
+        // used to make sure reschedule is triggered when the emphasis state of the parent location has been changed.
+        this.parentLocationEmphasisRescheduleEventFilter = new RecurrenceEventFilter<Void>(TimeUnit.SECONDS.toMillis(5)) {
+            @Override
+            public void relay() {
+                try {
+                    activationTriggerPool.forceNotification();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not notify agent about emphasis state change.", ex, logger);
+                }
+            }
+        };
+        this.emphasisStateObserver = (source, data) -> parentLocationEmphasisRescheduleEventFilter.trigger();
 
         this.activationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
             logger.debug("activationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
@@ -160,6 +184,9 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         logger.debug("Activating [{}]", LabelProcessor.getBestMatch(getConfig().getLabel()));
         activationTriggerPool.activate();
         deactivationTriggerPool.activate();
+
+        // register emphasis state observer on location
+        getParentLocationRemote(false).addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
         return activationState.getResponsibleAction();
     }
 
@@ -168,6 +195,16 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         logger.debug("Deactivating [{}]", LabelProcessor.getBestMatch(getConfig().getLabel()));
         activationTriggerPool.deactivate();
         deactivationTriggerPool.deactivate();
+
+        // deregister emphasis state observer
+        try {
+            getParentLocationRemote(false).removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
+        } catch (CouldNotPerformException ex) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not deregister parent location observation!", ex, logger, LogLevel.WARN);
+            }
+        }
+
         super.stop(activationState);
     }
 
