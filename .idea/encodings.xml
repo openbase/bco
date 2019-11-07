@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/../bco.app.adhoc" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.app.adhoc/connector" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.app.adhoc/learner" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../bco.app.adhoc/model" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app/cloudconnector" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app/influxdbconnector" charset="UTF-8" />
@@ -25,12 +29,18 @@
     <file url="file://$PROJECT_DIR$/module/bco.device" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.device/openhab" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.eveson" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.ontology" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.ontology/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.ontology/owl" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.ontology/visual" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc/control" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.psc/dummyintent" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc/identification" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc/lib" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc/ray-extractor" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc/skeleton-merging" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.psc/speech" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc/utility" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry.editor" charset="UTF-8" />
