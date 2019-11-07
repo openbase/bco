@@ -43,6 +43,7 @@ public class JPResetCredentials extends AbstractJPBoolean {
 
     public JPResetCredentials() {
         super(COMMAND_IDENTIFIERS);
+        registerDependingProperty(JPTestMode.class);
     }
 
     @Override
