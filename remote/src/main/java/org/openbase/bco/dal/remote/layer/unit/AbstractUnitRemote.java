@@ -271,7 +271,11 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                 addServiceStateObserver(value, serviceType, observer);
             }
         } else {
-            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+            try {
+                serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+            } catch (NullPointerException ex) {
+                logger.warn("Non supported observer registration requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus );
+            }
         }
     }
 
@@ -287,9 +291,10 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                 removeServiceStateObserver(value, serviceType, observer);
             }
         } else {
-            final MessageObservable<ServiceStateProvider<Message>, Message> observable = serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType);
-            if(observable != null) {
-                observable.removeObserver(observer);
+            try {
+                serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+            } catch (NullPointerException ex) {
+                logger.warn("Non supported observer removal requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus );
             }
         }
     }
