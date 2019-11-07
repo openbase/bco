@@ -76,6 +76,7 @@ import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
@@ -108,6 +109,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Logger;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
@@ -157,9 +159,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private String classDescription = "";
     private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
-    private final RecurrenceEventFilter<Void> parentLocationEmphasisRescheduleEventFilter;
-    private final Observer<ServiceStateProvider<Message>, Message> emphasisStateObserver;
-
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
         super(builder);
@@ -227,16 +226,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         };
 
         this.actionComparator = new ActionComparator(() -> getParentLocationRemote(false).getEmphasisState());
-
-
-        // used to make sure reschedule is triggered when the emphasis state of the parent location has been changed.
-        this.parentLocationEmphasisRescheduleEventFilter = new RecurrenceEventFilter<Void>() {
-            @Override
-            public void relay() throws Exception {
-                reschedule();
-            }
-        };
-        this.emphasisStateObserver = (source, data) -> parentLocationEmphasisRescheduleEventFilter.trigger();
     }
 
     public static Class<? extends UnitController> detectUnitControllerClass(final UnitConfig unitConfig) throws CouldNotTransformException {
@@ -310,32 +299,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-    }
-
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-        getParentLocationRemote(false).addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
-        if (getUnitType() == UnitType.LOCATION) {
-            this.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
-        }
-    }
-
-    @Override
-    public synchronized void deactivate() throws InterruptedException, CouldNotPerformException {
-
-        try {
-            getParentLocationRemote(false).removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
-        } catch (CouldNotPerformException ex) {
-            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
-                ExceptionPrinter.printHistory("Could not deregister parent location observation!", ex, logger, LogLevel.WARN);
-            }
-        }
-
-        if (getUnitType() == UnitType.LOCATION) {
-            this.removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.EMPHASIS_STATE_SERVICE, emphasisStateObserver);
-        }
-        super.deactivate();
     }
 
     @Override
@@ -703,7 +666,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 try {
                     actionToCancel = getActionById(actionDescription.getId(), LOCK_CONSUMER_CANCEL_ACTION);
                 } catch (NotAvailableException ex) {
-                    // if the action is not any longer available, than it can be marked as canceled to inform the remote instance.
+                    // if the action is not any longer available, then it can be marked as canceled to inform the remote instance.
                     return FutureProcessor.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.CANCELED).build()).build());
                 }
 
@@ -807,7 +770,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
      */
-    public Action reschedule(final SchedulableAction actionToSchedule) {
+    private Action reschedule(final SchedulableAction actionToSchedule) {
         builderSetup.lockWrite(LOCK_CONSUMER_SCHEDULEING);
         try {
             // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
@@ -1125,7 +1088,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 addServiceStateObserver(value, serviceType, observer);
             }
         } else {
-            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+            try {
+                serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+            } catch (NullPointerException ex) {
+                logger.warn("Non supported observer registration requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus );
+            }
         }
     }
 
@@ -1141,7 +1108,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 removeServiceStateObserver(value, serviceType, observer);
             }
         } else {
-            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+            try {
+                serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+            } catch (NullPointerException ex) {
+                logger.warn("Non supported Observer[{}] removal requested! {} does not support Service[{}] in ServiceTempus[{}]", observer, this, serviceType, serviceTempus );
+            }
         }
     }
 
@@ -1394,22 +1365,19 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             final Message.Builder serviceStateBuilder = serviceState.toBuilder();
 
             // retrieve the responsible action field descriptor.
-            final Descriptors.FieldDescriptor responsibleActionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             final ActionDescription.Builder responsibleActionBuilder;
 
             // compute responsible action if not exist
-            if (!serviceStateBuilder.hasField(responsibleActionFieldDescriptor)) {
-                // recover responsible action out of service state.
-                final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceState, serviceType, this);
-                actionParameter.setInterruptible(false);
-                actionParameter.setSchedulable(false);
-                serviceStateBuilder.setField(responsibleActionFieldDescriptor, ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build());
+            if (!Services.hasResponsibleAction(serviceStateBuilder)) {
+                logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, Priority.LOW, null);
             }
 
-            responsibleActionBuilder = (ActionDescription.Builder) serviceStateBuilder.getFieldBuilder(responsibleActionFieldDescriptor);
-            responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
+            // load responsible action
+            responsibleActionBuilder = Services.getResponsibleAction(serviceStateBuilder).toBuilder();
 
             // add the new action as executing to the front of the stack
+            responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
             scheduledActionList.add(0, new ActionImpl(responsibleActionBuilder.build(), this, false));
 
             // if there was another action executing before, abort it
