@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.action;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -66,6 +66,7 @@ public class ActionImpl implements SchedulableAction {
      * Timeout how long it is waited on execution failure until a rescheduling process is triggered.
      */
     private static final long EXECUTION_FAILURE_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
 
     protected final AbstractUnitController<?, ?> unit;
@@ -75,6 +76,16 @@ public class ActionImpl implements SchedulableAction {
     private ServiceDescription serviceDescription;
     private Future<ActionDescription> actionTask;
 
+    /**
+     * Constructor creates a new action object which helps to manage its execution during the scheduling process.
+     *
+     * Note: This constructor always aspects a new action which will be prepared during construction.
+     *
+     * @param actionDescription the description of the action.
+     * @param unit              the target unit which needs to be allocated.
+     *
+     * @throws InstantiationException is throw in case the given action description is invalid. Checkout the exception cause chain for more details.
+     */
     public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit) throws InstantiationException {
         try {
             this.unit = unit;
@@ -84,10 +95,19 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
-    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit, final boolean setInitialState) throws InstantiationException {
+    /**
+     * Constructor creates a new action object which helps to manage its execution during the scheduling process.
+     *
+     * @param actionDescription the description of the action.
+     * @param unit              the target unit which needs to be allocated.
+     * @param prepare           flag defines if the action description refers an already executing action (false) or if the action is a new one and needs to be prepared as well (true).
+     *
+     * @throws InstantiationException is throw in case the given action description is invalid. Checkout the exception cause chain for more details.
+     */
+    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit, final boolean prepare) throws InstantiationException {
         try {
             this.unit = unit;
-            this.init(actionDescription, setInitialState);
+            this.init(actionDescription, prepare);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -99,13 +119,13 @@ public class ActionImpl implements SchedulableAction {
         init(actionDescription, true);
     }
 
-    private void init(final ActionDescription actionDescription, final boolean setInitialState) throws InitializationException {
+    private void init(final ActionDescription actionDescription, final boolean prepare) throws InitializationException {
         LOGGER.trace("================================================================================");
         try {
             actionDescriptionBuilder = actionDescription.toBuilder();
 
             // verify and prepare action description
-            serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, true);
+            serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, prepare);
             // initially set last extension to creation time
             actionDescriptionBuilder.setLastExtensionTimestamp(actionDescriptionBuilder.getTimestamp());
             // set actions description as responsible in service state
@@ -115,8 +135,8 @@ public class ActionImpl implements SchedulableAction {
             // since its an action it has to be an operation service pattern
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
 
-            // mark action as initialized.
-            if (setInitialState) {
+            // mark new action as initialized.
+            if (prepare) {
                 updateActionState(State.INITIALIZED);
             }
         } catch (CouldNotPerformException ex) {
@@ -201,7 +221,7 @@ public class ActionImpl implements SchedulableAction {
                                 }
                                 break;
                             } catch (CouldNotPerformException | ExecutionException | RuntimeException ex) {
-                                if(!isDone()) {
+                                if (!isDone()) {
                                     updateActionState(ActionState.State.EXECUTION_FAILED);
                                 }
                                 ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
@@ -288,7 +308,7 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public Future<ActionDescription> cancel() {
-        // if action not executing, set to canceled if not already done and finish
+        // if action is not executing, set to canceled if not already done and finish
         if (!isExecuting()) {
             if (!isDone()) {
                 updateActionState(State.CANCELED);
@@ -421,7 +441,7 @@ public class ActionImpl implements SchedulableAction {
 
             // print update in debug mode
             if (JPService.debugMode()) {
-                LOGGER.info(this + " State[" + state.name() + "]" + MultiLanguageTextProcessor.getBestMatch(getActionDescription().getDescription(), "?"));
+                LOGGER.info("State[" + state.name() + "] " + this);
                 //StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
             }
 
@@ -434,7 +454,7 @@ public class ActionImpl implements SchedulableAction {
             }
 
             // setup termination time if needed
-            if(isDone()) {
+            if (isDone()) {
                 actionDescriptionBuilder.setTerminationTimestamp(TimestampProcessor.getCurrentTimestamp());
             }
 
