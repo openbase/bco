@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.openbase.bco.dal.control.layer.unit.LightSensorController;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.lib.layer.unit.LightSensor;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.LightSensorRemote;
@@ -34,6 +35,7 @@ import org.openbase.bco.dal.remote.layer.unit.MotionDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
+import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -58,6 +60,7 @@ import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -82,6 +85,18 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
     private static final IlluminanceState BRIGHT = IlluminanceState.newBuilder().setIlluminance(ILLUMINANCEVALUE_BRIGHT).build();
 
     public PresenceLightAgentTest() {
+        // uncomment to visualize action inspector during tests
+//        String[] args = {};
+//        new Thread(() -> {
+//            try {
+//                Registries.waitForData();
+//                BCOActionInspector.main(args);
+//            } catch (CouldNotPerformException e) {
+//                e.printStackTrace();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }).start();
     }
 
     /**
@@ -98,6 +113,9 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         MotionDetectorRemote motionDetectorRemote = locationRemote.getUnits(UnitType.MOTION_DETECTOR, true, Units.MOTION_DETECTOR).get(0);
         LightSensorRemote lightSensorRemote = locationRemote.getUnits(UnitType.LIGHT_SENSOR, true, Units.LIGHT_SENSOR).get(0);
 
+        // set location emphasis to economy to make the agent more responsive on presence changes
+        Actions.waitForExecution(locationRemote.setEconomyEmphasis(1));
+
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
         LightSensorController lightSensorController = (LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId());
 
@@ -111,11 +129,12 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         motionDetectorRemote.waitForData();
         lightSensorRemote.waitForData();
 
-
         // create initial values with no_motion and lights off and dark env
         motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
-        final ActionDescription initialControl = locationRemote.setPowerState(OFF).get();
+        final RemoteAction locationOffAction = new RemoteAction(locationRemote.setPowerState(OFF), () -> true);
+        locationOffAction.waitForSubmission();
+
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
@@ -144,7 +163,6 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 //            System.out.println("action: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
 //        }
 
-
         // test if the lights switch off after no motion
         motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
@@ -156,7 +174,6 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.", PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, locationRemote.getPowerState().getValue());
-
 
         // test if the lights stay off after bright illuminance
         lightSensorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(BRIGHT), ServiceType.ILLUMINANCE_STATE_SERVICE);
@@ -200,9 +217,8 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, locationRemote.getPowerState().getValue());
         assertEquals("Illuminance of Location[" + locationRemote.getLabel() + "] has not set to BRIGHT.", ILLUMINANCEVALUE_BRIGHT, locationRemote.getIlluminanceState().getIlluminance(), 0.1d);
 
-
         // cancel initial control
-        locationRemote.cancelAction(initialControl).get();
+        locationOffAction.cancel().get(5, TimeUnit.SECONDS);
 
         // test if all task are done.
         List<RemoteAction> actionList = new ArrayList<>();
