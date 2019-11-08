@@ -24,6 +24,7 @@ package org.openbase.bco.dal.control.layer.unit.location;
 
 import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
 import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.location.LocationController;
@@ -45,6 +46,7 @@ import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
@@ -67,6 +69,7 @@ import rsb.converter.ProtocolBufferConverter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
@@ -133,7 +136,9 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
         super.init(unitConfig);
 
         try {
-            applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING)), ServiceType.STANDBY_STATE_SERVICE);
+            StandbyState.Builder serviceStateBuilder = StandbyState.newBuilder().setValue(State.RUNNING);
+            ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.STANDBY_STATE_SERVICE, this, 1, TimeUnit.MILLISECONDS, false, false, ActionPriorityType.ActionPriority.Priority.LOW, null);
+            applyDataUpdate(serviceStateBuilder, ServiceType.STANDBY_STATE_SERVICE);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply initial standby service state!", ex), LocationManagerImpl.LOGGER, LogLevel.WARN);
         }

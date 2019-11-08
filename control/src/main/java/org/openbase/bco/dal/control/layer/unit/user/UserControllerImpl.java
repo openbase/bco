@@ -23,15 +23,14 @@ package org.openbase.bco.dal.control.layer.unit.user;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivityMultiStateOperationService;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.lib.layer.unit.user.UserController;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -43,6 +42,8 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType;
+import org.openbase.type.domotic.state.StandbyStateType;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -115,13 +116,17 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         netDeviceDetector.addObserver((NetDeviceDetector source, Boolean reachable) -> {
                             synchronized (netDeviceDetectorMapLock) {
                                 final PresenceState.Builder presenceState = TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder(), logger);
+
+                                PresenceState.Builder serviceStateBuilder = null;
                                 for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
                                     if (detector.isReachable()) {
-                                        applyDataUpdate(presenceState.setValue(State.PRESENT).build(), ServiceType.PRESENCE_STATE_SERVICE);
-                                        return;
+                                        serviceStateBuilder = presenceState.setValue(State.PRESENT);
+                                        break;
                                     }
                                 }
-                                applyDataUpdate(presenceState.setValue(State.ABSENT).build(), ServiceType.PRESENCE_STATE_SERVICE);
+                                serviceStateBuilder = (serviceStateBuilder == null ? presenceState.setValue(State.ABSENT) : serviceStateBuilder);
+                                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.PRESENCE_STATE_SERVICE, this, 1, TimeUnit.MILLISECONDS, false, false, ActionPriorityType.ActionPriority.Priority.LOW, null);
+                                applyDataUpdate(serviceStateBuilder, ServiceType.PRESENCE_STATE_SERVICE);
                             }
                         });
                         if (isActive()) {
@@ -245,7 +250,9 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                     reachable = checkIfReachable();
                     notifyObservers(reachable);
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not inform observer about reachable state change!", ex, logger);
+                    if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                        ExceptionPrinter.printHistory("Could not inform observer about reachable state change!", ex, logger);
+                    }
                 }
             }, 0, REQUEST_PERIOD, TimeUnit.MILLISECONDS);
         }

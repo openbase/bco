@@ -23,6 +23,7 @@ package org.openbase.bco.dal.control.layer.unit;
  */
 
 import com.google.protobuf.AbstractMessage;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivationStateProviderService;
@@ -38,6 +39,7 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionPriorityType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -45,6 +47,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
@@ -159,7 +162,9 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                         // make sure timestamp is updated.
                         try {
                             logger.trace("inform about " + activationState.getValue().name());
-                            applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                            ActivationState.Builder serviceStateBuilder = activationState.toBuilder();
+                            ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE, AbstractExecutableBaseUnitController.this, 1, TimeUnit.MILLISECONDS, false, false, ActionPriorityType.ActionPriority.Priority.LOW, null);
+                            applyDataUpdate(serviceStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE);
                         } catch (CouldNotPerformException ex) {
                             throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
                         }
