@@ -182,17 +182,23 @@ public class Units {
     public static final Class<? extends RollerShutterRemote> ROLLER_SHUTTER = DAL_UNIT_ROLLER_SHUTTER;
     public static final Class<? extends SmokeDetectorRemote> SMOKE_DETECTOR = DAL_UNIT_SMOKE_DETECTOR;
     public static final Class<? extends TamperDetectorRemote> TAMPER_DETECTOR = DAL_UNIT_TAMPER_DETECTOR;
+    public static final Class<? extends VideoRgbSourceRemote> VIDEO_RGB_SOURCE = VideoRgbSourceRemote.class;
+    public static final Class<? extends VideoDepthSourceRemote> VIDEO_DEPTH_SOURCE = VideoDepthSourceRemote.class;
+    public static final Class<? extends AudioSourceRemote> AUDIO_SOURCE = AudioSourceRemote.class;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Units.class);
     private static final ReentrantReadWriteLock UNIT_REMOTE_REGISTRY_LOCK = new ReentrantReadWriteLock();
     private static final UnitRemoteFactory UNIT_REMOTE_FACTORY = UnitRemoteFactoryImpl.getInstance();
-    // register an observer that calls shutdown on units whose configs have been removed from the registry
+
     private static final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> UNIT_DIFF = new ProtobufListDiff<>();
-    //    public static final Class<? extends VideoRgbSourceRemote> VIDEO_RGB_SOURCE = VideoRgbSourceRemote.class;
-//    public static final Class<? extends VideoDepthSourceRemote> VIDEO_DEPTH_SOURCE = VideoDepthSourceRemote.class;
-//    public static final Class<? extends AudioSourceRemote> AUDIO_SOURCE = AudioSourceRemote.class;
+
+    // The remote pool shutdown delay is required to enable controller instances the proper cancellation of submitted actions.
+    public static final long SHUTDOWN_DELAY = 3000;
+
     public static Units instance;
     private static RemoteControllerRegistry<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<? extends Message>> unitRemoteRegistry;
+
+    // register an observer that calls shutdown on units whose configs have been removed from the registry
     private static final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> UNIT_REGISTRY_OBSERVER = new Observer<DataProvider<UnitRegistryData>, UnitRegistryData>() {
         @Override
         public void update(DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
@@ -239,7 +245,7 @@ public class Units {
                 public String toString() {
                     return "UnitRemotePool";
                 }
-            });
+            }, SHUTDOWN_DELAY);
 
             Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
             if (Registries.getUnitRegistry().isDataAvailable()) {
