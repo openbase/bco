@@ -122,13 +122,30 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
     }
 
     @Override
-    protected final void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected synchronized final void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (delayMode) {
             case DELAY_ACTIVATION:
                 switch (activationState.getValue()) {
                     case ACTIVE:
                         this.lastActivationState = activationState;
-                        timeout.start(computeDelay());
+                        long delay = computeDelay();
+
+                        // check if this is just a refresh because of a changing delay.
+                        if(timeout.isActive()) {
+
+                            // compute real delay since some time is already passed.
+                            long timePassedSinceStart = timeout.getTimePassedSinceStart();
+                            if(delay > timePassedSinceStart) {
+                                // if there is still some time left then restart
+                                timeout.restart(delay - timePassedSinceStart);
+                            } else {
+                                // otherwise just passthrough the trigger
+                                delayedTrigger(activationState);
+                            }
+
+                        } else {
+                            timeout.start(delay);
+                        }
                         break;
                     case DEACTIVE:
                         timeout.cancel();
@@ -144,7 +161,22 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
                         break;
                     case DEACTIVE:
                         this.lastActivationState = activationState;
-                        timeout.start(computeDelay());
+                        long delay = computeDelay();
+
+                        // check if this is just a refresh because of a changing delay.
+                        if(timeout.isActive()) {
+                            // compute real delay since some time is already passed.
+                            long timePassedSinceStart = timeout.getTimePassedSinceStart();
+                            if(delay > timePassedSinceStart) {
+                                // if there is still some time left then restart
+                                timeout.restart(delay - timePassedSinceStart);
+                            } else {
+                                // otherwise just passthrough the trigger
+                                delayedTrigger(activationState);
+                            }
+                        } else {
+                            timeout.start(delay);
+                        }
                         break;
                 }
                 break;
