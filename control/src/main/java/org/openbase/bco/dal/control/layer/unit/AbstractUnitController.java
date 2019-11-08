@@ -248,7 +248,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         } else if(this instanceof AgentController) {
             return 0;
         } else {
-            return 20000;
+            return 2000;
         }
     }
 
