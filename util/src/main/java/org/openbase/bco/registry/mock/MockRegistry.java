@@ -959,6 +959,7 @@ public class MockRegistry {
                     switch (serviceDescription.getServiceType()) {
                         case PRESENCE_STATE_SERVICE:
                         case STANDBY_STATE_SERVICE:
+                        case EMPHASIS_STATE_SERVICE:
                             break;
                         default:
                             serviceDescription.setAggregated(true);
