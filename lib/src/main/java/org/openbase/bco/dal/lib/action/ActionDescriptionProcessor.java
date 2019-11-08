@@ -564,9 +564,9 @@ public class ActionDescriptionProcessor {
             actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
         }
 
-        //
+        // validate id field
         if (actionDescriptionBuilder.hasId()) {
-            throw new InvalidStateException(toString(actionDescriptionBuilder) + " is already initialized!");
+            throw new InvalidStateException(toString(actionDescriptionBuilder) + " is already initialized and can not prepared twice!");
         }
 
         // prepare
@@ -839,8 +839,15 @@ public class ActionDescriptionProcessor {
             // validate if service state can be deserialized
             Message serviceState = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName());
             serviceState = Services.verifyAndRevalidateServiceState(serviceState);
+
+            // prepare or validate preparation
             if (prepare) {
                 prepare(actionDescriptionBuilder, unitConfig, serviceState);
+            } else {
+                // validate action id
+                if (!actionDescriptionBuilder.hasId()) {
+                    throw new NotAvailableException("Action Id!");
+                }
             }
 
             // validate that execution time period is set
@@ -973,7 +980,7 @@ public class ActionDescriptionProcessor {
         final ActionParameter.Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateBuilder.build(), serviceType, targetUnit);
 
         // set cause
-        if(cause != null) {
+        if (cause != null) {
             actionParameterBuilder.setCause(cause);
         }
 
