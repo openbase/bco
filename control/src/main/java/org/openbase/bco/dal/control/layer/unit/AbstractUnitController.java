@@ -44,6 +44,8 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
 import org.openbase.bco.dal.lib.layer.unit.*;
+import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
+import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
@@ -96,7 +98,6 @@ import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.timing.TimestampType.Timestamp;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -109,7 +110,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Logger;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
@@ -239,6 +239,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             } catch (CouldNotPerformException ex1) {
                 throw new CouldNotTransformException(unitConfig.getLabel(), UnitController.class, new NotAvailableException("Class", ex));
             }
+        }
+    }
+
+    protected long getShutdownDelay() {
+        if(this instanceof AppController) {
+            return 0;
+        } else if(this instanceof AgentController) {
+            return 0;
+        } else {
+            return 20000;
         }
     }
 
@@ -672,6 +682,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // validate permissions
                 validateActionPermissions(authenticatedId, actionToCancel);
+
                 // cancel the action which automatically triggers a reschedule.
                 return actionToCancel.cancel();
             } finally {
@@ -975,51 +986,58 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
 
         final InternalIdentifiedProcessable<ActionDescription, ActionDescription> internalIdentifiedProcessable = (actionDescription, authenticationBaseData) -> {
-            try {
-                final AuthPair authPair = AbstractUnitController.this.verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
 
-                final Builder actionDescriptionBuilder = actionDescription.toBuilder();
+            final AuthPair authPair = AbstractUnitController.this.verifyAccessPermission(authenticationBaseData, actionDescription.getServiceStateDescription().getServiceType());
 
-                // clear auth fields which are in the following recomputed by the given auth values.
-                actionDescriptionBuilder.getActionInitiatorBuilder().clear();
+            final Builder actionDescriptionBuilder = actionDescription.toBuilder();
 
-                // if an authentication token is send replace the initiator in any case
-                if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
-                }
+            // clear auth fields which are in the following recomputed by the given auth values.
+            actionDescriptionBuilder.getActionInitiatorBuilder().clear();
 
-                // setup auth fields
-                if (authPair.getAuthenticatedBy() != null) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
+            // if an authentication token is send replace the initiator in any case
+            if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
+                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
+            }
 
-                    // if not yet available, setup authenticated instance as action initiator via auth pair.
-                    if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
-                        actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthenticatedBy());
-                    }
-                }
-                if (authPair.getAuthorizedBy() != null) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
+            // setup auth fields
+            if (authPair.getAuthenticatedBy() != null) {
+                actionDescriptionBuilder.getActionInitiatorBuilder().setAuthenticatedBy(authPair.getAuthenticatedBy());
 
-                    // if not yet available, setup authorizing instance as action initiator via auth pair.
-                    if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
-                        actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthorizedBy());
-                    }
-                }
-
-                // if not yet available, setup other as initiator.
+                // if not yet available, setup authenticated instance as action initiator via auth pair.
                 if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(User.OTHER);
-
-                    // recover initiator type
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthenticatedBy());
                 }
+            }
+            if (authPair.getAuthorizedBy() != null) {
+                actionDescriptionBuilder.getActionInitiatorBuilder().setAuthorizedBy(authPair.getAuthorizedBy());
 
-                return AbstractUnitController.this.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair).get(30, TimeUnit.SECONDS);
+                // if not yet available, setup authorizing instance as action initiator via auth pair.
+                if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
+                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthorizedBy());
+                }
+            }
+
+            // if not yet available, setup other as initiator.
+            if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
+                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(User.OTHER);
+
+                // recover initiator type
+                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
+            }
+
+            final Future<ActionDescription> actionDescriptionFuture = AbstractUnitController.this.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
+
+            try {
+                return actionDescriptionFuture.get(30, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 throw new CouldNotPerformException("Authenticated action was interrupted!", ex);
             } catch (ExecutionException | TimeoutException ex) {
                 throw new CouldNotPerformException("Could not apply authenticated action!", ex);
+            } finally {
+                if (!actionDescriptionFuture.isDone()) {
+                    actionDescriptionFuture.cancel(true);
+                }
             }
         };
 
@@ -1276,7 +1294,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // skip if update is still compatible and would nothing change
             if (Services.isCompatible(serviceState, serviceType, Services.invokeProviderServiceMethod(serviceType, internalBuilder))) {
-                //System.out.println("skip because update is compatible with current state.");
                 throw new RejectedException("Incoming state already applied!");
             }
 
