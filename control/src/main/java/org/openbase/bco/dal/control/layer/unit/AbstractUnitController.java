@@ -775,153 +775,155 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         try {
             // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
             actionListNotificationLock.writeLock().lock();
-
-            // cancel timer if still running because it will be restarted at the end of the schedule anyway.
-            if (!scheduleTimeout.isExpired()) {
-                scheduleTimeout.cancel();
-            }
-
-            if (actionToSchedule != null) {
-                // test if there is another action already in the list by the same initiator
-                try {
-                    final ActionInitiator newInitiator = ActionDescriptionProcessor.getInitialInitiator(actionToSchedule.getActionDescription());
-
-                    logger.debug("schedule new incoming action: {}", MultiLanguageTextProcessor.getBestMatch(actionToSchedule.getActionDescription().getDescription(), "?"));
-
-                    for (final SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
-                        if (schedulableAction.isDone()) {
-                            // skip actions which are done and remain on the stack for notification purposes
-                            continue;
-                        }
-
-                        final ActionInitiator currentInitiator = ActionDescriptionProcessor.getInitialInitiator(schedulableAction.getActionDescription());
-                        if (!newInitiator.getInitiatorId().equals(currentInitiator.getInitiatorId())) {
-                            // actions do not have the same initiator
-                            continue;
-                        }
-
-                        // same initiator - schedule the newer one
-                        if (actionToSchedule.getCreationTime() < schedulableAction.getCreationTime()) {
-                            // new action is actually older than one already scheduled by the same initiator, so reject it
-                            actionToSchedule.reject();
-                            logger.warn("New Action {} from initiator {} is older than a currently scheduled one", actionToSchedule, newInitiator.getInitiatorId());
-                        } else {
-                            // actionToSchedule is newer, so reject old one
-                            schedulableAction.reject();
-                        }
-                    }
-                } catch (NotAvailableException ex) {
-                    ExceptionPrinter.printHistory("Could not detect initiator or creation time!", ex, logger);
-                }
-
-                // add new action to the list
-                scheduledActionList.add(actionToSchedule);
-            }
-
             try {
-                // save if there is at least one action still awaiting execution
-                boolean atLeastOneActionToSchedule = false;
-                // save if there is at least one action which is done but remains on the list
-                boolean atLeastOneDoneActionOnList = false;
-
-                // reject outdated and finish completed actions
-                for (final SchedulableAction action : scheduledActionList) {
-                    // only terminate if not valid and still running
-                    if (!action.isValid() && !action.isDone()) {
-                        if (action.getActionState() == State.EXECUTING) {
-                            action.finish();
-                        } else {
-                            action.reject();
-                        }
-                    }
+                // cancel timer if still running because it will be restarted at the end of the schedule anyway.
+                if (!scheduleTimeout.isExpired()) {
+                    scheduleTimeout.cancel();
                 }
 
-                // remove actions which are in a final state for more than 15 seconds
-                for (final SchedulableAction action : new ArrayList<>(scheduledActionList)) {
-                    if (action.isDone()) {
-                        try {
-                            final Timestamp latestValueOccurrence = ServiceStateProcessor.getLatestValueOccurrence(action.getActionState().getValueDescriptor(), action.getActionDescription().getActionState());
-                            if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(latestValueOccurrence)) > FINISHED_ACTION_REMOVAL_TIMEOUT) {
-                                scheduledActionList.remove(action);
-                            } else {
-                                atLeastOneDoneActionOnList = true;
+                if (actionToSchedule != null) {
+                    // test if there is another action already in the list by the same initiator
+                    try {
+                        final ActionInitiator newInitiator = ActionDescriptionProcessor.getInitialInitiator(actionToSchedule.getActionDescription());
+
+                        logger.debug("schedule new incoming action: {}", MultiLanguageTextProcessor.getBestMatch(actionToSchedule.getActionDescription().getDescription(), "?"));
+
+                        for (final SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
+                            if (schedulableAction.isDone()) {
+                                // skip actions which are done and remain on the stack for notification purposes
+                                continue;
                             }
-                        } catch (NotAvailableException ex) {
-                            // action timestamp could not be evaluated so print warning and remove action so that it does not stay on the list forever
-                            logger.warn("Remove finished action {} because its finishing time could not be evaluated", action);
-                            scheduledActionList.remove(action);
+
+                            final ActionInitiator currentInitiator = ActionDescriptionProcessor.getInitialInitiator(schedulableAction.getActionDescription());
+                            if (!newInitiator.getInitiatorId().equals(currentInitiator.getInitiatorId())) {
+                                // actions do not have the same initiator
+                                continue;
+                            }
+
+                            // same initiator - schedule the newer one
+                            if (actionToSchedule.getCreationTime() < schedulableAction.getCreationTime()) {
+                                // new action is actually older than one already scheduled by the same initiator, so reject it
+                                actionToSchedule.reject();
+                                logger.warn("New Action {} from initiator {} is older than a currently scheduled one and will be rejected!", actionToSchedule, newInitiator.getInitiatorId());
+                            } else {
+                                // actionToSchedule is newer, so reject old one
+                                schedulableAction.reject();
+                            }
                         }
-                    } else {
-                        atLeastOneActionToSchedule = true;
+                    } catch (NotAvailableException ex) {
+                        ExceptionPrinter.printHistory("Could not detect initiator or creation time!", ex, logger);
                     }
+
+                    // add new action to the list
+                    scheduledActionList.add(actionToSchedule);
                 }
 
-                // skip further steps if no actions are scheduled
-                if (!atLeastOneActionToSchedule) {
-                    return null;
-                }
+                try {
+                    // save if there is at least one action still awaiting execution
+                    boolean atLeastOneActionToSchedule = false;
+                    // save if there is at least one action which is done but remains on the list
+                    boolean atLeastOneDoneActionOnList = false;
 
-                // detect and store current action
-                SchedulableAction currentAction = null;
-                for (final SchedulableAction schedulableAction : scheduledActionList) {
-                    if (schedulableAction.getActionDescription().getActionState().getValue() == State.EXECUTING) {
-                        currentAction = schedulableAction;
-                        break;
-                    }
-                }
-
-                // sort valid actions by priority
-                scheduledActionList.sort(actionComparator);
-
-                // detect action with highest ranking
-                final SchedulableAction nextAction = scheduledActionList.get(0);
-
-                // if new action is not schedulable and not immediately scheduled reject it
-                if (actionToSchedule != null && !actionToSchedule.equals(nextAction)) {
-                    if (actionToSchedule.getActionDescription().getSchedulable()) {
-                        if (!actionToSchedule.isDone()) {
-                            actionToSchedule.schedule();
+                    // reject outdated and finish completed actions
+                    for (final SchedulableAction action : scheduledActionList) {
+                        // only terminate if not valid and still running
+                        if (!action.isValid() && !action.isDone()) {
+                            if (action.getActionState() == State.EXECUTING) {
+                                action.finish();
+                            } else {
+                                action.reject();
+                            }
                         }
-                    } else {
-                        actionToSchedule.reject();
-                        atLeastOneDoneActionOnList = true;
+                    }
+
+                    // remove actions which are in a final state for more than 15 seconds
+                    for (final SchedulableAction action : new ArrayList<>(scheduledActionList)) {
+                        if (action.isDone()) {
+                            try {
+                                final Timestamp latestValueOccurrence = ServiceStateProcessor.getLatestValueOccurrence(action.getActionState().getValueDescriptor(), action.getActionDescription().getActionState());
+                                if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(latestValueOccurrence)) > FINISHED_ACTION_REMOVAL_TIMEOUT) {
+                                    scheduledActionList.remove(action);
+                                } else {
+                                    atLeastOneDoneActionOnList = true;
+                                }
+                            } catch (NotAvailableException ex) {
+                                // action timestamp could not be evaluated so print warning and remove action so that it does not stay on the list forever
+                                logger.warn("Remove finished action {} because its finishing time could not be evaluated", action);
+                                scheduledActionList.remove(action);
+                            }
+                        } else {
+                            atLeastOneActionToSchedule = true;
+                        }
+                    }
+
+                    // skip further steps if no actions are scheduled
+                    if (!atLeastOneActionToSchedule) {
+                        return null;
+                    }
+
+                    // detect and store current action
+                    SchedulableAction currentAction = null;
+                    for (final SchedulableAction schedulableAction : scheduledActionList) {
+                        if (schedulableAction.getActionDescription().getActionState().getValue() == State.EXECUTING) {
+                            currentAction = schedulableAction;
+                            break;
+                        }
+                    }
+
+                    // sort valid actions by priority
+                    scheduledActionList.sort(actionComparator);
+
+                    // detect action with highest ranking
+                    final SchedulableAction nextAction = scheduledActionList.get(0);
+
+                    // if new action is not schedulable and not immediately scheduled reject it
+                    if (actionToSchedule != null && !actionToSchedule.equals(nextAction)) {
+                        if (actionToSchedule.getActionDescription().getSchedulable()) {
+                            if (!actionToSchedule.isDone()) {
+                                actionToSchedule.schedule();
+                            }
+                        } else {
+                            actionToSchedule.reject();
+                            atLeastOneDoneActionOnList = true;
+                        }
+                    }
+
+                    // execute action with highest ranking if it is not already the currently executing one.
+                    if (nextAction != currentAction) {
+
+                        // abort current action before executing the next one.
+                        if (currentAction != null) {
+                            currentAction.abort();
+                        }
+                        nextAction.execute();
+                        currentAction = nextAction;
+                    }
+
+                    // setup timed rescheduling.
+                    try {
+                        // setup timer only if action needs to be removed or the current action provides a limited execution time.
+                        if (atLeastOneDoneActionOnList || currentAction.getExecutionTimePeriod(TimeUnit.MICROSECONDS) != 0) {
+                            final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : Math.min(nextAction.getExecutionTime(), Action.MAX_EXECUTION_TIME_PERIOD);
+                            logger.debug("Reschedule scheduled in:" + rescheduleTimeout);
+                            // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
+                            // this should not cause any latency because new incoming actions are scheduled anyway.
+                            scheduleTimeout.restart(Math.max(rescheduleTimeout, 50), TimeUnit.MILLISECONDS);
+                        }
+                    } catch (ShutdownInProgressException ex) {
+                        // skip reschedule when shutdown is initiated.
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
+                    }
+
+                    return currentAction;
+                } finally {
+                    try {
+                        updateTransactionId();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not update transaction id", ex, logger);
                     }
                 }
-
-                // execute action with highest ranking if it is not already the currently executing one.
-                if (nextAction != currentAction) {
-
-                    // abort current action before executing the next one.
-                    if (currentAction != null) {
-                        currentAction.abort();
-                    }
-                    nextAction.execute();
-                    currentAction = nextAction;
-                }
-
-                // setup timed rescheduling.
-                try {
-                    // setup timer only if action needs to be removed or the current action provides a limited execution time.
-                    if (atLeastOneDoneActionOnList || currentAction.getExecutionTimePeriod(TimeUnit.MICROSECONDS) != 0) {
-                        final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : Math.min(nextAction.getExecutionTime(), Action.MAX_EXECUTION_TIME_PERIOD);
-                        logger.debug("Reschedule scheduled in:" + rescheduleTimeout);
-                        // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
-                        // this should not cause any latency because new incoming actions are scheduled anyway.
-                        scheduleTimeout.restart(Math.max(rescheduleTimeout, 50), TimeUnit.MILLISECONDS);
-                    }
-                } catch (ShutdownInProgressException ex) {
-                    // skip reschedule when shutdown is initiated.
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Could not setup rescheduling timeout! ", this, ex), logger);
-                }
-
-                return currentAction;
-            } finally {
-                try {
-                    updateTransactionId();
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not update transaction id", ex, logger);
-                }
+            } finally{
                 actionListNotificationLock.writeLock().unlock();
                 notifyScheduledActionList();
             }
@@ -932,33 +934,21 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     /**
-     * Update the action list in the data builder and notify.
-     */
-    private void notifyScheduledActionListUnlocked() {
-        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
-
-            // sync
-            syncActionList(dataBuilder.getInternalBuilder());
-
-            // release lock
-            if (actionListNotificationLock.isWriteLockedByCurrentThread()) {
-                actionListNotificationLock.writeLock().unlock();
-            }
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
-        }
-    }
-
-    /**
      * Update the action list in the data builder and notify. Skip updates if the unit is currently rescheduling actions.
      */
     public void notifyScheduledActionList() {
+
         if (actionListNotificationLock.isWriteLocked()) {
-            // save if the notification was skipped
+            // skip since notification will be performed when lock is unlocked anyway.
             return;
         }
 
-        notifyScheduledActionListUnlocked();
+        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+            // sync
+            syncActionList(dataBuilder.getInternalBuilder());
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
+        }
     }
 
     /**
@@ -1370,6 +1360,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // compute responsible action if not exist
             if (!Services.hasResponsibleAction(serviceStateBuilder)) {
                 logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
+                StackTracePrinter.printStackTrace(logger);
                 ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, Priority.LOW, null);
             }
 
