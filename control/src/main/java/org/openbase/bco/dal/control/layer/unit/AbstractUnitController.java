@@ -1145,8 +1145,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
             try {
                 newState = computeNewState(newState, serviceType, internalBuilder);
-            } catch (VerificationFailedException ex) {
-                // update not required since verification failed. Therefore skip update...
+            } catch (RejectedException ex) {
+                // update not required since its compatible with the currently applied state, therefore we just skip the update.
                 return;
             }
 
@@ -1213,15 +1213,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     /**
-     * @param serviceState
-     * @param serviceType
-     * @param internalBuilder
+     * @param serviceState the prototype of the new state.
+     * @param serviceType the service type of the new state.
+     * @param internalBuilder the builder object used to access the currently applied state.
      *
-     * @return
+     * @return the computed state.
      *
-     * @throws CouldNotPerformException
+     * @throws RejectedException in case the state would not change anything compared to the current one.
+     * @throws CouldNotPerformException if the state could not be computed.
      */
-    private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
+    private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException, RejectedException {
 
         //System.out.println("compute new state");
 
@@ -1276,7 +1277,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // skip if update is still compatible and would nothing change
             if (Services.isCompatible(serviceState, serviceType, Services.invokeProviderServiceMethod(serviceType, internalBuilder))) {
                 //System.out.println("skip because update is compatible with current state.");
-                throw new VerificationFailedException("Incoming state already applied!");
+                throw new RejectedException("Incoming state already applied!");
             }
 
             // check if incoming state is compatible with the current one
@@ -1287,7 +1288,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                     // there are two reasons why we can reach this state
                     // 1. The incoming state update is just an update of an further affected state..
-                    // 2. Its just an additinal synchronization update
+                    // 2. Its just an additional synchronization update
                     // in case we are compatible with the current state we don't care about the update.
                     //System.out.println("just apply state.");
                     //throw new VerificationFailedException("Incoming state already applied!");
@@ -1331,8 +1332,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // force execution to properly apply new state synchronized with the current action scheduling
             return forceActionExecution(serviceState, serviceType, internalBuilder);
-        } catch (VerificationFailedException ex) {
-            // passthrough verification failed exception to make it comparable to the error case.
+        } catch (RejectedException ex) {
+            // passthrough rejection to make it comparable to the error case.
             throw ex;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not compute new state!", ex);
@@ -1359,8 +1360,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // compute responsible action if not exist
             if (!Services.hasResponsibleAction(serviceStateBuilder)) {
-                logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
-                StackTracePrinter.printStackTrace(logger);
+                // do not complain in test mode since simple state updates makes writing tests much more comfortable.
+                if(JPService.testMode()) {
+                    logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
+                    StackTracePrinter.printStackTrace(logger);
+                }
                 ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, Priority.LOW, null);
             }
 
