@@ -34,6 +34,7 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -90,7 +91,7 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
                     delayedTrigger(lastActivationState);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                } catch (CouldNotPerformException | ExecutionException ex) {
+                } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
                     ExceptionPrinter.printHistory("Could not trigger agent after delay!", ex, logger);
                 }
             }
@@ -122,7 +123,7 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
     }
 
     @Override
-    protected synchronized final void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected synchronized final void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
         switch (delayMode) {
             case DELAY_ACTIVATION:
                 switch (activationState.getValue()) {
@@ -194,7 +195,7 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
      * @throws ExecutionException       can be used to inform that the triggered action has failed.
      * @throws InterruptedException     can be used to forward an external thread interruption.
      */
-    abstract protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException;
+    abstract protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException;
 
     /**
      * Method should return a normalized scale factor between 0.0 - 1.0

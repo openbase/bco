@@ -48,6 +48,7 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -218,5 +219,5 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         });
     }
 
-    abstract protected void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException;
+    abstract protected void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException;
 }
