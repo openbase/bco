@@ -79,6 +79,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
             @Override
             public void relay() {
                 try {
+                    System.out.println("force trigger");
                     activationTriggerPool.forceNotification();
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not notify agent about emphasis state change.", ex, logger);
@@ -101,17 +102,10 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
                                 return;
                             }
 
-                            if (data.getValue() == State.DEACTIVE) {
-                                triggerInternal(data);
-                            }
+                            triggerInternal(data);
                             break;
 
                         case DEACTIVE:
-                            if (data.getValue() == State.ACTIVE) {
-                                triggerInternal(data);
-                            }
-                            break;
-
                         case UNKNOWN:
                             triggerInternal(data);
                             break;
@@ -132,10 +126,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
                     switch (currentTriggerActivationState) {
                         case ACTIVE:
                         case UNKNOWN:
-                            // if the deactivation pool is active we need to send a deactivation trigger
-                            if (data.getValue() == State.ACTIVE) {
-                                triggerInternal(data.toBuilder().setValue(State.DEACTIVE).build());
-                            }
+                            triggerInternal(data.toBuilder().setValue(State.DEACTIVE).build());
                             break;
                         default:
                             // do nothing
