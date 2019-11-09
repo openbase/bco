@@ -34,9 +34,11 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -46,13 +48,16 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.slf4j.Logger;
@@ -98,6 +103,7 @@ public class RemoteAction implements Action {
     private Future<ActionDescription> futureObservationTask;
     private ScheduledFuture<?> autoExtensionTask;
     private String actionId;
+    private ServiceType serviceType;
     private String targetUnitId;
     private Callable<Boolean> autoExtendCheckCallback;
 
@@ -304,10 +310,7 @@ public class RemoteAction implements Action {
                 // this is useful to cancel actions through cancelling the execute task of a remote actions
                 // it allows to easily handle remote actions through the provided future because remote actions pools do not allow to access them
                 // it is used to cancel optional actions from scenes
-                if (targetUnit != null) {
-                    targetUnit.cancelAction(actionDescription, authToken);
-                }
-                cleanup();
+                cancel();
                 throw ex;
             } catch (CancellationException ex) {
                 // in case the action is canceled, this is done via the futureObservationTask which than causes this cancellation exception.
@@ -332,15 +335,16 @@ public class RemoteAction implements Action {
         }
 
         this.actionId = actionDescription.getId();
+        this.serviceType = actionDescription.getServiceStateDescription().getServiceType();
         this.targetUnitId = actionDescription.getServiceStateDescription().getUnitId();
+
+        // configure target unit if needed. This is the case if this remote action was instantiated via a future object.
+        if (targetUnit == null) {
+            targetUnit = Units.getUnit(targetUnitId, false);
+        }
 
         synchronized (executionSync) {
             RemoteAction.this.actionDescription = actionDescription;
-
-            // configure target unit if needed. This is the case if this remote action was instantiated via a future object.
-            if (targetUnit == null) {
-                targetUnit = Units.getUnit(targetUnitId, false);
-            }
 
             if (actionDescription.getIntermediary()) {
                 // observe impact actions and register callback if available to support action auto extension.
@@ -375,6 +379,7 @@ public class RemoteAction implements Action {
         }
         this.actionReference = actionReference;
         this.actionId = actionReference.getActionId();
+        this.serviceType = actionReference.getServiceStateDescription().getServiceType();
         this.targetUnitId = actionReference.getServiceStateDescription().getUnitId();
 
         if (isInitializedByIntermediaryActionReference()) {
@@ -384,11 +389,12 @@ public class RemoteAction implements Action {
 
         futureObservationTask = GlobalCachedExecutorService.submit(() -> {
             try {
-                synchronized (executionSync) {
 
-                    if (targetUnit == null) {
-                        targetUnit = Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true);
-                    }
+                if (targetUnit == null) {
+                    targetUnit = Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true);
+                }
+
+                synchronized (executionSync) {
 
                     // resolve action description via the action reference if already available.
                     for (final ActionDescription actionDescription : targetUnit.getActionList()) {
@@ -627,44 +633,57 @@ public class RemoteAction implements Action {
                 // make sure an action is not auto extended during the cancellation process.
                 cancelAutoExtension();
 
-                // if future operation is still running than...
+                // if future operation is still running then...
                 if (futureObservationTask != null && !futureObservationTask.isDone()) {
 
-                    // cancel observation
-                    futureObservationTask.cancel(true);
-
-                    // manually inform unit about cancellation
-                    try {
-                        future = getTargetUnit().cancelAction(ActionDescription.newBuilder().setId(getActionId()).build(), authToken);
-                    } catch (Exception ex) {
-                        future = FutureProcessor.canceledFuture(ActionDescription.class, ex);
+                    if (targetUnit != null && (actionDescription != null || actionReference != null || (actionId != null && serviceType != null))) {
+                        // cancel observation
+                        futureObservationTask.cancel(true);
+                    } else {
+                        try {
+                            futureObservationTask.get(2, TimeUnit.SECONDS);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        } catch (Exception ex) {
+                            // continue with other trails
+                        } finally {
+                            futureObservationTask.cancel(true);
+                        }
                     }
-                    return future;
-                }
-
-                // handle intermediary action
-                if (getActionDescription().getIntermediary()) {
-                    // cancel all impacts of this actions and return the current action description
-                    future = FutureProcessor.allOf(impactedRemoteActions, input -> getActionDescription(), remoteAction -> {
-                        return remoteAction.cancel();
-                    });
-                    return future;
                 }
 
                 // if already done then skip cancellation
                 if (isDone()) {
                     future = FutureProcessor.completedFuture(getActionDescription());
-                    return future;
                 }
 
-                // cancel the action on the controller if possible.
-                if (targetUnit != null && targetUnit.isConnected()) {
-                    future = targetUnit.cancelAction(getActionDescription(), authToken);
+                // handle intermediary action
+                if (actionDescription != null && getActionDescription().getIntermediary()) {
+                    // cancel all impacts of this actions and return the current action description
+                    future = FutureProcessor.allOf(impactedRemoteActions, input -> actionDescription, remoteAction -> remoteAction.cancel());
+                    return registerPostActionStateUpdate(future, State.CANCELED);
+                }
+
+                // cancel the action via controller if possible.
+                if (targetUnit != null) {
+                    if (targetUnit.isConnected()) {
+                        future = targetUnit.cancelAction(buildBestActionDescriptionToCancelAction(), authToken);
+                    } else {
+                        future = FutureProcessor.postProcess((data) -> {
+                            try {
+                                return targetUnit.cancelAction(buildBestActionDescriptionToCancelAction(), authToken).get(3, TimeUnit.SECONDS);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                                throw new CouldNotPerformException("Could not cancel action!", ex);
+                            } catch (Exception ex) {
+                                throw new CouldNotPerformException("Could not cancel action!", ex);
+                            }
+                        }, targetUnit.getDataFuture());
+                    }
                 } else {
-                    future = FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel action since target unit not reachable!"));
+                    future = FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel action since target unit is not known!"));
                 }
-
-                return future;
+                return registerPostActionStateUpdate(future, State.CANCELED);
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ex);
@@ -677,10 +696,10 @@ public class RemoteAction implements Action {
                 final Future<ActionDescription> passthroughFuture = future;
                 return GlobalCachedExecutorService.submit(() -> {
                     try {
-                        return passthroughFuture.get();
+                        return passthroughFuture.get(10, TimeUnit.SECONDS);
                     } catch (InterruptedException ex) {
                         throw ex;
-                    } catch (ExecutionException ex) {
+                    } catch (ExecutionException | java.util.concurrent.TimeoutException ex) {
                         throw new CouldNotProcessException("Could not cancel " + RemoteAction.this.toString(), ex);
                     } finally {
                         // clear
@@ -689,6 +708,45 @@ public class RemoteAction implements Action {
                 });
             }
         }
+    }
+
+    private ActionDescription buildBestActionDescriptionToCancelAction() throws NotAvailableException {
+        try {
+            return getActionDescription();
+        } catch (NotAvailableException e) {
+            if (actionReference != null) {
+                final Builder actionDescriptionBuilder = ActionDescription.newBuilder();
+                actionDescriptionBuilder.setId(actionReference.getActionId());
+                actionDescriptionBuilder.setServiceStateDescription(actionReference.getServiceStateDescription());
+                actionDescriptionBuilder.setCancel(true);
+                return actionDescriptionBuilder.build();
+            } else if(actionId != null && serviceType != null) {
+                final Builder actionDescriptionBuilder = ActionDescription.newBuilder();
+                actionDescriptionBuilder.setId(actionId);
+                actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceType(serviceType);
+                actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(targetUnit.getId());
+                actionDescriptionBuilder.setCancel(true);
+                return actionDescriptionBuilder.build();
+            } else {
+                throw new NotAvailableException("ActionDescription");
+            }
+        }
+    }
+
+    private Future<ActionDescription> registerPostActionStateUpdate(final Future<ActionDescription> future, final ActionState.State actionState) {
+        return FutureProcessor.postProcess((result) -> {
+
+            // when all subactions are canceled, than we can mark this intermediary action as canceled as well.
+            if (result != null) {
+                result = result.toBuilder().setActionState(ActionState.newBuilder().setValue(actionState)).build();
+            }
+
+            // update internal description if available
+            if (actionDescription != null) {
+                actionDescription = result;
+            }
+            return result;
+        }, future);
     }
 
     /**
