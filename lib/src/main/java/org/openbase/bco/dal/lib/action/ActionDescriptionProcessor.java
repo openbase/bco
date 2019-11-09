@@ -845,9 +845,10 @@ public class ActionDescriptionProcessor {
                 prepare(actionDescriptionBuilder, unitConfig, serviceState);
             } else {
                 // validate action id
-                if (!actionDescriptionBuilder.hasId()) {
-                    throw new NotAvailableException("Action Id!");
-                }
+                // todo: implement support
+                //if (!actionDescriptionBuilder.hasId()) {
+                //   throw new NotAvailableException("Action Id!");
+                //}
             }
 
             // validate that execution time period is set
