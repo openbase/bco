@@ -25,9 +25,7 @@ package org.openbase.bco.app.preset.agent;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.agent.AbstractAgentController;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.ExceptionProcessor;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -103,10 +101,17 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
                                 return;
                             }
 
-                            triggerInternal(data);
+                            if (data.getValue() == State.DEACTIVE) {
+                                triggerInternal(data);
+                            }
                             break;
 
                         case DEACTIVE:
+                            if (data.getValue() == State.ACTIVE) {
+                                triggerInternal(data);
+                            }
+                            break;
+
                         case UNKNOWN:
                             triggerInternal(data);
                             break;
@@ -127,7 +132,10 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
                     switch (currentTriggerActivationState) {
                         case ACTIVE:
                         case UNKNOWN:
-                            triggerInternal(data.toBuilder().setValue(State.DEACTIVE).build());
+                            // if the deactivation pool is active we need to send a deactivation trigger
+                            if (data.getValue() == State.ACTIVE) {
+                                triggerInternal(data.toBuilder().setValue(State.DEACTIVE).build());
+                            }
                             break;
                         default:
                             // do nothing
