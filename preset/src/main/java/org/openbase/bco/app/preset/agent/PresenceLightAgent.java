@@ -28,10 +28,9 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.GenericBoundedDoubleValueTrigger;
 import org.openbase.bco.dal.remote.trigger.GenericBoundedDoubleValueTrigger.TriggerOperation;
 import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -44,6 +43,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
@@ -82,14 +82,14 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
     }
 
     @Override
-    protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
         switch (activationState.getValue()) {
             case ACTIVE:
                 lastAction = observe(locationRemote.setPowerState(State.ON, UnitType.LIGHT, getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
             case DEACTIVE:
                 if (lastAction != null && !lastAction.isDone()) {
-                    lastAction.cancel();
+                    lastAction.cancel().get(5, TimeUnit.SECONDS);
                 }
                 break;
         }
