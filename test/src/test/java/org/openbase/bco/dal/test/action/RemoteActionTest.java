@@ -188,7 +188,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         }
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testExtentionCancelation() throws Exception {
         System.out.println("testExecutionAndCancellationWithToken");
 
