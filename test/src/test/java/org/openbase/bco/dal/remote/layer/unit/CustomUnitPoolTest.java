@@ -27,9 +27,14 @@ import org.junit.*;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
@@ -61,15 +66,25 @@ public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
         customUnitPool.activate();
 
         customUnitPool.init(
-                unitConfig -> unitConfig.getUnitType() != UnitType.BUTTON,
-                unitConfig -> {
-                    return false;
-                });
+                unitConfig -> !unitConfig.hasId(),
+                unitConfig -> unitConfig.getUnitType() != UnitType.BUTTON);
 
         customUnitPool.activate();
 
         for (UnitRemote<? extends Message> unitRemote : customUnitPool.getInternalUnitList()) {
             assertEquals("pool contains actually filtered entry!", UnitType.BUTTON, unitRemote.getUnitType());
+            System.out.println("is button: "+ unitRemote.getLabel());
+        }
+
+        final List<UnitConfig> buttonUnitConfig = Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.BUTTON);
+        Registries.getUnitRegistry().updateUnitConfig(buttonUnitConfig.get(0).toBuilder().addAlias("MyButtonTestUnit").build()).get(5, TimeUnit.SECONDS);
+
+        final List<UnitConfig> lightUnitConfig = Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.COLORABLE_LIGHT);
+        Registries.getUnitRegistry().updateUnitConfig(lightUnitConfig.get(0).toBuilder().addAlias("MyLightestUnit").build()).get(5, TimeUnit.SECONDS);
+
+        for (UnitRemote<? extends Message> unitRemote : customUnitPool.getInternalUnitList()) {
+            assertEquals("pool contains actually filtered entry!", UnitType.BUTTON, unitRemote.getUnitType());
+            System.out.println("is button: "+ unitRemote.getLabel());
         }
 
         customUnitPool.shutdown();

@@ -34,6 +34,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.DefaultInitializable;
 import org.openbase.jul.iface.Manageable;
@@ -160,6 +161,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
                 }
 
                 // handle updated units
+                unitLoop:
                 for (Entry<String, IdentifiableMessage<String, UnitConfig, Builder>> entry : unitConfigDiff.getUpdatedMessageMap().entrySet()) {
 
                     for (Filter<UnitConfig> filter : filterSet) {
@@ -167,13 +169,22 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
                         // remove known units which match the filter
                         if (filter.match(entry.getValue().getMessage()) && unitRemoteRegistry.contains(entry.getKey())) {
                             removeUnitRemote(entry.getKey());
+                            continue unitLoop;
                         }
 
-                        // add unknown units which pass the filter
-                        if (filter.pass(entry.getValue().getMessage()) && !unitRemoteRegistry.contains(entry.getKey())) {
-                            addUnitRemote(entry.getKey());
+                        // we are done if unit is already known
+                        if(unitRemoteRegistry.contains(entry.getKey())) {
+                            continue unitLoop;
+                        }
+
+                        // filter if required
+                        if (filter.match(entry.getValue().getMessage())) {
+                            continue unitLoop;
                         }
                     }
+
+                    // unit has not been removed, is not already in the pool and is not skipped by the filters, therefore we need to add it
+                    addUnitRemote(entry.getKey());
                 }
 
                 //handle removed units
