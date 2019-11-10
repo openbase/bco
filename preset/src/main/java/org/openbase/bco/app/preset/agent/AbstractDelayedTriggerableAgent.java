@@ -118,8 +118,8 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
 
     @Override
     protected void stop(ActivationState activationState) throws CouldNotPerformException, InterruptedException {
-        super.stop(activationState);
         timeout.cancel();
+        super.stop(activationState);
     }
 
     @Override
