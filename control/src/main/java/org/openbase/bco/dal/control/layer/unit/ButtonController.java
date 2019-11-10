@@ -61,7 +61,7 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
         @Override
         public void expired() {
             try {
-                applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(buttonDataToReset.toBuilder().setValue(State.RELEASED)), ServiceType.BUTTON_STATE_SERVICE);
+                applyServiceState(buttonDataToReset.toBuilder().setValue(State.RELEASED), ServiceType.BUTTON_STATE_SERVICE);
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not reset button state!", ex), logger);
             }

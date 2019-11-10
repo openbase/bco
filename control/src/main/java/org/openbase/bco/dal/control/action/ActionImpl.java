@@ -44,6 +44,7 @@ import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.WatchDog.ServiceState;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -78,7 +79,7 @@ public class ActionImpl implements SchedulableAction {
 
     /**
      * Constructor creates a new action object which helps to manage its execution during the scheduling process.
-     *
+     * <p>
      * Note: This constructor always aspects a new action which will be prepared during construction.
      *
      * @param actionDescription the description of the action.
@@ -96,18 +97,18 @@ public class ActionImpl implements SchedulableAction {
     }
 
     /**
-     * Constructor creates a new action object which helps to manage its execution during the scheduling process.
+     * Constructor creates a new action object which is already executing.
+     * The action description is fully generated based on the responsible action of the service state.
      *
-     * @param actionDescription the description of the action.
-     * @param unit              the target unit which needs to be allocated.
-     * @param prepare           flag defines if the action description refers an already executing action (false) or if the action is a new one and needs to be prepared as well (true).
+     * @param serviceState descriping the ongoingg action.
+     * @param unit         the target unit which needs to be allocated.
      *
      * @throws InstantiationException is throw in case the given action description is invalid. Checkout the exception cause chain for more details.
      */
-    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit, final boolean prepare) throws InstantiationException {
+    public ActionImpl(final Message serviceState, final AbstractUnitController<?, ?> unit) throws InstantiationException {
         try {
             this.unit = unit;
-            this.init(actionDescription, prepare);
+            this.init(serviceState);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -125,12 +126,14 @@ public class ActionImpl implements SchedulableAction {
             actionDescriptionBuilder = actionDescription.toBuilder();
 
             // verify and prepare action description
-            serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, prepare);
+            serviceState = ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, prepare).build();
+
+            if (!Services.hasResponsibleAction(serviceState)) {
+                StackTracePrinter.printStackTrace(LOGGER);
+            }
+
             // initially set last extension to creation time
             actionDescriptionBuilder.setLastExtensionTimestamp(actionDescriptionBuilder.getTimestamp());
-            // set actions description as responsible in service state
-            final FieldDescriptor responsibleActionField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-            serviceState = serviceState.toBuilder().setField(responsibleActionField, actionDescriptionBuilder.build()).build();
 
             // since its an action it has to be an operation service pattern
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
@@ -139,6 +142,30 @@ public class ActionImpl implements SchedulableAction {
             if (prepare) {
                 updateActionState(State.INITIALIZED);
             }
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    private void init(final Message serviceState) throws InitializationException {
+        LOGGER.trace("================================================================================");
+        try {
+
+            this.serviceState = serviceState;
+
+            actionDescriptionBuilder = Services.getResponsibleAction(serviceState).toBuilder();
+
+            // verify and prepare action description
+            ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, unit, false).build();
+
+            // initially set last extension to creation time
+            actionDescriptionBuilder.setLastExtensionTimestamp(actionDescriptionBuilder.getTimestamp());
+
+            // since its an action it has to be an operation service pattern
+            serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
+
+            // mark new action as initialized.
+            updateActionState(State.EXECUTING);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -288,6 +315,11 @@ public class ActionImpl implements SchedulableAction {
 
     private void setRequestedState() throws CouldNotPerformException {
         try (ClosableDataBuilder dataBuilder = unit.getDataBuilder(this)) {
+
+            if (!Services.hasResponsibleAction(serviceState)) {
+                StackTracePrinter.printStackTrace(LOGGER);
+            }
+
             // set the new service attribute as requested state in the unit data builder
             Services.invokeServiceMethod(serviceDescription.getServiceType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceState);
         }
@@ -323,7 +355,9 @@ public class ActionImpl implements SchedulableAction {
                 actionTask.cancel(true);
                 waitForExecutionTaskFinalization();
             }
-            updateActionState(State.CANCELED);
+            if (!isDone()) {
+                updateActionState(State.CANCELED);
+            }
             unit.reschedule();
             return actionDescriptionBuilder.build();
         });
@@ -344,11 +378,14 @@ public class ActionImpl implements SchedulableAction {
                 waitForExecutionTaskFinalization();
             }
 
-            // if action is interruptible it can be scheduled otherwise it is rejected
-            if (!forceReject && getActionDescription().getInterruptible() && getActionDescription().getSchedulable()) {
-                updateActionState(State.SCHEDULED);
-            } else {
-                updateActionState(State.REJECTED);
+            // if not done jet
+            if (!isDone()) {
+                // if action is interruptible it can be scheduled otherwise it is rejected
+                if (!forceReject && getActionDescription().getInterruptible() && getActionDescription().getSchedulable()) {
+                    updateActionState(State.SCHEDULED);
+                } else {
+                    updateActionState(State.REJECTED);
+                }
             }
 
             // rescheduling is not necessary because aborting is only done when rescheduling

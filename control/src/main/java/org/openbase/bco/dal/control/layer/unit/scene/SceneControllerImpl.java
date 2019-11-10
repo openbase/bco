@@ -263,7 +263,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             actionDescriptionBuilder.setIntermediary(true);
 
             // verify and prepare action description and retrieve the service state
-            final ActivationState.Builder activationStateBuilder = ((ActivationState) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true)).toBuilder();
+            final ActivationState.Builder activationStateBuilder = ((ActivationState.Builder) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true));
 
             // needs to be set before calling "setActivationState" because cause is used
             activationStateBuilder.setResponsibleAction(actionDescriptionBuilder);

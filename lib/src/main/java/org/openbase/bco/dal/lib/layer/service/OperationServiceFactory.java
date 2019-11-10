@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
@@ -32,5 +33,5 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
  */
 public interface OperationServiceFactory {
 
-    <UNIT extends Unit<?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException;
+    <UNIT extends UnitController<?, ?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException;
 }

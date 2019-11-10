@@ -29,6 +29,7 @@ import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -70,7 +71,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
     }
 
     @Override
-    public <UNIT extends Unit<?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
+    public <UNIT extends UnitController<?, ?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
         try {
             final Class<?> operationServiceClass = Services.loadOperationServiceClass(operationServiceType);
             String mockClassName = StringProcessor.transformUpperCaseToPascalCase(operationServiceType.name());
@@ -83,7 +84,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    public static class BrightnessStateOperationServiceMock<UNIT extends BrightnessStateOperationService & Unit> implements BrightnessStateOperationService {
+    public static class BrightnessStateOperationServiceMock<UNIT extends BrightnessStateOperationService & UnitController<?, ?>> implements BrightnessStateOperationService {
 
         private final UNIT unit;
 
@@ -111,7 +112,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    public static class ColorStateOperationServiceMock<UNIT extends ColorStateOperationService & Unit> implements ColorStateOperationService {
+    public static class ColorStateOperationServiceMock<UNIT extends ColorStateOperationService & UnitController<?, ?>> implements ColorStateOperationService {
 
         private final UNIT unit;
 
@@ -139,7 +140,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    public static class PowerStateOperationServiceMock<UNIT extends PowerStateOperationService & Unit> implements PowerStateOperationService {
+    public static class PowerStateOperationServiceMock<UNIT extends PowerStateOperationService & UnitController<?, ?>> implements PowerStateOperationService {
 
         final UNIT unit;
 
@@ -167,7 +168,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    public static class BlindStateOperationServiceMock<UNIT extends BlindStateOperationService & Unit> implements BlindStateOperationService {
+    public static class BlindStateOperationServiceMock<UNIT extends BlindStateOperationService & UnitController<?, ?>> implements BlindStateOperationService {
 
         final UNIT unit;
 
@@ -195,7 +196,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    public static class StandbyStateOperationServiceMock<UNIT extends StandbyStateOperationService & Unit> implements StandbyStateOperationService {
+    public static class StandbyStateOperationServiceMock<UNIT extends StandbyStateOperationService & UnitController<?, ?>> implements StandbyStateOperationService {
 
         final UNIT unit;
 
@@ -223,7 +224,7 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    public static class TargetTemperatureStateOperationServiceMock<UNIT extends TargetTemperatureStateOperationService & Unit<?>> implements TargetTemperatureStateOperationService {
+    public static class TargetTemperatureStateOperationServiceMock<UNIT extends TargetTemperatureStateOperationService & UnitController<?, ?>> implements TargetTemperatureStateOperationService {
 
         final UNIT unit;
 
@@ -251,18 +252,11 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    private static Future<ActionDescription> update(final Message argument, final Unit<?> unit, final ServiceType serviceType) {
+    private static Future<ActionDescription> update(final Message argument, final UnitController<?, ?> unit, final ServiceType serviceType) {
         try {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            if (stackTrace == null) {
-                throw new NotAvailableException("method stack");
-            } else if (stackTrace.length == 0) {
-                throw new InvalidStateException("Could not detect method stack!");
-            }
-            String methodName = "applyDataUpdate";
-            unit.getClass().getMethod(methodName, Message.class, ServiceType.class).invoke(unit, argument, serviceType);
+            unit.applyServiceState(argument, serviceType);
             return FutureProcessor.completedFuture(null);
-        } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+        } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not call remote Message[]", ex));
         }
     }

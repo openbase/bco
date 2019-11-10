@@ -124,9 +124,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                                         break;
                                     }
                                 }
-                                serviceStateBuilder = (serviceStateBuilder == null ? presenceState.setValue(State.ABSENT) : serviceStateBuilder);
-                                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.PRESENCE_STATE_SERVICE, this, 1, TimeUnit.MILLISECONDS, false, false, ActionPriorityType.ActionPriority.Priority.LOW, null);
-                                applyDataUpdate(serviceStateBuilder, ServiceType.PRESENCE_STATE_SERVICE);
+                                applyServiceState((serviceStateBuilder == null ? presenceState.setValue(State.ABSENT) : serviceStateBuilder), ServiceType.PRESENCE_STATE_SERVICE);
                             }
                         });
                         if (isActive()) {
@@ -140,6 +138,8 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         }
         return super.applyConfigUpdate(config);
     }
+
+
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {

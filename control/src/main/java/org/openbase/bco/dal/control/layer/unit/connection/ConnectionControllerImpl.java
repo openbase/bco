@@ -291,7 +291,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try {
-            applyDataUpdate(TimestampProcessor.updateTimestamp(timestamp, DoorState.newBuilder().setValue(doorState), TimeUnit.MICROSECONDS, logger), ServiceType.DOOR_STATE_SERVICE);
+            applyServiceState(TimestampProcessor.updateTimestamp(timestamp, DoorState.newBuilder().setValue(doorState), TimeUnit.MICROSECONDS, logger), ServiceType.DOOR_STATE_SERVICE);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply new door state!", ex);
         }
@@ -344,7 +344,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try {
-            applyDataUpdate(TimestampProcessor.updateTimestamp(timestamp, WindowState.newBuilder().setValue(windowState), TimeUnit.MICROSECONDS, logger), ServiceType.WINDOW_STATE_SERVICE);
+            applyServiceState(TimestampProcessor.updateTimestamp(timestamp, WindowState.newBuilder().setValue(windowState), TimeUnit.MICROSECONDS, logger), ServiceType.WINDOW_STATE_SERVICE);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply new window state!", ex);
         }

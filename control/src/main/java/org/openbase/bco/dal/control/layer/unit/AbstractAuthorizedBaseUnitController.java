@@ -123,15 +123,14 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         }
     }
 
-    protected ActionParameter.Builder generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceArgumentBuilder) throws CouldNotPerformException {
-        final Message serviceArgument = serviceArgumentBuilder.build();
+    protected ActionParameter.Builder generateAction(final UnitType unitType, final ServiceType serviceType, final Message.Builder serviceStateBuilder) throws CouldNotPerformException {
         try {
             return defaultActionParameter.toBuilder()
                     .setServiceStateDescription(ServiceStateDescription.newBuilder()
                             .setServiceType(serviceType)
                             .setUnitType(unitType)
-                            .setServiceStateClassName(protoBufJSonProcessor.getServiceStateClassName(serviceArgument))
-                            .setServiceState(protoBufJSonProcessor.serialize(serviceArgument)));
+                            .setServiceStateClassName(serviceStateBuilder.build().getClass().getName())
+                            .setServiceState(protoBufJSonProcessor.serialize(serviceStateBuilder)));
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate action!", ex);
         }
@@ -159,7 +158,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
      */
     protected RemoteAction observe(final Future<ActionDescription> futureAction) {
 
-        if(!isValid()) {
+        if (!isValid()) {
             new FatalImplementationErrorException(getLabel(getClass().getSimpleName()) + " observes action state even when not active!", this);
         }
 
@@ -176,6 +175,9 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         // register new action
         observedTaskList.add(remoteAction);
 
+        // validate and initiate forced stop if instance generates to many messages.
+        validateUnitOverload();
+
         return remoteAction;
     }
 
@@ -187,6 +189,28 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         }
     }
 
+
+    public static long MAX_ACTIN_SUBMITTION_PER_MINUTE = 30;
+    private double eventsPerHour = 0;
+    private long lastActionTimestamp = System.currentTimeMillis();
+
+    private synchronized void validateUnitOverload() {
+        eventsPerHour -= (((double) (System.currentTimeMillis() - lastActionTimestamp)) / 1000d / 60d) * MAX_ACTIN_SUBMITTION_PER_MINUTE;
+        eventsPerHour = Math.max(0, eventsPerHour);
+        eventsPerHour++;
+        lastActionTimestamp = System.currentTimeMillis();
+
+        System.err.println("analyze " + this + " which currently generates " + eventsPerHour + " events per hour which is " + (int) (eventsPerHour / MAX_ACTIN_SUBMITTION_PER_MINUTE) * 100d + "% of the totally allowed ones.");
+
+        if (eventsPerHour > MAX_ACTIN_SUBMITTION_PER_MINUTE * 60) {
+            logger.error(this + " generates to many actions and will be terminated!");
+            try {
+                applyServiceState(ActivationState.newBuilder().setValue(State.INACTIVE), ServiceType.ACTIVATION_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not force shutdown " + this, ex, logger);
+            }
+        }
+    }
 
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
@@ -200,11 +224,13 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
             cancelTaskList.add(new Pair<>(remoteAction, cancel));
         }
 
+        final long timeout = (isShutdownInProgress() ? 2 : 10);
+
         for (final Pair<RemoteAction, Future<ActionDescription>> remoteTaskPair : cancelTaskList) {
             try {
-                remoteTaskPair.getValue().get(10, TimeUnit.SECONDS);
+                remoteTaskPair.getValue().get(timeout, TimeUnit.SECONDS);
             } catch (ExecutionException | TimeoutException | CancellationException ex) {
-                ExceptionPrinter.printHistory("Could not cancel "+remoteTaskPair.getKey()+"!", ex, logger, LogLevel.WARN);
+                ExceptionPrinter.printHistory("Could not cancel " + remoteTaskPair.getKey() + "!", ex, logger, LogLevel.WARN);
             }
         }
 

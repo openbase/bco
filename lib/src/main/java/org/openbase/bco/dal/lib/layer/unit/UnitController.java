@@ -24,13 +24,17 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.controller.MessageController;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
@@ -53,7 +57,7 @@ public interface UnitController<D extends AbstractMessage, DB extends D.Builder<
     /**
      * Applies the given service state update for this unit.
      *
-     * @param serviceType the type of the service to update.
+     * @param serviceType  the type of the service to update.
      * @param serviceState service state to apply.
      *
      * @throws CouldNotPerformException
@@ -62,14 +66,97 @@ public interface UnitController<D extends AbstractMessage, DB extends D.Builder<
 
     /**
      * Applies the given service state update for this unit.
+     * Please make sure that the applied service state offers a compatible responsible action.
      *
-     * @param serviceType the type of the service to update.
+     * @param serviceType         the type of the service to update.
      * @param serviceStateBuilder the service state to apply.
      *
      * @throws CouldNotPerformException
      */
     default void applyDataUpdate(final Message.Builder serviceStateBuilder, final ServiceType serviceType) throws CouldNotPerformException {
         applyDataUpdate(serviceStateBuilder.build(), serviceType);
+    }
+
+    /**
+     * Method can be used to directly manipulate a service state of this unit which passthroughts the unit alloction.
+     * Method should only be used for unit test or when the controller directly needs to adjust the unit state
+     * e.g. agents are activated during startup because the autostart flag is configured or local service provider needs to apply action states like the location presence detector.
+     * <p>
+     * Method internally generates a responsible action for the service state and submits the update via the controllers {@code applyDataUpdate(...)} method.
+     * This unit is marked as responsible for this transaction.
+     *
+     * @param serviceStateBuilder a builder instance of the service state to set.
+     * @param serviceType         the related service state.
+     * @param <MB>                the message builder type.
+     *
+     * @return the builder instance given via the {@code serviceStateBuilder} argument with an updated responsible action field.
+     *
+     * @throws CouldNotPerformException is thrown if the update could not be applied. Check the cause chain for more details.
+     */
+    default <MB extends Message.Builder> MB applyServiceState(final MB serviceStateBuilder, final ServiceType serviceType) throws CouldNotPerformException {
+        return applyServiceState(serviceStateBuilder, serviceType, null);
+    }
+
+    /**
+     * Method can be used to directly manipulate a service state of this unit which passthroughts the unit alloction.
+     * Method should only be used for unit test or when the controller directly needs to adjust the unit state
+     * e.g. agents are activated during startup because the autostart flag is configured or local service provider needs to apply action states like the location presence detector.
+     * <p>
+     * Method internally generates a responsible action for the service state and submits the update via the controllers {@code applyDataUpdate(...)} method.
+     *
+     * @param serviceStateBuilder a builder instance of the service state to set.
+     * @param serviceType         the related service state.
+     * @param actionInitiatorId   the initiator who is responsible for the update. In case of a null value this unit is marked as responsible for this transaction.
+     * @param <MB>                the message builder type.
+     *
+     * @return the builder instance given via the {@code serviceStateBuilder} argument with an updated responsible action field.
+     *
+     * @throws CouldNotPerformException is thrown if the update could not be applied. Check the cause chain for more details.
+     */
+    default <MB extends Message.Builder> MB applyServiceState(final MB serviceStateBuilder, final ServiceType serviceType, final String actionInitiatorId) throws CouldNotPerformException {
+        ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MILLISECONDS, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorId((actionInitiatorId != null ? actionInitiatorId : getId())).build());
+        applyDataUpdate(serviceStateBuilder, serviceType);
+        return serviceStateBuilder;
+    }
+
+    /**
+     * Method can be used to directly manipulate a service state of this unit which passthroughts the unit alloction.
+     * Method should only be used for unit test or when the controller directly needs to adjust the unit state
+     * e.g. agents are activated during startup because the autostart flag is configured or local service provider needs to apply action states like the location presence detector.
+     * <p>
+     * Method internally generates a responsible action for the service state and submits the update via the controllers {@code applyDataUpdate(...)} method.
+     * This unit is marked as responsible for this transaction.
+     *
+     * @param serviceState a instance of the service state to set.
+     * @param serviceType  the related service state.
+     * @param <M>          the message type.
+     *
+     * @return the builder instance given via the {@code serviceState} argument with an updated responsible action field.
+     *
+     * @throws CouldNotPerformException is thrown if the update could not be applied. Check the cause chain for more details.
+     */
+    default <M extends Message> M applyServiceState(final M serviceState, final ServiceType serviceType) throws CouldNotPerformException {
+        return (M) applyServiceState(serviceState.toBuilder(), serviceType).build();
+    }
+
+    /**
+     * Method can be used to directly manipulate a service state of this unit which passthroughts the unit alloction.
+     * Method should only be used for unit test or when the controller directly needs to adjust the unit state
+     * e.g. agents are activated during startup because the autostart flag is configured or local service provider needs to apply action states like the location presence detector.
+     * <p>
+     * Method internally generates a responsible action for the service state and submits the update via the controllers {@code applyDataUpdate(...)} method.
+     *
+     * @param serviceState      a instance of the service state to set.
+     * @param serviceType       the related service state.
+     * @param actionInitiatorId the initiator who is responsible for the update. In case of a null value this unit is marked as responsible for this transaction.
+     * @param <M>               the message type.
+     *
+     * @return the builder instance given via the {@code serviceStateBuilder} argument with an updated responsible action field.
+     *
+     * @throws CouldNotPerformException is thrown if the update could not be applied. Check the cause chain for more details.
+     */
+    default <M extends Message> M applyServiceState(final M serviceState, final ServiceType serviceType, final String actionInitiatorId) throws CouldNotPerformException {
+        return (M) applyServiceState(serviceState.toBuilder(), serviceType, actionInitiatorId).build();
     }
 
     /**

@@ -42,6 +42,7 @@ import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionPriorityType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.Builder;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.Serializable;
@@ -147,37 +148,36 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
         public Future<ActionDescription> setActivationState(final ActivationState activationState) {
             try {
                 logger.trace("setActivationState: {}", activationState.getValue().name());
+                final Builder activationStateBuilder = activationState.toBuilder();
                 synchronized (executionLock) {
 
                     // filter events that do not change anything
-                    if (activationState.getValue() == getActivationState().getValue()) {
-                        logger.trace("skip already applied state: {}", activationState.getValue().name());
+                    if (activationStateBuilder.getValue() == getActivationState().getValue()) {
+                        logger.trace("skip already applied state: {}", activationStateBuilder.getValue().name());
                         return FutureProcessor.completedFuture(null);
                     }
 
                     final ActivationState fallbackActivationState = getActivationState();
 
-                    if (activationState.getValue() == ActivationState.State.ACTIVE) {
+                    if (activationStateBuilder.getValue() == ActivationState.State.ACTIVE) {
 
                         // make sure timestamp is updated.
                         try {
-                            logger.trace("inform about " + activationState.getValue().name());
-                            ActivationState.Builder serviceStateBuilder = activationState.toBuilder();
-                            ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE, AbstractExecutableBaseUnitController.this, 1, TimeUnit.MILLISECONDS, false, false, ActionPriorityType.ActionPriority.Priority.LOW, null);
-                            applyDataUpdate(serviceStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE);
+                            logger.trace("inform about " + activationStateBuilder.getValue().name());
+                            applyServiceState(activationStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE);
                         } catch (CouldNotPerformException ex) {
-                            throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
+                            throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationStateBuilder.getValue().name()) + " " + this, ex);
                         }
 
                         // filter duplicated execution
                         if (isExecuting()) {
-                            return FutureProcessor.completedFuture(null);
+                            return FutureProcessor.completedFuture(activationState.getResponsibleAction());
                         }
 
                         //TODO: making this a separate thread makes it really difficult to wait for states from scenes in unit tests
                         executionFuture = GlobalCachedExecutorService.submit(() -> {
                             try {
-                                return execute(activationState);
+                                return execute(activationStateBuilder.build());
                             } catch (CouldNotPerformException ex) {
                                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
 
@@ -190,9 +190,9 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                                     } catch (Exception exx) {
                                         ExceptionPrinter.printHistory("rollback failed", exx, logger);
                                     }
-                                    applyDataUpdate(fallbackActivationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                                    applyServiceState(fallbackActivationState, ServiceType.ACTIVATION_STATE_SERVICE);
                                 }
-                                return activationState.getResponsibleAction();
+                                return activationStateBuilder.getResponsibleAction();
                             }
                         });
                         return executionFuture;
@@ -203,7 +203,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                         // call stop even if execution has already finished
                         // many components just register observer etc. in execute and this it is done quickly
                         try {
-                            stop(activationState);
+                            stop(activationStateBuilder.build());
                         } catch (InterruptedException ex) {
                             Thread.currentThread().interrupt();
                             return FutureProcessor.canceledFuture(ex);
@@ -212,14 +212,14 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                             return FutureProcessor.canceledFuture(ex);
                         }
                         try {
-                            logger.trace("inform about " + activationState.getValue().name());
-                            applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+                            logger.trace("inform about " + activationStateBuilder.getValue().name());
+                            applyServiceState(activationStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE);
                         } catch (CouldNotPerformException ex) {
-                            throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex);
+                            throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationStateBuilder.getValue().name()) + " " + this, ex);
                         }
                     }
                 }
-                return FutureProcessor.completedFuture(activationState.getResponsibleAction());
+                return FutureProcessor.completedFuture(activationStateBuilder.getResponsibleAction());
             } catch (CouldNotPerformException ex) {
                 return FutureProcessor.canceledFuture(ActionDescription.class, ex);
             }

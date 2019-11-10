@@ -32,6 +32,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.remote.action.Actions;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -501,7 +502,10 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             }
 
             // cancel the action
-            locationRemote.cancelAction(actionDescription).get();
+            final RemoteAction remoteAction = new RemoteAction(actionDescription);
+            remoteAction.waitForSubmission();
+            remoteAction.cancel().get();
+            //locationRemote.cancelAction(actionDescription).get();
             // validate that action is cancelled on all units
             for (final ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
                 ActionDescription causedAction = null;

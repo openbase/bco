@@ -1160,6 +1160,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
 
+            // log state transition
+            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
+            if(!Services.hasResponsibleAction(newState)) {
+                StackTracePrinter.printStackTrace(logger);
+            }
+
             // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
             try {
                 newState = computeNewState(newState, serviceType, internalBuilder);
@@ -1168,11 +1174,20 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 return;
             }
 
+            // log state transition
+            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
+
             // verify the service state
             newState = Services.verifyAndRevalidateServiceState(newState);
 
             // move current state to last state
             updateLastWithCurrentState(serviceType, internalBuilder);
+
+            // log state transition
+            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
+            if(!Services.hasResponsibleAction(newState)) {
+                StackTracePrinter.printStackTrace(logger);
+            }
 
             // copy latestValueOccurrence map from current state, only if available
             try {
@@ -1185,6 +1200,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // log state transition
             logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
+            if(!Services.hasResponsibleAction(newState)) {
+                StackTracePrinter.printStackTrace(logger);
+            }
 
             // update the current state
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
@@ -1259,23 +1277,29 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
                 requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
 
-                // choose with which value to update
-                if (Services.equalServiceStates(serviceState, requestedState)) {
-                    try {
-                        // use the requested state but update the timestamp if not available
-                        if (TimestampProcessor.hasTimestamp(serviceState)) {
-                            Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTAMP_FIELD_NAME);
-                            return requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
-                        } else {
-                            return requestedState;
+                // validate responsible action
+                if(Services.hasResponsibleAction(requestedState)) {
+
+                    // choose with which value to update
+                    if (Services.equalServiceStates(serviceState, requestedState)) {
+                        try {
+                            // use the requested state but update the timestamp if not available
+                            if (TimestampProcessor.hasTimestamp(serviceState)) {
+                                Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, TimestampProcessor.TIMESTAMP_FIELD_NAME);
+                                return requestedState.toBuilder().setField(timestampField, serviceState.getField(timestampField)).build();
+                            } else {
+                                return requestedState;
+                            }
+                        } finally {
+                            // remove requested state since it will be applied now and is no longer requested.
+                            //System.out.println("use requested state");
+                            resetRequestedServiceState(serviceType, internalBuilder);
                         }
-                    } finally {
-                        // remove requested state since it will be applied now and is no longer requested.
-                        //System.out.println("use requested state");
-                        resetRequestedServiceState(serviceType, internalBuilder);
+                    } else {
+                        // requested state does not match the current state
                     }
                 } else {
-                    // requested state does not match the current state
+                    logger.error("Requested service state does no offer an responsible action and will be ignored!");
                 }
             } else {
                 // requested state is not available so obviously it does not match
@@ -1378,19 +1402,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // compute responsible action if not exist
             if (!Services.hasResponsibleAction(serviceStateBuilder)) {
                 // do not complain in test mode since simple state updates makes writing tests much more comfortable.
-                if(JPService.testMode()) {
+                if(!JPService.testMode()) {
                     logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
                     StackTracePrinter.printStackTrace(logger);
                 }
                 ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, Priority.LOW, null);
             }
 
-            // load responsible action
-            responsibleActionBuilder = Services.getResponsibleAction(serviceStateBuilder).toBuilder();
-
-            // add the new action as executing to the front of the stack
-            responsibleActionBuilder.getActionStateBuilder().setValue(State.EXECUTING);
-            scheduledActionList.add(0, new ActionImpl(responsibleActionBuilder.build(), this, false));
+            scheduledActionList.add(0, new ActionImpl(serviceStateBuilder.build(), this));
 
             // if there was another action executing before, abort it
             if (scheduledActionList.size() > 1) {

@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Message;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -68,7 +69,7 @@ public class ServiceJSonProcessorTest {
     @Test(timeout = 5000)
     public void testGetServiceStateClassName() throws Exception {
         System.out.println("getServiceStateClassName");
-        Object serviceState;
+        Message serviceState;
         // outdated because service atributes must be messages.
         // TODO: move test to jul to test more generic json serialization. 
 //        Object serviceState = 3.141d;
@@ -93,7 +94,7 @@ public class ServiceJSonProcessorTest {
 //        assertEquals(serviceState.getClass().getName(), serviceJSonProcessor.getServiceStateClassName(serviceState));
 
         serviceState = PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.ON).build();
-        assertEquals(serviceState.getClass().getName(), serviceJSonProcessor.getServiceStateClassName(serviceState));
+        assertEquals(serviceState.getClass().getName(), Services.getServiceStateClassName(serviceState));
 
     }
 
@@ -105,7 +106,7 @@ public class ServiceJSonProcessorTest {
     @Test(timeout = 5000)
     public void testSerializationPipeline() throws Exception {
         System.out.println("SerializationPipeline");
-        Object serviceState;
+        Message serviceState;
         // outdated because service atributes must be messages.
         // TODO: move test to jul to test more generic json serialization. 
         
@@ -131,7 +132,7 @@ public class ServiceJSonProcessorTest {
 //        assertEquals(serviceState, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceState), serviceJSonProcessor.getServiceStateClassName(serviceState)));
 
         serviceState = PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.ON).build();
-        assertEquals(serviceState, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceState), serviceJSonProcessor.getServiceStateClassName(serviceState)));
+        assertEquals(serviceState, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceState), Services.getServiceStateClassName(serviceState)));
 
     }
 }

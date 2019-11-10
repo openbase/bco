@@ -23,8 +23,6 @@ package org.openbase.bco.dal.control.layer.unit.location;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
-import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.location.LocationController;
@@ -32,13 +30,11 @@ import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.processing.StandbyController;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -46,22 +42,18 @@ import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.action.ActionPriorityType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.*;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.dal.DimmerDataType.DimmerData;
 import org.openbase.type.domotic.unit.location.LocationDataType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData.Builder;
 import org.openbase.type.vision.ColorType;
 import org.openbase.type.vision.HSBColorType;
-import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -69,11 +61,8 @@ import rsb.converter.ProtocolBufferConverter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static org.openbase.bco.dal.remote.layer.unit.Units.LOCATION;
-import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*;
-import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
 
 /**
  * UnitConfig
@@ -115,7 +104,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
                 public void update(DataProvider<PresenceState> source, PresenceState data) throws Exception {
                     try {
                         LocationManagerImpl.LOGGER.debug("Set " + this + " presence to [" + data.getValue() + "]");
-                        applyDataUpdate(data, ServiceType.PRESENCE_STATE_SERVICE);
+                        applyServiceState(data, ServiceType.PRESENCE_STATE_SERVICE);
                     } catch (CouldNotPerformException ex) {
                         throw new CouldNotPerformException("Could not apply presence state change!", ex);
                     }
@@ -136,9 +125,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
         super.init(unitConfig);
 
         try {
-            StandbyState.Builder serviceStateBuilder = StandbyState.newBuilder().setValue(State.RUNNING);
-            ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.STANDBY_STATE_SERVICE, this, 1, TimeUnit.MILLISECONDS, false, false, ActionPriorityType.ActionPriority.Priority.LOW, null);
-            applyDataUpdate(serviceStateBuilder, ServiceType.STANDBY_STATE_SERVICE);
+            applyServiceState(StandbyState.newBuilder().setValue(State.RUNNING), ServiceType.STANDBY_STATE_SERVICE);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply initial standby service state!", ex), LocationManagerImpl.LOGGER, LogLevel.WARN);
         }

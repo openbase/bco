@@ -37,6 +37,14 @@ import java.util.List;
  */
 public class ServiceJSonProcessor extends ProtoBufJSonProcessor {
 
+    public static final List<String> DEFAULT_FILTER_LIST;
+
+    static {
+        DEFAULT_FILTER_LIST = new ArrayList<>();
+        DEFAULT_FILTER_LIST.add(TimestampProcessor.TIMESTAMP_FIELD_NAME);
+        DEFAULT_FILTER_LIST.add(Service.RESPONSIBLE_ACTION_FIELD_NAME);
+    }
+
     public ServiceJSonProcessor() {
         super();
     }
@@ -46,39 +54,66 @@ public class ServiceJSonProcessor extends ProtoBufJSonProcessor {
      * This method removes timestamp and responsible action fields.
      *
      * @param serviceState the service attribute which is serialized
+     *
      * @return a jSon string representation of the service attribute
+     *
      * @throws CouldNotPerformException if the serialization fails or the service attribute does not contain any context
-     *                                  <p>
-     *                                  TODO: release: change parameter type to message since java primitives cannot be de-/serialized anymore anyway
      */
     @Override
-    public String serialize(final Object serviceState) throws CouldNotPerformException {
-        final List<String> filteredFieldList = new ArrayList<>();
-        filteredFieldList.add(TimestampProcessor.TIMESTAMP_FIELD_NAME);
-        filteredFieldList.add(Service.RESPONSIBLE_ACTION_FIELD_NAME);
-        return serialize((Message) serviceState, filteredFieldList);
+    public String serialize(final Message serviceState) throws CouldNotPerformException {
+        return serialize(serviceState, DEFAULT_FILTER_LIST);
+    }
+
+    /**
+     * Serialize a serviceState which is a protoBuf message.
+     * This method removes timestamp and responsible action fields.
+     *
+     * @param serviceStateBuilder the service attribute which is serialized
+     *
+     * @return a jSon string representation of the service attribute
+     *
+     * @throws CouldNotPerformException if the serialization fails or the service attribute does not contain any context
+     */
+    @Override
+    public String serialize(final Message.Builder serviceStateBuilder) throws CouldNotPerformException {
+        return serialize(serviceStateBuilder.build(), DEFAULT_FILTER_LIST);
     }
 
     /**
      * Serialize a serviceState and filter a list of fields beforehand.
      *
-     * @param serviceState  the service attribute which is serialized
+     * @param serviceState      the service attribute which is serialized
      * @param filteredFieldList a list of field names which shall be filtered before serialization
+     *
      * @return a jSon string representation of the service attribute without the filtered fields
+     *
      * @throws CouldNotPerformException if the serialization fails or the service attribute does not contain any context
      */
     public String serialize(final Message serviceState, final List<String> filteredFieldList) throws CouldNotPerformException {
-        final Message.Builder builder = serviceState.toBuilder();
+        return serialize(serviceState.toBuilder(), filteredFieldList);
+    }
+
+    /**
+     * Serialize a serviceState and filter a list of fields beforehand.
+     *
+     * @param serviceStateBuilder the service attribute which is serialized
+     * @param filteredFieldList   a list of field names which shall be filtered before serialization
+     *
+     * @return a jSon string representation of the service attribute without the filtered fields
+     *
+     * @throws CouldNotPerformException if the serialization fails or the service attribute does not contain any context
+     */
+    public String serialize(final Message.Builder serviceStateBuilder, final List<String> filteredFieldList) throws CouldNotPerformException {
 
         for (String filteredField : filteredFieldList) {
-            FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(builder, filteredField);
-            if (!builder.hasField(fieldDescriptor)) {
+            FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, filteredField);
+            if (!serviceStateBuilder.hasField(fieldDescriptor)) {
                 continue;
             }
 
-            builder.clearField(fieldDescriptor);
+            serviceStateBuilder.clearField(fieldDescriptor);
         }
 
-        return super.serialize(builder.build());
+        return super.serialize(serviceStateBuilder);
     }
 }

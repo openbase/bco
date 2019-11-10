@@ -130,40 +130,40 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     @Test
     public void applyCustomDataStateFeedbackLoopTest() {
         try {
-            colorableLightController.applyDataUpdate(Power.OFF, ServiceType.POWER_STATE_SERVICE);
-            colorableLightController.applyDataUpdate(BrightnessState.newBuilder().setBrightness(0.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
+            colorableLightController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(BrightnessState.newBuilder().setBrightness(0.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
 
             RemoteAction action;
 
-            colorableLightController.applyDataUpdate(Color.BLUE, ServiceType.COLOR_STATE_SERVICE);
-            colorableLightController.applyDataUpdate(Power.OFF, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(Color.BLUE, ServiceType.COLOR_STATE_SERVICE);
+            colorableLightController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
 
             action = new RemoteAction(colorableLightRemote.setPowerState(Power.ON));
             action.waitForExecution(5, TimeUnit.SECONDS);
             Assert.assertEquals("Action rejected by hardware feedback loop!", ActionState.State.EXECUTING, action.getActionState());
 
-            colorableLightController.applyDataUpdate(Color.BLUE, ServiceType.COLOR_STATE_SERVICE);
+            colorableLightController.applyServiceState(Color.BLUE, ServiceType.COLOR_STATE_SERVICE);
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Action rejected by power state feedback loop!", ActionState.State.EXECUTING, action.getActionState());
 
-            colorableLightController.applyDataUpdate(BrightnessState.newBuilder().setBrightness(1.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
+            colorableLightController.applyServiceState(BrightnessState.newBuilder().setBrightness(1.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Action rejected by brightness state feedback loop!", ActionState.State.EXECUTING, action.getActionState());
 
             // perform inverse order
 
-            colorableLightController.applyDataUpdate(Power.OFF, ServiceType.POWER_STATE_SERVICE);
-            colorableLightController.applyDataUpdate(BrightnessState.newBuilder().setBrightness(0.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
+            colorableLightController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(BrightnessState.newBuilder().setBrightness(0.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
 
             action = new RemoteAction(colorableLightRemote.setColorState(Color.GREEN));
             action.waitForExecution(5, TimeUnit.SECONDS);
             Assert.assertEquals("Action rejected by hardware feedback loop!", ActionState.State.EXECUTING, action.getActionState());
 
-            colorableLightController.applyDataUpdate(Power.ON, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Action rejected by power state feedback loop!", ActionState.State.EXECUTING, action.getActionState());
 
-            colorableLightController.applyDataUpdate(BrightnessState.newBuilder().setBrightness(1.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
+            colorableLightController.applyServiceState(BrightnessState.newBuilder().setBrightness(1.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Action rejected by brightness state feedback loop!", ActionState.State.EXECUTING, action.getActionState());
 

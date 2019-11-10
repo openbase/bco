@@ -38,6 +38,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.MessageProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor.JavaTypeToProto;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -48,6 +49,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -583,7 +585,7 @@ public class Services extends ServiceStateProcessor {
 
             // validate if field is set
             if (!serviceState.hasField(responsibleActionField)) {
-                throw new InvalidStateException("Given service state has no responsible action declared!");
+                throw new InvalidStateException("Given "+serviceState.getClass().getSimpleName()+" has no responsible action declared! "+ serviceState);
             }
 
             // resolve value
@@ -650,6 +652,11 @@ public class Services extends ServiceStateProcessor {
      * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      */
     public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) throws NotAvailableException {
+
+        if(responsibleAction == null) {
+            throw new NotAvailableException("ResponsibleAction");
+        }
+
         serviceStateBuilder.setField(ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, Service.RESPONSIBLE_ACTION_FIELD_NAME), responsibleAction);
         return serviceStateBuilder;
     }
@@ -785,23 +792,23 @@ public class Services extends ServiceStateProcessor {
         return dataTypes;
     }
 
-    public static List<String> generateServiceStateStringRepresentation(Message serviceState, ServiceType serviceType) throws CouldNotPerformException {
+    public static List<String> generateServiceStateStringRepresentation(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType) throws CouldNotPerformException {
         final List<String> values = new ArrayList<>();
         String timestamp;
         try {
-            timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS));
+            timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceStateOrBuilder, TimeUnit.MILLISECONDS));
         } catch (NotAvailableException ex) {
             timestamp = "-1";
         }
-        for (String stateValue : resolveStateValue(serviceState)) {
+        for (String stateValue : resolveStateValue(serviceStateOrBuilder)) {
             values.add(serviceType.name().toLowerCase() + ", " + timestamp + ", " + stateValue);
         }
         return values;
     }
 
-    public static List<String> resolveStateValue(Message serviceState) throws CouldNotPerformException {
+    public static List<String> resolveStateValue(MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
         final List<String> stateValues = new ArrayList<>();
-        for (FieldDescriptor fieldDescriptor : serviceState.getDescriptorForType().getFields()) {
+        for (FieldDescriptor fieldDescriptor : messageOrBuilder.getDescriptorForType().getFields()) {
             String stateName = fieldDescriptor.getName();
             String stateType = fieldDescriptor.getType().toString().toLowerCase();
 
@@ -827,15 +834,15 @@ public class Services extends ServiceStateProcessor {
                 continue;
             }
 
-            String stateValue = serviceState.getField(fieldDescriptor).toString();
+            String stateValue = messageOrBuilder.getField(fieldDescriptor).toString();
 
             try {
                 if (fieldDescriptor.getType() == Type.MESSAGE) {
                     if (fieldDescriptor.isRepeated()) {
                         List<String> types = new ArrayList<>();
 
-                        for (int i = 0; i < serviceState.getRepeatedFieldCount(fieldDescriptor); i++) {
-                            final Object repeatedFieldEntry = serviceState.getRepeatedField(fieldDescriptor, i);
+                        for (int i = 0; i < messageOrBuilder.getRepeatedFieldCount(fieldDescriptor); i++) {
+                            final Object repeatedFieldEntry = messageOrBuilder.getRepeatedField(fieldDescriptor, i);
                             if (repeatedFieldEntry instanceof Message) {
                                 types.add("[" + resolveStateValue((Message) repeatedFieldEntry).toString() + "]");
                             }
@@ -843,7 +850,7 @@ public class Services extends ServiceStateProcessor {
                         }
                         stateValue = types.toString().toLowerCase();
                     } else {
-                        stateValue = resolveStateValue((Message) serviceState.getField(fieldDescriptor)).toString();
+                        stateValue = resolveStateValue((Message) messageOrBuilder.getField(fieldDescriptor)).toString();
                     }
                 }
             } catch (InvalidStateException ex) {
@@ -1003,6 +1010,10 @@ public class Services extends ServiceStateProcessor {
             // compatibility not given when method could not be found or any other error occurs.
             return false;
         }
+    }
+
+    public static String getServiceStateClassName(final Message serviceState) {
+        return serviceState.getClass().getName();
     }
 }
 

@@ -227,7 +227,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         serviceStateDescription.setUnitId(getId());
                         serviceStateDescription.setUnitType(getUnitTemplate().getUnitType());
                         serviceStateDescription.setServiceType(serviceType);
-                        serviceStateDescription.setServiceStateClassName(serviceJSonProcessor.getServiceStateClassName(serviceState));
+                        serviceStateDescription.setServiceStateClassName(Services.getServiceStateClassName(serviceState));
 
                         // add action config
                         snapshotBuilder.addServiceStateDescription(serviceStateDescription.build());
