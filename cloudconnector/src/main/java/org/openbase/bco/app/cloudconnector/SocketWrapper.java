@@ -184,11 +184,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }).on(INTENT_RENAMING, objects -> {
                 handleRenaming(objects[0], (Ack) objects[objects.length - 1]);
             }).on(Socket.EVENT_RECONNECT_ATTEMPT, objects -> {
-                LOGGER.info("Attempt to reconnect socket of user {}", userId);
+                LOGGER.debug("Attempt to reconnect socket of user {}", userId);
             }).on(Socket.EVENT_RECONNECT_ERROR, objects -> {
-                LOGGER.info("Reconnection error for socket of user {} because {}", userId, objects.length > 0 ? objects[0] : 1);
+                LOGGER.debug("Reconnection error for socket of user {} because {}", userId, objects.length > 0 ? objects[0] : 1);
             }).on(Socket.EVENT_RECONNECT_FAILED, objects -> {
-                LOGGER.info("Reconnection failed for socket of user {} because {}", userId, objects.length > 0 ? objects[0] : 1);
+                LOGGER.debug("Reconnection failed for socket of user {} because {}", userId, objects.length > 0 ? objects[0] : 1);
             }).on(Socket.EVENT_RECONNECTING, objects -> {
                 LOGGER.info("Reconnection event for user {}", userId);
             }).on(Socket.EVENT_RECONNECT, objects -> {
