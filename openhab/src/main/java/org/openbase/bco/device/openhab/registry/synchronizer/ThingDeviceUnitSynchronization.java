@@ -85,9 +85,9 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
                 //}
             }
         } catch (NotAvailableException ex) {
-            ExceptionPrinter.printHistory("Unit for thing "+identifiableEnrichedThingDTO.getDTO().UID+" not available", ex, logger, LogLevel.WARN);
+            ExceptionPrinter.printHistory("Unit for thing " + identifiableEnrichedThingDTO.getDTO().UID + " not available", ex, logger, LogLevel.WARN);
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
-            ExceptionPrinter.printHistory("Unit for thing "+identifiableEnrichedThingDTO.getDTO().UID+" can not be updated!", ex, logger, LogLevel.WARN);
+            ExceptionPrinter.printHistory("Unit for thing " + identifiableEnrichedThingDTO.getDTO().UID + " can not be updated!", ex, logger, LogLevel.WARN);
         }
     }
 
@@ -150,7 +150,8 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
         String labelSuffix = "";
         int iterration = 2;
-        validateLabelLoop : while (true) {
+        validateLabelLoop:
+        while (true) {
             // update label according to thing
             //TODO: load language via bco default config if implemented.
             //
@@ -158,12 +159,12 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
             LabelProcessor.addLabel(unitConfig.getLabelBuilder().clear(), Locale.getDefault(), unitLabel);
             // check if label is already taken
-            for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitLabelRecursive(unitLabel, locationId, false)) {
+            for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitLabelRecursive(locationId, unitLabel, false)) {
                 // only check if a device has the same label
                 if (config.getUnitType() == UnitType.DEVICE) {
                     if (!config.getDeviceConfig().getDeviceClassId().equalsIgnoreCase(deviceClass.getId())) {
                         // device with same label exists but has a different device class, so try to register without suffix
-                        labelSuffix  = " " + iterration++;
+                        labelSuffix = " " + iterration++;
                         continue validateLabelLoop;
                     }
 
@@ -177,7 +178,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
                             return;
                         }
                         // same class, label and location but meta config entry differs so the collision has to be resolved by setting a new label.
-                        labelSuffix  = " " + iterration++;
+                        labelSuffix = " " + iterration++;
                         continue validateLabelLoop;
 
                     } catch (NotAvailableException ex) {
