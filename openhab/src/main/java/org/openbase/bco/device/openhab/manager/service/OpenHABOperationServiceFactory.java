@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -41,7 +42,7 @@ public class OpenHABOperationServiceFactory implements OperationServiceFactory {
     }
 
     @Override
-    public <UNIT extends Unit<?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
+    public <UNIT extends UnitController<?, ?>> OperationService newInstance(final ServiceType operationServiceType, final UNIT unit) throws InstantiationException {
         String serviceImplClassName = OpenHABService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToPascalCase(operationServiceType.name()) + "Impl";
         try {
             final Class<?> serviceImplClass = Class.forName(serviceImplClassName);

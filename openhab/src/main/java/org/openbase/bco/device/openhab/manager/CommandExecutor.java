@@ -44,6 +44,8 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.type.domotic.action.ActionInitiatorType;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.slf4j.Logger;
@@ -129,9 +131,9 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             // update the responsible action to show that it was triggered by openHAB and add other parameters
             // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
             if (systemSync) {
-                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 5, TimeUnit.MINUTES, false, false, Priority.NO, ActionInitiatorType.ActionInitiator.newBuilder().setInitiatorType(ActionInitiatorType.ActionInitiator.InitiatorType.SYSTEM).build());
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 5, TimeUnit.MINUTES, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM).build());
             } else {
-                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, true, true, Priority.NORMAL, ActionInitiatorType.ActionInitiator.newBuilder().setInitiatorType(ActionInitiatorType.ActionInitiator.InitiatorType.HUMAN).build());
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, true, true, Priority.NORMAL, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             }
 
             unitController.applyDataUpdate(serviceStateBuilder, metaData.getServiceType());
