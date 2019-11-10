@@ -88,7 +88,18 @@ public class NightLightApp extends AbstractAppController {
 
             // skip update when not active
             if (getActivationState().getValue() != ActivationState.State.ACTIVE) {
+
+                if(!executing) {
+                    logger.warn("app inactive but still executing! Force stopp...");
+                    try {
+                        stop(getActivationState());
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
                 logger.error("Update triggered even when not active!");
+                StackTracePrinter.printStackTrace(logger);
                 return;
             }
 
@@ -125,13 +136,21 @@ public class NightLightApp extends AbstractAppController {
                     }
 
                     // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
-                    presentsActionLocationMap.put(location, observe(location.setColor(COLOR_ORANGE, getDefaultActionParameter())));
-
-                    // cancel absence actions
-                    if (absenceAction != null) {
-                        absenceAction.cancel();
-                        absenceActionLocationMap.remove(location);
+                    final Set<ServiceType> availableServiceTypes = location.getAvailableServiceTypes();
+                    if (availableServiceTypes .contains(ServiceType.COLOR_STATE_SERVICE)) {
+                        presentsActionLocationMap.put(location, observe(location.setColor(COLOR_ORANGE, getDefaultActionParameter())));
+                    } else if (availableServiceTypes .contains(ServiceType.BRIGHTNESS_STATE_SERVICE)) {
+                        presentsActionLocationMap.put(location, observe(location.setBrightness(COLOR_ORANGE.getBrightness(), getDefaultActionParameter())));
+                    } else {
+                        // location not supported for nightlight
                     }
+
+                    // not useful since it would enable LIGHTS to switch back on.
+//                    // cancel absence actions
+//                    if (absenceAction != null) {
+//                        absenceAction.cancel();
+//                        absenceActionLocationMap.remove(location);
+//                    }
 
                     break;
                 case ABSENT:
@@ -248,8 +267,11 @@ public class NightLightApp extends AbstractAppController {
         }
     }
 
+    boolean executing = false;
+
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+        executing = true;
         synchronized (locationMapLock) {
             locationMap.forEach((remote, observer) -> {
                 observer.activate();
@@ -260,6 +282,7 @@ public class NightLightApp extends AbstractAppController {
 
     @Override
     protected void stop(final ActivationState activationState) throws InterruptedException, CouldNotPerformException {
+        executing = false;
         synchronized (locationMapLock) {
 
             // remove observer
@@ -289,18 +312,32 @@ public class NightLightApp extends AbstractAppController {
                 this.timeout = new Timeout(1, TimeUnit.MINUTES) {
                     @Override
                     public void expired() {
+                        // skip update when not active
+                        if (!active) {
+                            logger.error("Update triggered even when not active!");
+                            StackTracePrinter.printStackTrace(logger);
+                            return;
+                        }
                         NightLightApp.this.update(remote, this, this);
                     }
                 };
                 this.neighborLocationRemoteList = remote.getNeighborLocationList(false);
-                this.internalObserver = (source, data) -> NightLightApp.this.update(remote, source, timeout);
+                this.internalObserver = (source, data) -> {
+                    // skip update when not active
+                    if (!active) {
+                        logger.error("Update triggered even when not active!");
+                        StackTracePrinter.printStackTrace(logger);
+                        return;
+                    }
+                    NightLightApp.this.update(remote, source, timeout);
+                };
             } catch (CouldNotPerformException ex) {
                 throw new InstantiationException(this, ex);
             }
         }
 
         @Override
-        public void activate() {
+        public synchronized void activate() {
             active = true;
 
             // register observer
@@ -313,7 +350,7 @@ public class NightLightApp extends AbstractAppController {
         }
 
         @Override
-        public void deactivate() {
+        public synchronized void deactivate() {
             active = false;
             timeout.cancel();
 
