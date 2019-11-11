@@ -57,7 +57,7 @@ public class CachedUnitRegistryRemote {
             Shutdownable.registerShutdownHook(() -> {
                 shutdown = true;
                 shutdown();
-            });
+            }, 4000);
         } catch (CouldNotPerformException ex) {
             if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory("Could not register shutdown hook!", ex, LOGGER);
