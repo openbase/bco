@@ -74,8 +74,8 @@ public class BCOTrainDataGeneratorLauncher {
             // init
             final int trainingSetCounter = 10;
             int conditionCounter = 0;
-            LocationRemote location = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("location-3"), true, Units.LOCATION);
-            ColorableLightRemote light = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("ColorableLight-5"), true, Units.COLORABLE_LIGHT);
+            LocationRemote location = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("Location-8"), true, Units.LOCATION);
+            ColorableLightRemote light = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("ColorableLight-15"), true, Units.COLORABLE_LIGHT);
             final ActionDescription absentState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     PresenceState.newBuilder().setValue(State.ABSENT).build(),
                     ServiceType.PRESENCE_STATE_SERVICE,
