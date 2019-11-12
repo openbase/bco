@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.printer;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -29,6 +29,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.JPTmpDirectory;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -130,7 +131,7 @@ public class UnitModelPrinter {
                 } catch (CouldNotPerformException ex) {
                     try {
                         // print continuous service state values
-                        if(!filterContinuousServiceValues) {
+                        if (!filterContinuousServiceValues) {
                             outputConsumer.consume("service_template(" +
                                     serviceTemplate.getServiceType().name().toLowerCase() + ", [" + StringProcessor.transformCollectionToString(
                                     Services.getServiceStateFieldDataTypes(serviceTemplate.getServiceType()),
@@ -156,7 +157,7 @@ public class UnitModelPrinter {
                         " */");
             }
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
-                outputConsumer.consume( "unit("
+                outputConsumer.consume("unit("
                         + "'" + unitConfig.getId() + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
                         + "'" + unitConfig.getUnitType().name().toLowerCase() + "', "
@@ -221,8 +222,13 @@ public class UnitModelPrinter {
             if (printHeader) {
                 outputConsumer.consume("");
             }
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory("Could not print unit templates.", ex, LOGGER);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return;
+        } catch (CouldNotPerformException ex) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not print unit templates.", ex, LOGGER);
+            }
         }
     }
 }
