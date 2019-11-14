@@ -24,6 +24,7 @@ package org.openbase.bco.app.util.launch;
 
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
@@ -102,44 +103,44 @@ public class BCOTrainDataGeneratorLauncher {
                         // random order
                         if (random.nextBoolean()) {
                             // human leaving the room
-                            location.applyAction(absentState).get();
+                            Actions.waitForExecution(location.applyAction(absentState));
                             // and after a while
                             waitBetweenActions();
                             // they is switching the light off.
-//                            location.setPowerState(PowerState.State.OFF, UnitType.LIGHT).get();
-                            light.setPowerState(PowerState.State.OFF).get();
+//                            Actions.waitForExecution(location.setPowerState(PowerState.State.OFF, UnitType.LIGHT));
+                            Actions.waitForExecution(light.setPowerState(PowerState.State.OFF));
                         } else {
 
                             // human is switching the light off.
-//                            location.setPowerState(PowerState.State.OFF, UnitType.LIGHT).get();
-                            light.setPowerState(PowerState.State.OFF).get();
+//                            Actions.waitForExecution(location.setPowerState(PowerState.State.OFF, UnitType.LIGHT));
+                            Actions.waitForExecution(light.setPowerState(PowerState.State.OFF));
                             // and after a while
                             waitBetweenActions();
                             // they is leaving the room
-                            location.applyAction(absentState).get();
+                            Actions.waitForExecution(location.applyAction(absentState));
                         }
                         conditionCounter++;
                     } else {
                         // random order
                         if (random.nextBoolean()) {
                             // human entering the room
-                            location.applyAction(presentState).get();
+                            Actions.waitForExecution(location.applyAction(presentState));
                             // and after a while
                             waitBetweenActions();
                             // they is switching the light on.
-//                            location.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
-                            light.setPowerState(PowerState.State.ON).get();
+//                            Actions.waitForExecution(location.setPowerState(PowerState.State.ON, UnitType.LIGHT));
+                            Actions.waitForExecution(light.setPowerState(PowerState.State.ON));
                         } else {
                             // human is switching the light on
-//                            location.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
-                            light.setPowerState(PowerState.State.ON).get();
+//                            Actions.waitForExecution(location.setPowerState(PowerState.State.ON, UnitType.LIGHT));
+                            Actions.waitForExecution(light.setPowerState(PowerState.State.ON));
                             // and after a while
                             waitBetweenActions();
                             // they is entering the room
-                            location.applyAction(presentState).get();
+                            Actions.waitForExecution(location.applyAction(presentState));
                         }
                     }
-                } catch (CancellationException | ExecutionException ex) {
+                } catch (CancellationException ex) {
                     ExceptionPrinter.printHistory("generator run skipped!", ex, LOGGER);
                 }
                 // toggle condition
@@ -158,8 +159,10 @@ public class BCOTrainDataGeneratorLauncher {
 
     private static void waitBetweenActions() throws InterruptedException {
         TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-        long staticDelay = 1000;
-        int maxRandomOffset = 5000;
+//        long staticDelay = 1000;
+        long staticDelay = 10;
+//        int maxRandomOffset = 5000;
+        int maxRandomOffset = 100;
 
         long delay = staticDelay + random.nextInt(maxRandomOffset);
         LOGGER.info("wait {} sec between actions.", timeUnit.toSeconds(delay));
