@@ -133,7 +133,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             if (systemSync) {
                 ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 5, TimeUnit.MINUTES, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM).build());
             } else {
-                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, true, true, Priority.NORMAL, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, false, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             }
 
             unitController.applyDataUpdate(serviceStateBuilder, metaData.getServiceType());
