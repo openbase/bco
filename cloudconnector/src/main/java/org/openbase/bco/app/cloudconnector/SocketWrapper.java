@@ -145,7 +145,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             // create socket
             IO.Options opts = new IO.Options();
             opts.forceNew = true;
-            opts.reconnection = false;
+            opts.reconnection = true;
             socket = IO.socket(JPService.getProperty(JPCloudServerURI.class).getValue(), opts);
             // add id to header for cloud server
             socket.io().on(Manager.EVENT_TRANSPORT, args -> {
@@ -910,6 +910,13 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
         if (socket == null) {
             throw new CouldNotPerformException("Cannot activate before initialization");
         }
+
+        // make sure socket.connect is never called twice since there is still an open issue which can cause a broken connection.
+        // https://github.com/socketio/socket.io-client-java/issues/576
+        if(active) {
+            return;
+        }
+
         active = true;
         socket.connect();
     }
