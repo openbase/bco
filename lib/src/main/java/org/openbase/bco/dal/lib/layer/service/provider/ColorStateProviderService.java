@@ -62,11 +62,11 @@ public interface ColorStateProviderService extends ProviderService {
         return getColorState().getColor().getRgbColor();
     }
 
-    static void verifyColorState(final ColorState colorState) throws VerificationFailedException {
+    static ColorState verifyColorState(final ColorState colorState) throws VerificationFailedException {
         if (!colorState.hasColor()) {
             throw new VerificationFailedException("Color state not available!");
         }
-        verifyColor(colorState.getColor());
+        return colorState.toBuilder().setColor(verifyColor(colorState.getColor())).build();
     }
 
     static Color verifyColor(final Color color) throws VerificationFailedException {
