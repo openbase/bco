@@ -25,6 +25,7 @@ package org.openbase.bco.app.cloudconnector;
 import com.google.gson.*;
 import io.socket.client.Ack;
 import io.socket.client.IO;
+import io.socket.client.IO.Options;
 import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.engineio.client.Transport;
@@ -142,7 +143,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
 
             // create socket
-            socket = IO.socket(JPService.getProperty(JPCloudServerURI.class).getValue());
+            IO.Options opts = new IO.Options();
+            opts.forceNew = true;
+            opts.reconnection = false;
+            socket = IO.socket(JPService.getProperty(JPCloudServerURI.class).getValue(), opts);
             // add id to header for cloud server
             socket.io().on(Manager.EVENT_TRANSPORT, args -> {
                 Transport transport = (Transport) args[0];
