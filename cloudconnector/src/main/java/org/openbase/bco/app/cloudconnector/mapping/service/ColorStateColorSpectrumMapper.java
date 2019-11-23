@@ -80,14 +80,14 @@ public class ColorStateColorSpectrumMapper extends AbstractServiceStateTraitMapp
             // hue is send as a value between 0 and 360
             final double hue = hsvColor.get(HSV_HUE_KEY).getAsDouble();
             // saturation is sent as a value between 0 and 1 so multiply by 100
-            final double saturation = hsvColor.get(HSV_SATURATION_KEY).getAsDouble() * 100;
+            final double saturation = hsvColor.get(HSV_SATURATION_KEY).getAsDouble();
             // value is sent as a value between 0 and 1 so multiply by 100
-            final double value = hsvColor.get(HSV_VALUE_KEY).getAsDouble() * 100;
+            final double brightness = hsvColor.get(HSV_VALUE_KEY).getAsDouble();
 
             // create color state from these values with type HSB
             final ColorState.Builder colorState = ColorState.newBuilder();
             final Color.Builder color = colorState.getColorBuilder();
-            color.setType(Type.HSB).getHsbColorBuilder().setHue(hue).setSaturation(saturation).setBrightness(value);
+            color.setType(Type.HSB).getHsbColorBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness);
 
             return colorState.build();
         } catch (ClassCastException | IllegalStateException ex) {
@@ -116,8 +116,8 @@ public class ColorStateColorSpectrumMapper extends AbstractServiceStateTraitMapp
         final JsonObject color = new JsonObject();
         final JsonObject hsvColor = new JsonObject();
         hsvColor.addProperty(HSV_HUE_KEY, hsbColor.getHue());
-        hsvColor.addProperty(HSV_SATURATION_KEY, hsbColor.getSaturation() / 100.0);
-        hsvColor.addProperty(HSV_VALUE_KEY, hsbColor.getBrightness() / 100.0);
+        hsvColor.addProperty(HSV_SATURATION_KEY, hsbColor.getSaturation());
+        hsvColor.addProperty(HSV_VALUE_KEY, hsbColor.getBrightness());
         color.add(COLOR_SPECTRUM_HSV_KEY, hsvColor);
         jsonObject.add(COLOR_KEY, color);
     }
