@@ -150,6 +150,7 @@ public class ActionDescriptionProcessor {
         actionReference.setTimestamp(actionDescription.getTimestamp());
         actionReference.addAllCategory(actionDescription.getCategoryList());
         actionReference.setIntermediary(actionDescription.getIntermediary());
+        actionReference.setAutoContinueWithLowPriority(actionDescription.getAutoContinueWithLowPriority());
         return actionReference.build();
     }
 
@@ -356,6 +357,7 @@ public class ActionDescriptionProcessor {
         actionDescriptionBuilder.setPriority(actionParameter.getPriority());
         actionDescriptionBuilder.setInterruptible(actionParameter.getInterruptible());
         actionDescriptionBuilder.setSchedulable(actionParameter.getSchedulable());
+        actionDescriptionBuilder.setAutoContinueWithLowPriority(actionParameter.getAutoContinueWithLowPriority());
 
         // if an initiator action is defined in ActionParameter the actionChain is updated
         if (actionParameter.hasCause()) {
