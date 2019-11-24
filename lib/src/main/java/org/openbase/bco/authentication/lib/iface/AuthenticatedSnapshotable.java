@@ -30,8 +30,16 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType.Authentic
 
 import java.util.concurrent.Future;
 
-public interface AuthenticatedSnapshotable extends Snapshotable<SnapshotType.Snapshot>{
+public interface AuthenticatedSnapshotable extends Snapshotable<SnapshotType.Snapshot> {
 
+    /**
+     * @param authenticatedSnapshot the authenticated value providing a encrypted snapshot.
+     *
+     * @return the authenticated value providing feedback about this action.
+     *
+     * @deprecated Deprecated because not yet fully compatible with unit allocation.
+     */
     @RPCMethod
+    @Deprecated
     Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot);
 }
