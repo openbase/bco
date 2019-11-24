@@ -54,6 +54,7 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -740,8 +741,9 @@ public class FulfillmentHandler {
                 // parse trait param into service state
                 final Message serviceState = serviceStateTraitMapper.map(params, commandType);
 
-                final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, serviceType, unitRemote).build();
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(authenticationToken).setAuthorizationToken(authorizationToken).build());
+                final ActionDescription.Builder actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, serviceType, unitRemote);
+                actionDescription.setPriority(Priority.HIGH);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(authenticationToken).setAuthorizationToken(authorizationToken).build());
 
                 final AuthenticatedValueFuture<ActionDescription> ActionDescriptionAuthenticatedValueFuture = new AuthenticatedValueFuture<>(unitRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
 

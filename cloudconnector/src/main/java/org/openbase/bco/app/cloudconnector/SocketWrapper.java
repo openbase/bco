@@ -51,6 +51,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -539,10 +540,11 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             final UserTransitState serviceState = UserTransitState.newBuilder().setValue(state).build();
             final UserRemote userRemote = Units.getUnit(userId, false, UserRemote.class);
 
-            final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.USER_TRANSIT_STATE_SERVICE, userRemote).build();
-            final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
+            final ActionDescription.Builder actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.USER_TRANSIT_STATE_SERVICE, userRemote);
+            actionDescription.setPriority(Priority.HIGH);
+            final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
-            userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
+            userRemote.applyActionAuthenticated(authenticatedValue).get(5, TimeUnit.SECONDS);
             respond(acknowledgement, "Alles klar");
         } catch (InterruptedException ex) {
             respond(acknowledgement, RESPONSE_GENERIC_ERROR, true);
@@ -657,15 +659,16 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
 
-            ActionDescription actionDescription;
+            ActionDescription.Builder actionDescription;
             AuthenticatedValue authenticatedValue;
 
             if (localPositionState != null) {
-                actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, userRemote).build();
-                authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
+                actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, userRemote);
+                actionDescription.setPriority(Priority.HIGH);
+                authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
                 try {
-                    userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
+                    userRemote.applyActionAuthenticated(authenticatedValue).get(5, TimeUnit.SECONDS);
                 } catch (TimeoutException ex) {
                     final String locationLabel = getLabelForUser(Registries.getUnitRegistry().getUnitConfigById(localPositionState.getLocationId(0)).getLabel());
                     response = "Dein Aufenthaltsort wird auf " + locationLabel + " gesetzt. Danach werden deine Aktivitäten berarbeitet.";
@@ -674,11 +677,12 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 }
             }
 
-            actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote).build();
-            authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
+            actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote);
+            actionDescription.setPriority(Priority.HIGH);
+            authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
             try {
-                userRemote.applyActionAuthenticated(authenticatedValue).get(3, TimeUnit.SECONDS);
+                userRemote.applyActionAuthenticated(authenticatedValue).get(5, TimeUnit.SECONDS);
             } catch (TimeoutException ex) {
                 response = response.replace("ist jetzt", "wird auf").replace("sind nun", "werden auf") + " gesetzt.";
                 respond(acknowledgement, response);
@@ -770,7 +774,6 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     builder.addActivityId(id);
                 }
 
-
                 final String unavailable = buildUnavailableActivityResponse(errorResponse, unavailableActivities);
                 if (!unavailable.isEmpty()) {
                     errorResponse += "Ich kann die " + unavailable;
@@ -778,9 +781,10 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             }
 
             if (builder.getActivityIdCount() != initialCount) {
-                final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote).build();
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
-                userRemote.applyActionAuthenticated(authenticatedValue).get(2, TimeUnit.SECONDS);
+                final ActionDescription.Builder actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote);
+                actionDescription.setPriority(Priority.HIGH);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
+                userRemote.applyActionAuthenticated(authenticatedValue).get(5, TimeUnit.SECONDS);
             }
 
             if (!errorResponse.isEmpty()) {
