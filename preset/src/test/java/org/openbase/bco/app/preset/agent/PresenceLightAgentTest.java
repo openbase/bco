@@ -154,7 +154,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
 
 //        for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
-//            System.out.println("action: " + actionDescription.getId());
+//            System.out.println("action: " + actionDescription.getActionId());
 //            System.out.println("action: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
 //        }
 
