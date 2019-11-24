@@ -214,6 +214,17 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
 
     @Override
     protected void stop(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
+
+        cancelAllObservedActions();
+
+        // cleanup actions
+        for (RemoteAction action : new ArrayList<>(observedTaskList)) {
+            action.reset();
+            observedTaskList.remove(action);
+        }
+    }
+
+    protected void cancelAllObservedActions() throws InterruptedException {
         final ArrayList<Pair<RemoteAction, Future<ActionDescription>>> cancelTaskList = new ArrayList<>();
         for (final RemoteAction remoteAction : observedTaskList) {
             final Future<ActionDescription> cancel = remoteAction.cancel();
@@ -232,12 +243,6 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
             } catch (ExecutionException | TimeoutException | CancellationException ex) {
                 ExceptionPrinter.printHistory("Could not cancel " + remoteTaskPair.getKey() + "!", ex, logger, LogLevel.WARN);
             }
-        }
-
-        // cleanup actions
-        for (RemoteAction action : new ArrayList<>(observedTaskList)) {
-            action.reset();
-            observedTaskList.remove(action);
         }
     }
 }
