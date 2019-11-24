@@ -148,7 +148,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
     private void executeAction(final ActionParameter actionParameter, final ActionDescription responsibleAction) throws InterruptedException, InstantiationException {
         remoteAction = new RemoteAction(this, actionParameter, getToken());
-        if (responsibleAction.getId().isEmpty()) {
+        if (responsibleAction.getActionId().isEmpty()) {
             remoteAction.execute();
         } else {
             remoteAction.execute(responsibleAction);
