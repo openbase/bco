@@ -249,9 +249,17 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         });
     }
 
+    /**
+     *
+     * @param snapshot
+     * @return
+     * @deprecated Deprecated because not yet fully compatible with unit allocation.
+     */
     @RPCMethod(legacy = true)
     @Override
+    @Deprecated
     Future<Void> restoreSnapshot(final Snapshot snapshot);
+    // todo: method should return a ActionDescription including its impact.
 
     /**
      * Return a list of operation services representing this unit. The default implementation returns all available
