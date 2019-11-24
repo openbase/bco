@@ -643,7 +643,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             if (newSubmission) {
 
                 // validate that the action is really a new one
-                if (!actionDescriptionBuilder.getId().isEmpty()) {
+                if (!actionDescriptionBuilder.getActionId().isEmpty()) {
                     throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
                 }
 
@@ -667,7 +667,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
                 // update action cause if this is a new submission
                 if (newSubmission) {
-                    unitActionDescriptionBuilder.clearId();
+                    unitActionDescriptionBuilder.clearActionId();
                     unitActionDescriptionBuilder.clearIntermediary();
                     ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
                 }
@@ -766,7 +766,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             if (newSubmission) {
 
                 // validate that the action is really a new one
-                if (!actionDescriptionBuilder.getId().isEmpty()) {
+                if (!actionDescriptionBuilder.getActionId().isEmpty()) {
                     throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
                 }
 
@@ -790,7 +790,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
                 // update action cause if this is a new submission
                 if (newSubmission) {
-                    unitActionDescriptionBuilder.clearId();
+                    unitActionDescriptionBuilder.clearActionId();
                     unitActionDescriptionBuilder.clearIntermediary();
                     ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
                 }
@@ -963,7 +963,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         if (hasServiceRemoteManager()) {
             try {
 
-                if(latestActionCause != null && (!latestActionCause.hasId() || latestActionCause.getId().isEmpty())) {
+                if(latestActionCause != null && (!latestActionCause.hasActionId() || latestActionCause.getActionId().isEmpty())) {
                     logger.warn("Skip latest action since it does not offer an action id!");
                     latestActionCause = null;
                 }

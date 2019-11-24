@@ -384,7 +384,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 this.remoteAction = new RemoteAction(actionDescription);
                 this.position = position;
                 this.timestamp = dateFormat.format(new Date(TimestampJavaTimeTransform.transform(actionDescription.getTimestamp())));
-                this.actionId = actionDescription.getId();
+                this.actionId = actionDescription.getActionId();
                 this.description = MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription(), "");
                 this.priority = actionDescription.getPriority().name();
                 this.category = StringProcessor.transformCollectionToString(actionDescription.getCategoryList(), ", ");

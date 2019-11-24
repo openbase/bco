@@ -140,7 +140,7 @@ public class ActionDescriptionProcessor {
      */
     public static ActionReference generateActionReference(final ActionDescriptionOrBuilder actionDescription) {
         ActionReference.Builder actionReference = ActionReference.newBuilder();
-        actionReference.setActionId(actionDescription.getId());
+        actionReference.setActionId(actionDescription.getActionId());
         actionReference.setActionInitiator(actionDescription.getActionInitiator());
         actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
         actionReference.setExecutionTimePeriod(actionDescription.getExecutionTimePeriod());
@@ -570,12 +570,12 @@ public class ActionDescriptionProcessor {
         }
 
         // validate id field
-        if (actionDescriptionBuilder.hasId()) {
+        if (actionDescriptionBuilder.hasActionId()) {
             throw new InvalidStateException(toString(actionDescriptionBuilder) + " is already initialized and can not prepared twice!");
         }
 
         // prepare
-        actionDescriptionBuilder.setId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
+        actionDescriptionBuilder.setActionId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
         LabelProcessor.addLabel(actionDescriptionBuilder.getLabelBuilder(), Locale.ENGLISH, GENERIC_ACTION_LABEL);
 
         // generate or update action description
@@ -853,8 +853,7 @@ public class ActionDescriptionProcessor {
                 prepare(actionDescriptionBuilder, unitConfig, serviceStateBuilder);
             } else {
                 // validate action id
-                // todo: implement support
-                if (!actionDescriptionBuilder.hasId()) {
+                if (!actionDescriptionBuilder.hasActionId()) {
                    throw new NotAvailableException("Action Id!");
                 }
             }
@@ -1048,7 +1047,7 @@ public class ActionDescriptionProcessor {
         }
 
         return "Action["
-                + (actionDescription.hasId() ? actionDescription.getId() + "|" : "")
+                + (actionDescription.hasActionId() ? actionDescription.getActionId() + "|" : "")
                 + (actionDescription.hasIntermediary() ? "Intermediary:" + actionDescription.getIntermediary() + "|" : "")
                 + "Unit:" + resolveUnitLabel(actionDescription.getServiceStateDescription().getUnitId())
                 + (actionDescription.hasServiceStateDescription() ? (actionDescription.getServiceStateDescription().getServiceType().name() + "=" + actionDescription.getServiceStateDescription().getServiceState() + "|") : "")

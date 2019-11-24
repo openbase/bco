@@ -493,7 +493,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             for (final ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
                 boolean actionRunning = false;
                 for (final ActionReferenceType.ActionReference actionReference : colorableLightRemote.getActionList().get(0).getActionCauseList()) {
-                    if (actionReference.getActionId().equals(actionDescription.getId())) {
+                    if (actionReference.getActionId().equals(actionDescription.getActionId())) {
                         actionRunning = true;
                         break;
                     }
@@ -511,7 +511,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
                 ActionDescription causedAction = null;
                 for (final ActionDescription description : colorableLightRemote.getActionList()) {
                     for (ActionReferenceType.ActionReference actionReference : description.getActionCauseList()) {
-                        if (actionReference.getActionId().equals(actionDescription.getId())) {
+                        if (actionReference.getActionId().equals(actionDescription.getActionId())) {
                             causedAction = description;
                             break;
                         }

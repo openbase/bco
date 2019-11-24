@@ -95,6 +95,6 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
 
     @Override
     default String getId() {
-        return getActionDescription().getId();
+        return getActionDescription().getActionId();
     }
 }

@@ -68,7 +68,7 @@ public class ServicesTest {
         final String position2 = "Living Room";
         final String position3 = "Couch";
 
-        final ActionDescription mockActionDescription = ActionDescription.newBuilder().setId("MockUp").build();
+        final ActionDescription mockActionDescription = ActionDescription.newBuilder().setActionId("MockUp").build();
         final LocalPositionState localPositionState1 = LocalPositionState.newBuilder().addLocationId(position3).addLocationId(position2).addLocationId(position1).setTimestamp(TimestampProcessor.getCurrentTimestamp()).build();
         final LocalPositionState localPositionState2 = LocalPositionState.newBuilder().addLocationId(position3).addLocationId(position2).addLocationId(position1).setResponsibleAction(mockActionDescription).build();
         final LocalPositionState localPositionState3 = LocalPositionState.newBuilder().addLocationId(position3).addLocationId(position2).addLocationId(position1).build();

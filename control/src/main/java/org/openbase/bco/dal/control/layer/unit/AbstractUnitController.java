@@ -654,7 +654,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
             }, ", ");
 
-            final String description = MultiLanguageTextProcessor.getBestMatch(action.getActionDescription().getDescription(), action.getActionDescription().getId());
+            final String description = MultiLanguageTextProcessor.getBestMatch(action.getActionDescription().getDescription(), action.getActionDescription().getActionId());
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new PermissionDeniedException("User [" + cancelingInstance + "] is not allowed to modify action [" + description + "] owned by " + ownerInstanceList), logger, LogLevel.WARN);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not validate permissions for user [" + userId + "]", ex);
@@ -667,14 +667,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     protected Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticatedId) {
-        logger.trace("cancel action " + actionDescription.getId() + " on controller with " + authenticatedId);
+        logger.trace("cancel action " + actionDescription.getActionId() + " on controller with " + authenticatedId);
         try {
             builderSetup.lockWrite(LOCK_CONSUMER_CANCEL_ACTION);
             try {
                 // retrieve action
                 final Action actionToCancel;
                 try {
-                    actionToCancel = getActionById(actionDescription.getId(), LOCK_CONSUMER_CANCEL_ACTION);
+                    actionToCancel = getActionById(actionDescription.getActionId(), LOCK_CONSUMER_CANCEL_ACTION);
                 } catch (NotAvailableException ex) {
                     // if the action is not any longer available, then it can be marked as canceled to inform the remote instance.
                     return FutureProcessor.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.CANCELED).build()).build());
@@ -690,7 +690,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 builderSetup.unlockWrite(false);
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel Action[" + actionDescription.getId() + "]", ex));
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel Action[" + actionDescription.getActionId() + "]", ex));
         }
     }
 
@@ -704,7 +704,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             builderSetup.lockWrite(LOCK_CONSUMER_EXTEND_ACTION);
             try {
                 // retrieve action
-                final SchedulableAction actionToExtend = getActionById(actionDescription.getId(), LOCK_CONSUMER_EXTEND_ACTION);
+                final SchedulableAction actionToExtend = getActionById(actionDescription.getActionId(), LOCK_CONSUMER_EXTEND_ACTION);
 
                 if (!actionToExtend.isValid()) {
                     throw new CouldNotPerformException("Extension of " + actionToExtend + " skipped, because the action is not longer valid!");
@@ -729,7 +729,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 builderSetup.unlockWrite(true);
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not extend Action[" + actionDescription.getId() + "]", ex));
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not extend Action[" + actionDescription.getActionId() + "]", ex));
         }
     }
 
@@ -1055,7 +1055,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // handle action cancellation
             if (actionDescriptionBuilder.getCancel()) {
                 try {
-                    if (!actionDescriptionBuilder.hasId() || actionDescriptionBuilder.getId().isEmpty()) {
+                    if (!actionDescriptionBuilder.hasActionId() || actionDescriptionBuilder.getActionId().isEmpty()) {
                         throw new NotAvailableException("ActionId");
                     }
                     return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
@@ -1067,7 +1067,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // handle action execution time extension
             if (actionDescriptionBuilder.getExtend()) {
                 try {
-                    if (!actionDescriptionBuilder.hasId() || actionDescriptionBuilder.getId().isEmpty()) {
+                    if (!actionDescriptionBuilder.hasActionId() || actionDescriptionBuilder.getActionId().isEmpty()) {
                         throw new NotAvailableException("ActionId");
                     }
                     return extendAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());

@@ -60,7 +60,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      */
     @Override
     default String getId() throws NotAvailableException {
-        return getActionDescription().getId();
+        return getActionDescription().getActionId();
     }
 
     /**

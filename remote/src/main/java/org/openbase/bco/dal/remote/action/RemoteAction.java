@@ -273,7 +273,7 @@ public class RemoteAction implements Action {
                     actionParameterBuilder.clearCause();
                 } else {
                     // validate cause
-                    if (!causeActionDescription.hasId() || causeActionDescription.getId().isEmpty()) {
+                    if (!causeActionDescription.hasActionId() || causeActionDescription.getActionId().isEmpty()) {
                         throw new InvalidStateException("Given action cause is not initialized!");
                     }
                     // set new cause
@@ -330,11 +330,11 @@ public class RemoteAction implements Action {
             throw new NotAvailableException("ActionDescription");
         }
 
-        if (!actionDescription.hasId()) {
+        if (!actionDescription.hasActionId()) {
             throw new InvalidStateException("Given action description seems not to refer to an already executed action!", new NotAvailableException("ActionDescription.id"));
         }
 
-        this.actionId = actionDescription.getId();
+        this.actionId = actionDescription.getActionId();
         this.serviceType = actionDescription.getServiceStateDescription().getServiceType();
         this.targetUnitId = actionDescription.getServiceStateDescription().getUnitId();
 
@@ -398,7 +398,7 @@ public class RemoteAction implements Action {
 
                     // resolve action description via the action reference if already available.
                     for (final ActionDescription actionDescription : targetUnit.getActionList()) {
-                        if (actionDescription.getId().equals(actionReference.getActionId())) {
+                        if (actionDescription.getActionId().equals(actionReference.getActionId())) {
                             RemoteAction.this.actionDescription = actionDescription;
                             break;
                         }
@@ -716,13 +716,13 @@ public class RemoteAction implements Action {
         } catch (NotAvailableException e) {
             if (actionReference != null) {
                 final Builder actionDescriptionBuilder = ActionDescription.newBuilder();
-                actionDescriptionBuilder.setId(actionReference.getActionId());
+                actionDescriptionBuilder.setActionId(actionReference.getActionId());
                 actionDescriptionBuilder.setServiceStateDescription(actionReference.getServiceStateDescription());
                 actionDescriptionBuilder.setCancel(true);
                 return actionDescriptionBuilder.build();
             } else if(actionId != null && serviceType != null) {
                 final Builder actionDescriptionBuilder = ActionDescription.newBuilder();
-                actionDescriptionBuilder.setId(actionId);
+                actionDescriptionBuilder.setActionId(actionId);
                 actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceType(serviceType);
                 actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(targetUnit.getId());
                 actionDescriptionBuilder.setCancel(true);
@@ -763,7 +763,7 @@ public class RemoteAction implements Action {
         // reset action state and id
         actionId = null;
         if (actionDescription != null) {
-            actionDescription = actionDescription.toBuilder().clearId().clearActionState().build();
+            actionDescription = actionDescription.toBuilder().clearActionId().clearActionState().build();
         }
     }
 
@@ -816,7 +816,7 @@ public class RemoteAction implements Action {
         // update action description and notify
         for (ActionDescription actionDescription : actionDescriptions) {
 
-            if (actionDescription.getId().equals(RemoteAction.this.actionDescription.getId())) {
+            if (actionDescription.getActionId().equals(RemoteAction.this.actionDescription.getActionId())) {
 
                 synchronized (executionSync) {
                     final boolean actionExtended = RemoteAction.this.actionDescription.getLastExtensionTimestamp().getTime() < actionDescription.getLastExtensionTimestamp().getTime();
@@ -994,7 +994,7 @@ public class RemoteAction implements Action {
         final Message serviceState = Services.invokeProviderServiceMethod(actionDescription.getServiceStateDescription().getServiceType(), targetUnit);
         final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
         final ActionDescription responsibleAction = (ActionDescription) serviceState.getField(descriptor);
-        return actionDescription.getId().equals(responsibleAction.getId());
+        return actionDescription.getActionId().equals(responsibleAction.getActionId());
     }
 
     /**
@@ -1030,7 +1030,7 @@ public class RemoteAction implements Action {
         }
 
         synchronized (executionSync) {
-            if (futureObservationTask == null && !getActionDescription().hasId()) {
+            if (futureObservationTask == null && !getActionDescription().hasActionId()) {
                 throw new InvalidStateException("Action was never executed!");
             }
         }
@@ -1101,7 +1101,7 @@ public class RemoteAction implements Action {
                     }
                 }
             }
-            return actionDescription.hasId();
+            return actionDescription.hasActionId();
         }
         return false;
     }
