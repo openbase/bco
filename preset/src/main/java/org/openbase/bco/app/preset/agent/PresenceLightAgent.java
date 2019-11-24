@@ -22,7 +22,11 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.state.States;
+import org.openbase.bco.dal.lib.state.States.Brightness;
 import org.openbase.bco.dal.remote.action.RemoteAction;
+import org.openbase.bco.dal.remote.layer.unit.DimmableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.GenericBoundedDoubleValueTrigger;
@@ -58,7 +62,6 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
     public static final double MIN_ILLUMINANCE_UNTIL_TRIGGER = 100d;
 
     private LocationRemote locationRemote;
-    private RemoteAction lastAction;
 
     public PresenceLightAgent() throws InstantiationException {
         super(DelayMode.DELAY_DEACTIVATION, MAX_TIMEOUT);
@@ -85,12 +88,27 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
     protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                lastAction = observe(locationRemote.setPowerState(State.ON, UnitType.LIGHT, getDefaultActionParameter(Long.MAX_VALUE)));
+                // handle colorable lights
+                observe(locationRemote.setNeutralWhite(getDefaultActionParameter(Long.MAX_VALUE)));
+
+                // handle dimmable lights
+                for (DimmableLightRemote light : locationRemote.getUnits(UnitType.DIMMABLE_LIGHT, false, Units.DIMMABLE_LIGHT)) {
+                    // make sure colorable lights are filtered
+                    if(light.getUnitType() == UnitType.DIMMABLE_LIGHT) {
+                        observe(light.setBrightnessState(Brightness.MAX, getDefaultActionParameter(Long.MAX_VALUE)));
+                    }
+                }
+
+                // handle lights
+                for (LightRemote light : locationRemote.getUnits(UnitType.LIGHT, false, Units.LIGHT)) {
+                    // make sure dimmable and colorable lights are filtered
+                    if(light.getUnitType() == UnitType.LIGHT) {
+                        observe(light.setPowerState(State.ON, getDefaultActionParameter(Long.MAX_VALUE)));
+                    }
+                }
                 break;
             case DEACTIVE:
-                if (lastAction != null && !lastAction.isDone()) {
-                    lastAction.cancel().get(5, TimeUnit.SECONDS);
-                }
+                cancelAllObservedActions();
                 break;
         }
     }
