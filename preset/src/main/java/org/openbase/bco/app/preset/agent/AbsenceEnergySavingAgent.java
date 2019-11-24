@@ -23,6 +23,7 @@ package org.openbase.bco.app.preset.agent;
  */
 
 import org.openbase.bco.dal.remote.action.RemoteAction;
+import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger;
@@ -36,6 +37,7 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -75,9 +77,7 @@ public class AbsenceEnergySavingAgent extends AbstractDelayedTriggerableAgent {
                 lastAction = observe(locationRemote.setPowerState(State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
             case DEACTIVE:
-                if (lastAction != null && !lastAction.isDone()) {
-                    lastAction.cancel();
-                }
+                cancelAllObservedActions();
                 break;
         }
     }
