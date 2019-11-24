@@ -339,7 +339,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         System.out.println("testTriggerScenePerRemote");
 
         SceneRemote sceneRemote = Units.getUnitsByLabel(SCENE_TEST, true, Units.SCENE).get(0);
-        Actions.waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
+        waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
 
         Thread.sleep(1000);
 
@@ -366,7 +366,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         assertTrue("LocationState has the correct temperature to begin with!", locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE);
 
         final SceneRemote sceneRemote = Units.getUnitsByLabel(SCENE_ROOT_LOCATION, true, Units.SCENE).get(0);
-        Actions.waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
+        waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
         locationRemote.requestData().get();
 
         while (locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE) {
@@ -393,7 +393,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         for (String memberId : unitGroupRemote.getConfig().getUnitGroupConfig().getMemberIdList()) {
             colorableLightRemotes.add(Units.getUnit(memberId, true, ColorableLightRemote.class));
         }
-        Actions.waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
+        waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
 
         for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
             assertEquals("ColorState has not been set for light[" + colorableLightRemote.getLabel() + "]", GROUP_COLOR_VALUE, colorableLightRemote.getColorState().getColor().getHsbColor());
@@ -447,7 +447,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 //
 //        int TEST_ITERATIONS = 3;
 //        for (int i = 0; i <= TEST_ITERATIONS; i++) {
-//            Actions.waitForExecution(sceneRemoteDevicesOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
+//            waitForExecution(sceneRemoteDevicesOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
 //            while (locationRemote.getPowerState().getValue() != POWER_ON) {
 //                Thread.sleep(100);
 //                locationRemote.requestData().get();
@@ -460,7 +460,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 //            assertEquals("Devices off scene is not inactive", State.INACTIVE, sceneRemoteDevicesOff.getActivationState().getValue());
 //
 //            Thread.sleep(100);
-//            Actions.waitForExecution(sceneRemoteDevicesOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
+//            waitForExecution(sceneRemoteDevicesOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
 //            while (locationRemote.getPowerState().getValue() != POWER_OFF) {
 //                System.out.println("location was not yet switched " + POWER_OFF);
 //                Thread.sleep(100);
@@ -515,7 +515,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 //        int TEST_ITERATIONS = 3;
 //        for (int i = 0; i <= TEST_ITERATIONS; i++) {
 //            System.out.println("Current iteration: " + i);
-//            Actions.waitForExecution(sceneRemoteOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
+//            waitForExecution(sceneRemoteOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
 //            while (locationRemote.getPowerState().getValue() != POWER_ON) {
 //                System.out.println("location was not yet switched " + POWER_ON);
 //                Thread.sleep(100);
@@ -529,7 +529,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 //            assertEquals("Location off scene is not inactive", State.INACTIVE, sceneRemoteOff.getActivationState().getValue());
 //
 //            Thread.sleep(100);
-//            Actions.waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
+//            waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
 //            while (locationRemote.getPowerState().getValue() != POWER_OFF) {
 //                System.out.println("location was not yet switched " + POWER_OFF);
 //                Thread.sleep(100);

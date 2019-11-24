@@ -27,6 +27,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.remote.action.Actions;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -50,6 +51,8 @@ import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -94,7 +97,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetColor_Color() throws Exception {
         System.out.println("setColor");
         HSBColor color = HSBColor.newBuilder().setBrightness(0.50).setSaturation(0.70).setHue(150).build();
-        Actions.waitForExecution(colorableLightRemote.setColor(color));
+        waitForExecution(colorableLightRemote.setColor(color));
         assertEquals("Color has not been set in time!", color, colorableLightRemote.getData().getColorState().getColor().getHsbColor());
     }
 
@@ -107,7 +110,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testControllingViaLightRemote() throws Exception {
         System.out.println("testControllingViaLightRemote");
 
-        Actions.waitForExecution(colorableLightRemote.setPowerState(State.OFF));
+        waitForExecution(colorableLightRemote.setPowerState(State.OFF));
         final LightRemote lightRemote = new LightRemote();
         try {
             // create a light remote from colorable light config and wait for data
@@ -123,7 +126,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             // test if the initial state was synced correctly
             assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
             // test controlling vid light remote
-            Actions.waitForExecution(lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()));
+            waitForExecution(lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()));
             lightRemote.requestData().get();
             while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
                 Thread.sleep(10);
@@ -131,7 +134,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
 
             // test controlling via colorable light remote
-            Actions.waitForExecution(colorableLightRemote.setPowerState(State.OFF));
+            waitForExecution(colorableLightRemote.setPowerState(State.OFF));
             lightRemote.requestData().get();
             while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
                 Thread.sleep(10);
@@ -154,7 +157,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetColor_HSBColor() throws Exception {
         System.out.println("setColor");
         HSBColor color = HSBColor.newBuilder().setHue(50).setSaturation(0.50).setBrightness(0.50).build();
-        Actions.waitForExecution(colorableLightRemote.setColor(color));
+        waitForExecution(colorableLightRemote.setColor(color));
         assertEquals("Color has not been set in time!", color, colorableLightRemote.getHSBColor());
     }
 
@@ -166,14 +169,18 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testSetColor_InvalidHSBColor() throws Exception {
         System.out.println("setColor");
-        HSBColor color = HSBColor.newBuilder().setHue(370).setSaturation(1.11).setBrightness(1.22).build();
+
+        // invalid because hue value is to high.
+        HSBColor color = HSBColor.newBuilder().setHue(370).setSaturation(0.3d).setBrightness(0.8d).build();
         try {
             colorableLightRemote.setColor(color).get();
             Assert.assertTrue("Exception does not occur if invalid service state is set!", false);
         } catch (ExecutionException ex) {
             // should occur!
         }
-        Assert.assertNotEquals("Invalid color has been applied!", color, colorableLightRemote.getHSBColor());
+        Assert.assertNotEquals("Invalid hue color has been applied!", color.getHue(), colorableLightRemote.getHSBColor().getHue());
+        Assert.assertNotEquals("Parts of an invalid color has been applied!", color.getSaturation(), colorableLightRemote.getHSBColor().getSaturation());
+        Assert.assertNotEquals("Parts of an invalid color has been applied!", color.getBrightness(), colorableLightRemote.getHSBColor().getBrightness());
     }
 
     /**
@@ -185,7 +192,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testRemoteGetColor() throws Exception {
         System.out.println("getColor");
         HSBColor color = HSBColor.newBuilder().setHue(66).setSaturation(0.63).setBrightness(0.33).build();
-        Actions.waitForExecution(colorableLightRemote.setColor(color));
+        waitForExecution(colorableLightRemote.setColor(color));
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, colorableLightRemote.getHSBColor());
     }
 
@@ -198,7 +205,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testLegacyRemoteCallGetColor() throws Exception {
         System.out.println("getColor");
         HSBColor color = HSBColor.newBuilder().setHue(61).setSaturation(0.23).setBrightness(0.37).build();
-        Actions.waitForExecution(colorableLightRemote.setColor(color));
+        waitForExecution(colorableLightRemote.setColor(color));
         ColorState colorResult = (ColorState) colorableLightRemote.callMethodAsync("getColorState").get();
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, colorResult.getColor().getHsbColor());
     }
@@ -212,7 +219,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        Actions.waitForExecution(colorableLightRemote.setPowerState(state));
+        waitForExecution(colorableLightRemote.setPowerState(state));
         assertEquals("Power state has not been set in time!", state.getValue(), colorableLightRemote.getData().getPowerState().getValue());
     }
 
@@ -225,7 +232,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        Actions.waitForExecution(colorableLightRemote.setPowerState(state));
+        waitForExecution(colorableLightRemote.setPowerState(state));
         assertEquals("Power state has not been set in time or the return value from the getter is different!", state.getValue(), colorableLightRemote.getPowerState().getValue());
     }
 
@@ -239,7 +246,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("setBrightness");
         Double brightness = 0.75d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-        Actions.waitForExecution(colorableLightRemote.setBrightnessState(brightnessState));
+        waitForExecution(colorableLightRemote.setBrightnessState(brightnessState));
         assertEquals("Brightness has not been set in time!", brightness, colorableLightRemote.getHSBColor().getBrightness(), 0.001);
     }
 
@@ -253,14 +260,14 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getBrightness");
         Double brightness = 0.25d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-        Actions.waitForExecution(colorableLightRemote.setBrightnessState(brightnessState));
+        waitForExecution(colorableLightRemote.setBrightnessState(brightnessState));
         assertEquals("Brightness has not been set in time or the return value from the getter is different!", brightnessState.getBrightness(), colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
     }
 
     @Test(timeout = 10000)
     public void testSetNeutralWhite() throws Exception {
         System.out.println("testSetNeutralWhite");
-        Actions.waitForExecution(colorableLightRemote.setNeutralWhite());
+        waitForExecution(colorableLightRemote.setNeutralWhite());
         assertEquals("Neutral white was not set to the default value!", ColorStateOperationService.DEFAULT_NEUTRAL_WHITE, colorableLightRemote.getColorState().getColor().getHsbColor());
     }
 
@@ -276,9 +283,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("testPowerStateObserver");
 
         // set initial state to on for this test
-        if (colorableLightRemote.getPowerState().getValue() == PowerState.State.OFF) {
-            Actions.waitForExecution(colorableLightRemote.setPowerState(PowerState.State.ON));
-        }
+        waitForExecution(colorableLightRemote.setPowerState(PowerState.State.ON));
 
         final Observer<ServiceStateProvider<PowerState>, PowerState> powerStateObserver = (source, data) -> {
             if (!data.hasValue()) {
@@ -292,13 +297,13 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
         colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, powerStateObserver);
 
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF)); // notification 1
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerState.State.ON)); // notification 2
-        Actions.waitForExecution(colorableLightRemote.setNeutralWhite());
-        Actions.waitForExecution(colorableLightRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(0.14d).build()));
-        Actions.waitForExecution(colorableLightRemote.setColor(HSBColor.newBuilder().setBrightness(0.12d).setSaturation(0.10d).build()));
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF)); // notification 3
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
+        waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF)); // notification 1
+        waitForExecution(colorableLightRemote.setPowerState(PowerState.State.ON)); // notification 2
+        waitForExecution(colorableLightRemote.setNeutralWhite());
+        waitForExecution(colorableLightRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(0.14d).build()));
+        waitForExecution(colorableLightRemote.setColor(HSBColor.newBuilder().setBrightness(0.12d).setSaturation(0.10d).build()));
+        waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF)); // notification 3
+        waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
 
         assertEquals("PowerStateObserver wasn't notified the correct amount of times!", 3, powerStateObserverUpdateNumber);
 

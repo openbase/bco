@@ -72,51 +72,51 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     @Test
     public void applyDataStateUpdateTest() {
         try {
-            colorableLightController.applyDataUpdate(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
             Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Power state updated was not applied to remote instance!", State.ON, colorableLightRemote.getData().getPowerState().getValue());
 
-            colorableLightController.applyDataUpdate(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
             Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Power state updated was not applied to remote instance!", State.OFF, colorableLightRemote.getData().getPowerState().getValue());
 
-            colorableLightController.applyDataUpdate(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
             Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Power state updated was not applied to remote instance!", State.ON, colorableLightRemote.getData().getPowerState().getValue());
 
-            colorableLightController.applyDataUpdate(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
             Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Power state updated was not applied to remote instance!", State.OFF, colorableLightRemote.getData().getPowerState().getValue());
 
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             ExceptionPrinter.printHistory(ex, System.err);
-            Assert.assertTrue("Error occured during update!", false);
+            Assert.assertTrue("Error occurred during update!", false);
         }
     }
 
     @Test
     public void applyCustomDataStateUpdateTest() {
         try {
-            colorableLightController.applyDataUpdate(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
             Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
             Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor().getHsbColor().getBrightness(), 0.0001);
 
-            colorableLightController.applyDataUpdate(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
+            colorableLightController.applyServiceState(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
             Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
             Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor().getHsbColor().getBrightness(), 0.0001);
 
-            colorableLightController.applyDataUpdate(States.Color.GREEN, ServiceType.COLOR_STATE_SERVICE);
+            colorableLightController.applyServiceState(States.Color.GREEN, ServiceType.COLOR_STATE_SERVICE);
             Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
             Assert.assertEquals("Power state updated was not applied!", Color.GREEN_VALUE, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor());
 
-            colorableLightController.applyDataUpdate(Color.BLACK, ServiceType.COLOR_STATE_SERVICE);
+            colorableLightController.applyServiceState(Color.BLACK, ServiceType.COLOR_STATE_SERVICE);
             Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
             Assert.assertEquals("Power state updated was not applied!", Color.BLACK_VALUE, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor());
@@ -138,8 +138,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             colorableLightController.applyServiceState(Color.BLUE, ServiceType.COLOR_STATE_SERVICE);
             colorableLightController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
 
-            action = new RemoteAction(colorableLightRemote.setPowerState(Power.ON));
-            action.waitForExecution(5, TimeUnit.SECONDS);
+            action = waitForExecution(colorableLightRemote.setPowerState(Power.ON));
             Assert.assertEquals("Action rejected by hardware feedback loop!", ActionState.State.EXECUTING, action.getActionState());
 
             colorableLightController.applyServiceState(Color.BLUE, ServiceType.COLOR_STATE_SERVICE);
@@ -155,8 +154,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             colorableLightController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
             colorableLightController.applyServiceState(BrightnessState.newBuilder().setBrightness(0.0), ServiceType.BRIGHTNESS_STATE_SERVICE);
 
-            action = new RemoteAction(colorableLightRemote.setColorState(Color.GREEN));
-            action.waitForExecution(5, TimeUnit.SECONDS);
+            action = waitForExecution(colorableLightRemote.setColorState(Color.GREEN));
             Assert.assertEquals("Action rejected by hardware feedback loop!", ActionState.State.EXECUTING, action.getActionState());
 
             colorableLightController.applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);

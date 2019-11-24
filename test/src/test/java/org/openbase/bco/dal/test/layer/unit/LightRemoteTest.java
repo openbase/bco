@@ -27,6 +27,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.state.States;
+import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -78,9 +80,8 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 5000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
-        PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        Actions.waitForExecution(lightRemote.setPowerState(state));
-        assertEquals("Power has not been set in time!", state.getValue(), lightRemote.getData().getPowerState().getValue());
+        waitForExecution(lightRemote.setPowerState(Power.ON));
+        assertEquals("Power has not been set in time!", Power.ON.getValue(), lightRemote.getData().getPowerState().getValue());
     }
 
     /**
@@ -92,16 +93,22 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
 
-        final PowerState.Builder powerStateBuilder = PowerState.newBuilder().setValue(State.OFF).setTimestamp(TimestampProcessor.getCurrentTimestamp());
-        final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(powerStateBuilder.build(), ServiceType.POWER_STATE_SERVICE, lightRemote);
-        actionParameter.setInterruptible(false);
-        actionParameter.setSchedulable(false);
-        actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
-        powerStateBuilder.setResponsibleAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
-        final PowerState powerState = powerStateBuilder.build();
+        // apply service state
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightRemote.getId()).applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
 
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightRemote.getId()).applyDataUpdate(powerState, ServiceType.POWER_STATE_SERVICE);
+        // force sync
         lightRemote.requestData().get();
-        assertEquals("Light has not been set in time!", powerState.getValue(), lightRemote.getPowerState().getValue());
+
+        // validate service state
+        assertEquals("Light has not been set in time!", Power.OFF.getValue(), lightRemote.getPowerState().getValue());
+
+        // apply service state
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightRemote.getId()).applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
+
+        // force sync
+        lightRemote.requestData().get();
+
+        // validate service state
+        assertEquals("Light has not been set in time!", Power.ON.getValue(), lightRemote.getPowerState().getValue());
     }
 }

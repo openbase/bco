@@ -98,7 +98,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         ColorableLightRemote colorableLightRemote = Units.getUnit(colorableLightConfig, true, ColorableLightRemote.class);
 
         // test if the state of the light can be changed
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerState.State.ON));
+        waitForExecution(colorableLightRemote.setPowerState(PowerState.State.ON));
         assertEquals("Power state has not been set in time!", PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
 
         // add the previously removed unit template config again
@@ -123,8 +123,8 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
 
         // test if both unit remotes can be used
-        Actions.waitForExecution(powerSwitchRemote.setPowerState(PowerState.State.ON));
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
+        waitForExecution(powerSwitchRemote.setPowerState(PowerState.State.ON));
+        waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
         assertEquals("Power state has not been set in time!", PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue());
         assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
 
@@ -149,7 +149,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         assertTrue("DeviceManager still contains removed unit controller", !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().contains(powerSwitchConfig.getId()));
 
         // test if the colorable light can still be used
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
+        waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
         assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
 
         // test if the power switch remote has lost its connection
@@ -236,11 +236,11 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
                 powerSwitchRemote.waitForData();
 
                 System.out.println("SetPowerState1");
-                Actions.waitForExecution(colorableLightRemote1.setPowerState(PowerState.State.ON));
+                waitForExecution(colorableLightRemote1.setPowerState(PowerState.State.ON));
                 System.out.println("SetPowerState2");
-                Actions.waitForExecution(colorableLightRemote2.setPowerState(PowerState.State.OFF));
+                waitForExecution(colorableLightRemote2.setPowerState(PowerState.State.OFF));
                 System.out.println("SetPowerState3");
-                Actions.waitForExecution(powerSwitchRemote.setPowerState(PowerState.State.ON));
+                waitForExecution(powerSwitchRemote.setPowerState(PowerState.State.ON));
                 assertEquals("Power state has not been set in time!", PowerState.State.ON, colorableLightRemote1.getData().getPowerState().getValue());
                 assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote2.getData().getPowerState().getValue());
                 assertEquals("Power state has not been set in time!", PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue());

@@ -126,7 +126,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     public void testSetColorWithAuthentication() throws Exception {
         System.out.println("testSetColorWithAuthentication");
 
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON));
+        waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON));
         colorableLightRemote.requestData().get();
         assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
     }
@@ -183,7 +183,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         // execute action
         System.out.println("execute action");
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON));
+        waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON));
         colorableLightRemote.requestData().get();
         assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
     }
@@ -219,7 +219,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         // execute action
         System.out.println("execute action");
-        Actions.waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON));
+        waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON));
         colorableLightRemote.requestData().get();
         assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
     }
@@ -279,7 +279,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         authenticatedValue = sessionManager.initializeRequest(actionDescription, token.build());
         AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
-        Actions.waitForExecution(future);
+        waitForExecution(future);
         assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
 
         powerState = PowerState.newBuilder().setValue(State.OFF);
@@ -287,7 +287,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         authenticatedValue = sessionManager.initializeRequest(actionDescription, token.setAuthenticationToken(authenticationToken).build());
         future = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
-        Actions.waitForExecution(future);
+        waitForExecution(future);
         assertEquals(State.OFF, colorableLightRemote.getPowerState().getValue());
 
         // reset root location permissions to not interfere with other tests

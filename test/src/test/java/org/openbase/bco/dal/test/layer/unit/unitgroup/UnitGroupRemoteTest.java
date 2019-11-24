@@ -152,7 +152,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         System.out.println("setPowerState");
         unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        Actions.waitForExecution(unitGroupRemote.setPowerState(state));
+        waitForExecution(unitGroupRemote.setPowerState(state));
 
         LOGGER.warn("Config: {}", unitGroupRemote.getConfig());
 
@@ -161,7 +161,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        Actions.waitForExecution(unitGroupRemote.setPowerState(state));
+        waitForExecution(unitGroupRemote.setPowerState(state));
         for (final Unit<?> unit : UNIT_LIST) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
@@ -177,7 +177,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         System.out.println("getPowerState");
         unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        Actions.waitForExecution(unitGroupRemote.setPowerState(state));
+        waitForExecution(unitGroupRemote.setPowerState(state));
         assertEquals("Power state has not been set in time or the return value from the getter is different!", state.getValue(), unitGroupRemote.getPowerState().getValue());
     }
 
@@ -213,7 +213,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         // wait for data
         unitGroupRemote.waitForData();
         // init power to off
-        Actions.waitForExecution(unitGroupRemote.setPowerState(State.OFF));
+        waitForExecution(unitGroupRemote.setPowerState(State.OFF));
 
         // init authenticated value
         final PowerState serviceState = PowerState.newBuilder().setValue(State.ON).build();
@@ -223,7 +223,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         // perform request
         final AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(unitGroupRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
         // wait for request
-        Actions.waitForExecution(future);
+        waitForExecution(future);
 
         while (unitGroupRemote.getPowerState().getValue() != serviceState.getValue()) {
             // sleep until state is published back to location

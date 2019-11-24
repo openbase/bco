@@ -82,7 +82,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        Actions.waitForExecution(dimmableLightRemote.setPowerState(state));
+        waitForExecution(dimmableLightRemote.setPowerState(state));
         assertEquals("Power has not been set in time!", state.getValue(), dimmableLightRemote.getData().getPowerState().getValue());
     }
 
@@ -118,7 +118,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("setBrightness");
         Double brightness = 0.66d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-        Actions.waitForExecution(dimmableLightRemote.setBrightnessState(brightnessState));
+        waitForExecution(dimmableLightRemote.setBrightnessState(brightnessState));
         assertEquals("Brightness has not been set in time!", brightness, dimmableLightRemote.getBrightnessState().getBrightness(), 0.001);
     }
 
