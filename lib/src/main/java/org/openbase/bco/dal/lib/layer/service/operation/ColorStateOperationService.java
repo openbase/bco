@@ -81,6 +81,10 @@ public interface ColorStateOperationService extends OperationService, ColorState
         return setColor(DEFAULT_NEUTRAL_WHITE);
     }
 
+    default Future<ActionDescription> setNeutralWhite(final ActionParameter actionParameter) {
+        return setColor(DEFAULT_NEUTRAL_WHITE, actionParameter);
+    }
+
     @RPCMethod(legacy = true)
     default Future<ActionDescription> setColor(final HSBColor color) {
         return setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(color).build());
