@@ -32,7 +32,9 @@ import java.util.concurrent.Future;
  */
 public class Actions {
 
-    public static void waitForExecution(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
-        new RemoteAction(actionFuture).waitForExecution();
+    public static RemoteAction waitForExecution(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction remoteAction = new RemoteAction(actionFuture);
+        remoteAction.waitForExecution();
+        return remoteAction;
     }
 }
