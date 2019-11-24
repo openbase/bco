@@ -74,7 +74,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
 
             if (!agentConfig.getAgentConfig().getAutostart()) {
                 // activate agent if not in auto start
-                Actions.waitForExecution(agentRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+                waitForExecution(agentRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
             } else {
                 // wait until active
                 new UnitStateAwaiter<>(agentRemote).waitForState(data -> data.getActivationState().getValue() == State.ACTIVE);

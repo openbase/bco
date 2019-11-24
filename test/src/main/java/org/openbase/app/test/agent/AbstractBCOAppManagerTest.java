@@ -82,7 +82,7 @@ public abstract class AbstractBCOAppManagerTest extends BCOAppTest {
             this.appRemote = Units.getUnit(this.appConfig, true, Units.APP);
             if (!this.appConfig.getAppConfig().getAutostart()) {
                 // activate app if not in auto start
-                Actions.waitForExecution(this.appRemote.setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build()));
+                waitForExecution(this.appRemote.setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build()));
             } else {
                 // wait until active
                 new UnitStateAwaiter<>(this.appRemote).waitForState(data -> data.getActivationState().getValue() == ActivationStateType.ActivationState.State.ACTIVE);

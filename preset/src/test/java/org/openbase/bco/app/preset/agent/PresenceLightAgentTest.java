@@ -109,7 +109,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         LightSensorRemote lightSensorRemote = locationRemote.getUnits(UnitType.LIGHT_SENSOR, true, Units.LIGHT_SENSOR).get(0);
 
         // set location emphasis to economy to make the agent more responsive on presence changes
-        Actions.waitForExecution(locationRemote.setEconomyEmphasis(1));
+        waitForExecution(locationRemote.setEconomyEmphasis(1));
 
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
         LightSensorController lightSensorController = (LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId());
