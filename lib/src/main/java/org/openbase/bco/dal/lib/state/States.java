@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.state;
  * #L%
  */
 
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
@@ -38,6 +39,15 @@ public class States {
 
         public static final PowerState ON = PowerState.newBuilder().setValue(State.ON).build();
         public static final PowerState OFF = PowerState.newBuilder().setValue(State.OFF).build();
+    }
+
+    /**
+     * Brightness State Prototypes
+     */
+    public static class Brightness {
+
+        public static final BrightnessState MIN = BrightnessState.newBuilder().setBrightness(0d).build();
+        public static final BrightnessState MAX = BrightnessState.newBuilder().setBrightness(1d).build();
     }
 
     /**
