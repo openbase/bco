@@ -42,4 +42,5 @@ public interface AuthenticatedSnapshotable extends Snapshotable<SnapshotType.Sna
     @RPCMethod
     @Deprecated
     Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot);
+
 }
