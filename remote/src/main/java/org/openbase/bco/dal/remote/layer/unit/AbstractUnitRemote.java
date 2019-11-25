@@ -586,7 +586,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription, final AuthToken authToken) {
-        try {AbstractServiceRemot
+        try {
             final ActionDescription.Builder actionDescripBuilder = actionDescription.toBuilder();
             if (actionDescripBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
                 actionDescripBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
