@@ -87,7 +87,7 @@ import java.util.concurrent.Future;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, AuthenticatedSnapshotable, TransactionIdProvider {
+public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider<Message>, Service, AuthenticatedSnapshotable, TransactionIdProvider {
 
     /**
      * Returns the type of this unit.
