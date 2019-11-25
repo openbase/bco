@@ -584,41 +584,19 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), authenticatedValue -> applyActionAuthenticated(authenticatedValue));
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param actionParameter {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
-        try {
-            final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
-            if (actionDescriptionBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
-                actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
-            }
-            if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthToken())) {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescriptionBuilder.build(), actionParameter.getAuthToken());
-                final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
-                return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
-            } else {
-                return applyAction(actionDescriptionBuilder.build());
-            }
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
-        }
-    }
-
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription, final AuthToken authToken) {
-        try {
+        try {AbstractServiceRemot
+            final ActionDescription.Builder actionDescripBuilder = actionDescription.toBuilder();
+            if (actionDescripBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
+                actionDescripBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
+            }
             if (SessionManager.getInstance().isLoggedIn() && (authToken != null)) {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, authToken);
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescripBuilder.build(), authToken);
                 final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
                 return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
             } else {
-                return applyAction(actionDescription);
+                return applyAction(actionDescripBuilder.build());
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);

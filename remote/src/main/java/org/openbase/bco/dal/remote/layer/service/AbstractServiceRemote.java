@@ -196,6 +196,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         return serviceStateObservable.getValue();
     }
 
+    @Override
+    public String getId() throws NotAvailableException {
+        try {
+            return getServiceRemoteManager().getResponsibleUnit().getId();
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("ServiceRemote", "Id", ex);
+        }
+    }
+
     /**
      * Add an observer to get notifications when the service state changes.
      *
@@ -963,7 +972,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         if (hasServiceRemoteManager()) {
             try {
 
-                if(latestActionCause != null && (!latestActionCause.hasActionId() || latestActionCause.getActionId().isEmpty())) {
+                if (latestActionCause != null && (!latestActionCause.hasActionId() || latestActionCause.getActionId().isEmpty())) {
                     logger.warn("Skip latest action since it does not offer an action id!");
                     latestActionCause = null;
                 }

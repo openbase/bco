@@ -30,6 +30,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -42,7 +43,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ServiceProvider<ST extends Message> {
+public interface ServiceProvider<ST extends Message> extends Identifiable<String> {
 
     /**
      * Method applies the action on this instance.
@@ -77,18 +78,16 @@ public interface ServiceProvider<ST extends Message> {
     @RPCMethod(legacy = true)
     default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
         try {
-            final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build();
+            final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
+            if (actionDescriptionBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
+                actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
+            }
             if (SessionManager.getInstance().isLoggedIn() && (actionParameter.hasAuthToken())) {
-                final AuthenticatedValue authenticatedValue;
-                try {
-                    authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, actionParameter.getAuthToken());
-                } catch (CouldNotPerformException ex) {
-                    return FutureProcessor.canceledFuture(ActionDescription.class, ex);
-                }
+                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescriptionBuilder.build(), actionParameter.getAuthToken());
                 final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
                 return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
             } else {
-                return applyAction(actionDescription);
+                return applyAction(actionDescriptionBuilder.build());
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
