@@ -155,7 +155,7 @@ public class BCOInterfacePrinter {
             System.out.println();
             String unitDataType;
 
-            for (final RegistryRemote registry : Registries.getRegistries(true)) {
+            for (final RegistryRemote<?> registry : Registries.getRegistries(true)) {
 
                 // print unit data type
                 try {
