@@ -47,6 +47,9 @@ import org.openbase.bco.dal.lib.layer.unit.*;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
+import org.openbase.bco.dal.lib.state.States;
+import org.openbase.bco.dal.lib.state.States.Power;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -74,6 +77,7 @@ import org.openbase.jul.schedule.*;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -96,6 +100,7 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
@@ -520,6 +525,30 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Method [" + serviceInterfaceMapEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
+        }
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+
+        try {
+            // auto switch of unused dal units
+            if (isDalUnit() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
+
+                // generate action parameter
+                final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(Power.OFF, ServiceType.POWER_STATE_SERVICE, this);
+                actionParameter.setInterruptible(true);
+                actionParameter.setSchedulable(true);
+                actionParameter.setPriority(Priority.NO);
+                actionParameter.addCategory(Category.ECONOMY);
+                actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(Long.MAX_VALUE));
+
+                // register remote for auto extension support.
+                new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
+            }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not register state termination!", ex, logger);
         }
     }
 
@@ -1201,7 +1230,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // log state transition
             logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
             if(!Services.hasResponsibleAction(newState)) {
-                StackTracePrinter.printStackTrace(logger);
+                StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
             }
 
             // update the current state
@@ -1361,10 +1390,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // in case of a system update, we can just apply the service state if no actions are currently scheduled.
             try {
                 // todo: maybe we need to filter actions which are already done as well but then we have to deal with the scheduling lock which is may not a good idea because of deadlocks.
-                if (scheduledActionList.isEmpty() && Services.getResponsibleAction(serviceState).getActionInitiator().getInitiatorType() == InitiatorType.SYSTEM) {
+                if (scheduledActionList.isEmpty() && Services.getResponsibleAction(serviceState).getActionInitiator().getInitiatorType() == InitiatorType.SYSTEM && Services.getResponsibleAction(serviceState).getPriority().getNumber() > Priority.NO.getNumber()
+                ) {
                     // Because the service state update was not remapped we can be sure its triggered externally and not via bco.
                     // If in this case the event is initiated by the system, we can be sure that it is caused by a hardware synchronization purpose.
-                    // Therefore we can just apply the update and can skip to force the action execution which could otherwise block some low priority future action for a certain amount of time..
+                    // Therefore we can just apply the update and can skip to force the action execution which could otherwise block some
+                    // low priority future action for a certain amount of time in case this system action has any priority defined.
                     return serviceState;
                 }
             } catch (NotAvailableException ex) {
