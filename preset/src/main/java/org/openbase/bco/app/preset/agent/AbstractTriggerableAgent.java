@@ -78,7 +78,6 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
             @Override
             public void relay() {
                 try {
-                    System.out.println("force trigger");
                     activationTriggerPool.forceNotification();
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not notify agent about emphasis state change.", ex, logger);
