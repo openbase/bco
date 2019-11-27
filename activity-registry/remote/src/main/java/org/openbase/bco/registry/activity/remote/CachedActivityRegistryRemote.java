@@ -85,7 +85,23 @@ public class CachedActivityRegistryRemote {
     /**
      * Get a cached ActivityRegistryRemote.
      *
+     * @param waitForData defines if the method should block until the data is available.
+     *
      * @return a cached ActivityRegistryRemote
+     *
+     * @throws NotAvailableException if the initial startup of the ActivityRegistryRemote fails
+     * @throws InterruptedException  is thrown if the thread is externally interrupted.
+     */
+    public synchronized static ActivityRegistryRemote getRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        waitForData();
+        return getRegistry();
+    }
+
+    /**
+     * Get a cached ActivityRegistryRemote.
+     *
+     * @return a cached ActivityRegistryRemote
+     *
      * @throws NotAvailableException if the initial startup of the ActivityRegistryRemote fails
      */
     public synchronized static ActivityRegistryRemote getRegistry() throws NotAvailableException {
@@ -148,6 +164,19 @@ public class CachedActivityRegistryRemote {
         getRegistry().waitUntilReady();
     }
 
+    public static void prepare() throws CouldNotPerformException {
+        synchronized (REMOTE_LOCK) {
+            // check if externally called.
+            if (registryRemote != null || !JPService.testMode()) {
+                LOGGER.warn("This manual registry preparation is only available during unit tests and not allowed during normal operation!");
+                return;
+            }
+
+            shutdown = false;
+            getRegistry();
+        }
+    }
+
     /**
      * Shutdown the cached registry instances.
      * <p> <b>
@@ -165,10 +194,11 @@ public class CachedActivityRegistryRemote {
             return;
         }
 
-        // set flag again for the unit test case
-        shutdown = true;
-
         synchronized (REMOTE_LOCK) {
+
+            // set flag again for the unit test case
+            shutdown = true;
+
             if (registryRemote != null) {
                 try {
                     registryRemote.unlock(REMOTE_LOCK);

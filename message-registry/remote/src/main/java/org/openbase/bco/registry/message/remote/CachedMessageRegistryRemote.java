@@ -22,6 +22,7 @@ package org.openbase.bco.registry.message.remote;
  * #L%
  */
 
+import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
 import org.openbase.bco.registry.message.lib.MessageRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
@@ -81,6 +82,21 @@ public class CachedMessageRegistryRemote {
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedMessageRegistryRemote.class.getSimpleName() + "!", ex);
         }
+    }
+
+    /**
+     * Get a cached MessageRegistryRemote.
+     *
+     * @param waitForData defines if the method should block until the data is available.
+     *
+     * @return a cached MessageRegistryRemote
+     *
+     * @throws NotAvailableException if the initial startup of the MessageRegistryRemote fails
+     * @throws InterruptedException  is thrown if the thread is externally interrupted.
+     */
+    public synchronized static MessageRegistryRemote getRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        waitForData();
+        return getRegistry();
     }
 
     /**
@@ -149,6 +165,19 @@ public class CachedMessageRegistryRemote {
         getRegistry().waitUntilReady();
     }
 
+    public void prepare() throws CouldNotPerformException, InterruptedException {
+        synchronized (REMOTE_LOCK) {
+            // check if externally called.
+            if (registryRemote != null || !JPService.testMode()) {
+                LOGGER.warn("This manual registry preparation is only available during unit tests and not allowed during normal operation!");
+                return;
+            }
+
+            shutdown = false;
+            getRegistry();
+        }
+    }
+
     /**
      * Shutdown the cached registry instances.
      * <p> <b>
@@ -165,10 +194,11 @@ public class CachedMessageRegistryRemote {
             return;
         }
 
-        // set flag again for the unit test case
-        shutdown = true;
-
         synchronized (REMOTE_LOCK) {
+
+            // set flag again for the unit test case
+            shutdown = true;
+
             if (registryRemote != null) {
                 try {
                     registryRemote.unlock(REMOTE_LOCK);
