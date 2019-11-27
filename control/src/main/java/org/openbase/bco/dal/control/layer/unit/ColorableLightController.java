@@ -24,29 +24,17 @@ package org.openbase.bco.dal.control.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.MultiException.ExceptionStack;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.StackTracePrinter;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.type.processing.ScopeProcessor;
-import org.openbase.jul.extension.type.processing.MetaConfigPool;
-import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
-import org.openbase.type.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
-import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType.RGBColor;
@@ -71,88 +59,22 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
     }
 
-    private Color neutralWhite;
+    private Color neutralWhiteColor;
 
     public ColorableLightController(final HostUnitController hostUnitController, final ColorableLightData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);
-        this.neutralWhite = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;
+        this.neutralWhiteColor = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;
     }
 
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        updateNeutralWhiteValue(config);
+        neutralWhiteColor = ColorableLight.detectNeutralWhiteColor(config, logger);
         return super.applyConfigUpdate(config);
-    }
-
-    public void updateNeutralWhiteValue(final UnitConfig config) throws InterruptedException {
-        try {
-            final MetaConfigPool configPool = new MetaConfigPool();
-            configPool.register(new MetaConfigVariableProvider("UnitConfig", config.getMetaConfig()));
-
-            // add meta config of service config with type ColorStateService
-            ServiceConfig colorStateServiceConfig = null;
-            for (ServiceConfig serviceConfig : config.getServiceConfigList()) {
-                if (serviceConfig.getServiceDescription().getServiceType() == COLOR_STATE_SERVICE) {
-                    colorStateServiceConfig = serviceConfig;
-                }
-            }
-            if (colorStateServiceConfig != null) {
-                configPool.register(new MetaConfigVariableProvider("ServiceConfig", colorStateServiceConfig.getMetaConfig()));
-            }
-
-            // add meta config of device
-            UnitConfig deviceUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(config.getUnitHostId());
-            configPool.register(new MetaConfigVariableProvider("DeviceUnitConfig", deviceUnitConfig.getMetaConfig()));
-
-            // add meta config of device class
-            Registries.waitForData();
-            DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
-            configPool.register(new MetaConfigVariableProvider("DeviceClass", deviceClass.getMetaConfig()));
-
-            // add meta config of service template config in unit template of deviceClass
-            ServiceTemplateConfig colorStateServiceTemplateConfig = null;
-            for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
-                if (unitTemplateConfig.getId().equals(config.getUnitTemplateConfigId())) {
-                    for (ServiceTemplateConfig serviceTempalteConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
-                        if (serviceTempalteConfig.getServiceType() == COLOR_STATE_SERVICE) {
-                            colorStateServiceTemplateConfig = serviceTempalteConfig;
-                        }
-                    }
-                    break;
-                }
-            }
-            if (colorStateServiceTemplateConfig != null) {
-                configPool.register(new MetaConfigVariableProvider("ServiceTemplateConfig", colorStateServiceTemplateConfig.getMetaConfig()));
-            }
-
-            try {
-                String neutralWhiteString = configPool.getValue(NEUTRAL_WHITE_KEY);
-                try {
-                    String[] split = neutralWhiteString.replace(" ", "").split(",");
-                    if (split.length != 3) {
-                        throw new CouldNotPerformException("NeutralWhite for [" + ScopeProcessor.generateStringRep(config.getScope()) + "] has the wrong number of parameters!");
-                    }
-                    double hue = Double.parseDouble(split[0]);
-                    double saturation = Double.parseDouble(split[1]);
-                    double brightness = Double.parseDouble(split[2]);
-                    HSBColor hsbColor = HSBColor.newBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness).build();
-                    neutralWhite = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsbColor).build();
-                } catch (CouldNotPerformException ex) {
-                    throw new NotAvailableException("Color", "NeutralWhite", new CouldNotPerformException("Could not parse [" + neutralWhiteString + "] as neutral white! Please define as <h, s, b>"));
-                } catch (NumberFormatException ex) {
-                    throw new NotAvailableException("Color", "NeutralWhite", new CouldNotPerformException("Could not parse [" + neutralWhiteString + "] as doubles and thus as NeutralWhite!"));
-                }
-            } catch (NotAvailableException ex) {
-                neutralWhite = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;
-            }
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not find NeutralWhite!", ex), logger);
-        }
     }
 
     @Override
     public Future<ActionDescription> setNeutralWhite() {
-        return setColor(neutralWhite);
+        return setColor(neutralWhiteColor);
     }
 
     @Override
@@ -223,5 +145,10 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
                 break;
         }
+    }
+
+    @Override
+    public Color getNeutralWhiteColor() {
+        return neutralWhiteColor;
     }
 }

@@ -37,6 +37,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.vision.ColorType.Color;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -137,6 +139,11 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
             } catch (CouldNotPerformException ex) {
                 return FutureProcessor.canceledFuture(ActionDescription.class, ex);
             }
+        }
+
+        @Override
+        public Color getNeutralWhiteColor() throws NotAvailableException {
+            return unit.getNeutralWhiteColor();
         }
     }
 
