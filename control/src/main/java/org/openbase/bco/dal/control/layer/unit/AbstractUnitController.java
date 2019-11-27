@@ -50,6 +50,7 @@ import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
+import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -67,6 +68,7 @@ import org.openbase.jul.extension.protobuf.BuilderSyncSetup;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.iface.ScopeProvider;
 import org.openbase.jul.extension.type.processing.*;
@@ -164,6 +166,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private String classDescription = "";
     private ArrayList<SchedulableAction> scheduledActionList;
     private Timeout scheduleTimeout;
+    private boolean infrastructure = false;
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
         super(builder);
@@ -413,7 +416,18 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         }
 
-        return super.applyConfigUpdate(config);
+        final UnitConfig result = super.applyConfigUpdate(config);
+
+        // Note: this block has to be executed after the super call because generating the variable pool uses
+        // the internal unit config which is set in the super call
+        try {
+            infrastructure = Boolean.parseBoolean(generateVariablePool().getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG));
+        } catch (NotAvailableException ex) {
+            // pool or flag not available so set infrastructure to false
+            infrastructure = false;
+        }
+
+        return result;
     }
 
     @Override
@@ -534,7 +548,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
         try {
             // auto switch of unused dal units
-            if (isDalUnit() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
+            if (isDalUnit() && !isInfrastructure() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
 
                 // generate action parameter
                 final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(Power.OFF, ServiceType.POWER_STATE_SERVICE, this);
@@ -574,10 +588,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
                 if (stackTraceElement.getClassName().equals(RPCHelper.class.getName())) {
                     logger.info("incomming unauthorized action: " + builder.toString());
-                    builder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
-                    final ActionDescription build = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build();
-                    logger.info("set human as executor out of legacy reasons: " + builder.toString());
-                    return applyUnauthorizedAction(build);
+
+                    // handle legacy case for UIs without authentication support.
+                    if(JPService.getValue(JPRSBLegacyMode.class, false)) {
+                        builder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
+                    }
+
+                    return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
                 }
             }
             return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
@@ -868,6 +885,19 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     for (final SchedulableAction action : scheduledActionList) {
                         // only terminate if not valid and still running
                         if (!action.isValid() && !action.isDone()) {
+
+                            // handle auto extension if flag is set and human is initiator
+                            try {
+                                if (action.isAutoContinueWithLowPriorityIntended()) {
+                                    // extend with low priority
+                                    action.autoExtendWithLowPriority();
+                                    continue;
+                                }
+                            } catch (VerificationFailedException ex) {
+                                ExceptionPrinter.printHistory(ex, logger);
+                            }
+
+                            // set action as done
                             if (action.getActionState() == State.EXECUTING) {
                                 action.finish();
                             } else {
@@ -1437,7 +1467,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
                     StackTracePrinter.printStackTrace(logger);
                 }
-                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, Priority.LOW, null);
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, false, Priority.LOW, null);
             }
 
             scheduledActionList.add(0, new ActionImpl(serviceStateBuilder.build(), this));
@@ -1543,6 +1573,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public void removeDataObserver(ServiceTempus serviceTempus, Observer<DataProvider<D>, D> observer) {
         unitDataObservableMap.get(serviceTempus).removeObserver(observer);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean isInfrastructure() {
+        return infrastructure;
     }
 
     @Override
