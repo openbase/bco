@@ -46,7 +46,7 @@ public class CachedActivityRegistryRemote {
     private static final SyncObject REMOTE_LOCK = new SyncObject("CachedActivityRegistryRemoteLock");
 
     private static ActivityRegistryRemote registryRemote;
-    private static boolean shutdown = false;
+    private static transient boolean shutdown = false;
 
     /**
      * Setup shutdown hook
@@ -164,6 +164,9 @@ public class CachedActivityRegistryRemote {
             LOGGER.warn("This manual registry shutdown is only available during unit tests and not allowed during normal operation!");
             return;
         }
+
+        // set flag again for the unit test case
+        shutdown = true;
 
         synchronized (REMOTE_LOCK) {
             if (registryRemote != null) {
