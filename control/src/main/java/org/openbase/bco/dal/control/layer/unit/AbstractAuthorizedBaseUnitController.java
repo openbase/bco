@@ -30,6 +30,8 @@ import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InstantiationException;
@@ -200,7 +202,9 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         eventsPerHour++;
         lastActionTimestamp = System.currentTimeMillis();
 
-        System.err.println("analyze " + this + " which currently generates " + eventsPerHour + " events per hour which is " + (int) (eventsPerHour / MAX_ACTIN_SUBMITTION_PER_MINUTE) * 100d + "% of the totally allowed ones.");
+        if(JPService.verboseMode()) {
+            logger.info("Analyze " + this + " which currently generates " + eventsPerHour + " events per hour which is " + (int) (eventsPerHour / MAX_ACTIN_SUBMITTION_PER_MINUTE) * 100d + "% of the totally allowed ones.");
+        }
 
         if (eventsPerHour > MAX_ACTIN_SUBMITTION_PER_MINUTE * 60) {
             logger.error(this + " generates to many actions and will be terminated!");
