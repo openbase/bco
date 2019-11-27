@@ -38,7 +38,7 @@ public class CachedAuthenticationRemote {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedAuthenticationRemote.class);
     
     private static AuthenticationRemote authenticationRemote;
-    private static boolean shutdown = false;
+    private static transient boolean shutdown = false;
 
     /**
      * Setup shutdown hook
