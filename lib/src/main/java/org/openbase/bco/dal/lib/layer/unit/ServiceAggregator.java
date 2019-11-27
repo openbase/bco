@@ -41,6 +41,7 @@ import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.vision.ColorType.Color;
 
 import java.util.concurrent.Future;
 
@@ -154,5 +155,10 @@ public interface ServiceAggregator extends
     @Override
     default EmphasisStateType.EmphasisState getEmphasisState(final UnitType unitType) throws NotAvailableException {
         return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).getEmphasisState(unitType);
+    }
+
+    @Override
+    default Color getNeutralWhiteColor() throws NotAvailableException {
+        throw new NotAvailableException("NeutralWhite is not available for aggregated units, please request the color for each individual sub unit instead.");
     }
 }

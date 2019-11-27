@@ -45,6 +45,19 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
  */
 public interface ColorStateProviderService extends ProviderService {
 
+    String NEUTRAL_WHITE_KEY = "NEUTRAL_WHITE";
+    HSBColor DEFAULT_NEUTRAL_WHITE = HSBColor.newBuilder().setHue(0).setSaturation(0).setBrightness(0.8).build();
+    Color DEFAULT_NEUTRAL_WHITE_COLOR = Color.newBuilder().setType(Type.HSB).setHsbColor(DEFAULT_NEUTRAL_WHITE).build();
+
+    /**
+     * Method returns the default neutral white color configured for this color state provider.
+     *
+     * @return the neutral white color packed into a color object.
+     *
+     * @throws NotAvailableException in case the color is not available.
+     */
+    Color getNeutralWhiteColor() throws NotAvailableException;
+
     @RPCMethod(legacy = true)
     default ColorState getColorState() throws NotAvailableException {
         return (ColorState) getServiceProvider().getServiceState(COLOR_STATE_SERVICE);
@@ -134,7 +147,6 @@ public interface ColorStateProviderService extends ProviderService {
     }
 
     static Boolean isCompatible(final ColorState colorState, final PowerState powerState) {
-        System.out.println("check color comp of "+ colorState+ " and "+ powerState);
         try {
             // color verification is done to make sure the hsv color is at least available.
             switch (powerState.getValue()) {

@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.layer.service;
  */
 
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -35,11 +36,13 @@ import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.vision.ColorType;
+import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType.RGBColor;
 
@@ -125,11 +128,18 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             averageGreen = averageGreen / amount;
             averageBlue = averageBlue / amount;
 
-            final Builder serviceStateBuilder = ColorState.newBuilder();
+            Builder serviceStateBuilder = ColorState.newBuilder();
 
             // setup color value
             HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(RGBColor.newBuilder().setRed(averageRed).setGreen(averageGreen).setBlue(averageBlue).build());
             serviceStateBuilder.setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor));
+
+            // revalidate to update state value
+            try {
+                serviceStateBuilder = Services.verifyAndRevalidateServiceState(serviceStateBuilder);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not validate service state!", ex, logger);
+            }
 
             // setup timestamp
             TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
@@ -150,5 +160,19 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             futureList.add(colorStateOperationService.setNeutralWhite());
         }
         return FutureProcessor.allOf(ActionDescription.getDefaultInstance(), futureList);
+    }
+
+    @Override
+    public Future<ActionDescription> setNeutralWhite(final ActionParameter actionParameter) {
+        List<Future<?>> futureList = new ArrayList<>();
+        for(ColorStateOperationService colorStateOperationService : getServices()) {
+            futureList.add(colorStateOperationService.setNeutralWhite(actionParameter));
+        }
+        return FutureProcessor.allOf(ActionDescription.getDefaultInstance(), futureList);
+    }
+
+    @Override
+    public Color getNeutralWhiteColor() throws NotAvailableException {
+        throw new NotAvailableException("NeutralWhite is not available for color service remotes, please request the color for each individual sub unit instead.");
     }
 }
