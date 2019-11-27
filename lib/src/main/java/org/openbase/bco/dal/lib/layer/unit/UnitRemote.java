@@ -97,15 +97,6 @@ public interface UnitRemote<M extends Message> extends Unit<M>, ConfigurableRemo
     SessionManager getSessionManager();
 
     /**
-     * Returns if this unit belongs to the infrastructure.
-     * Infrastructure units should not be included in actions for multiple units to prevent
-     * accidentally switching of important units for the infrastructure.
-     *
-     * @return if the the infrastructure flag is set to true in a meta config for this unit
-     */
-    boolean isInfrastructure();
-
-    /**
      * Method applies the action on this instance with permission given through authToken. The provided authToken can be null.
      *
      * @param actionDescription the description of the action.
