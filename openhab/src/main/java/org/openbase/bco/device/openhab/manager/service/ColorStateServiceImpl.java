@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.type.vision.ColorType.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -50,5 +51,10 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
     @Override
     public Future<ActionDescription> setColorState(final ColorState colorState) {
         return setState(colorState);
+    }
+
+    @Override
+    public Color getNeutralWhiteColor() throws NotAvailableException {
+        return unit.getNeutralWhiteColor();
     }
 }
