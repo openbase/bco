@@ -513,6 +513,23 @@ public class Services extends ServiceStateProcessor {
     /**
      * Verification of the given service state inclusive consistency revalidation.
      * This means field are recalculated in case they are not consistent against each other.
+     * <p>
+     * Note: be aware that the passed builder instance is currently not updated, instead an updated builder instance is returned.
+     *
+     * @param serviceStateBuilder the state type builder to validate.
+     *
+     * @return the given state builder instance updated version of it.
+     *
+     * @throws VerificationFailedException is thrown if the state is invalid and no repair functions are available.
+     */
+    public static <MB extends Message.Builder> MB verifyAndRevalidateServiceState(final MB serviceStateBuilder) throws VerificationFailedException {
+        // todo: please improve performance by only using builder instances for the entire verification process
+        return (MB) verifyAndRevalidateServiceState(serviceStateBuilder.build()).toBuilder();
+    }
+
+    /**
+     * Verification of the given service state inclusive consistency revalidation.
+     * This means field are recalculated in case they are not consistent against each other.
      *
      * @param serviceState the state type to validate.
      *
@@ -520,12 +537,12 @@ public class Services extends ServiceStateProcessor {
      *
      * @throws VerificationFailedException is thrown if the state is invalid and no repair functions are available.
      */
-    public static Message verifyAndRevalidateServiceState(final Message serviceState) throws VerificationFailedException {
+    public static <M extends Message> M verifyAndRevalidateServiceState(final M serviceState) throws VerificationFailedException {
         try {
             try {
                 final Object verifiedState = detectServiceStateVerificationMethod(serviceState).invoke(null, serviceState);
                 if (verifiedState != null && verifiedState instanceof Message) {
-                    return (Message) verifiedState;
+                    return (M) verifiedState;
                 }
                 return serviceState;
             } catch (NotAvailableException ex) {
@@ -585,7 +602,7 @@ public class Services extends ServiceStateProcessor {
 
             // validate if field is set
             if (!serviceState.hasField(responsibleActionField)) {
-                throw new InvalidStateException("Given "+serviceState.getClass().getSimpleName()+" has no responsible action declared! "+ serviceState);
+                throw new InvalidStateException("Given " + serviceState.getClass().getSimpleName() + " has no responsible action declared! " + serviceState);
             }
 
             // resolve value
@@ -653,7 +670,7 @@ public class Services extends ServiceStateProcessor {
      */
     public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) throws NotAvailableException {
 
-        if(responsibleAction == null) {
+        if (responsibleAction == null) {
             throw new NotAvailableException("ResponsibleAction");
         }
 
