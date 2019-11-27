@@ -498,7 +498,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
         return true;
     }
 
-    protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
+    protected abstract void registerConsistencyHandler() throws CouldNotPerformException, InterruptedException;
 
     protected abstract void registerPlugins() throws CouldNotPerformException, InterruptedException;
 

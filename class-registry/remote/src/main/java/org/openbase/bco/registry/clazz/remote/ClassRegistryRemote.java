@@ -104,11 +104,13 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      *
      * @return the internally used agent class remote registry
      */
-    public SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> getAgentClassRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AgentClassRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> getAgentClassRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("AgentClassRemoteRegistry", ex);
+            }
         }
         return agentClassRemoteRegistry;
     }
@@ -118,11 +120,13 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      *
      * @return the internally used app class remote registry
      */
-    public SynchronizedRemoteRegistry<String, AppClass, AppClass.Builder> getAppClassRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AppClassRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, AppClass, AppClass.Builder> getAppClassRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("AppClassRemoteRegistry", ex);
+            }
         }
         return appClassRemoteRegistry;
     }
@@ -132,11 +136,13 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      *
      * @return the internally used device class remote registry
      */
-    public SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> getDeviceClassRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("DeviceClassRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> getDeviceClassRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("DeviceClassRemoteRegistry", ex);
+            }
         }
         return deviceClassRemoteRegistry;
     }

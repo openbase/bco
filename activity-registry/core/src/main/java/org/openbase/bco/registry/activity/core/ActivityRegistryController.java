@@ -117,7 +117,7 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      */
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
-        activityConfigRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getActivityTemplateRemoteRegistry());
+        activityConfigRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getActivityTemplateRemoteRegistry(false));
     }
 
     /**

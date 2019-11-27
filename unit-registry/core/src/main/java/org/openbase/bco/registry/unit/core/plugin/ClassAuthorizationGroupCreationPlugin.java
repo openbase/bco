@@ -66,8 +66,8 @@ public class ClassAuthorizationGroupCreationPlugin extends ProtobufRegistryPlugi
         super.init(registry);
         // validate on startup
         try {
-            beforeUpstreamDependencyNotification(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry());
-            beforeUpstreamDependencyNotification(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry());
+            beforeUpstreamDependencyNotification(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry(true));
+            beforeUpstreamDependencyNotification(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry(true));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -75,7 +75,7 @@ public class ClassAuthorizationGroupCreationPlugin extends ProtobufRegistryPlugi
 
     @Override
     public void beforeUpstreamDependencyNotification(final Registry dependency) throws CouldNotPerformException {
-        if (dependency.equals(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry())) {
+        if (dependency.equals(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry(true))) {
             final Set<String> authorizationGroupIdSet = new HashSet<>();
             for (final AgentClass agentClass : CachedClassRegistryRemote.getRegistry().getAgentClasses()) {
                 try {
@@ -88,7 +88,7 @@ public class ClassAuthorizationGroupCreationPlugin extends ProtobufRegistryPlugi
             removeUnneededGroups(authorizationGroupIdSet, AGENT_CLASS_ID_KEY);
         }
 
-        if (dependency.equals(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry())) {
+        if (dependency.equals(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry(true))) {
             final Set<String> authorizationGroupIdSet = new HashSet<>();
             for (final AppClass appClass : CachedClassRegistryRemote.getRegistry().getAppClasses()) {
                 try {

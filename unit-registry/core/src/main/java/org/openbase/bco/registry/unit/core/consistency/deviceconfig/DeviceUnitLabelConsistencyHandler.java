@@ -43,7 +43,7 @@ public class DeviceUnitLabelConsistencyHandler extends DefaultUnitLabelConsisten
     public DeviceUnitLabelConsistencyHandler() throws InstantiationException {
         super();
         try {
-            this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
+            this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(true);
         } catch (final CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

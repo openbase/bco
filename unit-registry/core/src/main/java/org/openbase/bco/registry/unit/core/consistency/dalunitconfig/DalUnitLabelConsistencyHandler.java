@@ -56,11 +56,11 @@ public class DalUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyH
 
     public DalUnitLabelConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry,
                                           final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry)
-            throws InstantiationException {
+            throws InstantiationException, InterruptedException {
         super();
 
         try {
-            this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
+            this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry(true).getDeviceClassRemoteRegistry(true);
             this.deviceRegistry = deviceRegistry;
             this.appRegistry = appRegistry;
             this.oldUnitHostLabelMap = new HashMap<>();

@@ -233,7 +233,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void registerConsistencyHandler() throws CouldNotPerformException {
+    protected void registerConsistencyHandler() throws CouldNotPerformException, InterruptedException {
         // register alias generator first to make sure other consistency checks can access the alias
         registerConsistencyHandler(new UnitIdUniqueVerificationConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitAliasGenerationConsistencyHandler(this), UnitConfig.class);
@@ -393,7 +393,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
-        registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(), UnitConfig.class);
+        registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(false), UnitConfig.class);
 
         dalUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
         dalUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
@@ -401,12 +401,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         authorizationGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
         authorizationGroupUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
         authorizationGroupUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
-        authorizationGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry());
-        authorizationGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry());
+        authorizationGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry(false));
+        authorizationGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry(false));
 
         deviceUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
         deviceUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-        deviceUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
+        deviceUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(false));
 
         unitGroupUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
         unitGroupUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
@@ -417,8 +417,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         unitGroupUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
         unitGroupUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
         unitGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-        unitGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
-        unitGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry());
+        unitGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(false));
+        unitGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry(false));
 
         locationUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
         locationUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
@@ -433,11 +433,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
         agentUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-        agentUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry());
+        agentUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry(false));
 
         sceneUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
-        appUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry());
+        appUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry(false));
         appUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
     }
 

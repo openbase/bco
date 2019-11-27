@@ -105,11 +105,13 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @return the internal activity template remote registry
      */
-    public SynchronizedRemoteRegistry<String, ActivityTemplate, ActivityTemplate.Builder> getActivityTemplateRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ActivityTemplateRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, ActivityTemplate, ActivityTemplate.Builder> getActivityTemplateRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("ActivityTemplateRemoteRegistry", ex);
+            }
         }
         return activityTemplateRemoteRegistry;
     }
@@ -119,11 +121,13 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @return the internal service template remote registry
      */
-    public SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> getServiceTemplateRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ServiceTemplateRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> getServiceTemplateRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("ServiceTemplateRemoteRegistry", ex);
+            }
         }
         return serviceTemplateRemoteRegistry;
     }
@@ -133,11 +137,13 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @return the internal unit template remote registry
      */
-    public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTemplateRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("UnitTemplateRemoteRegistry", ex);
+            }
         }
         return unitTemplateRemoteRegistry;
     }
@@ -146,6 +152,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param unitTemplate {@inheritDoc}.
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -162,6 +169,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param unitTemplate {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -178,13 +186,14 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param unitTemplateId {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
     public Boolean containsUnitTemplateById(String unitTemplateId) {
         try {
-        validateData();
-        return unitTemplateRemoteRegistry.contains(unitTemplateId);
+            validateData();
+            return unitTemplateRemoteRegistry.contains(unitTemplateId);
         } catch (InvalidStateException e) {
             return true;
         }
@@ -194,7 +203,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param unitTemplateId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -207,6 +218,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -219,7 +231,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param unitType {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -267,6 +281,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param serviceTemplate {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -283,7 +298,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param serviceTemplate {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -296,7 +313,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param serviceTemplateId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -309,7 +328,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param serviceTemplateId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -322,6 +343,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -334,7 +356,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param serviceType {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -382,6 +406,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param activityTemplate {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -398,6 +423,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param activityTemplate {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -414,6 +440,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param activityTemplateId {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -430,7 +457,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param activityTemplateId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -443,6 +472,7 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -455,7 +485,9 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * {@inheritDoc}
      *
      * @param activityType {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override

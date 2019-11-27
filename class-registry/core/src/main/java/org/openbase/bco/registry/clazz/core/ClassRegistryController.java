@@ -112,9 +112,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
 
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
-        agentClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry());
-        appClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry());
-        deviceClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry());
+        agentClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(false));
+        appClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(false));
+        deviceClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(false));
     }
 
     @Override
