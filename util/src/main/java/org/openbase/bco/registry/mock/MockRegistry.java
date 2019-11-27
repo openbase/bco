@@ -185,6 +185,7 @@ public class MockRegistry {
     protected MockRegistry() throws InstantiationException {
         try {
             JPService.setupJUnitTestMode();
+            Registries.prepare();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
@@ -461,10 +462,7 @@ public class MockRegistry {
         SessionManager.getInstance().completeLogout();
         AuthenticatedServerManager.shutdown();
 
-        CachedUnitRegistryRemote.shutdown();
-        CachedActivityRegistryRemote.shutdown();
-        CachedClassRegistryRemote.shutdown();
-        CachedTemplateRegistryRemote.shutdown();
+        Registries.shutdown();
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
