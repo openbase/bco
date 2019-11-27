@@ -25,9 +25,11 @@ package org.openbase.bco.dal.lib.layer.service.operation;
 import java.util.concurrent.Future;
 
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -42,10 +44,6 @@ import org.openbase.type.vision.RGBColorType.RGBColor;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface ColorStateOperationService extends OperationService, ColorStateProviderService {
-
-    String NEUTRAL_WHITE_KEY = "NEUTRAL_WHITE";
-    HSBColor DEFAULT_NEUTRAL_WHITE = HSBColor.newBuilder().setHue(0).setSaturation(0).setBrightness(0.8).build();
-    Color DEFAULT_NEUTRAL_WHITE_COLOR = Color.newBuilder().setType(Type.HSB).setHsbColor(DEFAULT_NEUTRAL_WHITE).build();
 
     @RPCMethod(legacy = true)
     default Future<ActionDescription> setColorState(final ColorState colorState) {
@@ -78,11 +76,19 @@ public interface ColorStateOperationService extends OperationService, ColorState
 
     @RPCMethod(legacy = true)
     default Future<ActionDescription> setNeutralWhite() {
-        return setColor(DEFAULT_NEUTRAL_WHITE);
+        try {
+            return setColor(getNeutralWhiteColor());
+        } catch (NotAvailableException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not set neutral white!", ex));
+        }
     }
 
     default Future<ActionDescription> setNeutralWhite(final ActionParameter actionParameter) {
-        return setColor(DEFAULT_NEUTRAL_WHITE, actionParameter);
+        try {
+            return setColor(getNeutralWhiteColor(), actionParameter);
+        } catch (NotAvailableException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not set neutral white!", ex));
+        }
     }
 
     @RPCMethod(legacy = true)
