@@ -242,12 +242,13 @@ public class MockRegistry {
             LOGGER.debug("Starting all registries: unit, class, template, activity...");
             for (Future<Void> task : registryStartupTasks) {
                 while (true) {
-                try {
-                    task.get(5, TimeUnit.SECONDS);
-                    break;
-                } catch (TimeoutException e) {
-                }}
-                LOGGER.info("Still waiting until mockup registry is ready...");
+                    try {
+                        task.get(1000, TimeUnit.SECONDS);
+                        break;
+                    } catch (TimeoutException e) {
+                        LOGGER.info("Still waiting until mockup registry is ready...");
+                    }
+                }
             }
             registryStartupTasks.clear();
             LOGGER.debug("Registries started!");
@@ -921,12 +922,13 @@ public class MockRegistry {
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
         BATTERY(UnitType.BATTERY, BATTERY_SPS),
         LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS,
-                SMOKE_ALARM_SPS, SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS, PRESENCE_SPS, EMPHASIN_SPS, EMPHASIN_SOS),
+                SMOKE_ALARM_SPS, SMOKE_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS, PRESENCE_SPS, EMPHASIN_SPS, EMPHASIN_SOS),
         CONNECTION(UnitType.CONNECTION, DOOR_SPS, WINDOW_SPS, PASSAGE_SPS),
         SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
         AGENT(UnitType.AGENT, ACTIVATION_SPS, ACTIVATION_SOS),
         APP(UnitType.APP, ACTIVATION_SPS, ACTIVATION_SOS),
-        UNIT_GROUP(UnitType.UNIT_GROUP, COLOR_SPS, COLOR_SOS, POWER_SPS, POWER_SOS, BRIGHTNESS_SPS, BRIGHTNESS_SOS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS),
+        UNIT_GROUP(UnitType.UNIT_GROUP, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS,
+                SMOKE_ALARM_SPS, SMOKE_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS, PRESENCE_SPS, EMPHASIN_SPS, EMPHASIN_SOS),
         USER(UnitType.USER, LOCAL_POSITION_SOS, LOCAL_POSITION_SPS, GLOBAL_POSITION_SOS, GLOBAL_POSITION_SPS, PRESENCE_SOS, PRESENCE_SPS,
                 USER_TRANSIT_SOS, USER_TRANSIT_SPS, ACTIVITY_MULTI_SOS, ACTIVITY_MULTI_SPS);
 
@@ -940,7 +942,7 @@ public class MockRegistry {
             final UnitTemplate.Builder unitTemplateBuilder = UnitTemplate.newBuilder();
             unitTemplateBuilder.setUnitType(type);
 
-            if(superType != null) {
+            if (superType != null) {
                 unitTemplateBuilder.addSuperType(superType);
             }
 
