@@ -105,7 +105,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @return the internal activity template remote registry
      */
-    public SynchronizedRemoteRegistry<String, ActivityTemplate, ActivityTemplate.Builder> getActivityTemplateRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, ActivityTemplate, ActivityTemplate.Builder> getActivityTemplateRemoteRegistry() throws NotAvailableException {
+        try {
+            validateData();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ActivityTemplateRemoteRegistry", ex);
+        }
         return activityTemplateRemoteRegistry;
     }
 
@@ -114,7 +119,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @return the internal service template remote registry
      */
-    public SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> getServiceTemplateRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> getServiceTemplateRemoteRegistry() throws NotAvailableException {
+        try {
+            validateData();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ServiceTemplateRemoteRegistry", ex);
+        }
         return serviceTemplateRemoteRegistry;
     }
 
@@ -123,7 +133,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      *
      * @return the internal unit template remote registry
      */
-    public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry() throws NotAvailableException {
+        try {
+            validateData();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitTemplateRemoteRegistry", ex);
+        }
         return unitTemplateRemoteRegistry;
     }
 

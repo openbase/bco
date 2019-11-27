@@ -88,7 +88,12 @@ public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistr
         registerRemoteRegistry(userMessageRemoteRegistry);
     }
 
-    public SynchronizedRemoteRegistry<String, UserMessage, UserMessage.Builder> getUserMessageRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UserMessage, UserMessage.Builder> getUserMessageRemoteRegistry() throws NotAvailableException {
+        try {
+            validateData();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UserMessageRemoteRegistry", ex);
+        }
         return userMessageRemoteRegistry;
     }
     /**
