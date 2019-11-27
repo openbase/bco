@@ -193,110 +193,134 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(objectUnitConfigRemoteRegistry);
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDalUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("DalUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDalUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("DalUnitConfigRemoteRegistry", ex);
+            }
         }
         return dalUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUserUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("UserUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUserUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("UserUnitConfigRemoteRegistry", ex);
+            }
         }
         return userUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAuthorizationGroupUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AuthorizationGroupUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAuthorizationGroupUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("AuthorizationGroupUnitConfigRemoteRegistry", ex);
+            }
         }
         return authorizationGroupUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDeviceUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("DeviceUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDeviceUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("DeviceUnitConfigRemoteRegistry", ex);
+            }
         }
         return deviceUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUnitGroupUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("UnitGroupUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUnitGroupUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("UnitGroupUnitConfigRemoteRegistry", ex);
+            }
         }
         return unitGroupUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getLocationUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("LocationUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getLocationUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("LocationUnitConfigRemoteRegistry", ex);
+            }
         }
         return locationUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getConnectionUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("ConnectionUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getConnectionUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("ConnectionUnitConfigRemoteRegistry", ex);
+            }
         }
         return connectionUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAgentUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("AgentUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAgentUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("AgentUnitConfigRemoteRegistry", ex);
+            }
         }
         return agentUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getSceneUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("SceneUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getSceneUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("SceneUnitConfigRemoteRegistry", ex);
+            }
         }
         return sceneUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAppUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("AppUnitConfigRemoteRegistry", ex);
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAppUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("AppUnitConfigRemoteRegistry", ex);
+            }
         }
         return appUnitConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("UnitConfigRemoteRegistry", ex);
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("UnitConfigRemoteRegistry", ex);
+            }
         }
         return unitConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getBaseUnitConfigRemoteRegistry() throws NotAvailableException {
-        try {
-            validateData();
-        } catch (InvalidStateException ex) {
-            throw new NotAvailableException("BaseUnitConfigRemoteRegistry", ex);
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getBaseUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("BaseUnitConfigRemoteRegistry", ex);
+            }
         }
         return baseUnitConfigRemoteRegistry;
     }

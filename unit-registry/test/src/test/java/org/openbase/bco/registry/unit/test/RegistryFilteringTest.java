@@ -101,7 +101,7 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         // get a location with at least one unit and at least one child
 
         UnitConfig.Builder unitConfig = null;
-        for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getMessages()) {
+        for (UnitConfig locationUnitConfig : Registries.getUnitRegistry(true).getLocationUnitConfigRemoteRegistry(true).getMessages()) {
             // skip root location
             if (locationUnitConfig.getLocationConfig().getRoot()) {
                 continue;

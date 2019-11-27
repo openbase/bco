@@ -103,7 +103,11 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
     /**
      * Get the internal activity template remote registry.
      *
+     * @param validateConnection if flag is true the controller connection and the data synchronization will be validated.
+     *
      * @return the internal activity template remote registry
+     *
+     * @throws NotAvailableException in case no data is available.
      */
     public SynchronizedRemoteRegistry<String, ActivityTemplate, ActivityTemplate.Builder> getActivityTemplateRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
         if (validateConnection) {
@@ -119,7 +123,11 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
     /**
      * Get the internal service template remote registry.
      *
+     * @param validateConnection if flag is true the controller connection and the data synchronization will be validated.
+     *
      * @return the internal service template remote registry
+     *
+     * @throws NotAvailableException in case no data is available.
      */
     public SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> getServiceTemplateRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
         if (validateConnection) {
@@ -135,7 +143,11 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
     /**
      * Get the internal unit template remote registry.
      *
+     * @param validateConnection if flag is true the controller connection and the data synchronization will be validated.
+     *
      * @return the internal unit template remote registry
+     *
+     * @throws NotAvailableException in case no data is available.
      */
     public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
         if (validateConnection) {
@@ -154,6 +166,8 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * @param unitTemplate {@inheritDoc}.
      *
      * @return {@inheritDoc}
+     *
+     * @throws NotAvailableException in case no data is available.
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) {

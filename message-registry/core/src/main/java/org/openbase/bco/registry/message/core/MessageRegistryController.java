@@ -125,7 +125,7 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
      */
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
-        registerDependency(CachedUnitRegistryRemote.getRegistry().getUnitConfigRemoteRegistry(), UserMessage.class);
+        registerDependency(CachedUnitRegistryRemote.getRegistry().getUnitConfigRemoteRegistry(false), UserMessage.class);
     }
 
     @Override
@@ -281,8 +281,8 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
         // Create a filter which removes all user messages from a list without read permissions to its location by the user
         final ListFilter<UserMessage> readFilter = userMessage -> {
             try {
-                boolean senderPermission = AuthorizationHelper.canRead(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(userMessage.getSenderId()), userClientPair, CachedUnitRegistryRemote.getRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), CachedUnitRegistryRemote.getRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap());
-                boolean receiverPermission = AuthorizationHelper.canRead(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(userMessage.getRecipientId()), userClientPair, CachedUnitRegistryRemote.getRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), CachedUnitRegistryRemote.getRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap());
+                boolean senderPermission = AuthorizationHelper.canRead(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(userMessage.getSenderId()), userClientPair, CachedUnitRegistryRemote.getRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), CachedUnitRegistryRemote.getRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap());
+                boolean receiverPermission = AuthorizationHelper.canRead(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(userMessage.getRecipientId()), userClientPair, CachedUnitRegistryRemote.getRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), CachedUnitRegistryRemote.getRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap());
                 return !(senderPermission || receiverPermission);
             } catch (CouldNotPerformException e) {
                 // if id could not resolved, than we filter the element.
