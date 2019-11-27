@@ -89,6 +89,8 @@ import java.util.concurrent.Future;
  */
 public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider<Message>, Service, AuthenticatedSnapshotable, TransactionIdProvider {
 
+    String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
+
     /**
      * Returns the type of this unit.
      *
@@ -671,6 +673,15 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
             throw new NotAvailableException("Variable Provider not available!", ex);
         }
     }
+
+    /**
+     * Returns if this unit belongs to the infrastructure.
+     * Infrastructure units should not be included in actions for multiple units to prevent
+     * accidentally switching of important units for the infrastructure.
+     *
+     * @return if the the infrastructure flag is set to true in a meta config for this unit
+     */
+    boolean isInfrastructure();
 
     /**
      * This method returns the parent location config of this unit.
