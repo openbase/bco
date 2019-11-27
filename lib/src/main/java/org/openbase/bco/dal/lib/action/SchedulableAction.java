@@ -23,9 +23,11 @@ package org.openbase.bco.dal.lib.action;
  */
 
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 
 import java.util.concurrent.Future;
@@ -96,5 +98,31 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
     @Override
     default String getId() {
         return getActionDescription().getActionId();
+    }
+
+    /**
+     * Method can be used to auto extend this action if the flag is set and the action was initiated by a human.
+     *
+     * @throws VerificationFailedException is thrown if the action is not compatible to be extended.
+     */
+    void autoExtendWithLowPriority() throws VerificationFailedException;
+
+    /**
+     * Method detects if this action or any cause is intended to be automatically continued with low priority in case this human action gets invalid.
+     *
+     * @return true if the action should be extended, otherwise fales.
+     */
+    default boolean isAutoContinueWithLowPriorityIntended() {
+        final ActionDescription actionDescription = getActionDescription();
+        if (actionDescription.getAutoContinueWithLowPriority()) {
+            return true;
+        }
+
+        for (ActionReference cause : actionDescription.getActionCauseList()) {
+            if (cause.getAutoContinueWithLowPriority()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
