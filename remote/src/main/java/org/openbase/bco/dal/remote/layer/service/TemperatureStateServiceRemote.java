@@ -24,11 +24,13 @@ package org.openbase.bco.dal.remote.layer.service;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -93,7 +95,14 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
         average /= amount;
 
         // setup state
-        final Builder serviceStateBuilder = TemperatureState.newBuilder().setTemperature(average);
+        Builder serviceStateBuilder = TemperatureState.newBuilder().setTemperature(average);
+
+        // revalidate to update state value
+        try {
+            serviceStateBuilder = Services.verifyAndRevalidateServiceState(serviceStateBuilder);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not validate service state!", ex, logger);
+        }
 
         // setup timestamp
         TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();

@@ -23,11 +23,13 @@ package org.openbase.bco.dal.remote.layer.service;
  */
 
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -103,7 +105,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
             throw new NotAvailableException("BlindState");
         }
 
-        // finally compute color average in rgb space
+        // finally compute average
         openingRatioAverage /= amount;
         BlindState.State mostOccurrences;
         if (stop >= up && stop >= down) {
@@ -115,7 +117,14 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         }
 
         // setup state
-        final Builder serviceStateBuilder = BlindState.newBuilder().setValue(mostOccurrences).setOpeningRatio(openingRatioAverage);
+        Builder serviceStateBuilder = BlindState.newBuilder().setValue(mostOccurrences).setOpeningRatio(openingRatioAverage);
+
+        // revalidate to update state value
+        try {
+            serviceStateBuilder = Services.verifyAndRevalidateServiceState(serviceStateBuilder);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not validate service state!", ex, logger);
+        }
 
         // setup timestamp
         TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();

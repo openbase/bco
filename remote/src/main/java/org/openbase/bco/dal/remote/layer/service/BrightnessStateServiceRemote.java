@@ -23,11 +23,13 @@ package org.openbase.bco.dal.remote.layer.service;
  */
 
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -105,7 +107,14 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
         average /= amount;
 
         // setup state
-        final Builder serviceStateBuilder = BrightnessState.newBuilder().setBrightness(average);
+        Builder serviceStateBuilder = BrightnessState.newBuilder().setBrightness(average);
+
+        // revalidate to update state value
+        try {
+            serviceStateBuilder = Services.verifyAndRevalidateServiceState(serviceStateBuilder);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not validate service state!", ex, logger);
+        }
 
         // setup timestamp
         TimestampProcessor.updateTimestamp(timestamp, serviceStateBuilder, TimeUnit.MICROSECONDS, logger).build();
