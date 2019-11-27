@@ -92,7 +92,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         UnitStateAwaiter<LocationData, LocationRemote> locationStateAwaiter = new UnitStateAwaiter<>(locationRemote);
 
         // create intial values with reed closed and target temperature at 21.0
-        reedContactController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(CLOSED), ServiceType.CONTACT_STATE_SERVICE);
+        reedContactController.applyServiceState(CLOSED, ServiceType.CONTACT_STATE_SERVICE);
         temperatureControllerRemote.setTargetTemperatureState(TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(21.0).build()));
 
         reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.CLOSED);
@@ -106,7 +106,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("Initial TargetTemperature of location[" + locationRemote.getLabel() + "] is not 21.0", 21.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
 
         // test if on open reedsensor target temperature is set to 13.0
-        reedContactController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(OPEN), ServiceType.CONTACT_STATE_SERVICE);
+        reedContactController.applyServiceState(OPEN, ServiceType.CONTACT_STATE_SERVICE);
         reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.OPEN);
         connectionStateAwaiter.waitForState((ConnectionData data) -> data.getWindowState().getValue() == WindowState.State.OPEN);
         temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 13.0);
@@ -119,7 +119,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
 //        Obsoled as functionality of HeaterEnergySavingAgent was reduced
 //        // test if on closed reedsensor target temperature is set back to 21.0
-//        reedContactController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(CLOSED), ServiceType.CONTACT_STATE_SERVICE);
+//        reedContactController.applyServiceState(TimestampProcessor.updateTimestampWithCurrentTime(CLOSED), ServiceType.CONTACT_STATE_SERVICE);
 //        reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.CLOSED);
 //        connectionStateAwaiter.waitForState((ConnectionData data) -> data.getWindowState().getValue() == WindowState.State.CLOSED);
 //        temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 21.0);
