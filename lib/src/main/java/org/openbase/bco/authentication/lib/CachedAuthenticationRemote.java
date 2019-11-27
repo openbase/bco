@@ -26,19 +26,20 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class CachedAuthenticationRemote {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedAuthenticationRemote.class);
-    
+
     private static AuthenticationRemote authenticationRemote;
     private static transient boolean shutdown = false;
+    private static final SyncObject REMOTE_LOCK = new SyncObject("CachedAuthenticationRemote");
 
     /**
      * Setup shutdown hook
@@ -61,6 +62,7 @@ public class CachedAuthenticationRemote {
      * which is activated which will be returned. This instance is saved and will be returned on all following calls.
      *
      * @return a cashed authenticator remote
+     *
      * @throws NotAvailableException if the cashed instance is not available
      */
     public synchronized static AuthenticationRemote getRemote() throws NotAvailableException {
@@ -89,6 +91,20 @@ public class CachedAuthenticationRemote {
         }
     }
 
+    public static void prepare() throws CouldNotPerformException {
+        synchronized (REMOTE_LOCK) {
+            // check if externally called.
+            if (authenticationRemote != null || !JPService.testMode()) {
+                LOGGER.warn("This manual registry preparation is only available during unit tests and not allowed during normal operation!");
+                return;
+            }
+
+            shutdown = false;
+
+            getRemote();
+        }
+    }
+
     public static void shutdown() {
         // check if externally called.
         if (shutdown == false && !JPService.testMode()) {
@@ -96,12 +112,15 @@ public class CachedAuthenticationRemote {
             return;
         }
 
-        // set flag again for the unit test case
-        shutdown = true;
-        
-        if (authenticationRemote != null) {
-            authenticationRemote.shutdown();
-            authenticationRemote = null;
+        synchronized (REMOTE_LOCK) {
+
+            // set flag again for the unit test case
+            shutdown = true;
+
+            if (authenticationRemote != null) {
+                authenticationRemote.shutdown();
+                authenticationRemote = null;
+            }
         }
     }
 }

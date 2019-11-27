@@ -45,7 +45,7 @@ public class AuthenticationTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
-
+        CachedAuthenticationRemote.prepare();
         authenticatorController = new AuthenticatorController(MockCredentialStore.getInstance(), serviceServerSecretKey);
         authenticatorController.init();
         authenticatorController.activate();
