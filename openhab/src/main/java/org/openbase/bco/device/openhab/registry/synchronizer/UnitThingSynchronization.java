@@ -58,7 +58,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
      * @throws NotAvailableException  if the unit registry is not available
      */
     public UnitThingSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
-        super(Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), synchronizationLock);
+        super(Registries.getUnitRegistry().getUnitConfigRemoteRegistry(false), synchronizationLock);
     }
 
     @Override
@@ -126,7 +126,7 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
      */
     @Override
     public List<IdentifiableMessage<String, UnitConfig, Builder>> getEntries() throws CouldNotPerformException {
-        return Registries.getUnitRegistry().getUnitConfigRemoteRegistry().getEntries();
+        return Registries.getUnitRegistry().getUnitConfigRemoteRegistry(true).getEntries();
     }
 
     /**
