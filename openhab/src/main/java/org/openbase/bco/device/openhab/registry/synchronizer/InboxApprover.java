@@ -77,7 +77,7 @@ public class InboxApprover implements Activatable {
         this.inboxAddedObservable.addDataObserver(observer);
         this.inboxUpdatedObservable.addDataObserver(observer);
         // trigger observer on device class changes, maybe this leads to new things that can be approved
-        Registries.getClassRegistry().getDeviceClassRemoteRegistry().addDataObserver((source, data) -> {
+        Registries.getClassRegistry().getDeviceClassRemoteRegistry(true).addDataObserver((source, data) -> {
             for (DiscoveryResultDTO discoveryResult : OpenHABRestCommunicator.getInstance().getDiscoveryResults()) {
                 observer.update(null, discoveryResult);
             }
