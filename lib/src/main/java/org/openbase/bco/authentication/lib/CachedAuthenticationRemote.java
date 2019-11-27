@@ -95,6 +95,9 @@ public class CachedAuthenticationRemote {
             LOGGER.warn("This manual authentication remote shutdown is only available during unit tests and not allowed during normal operation!");
             return;
         }
+
+        // set flag again for the unit test case
+        shutdown = true;
         
         if (authenticationRemote != null) {
             authenticationRemote.shutdown();
