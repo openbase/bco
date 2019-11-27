@@ -743,6 +743,7 @@ public class FulfillmentHandler {
 
                 final ActionDescription.Builder actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, serviceType, unitRemote);
                 actionDescription.setPriority(Priority.HIGH);
+                actionDescription.setAutoContinueWithLowPriority(true);
                 final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(authenticationToken).setAuthorizationToken(authorizationToken).build());
 
                 final AuthenticatedValueFuture<ActionDescription> ActionDescriptionAuthenticatedValueFuture = new AuthenticatedValueFuture<>(unitRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());

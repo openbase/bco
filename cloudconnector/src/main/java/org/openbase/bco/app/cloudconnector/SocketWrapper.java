@@ -542,6 +542,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             final ActionDescription.Builder actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.USER_TRANSIT_STATE_SERVICE, userRemote);
             actionDescription.setPriority(Priority.HIGH);
+            actionDescription.setAutoContinueWithLowPriority(true);
             final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
             userRemote.applyActionAuthenticated(authenticatedValue).get(5, TimeUnit.SECONDS);
@@ -665,6 +666,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             if (localPositionState != null) {
                 actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(localPositionState, ServiceType.LOCAL_POSITION_STATE_SERVICE, userRemote);
                 actionDescription.setPriority(Priority.HIGH);
+                actionDescription.setAutoContinueWithLowPriority(true);
                 authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
                 try {
@@ -679,6 +681,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
             actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote);
             actionDescription.setPriority(Priority.HIGH);
+            actionDescription.setAutoContinueWithLowPriority(true);
             authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
 
             try {
@@ -783,6 +786,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
             if (builder.getActivityIdCount() != initialCount) {
                 final ActionDescription.Builder actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(builder.build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE, userRemote);
                 actionDescription.setPriority(Priority.HIGH);
+                actionDescription.setAutoContinueWithLowPriority(true);
                 final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription.build(), AuthToken.newBuilder().setAuthenticationToken(tokenStore.getCloudConnectorToken()).setAuthorizationToken(tokenStore.getBCOToken(userId)).build());
                 userRemote.applyActionAuthenticated(authenticatedValue).get(5, TimeUnit.SECONDS);
             }

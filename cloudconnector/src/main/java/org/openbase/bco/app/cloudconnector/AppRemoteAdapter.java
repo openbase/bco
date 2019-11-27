@@ -223,6 +223,11 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
+    public boolean isInfrastructure() {
+        return appRemote.isInfrastructure();
+    }
+
+    @Override
     public Future<RecordCollection> queryRecord(Query databaseQuery) {
         return appRemote.queryRecord(databaseQuery);
     }
