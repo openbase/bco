@@ -46,6 +46,9 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.WatchDog.ServiceState;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -333,6 +336,23 @@ public class ActionImpl implements SchedulableAction {
     @Override
     public ActionDescription getActionDescription() {
         return actionDescriptionBuilder.build();
+    }
+
+    @Override
+    public void autoExtendWithLowPriority() throws VerificationFailedException {
+
+        // validate
+        if(!isAutoContinueWithLowPriorityIntended()) {
+            throw new VerificationFailedException(this + "is not compatible to be automatically extended because flag is not set!");
+        } else if(ActionDescriptionProcessor.getInitialInitiator(getActionDescription()).getInitiatorType() != InitiatorType.HUMAN) {
+            throw new VerificationFailedException(this + "is not compatible to be automatically extended because it was not initiated by a human!");
+        }
+
+        // auto extend
+        actionDescriptionBuilder.setPriority(Priority.LOW);
+        actionDescriptionBuilder.setInterruptible(false);
+        actionDescriptionBuilder.setSchedulable(false);
+        actionDescriptionBuilder.setExecutionTimePeriod(Long.MAX_VALUE);
     }
 
     /**
