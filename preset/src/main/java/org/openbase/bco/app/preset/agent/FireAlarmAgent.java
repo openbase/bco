@@ -21,6 +21,9 @@ package org.openbase.bco.app.preset.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.state.States;
+import org.openbase.bco.dal.lib.state.States.Brightness;
+import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger;
@@ -52,10 +55,6 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
     private final AlarmState.State triggerState = AlarmState.State.ALARM;
     private final HSBColor HSBcolor = HSBColor.newBuilder().setBrightness(1).setSaturation(0).setHue(0).build();
     private final Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBcolor).build();
-    private ActionDescription taskActionDescriptionLightPower;
-    private ActionDescription taskActionDescriptionLightBrightness;
-    private ActionDescription taskActionDescriptionLightColor;
-    private ActionDescription taskActionDescriptionBlinds;
 
     public FireAlarmAgent() throws InstantiationException {
         super();
@@ -66,51 +65,24 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-            // Todo: Add trigger for FireAlarm as soon as it is supported
-//            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, triggerState, ServiceType.FIRE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
+            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, triggerState, ServiceType.FIRE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
             registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, triggerState, ServiceType.SMOKE_ALARM_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    private void alarmRoutine() throws CouldNotPerformException, ExecutionException, InterruptedException{
-        taskActionDescriptionLightPower =  locationRemote.applyAction(generateAction(UnitType.LIGHT,
-                ServiceType.POWER_STATE_SERVICE,
-                PowerState.newBuilder().setValue(PowerState.State.ON)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
-        // TODO: Set brightnessState as soon as it is supported
-//        taskActionDescriptionLightBrightness =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
-//                ServiceType.BRIGHTNESS_STATE_SERVICE,
-//                BrightnessState.newBuilder().setBrightness(1)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
-        // TODO: Set color to white
-//        taskActionDescriptionLightColor =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
-//                ServiceType.COLOR_STATE_SERVICE,
-//                ColorState.newBuilder().setColor(color)).toBuilder().setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
-        taskActionDescriptionBlinds =  locationRemote.applyAction(generateAction(UnitType.UNKNOWN,
-                ServiceType.BLIND_STATE_SERVICE,
-                BlindState.newBuilder().setOpeningRatio(1d).setValue(State.UP)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
-    }
-
     @Override
     protected void trigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                alarmRoutine();
+                observe(locationRemote.setPowerState(PowerState.State.ON, UnitType.LIGHT, getDefaultActionParameter(Long.MAX_VALUE)));
+                observe(locationRemote.setBrightnessState(Brightness.MAX, getDefaultActionParameter(Long.MAX_VALUE)));
+                observe(locationRemote.setColorState(States.Color.WHITE, getDefaultActionParameter(Long.MAX_VALUE)));
+                observe(locationRemote.setBlindState(BlindState.newBuilder().setOpeningRatio(1d).setValue(State.UP).build(), getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
             case DEACTIVE:
-                if(taskActionDescriptionLightPower != null) {
-                    taskActionDescriptionLightPower = locationRemote.cancelAction(taskActionDescriptionLightPower).get();
-                }
-                if(taskActionDescriptionLightBrightness != null) {
-                    taskActionDescriptionLightBrightness = locationRemote.cancelAction(taskActionDescriptionLightBrightness).get();
-                }
-                if(taskActionDescriptionLightColor != null) {
-                    taskActionDescriptionLightColor = locationRemote.cancelAction(taskActionDescriptionLightColor).get();
-                }
-
-                if(taskActionDescriptionBlinds != null) {
-                    taskActionDescriptionBlinds = locationRemote.cancelAction(taskActionDescriptionBlinds).get();
-                }
+                cancelAllObservedActions();
                 break;
         }
     }
