@@ -134,7 +134,10 @@ public class AbstractBCOTest {
      */
     public void cancelAllTestActions() throws CouldNotPerformException, InterruptedException {
 
-        LOGGER.info("Cancel "+testActions.size()+" ongoing test actions...");
+        if (testActions.size() > 0) {
+            LOGGER.info("Cancel " + testActions.size() + " ongoing test action"+(testActions.size() == 1 ? "" : "s")+" ...");
+        }
+
         final List<Future<?>> cancelTasks = new ArrayList<>();
 
         for (RemoteAction testAction : testActions) {
