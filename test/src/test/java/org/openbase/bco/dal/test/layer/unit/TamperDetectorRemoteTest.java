@@ -78,8 +78,8 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
-        TamperState tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.TAMPER)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyDataUpdate(tamperState, ServiceType.TAMPER_STATE_SERVICE);
+        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
     }
@@ -96,8 +96,8 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         Stopwatch stopwatch = new Stopwatch();
 
         stopwatch.start();
-        TamperState tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.TAMPER)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyDataUpdate(tamperState, ServiceType.TAMPER_STATE_SERVICE);
+        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
@@ -109,8 +109,8 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         Thread.sleep(1);
 
         stopwatch.start();
-        tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyDataUpdate(tamperState, ServiceType.TAMPER_STATE_SERVICE);
+        tamperState = TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());

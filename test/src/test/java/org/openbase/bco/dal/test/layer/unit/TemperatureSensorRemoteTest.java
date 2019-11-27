@@ -74,8 +74,7 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;
-        TemperatureState temperatureState = TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(temperature)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId()).applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId()).applyServiceState(TemperatureState.newBuilder().setTemperature(temperature), ServiceType.TEMPERATURE_STATE_SERVICE);
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperatureState().getTemperature(), 0.1);
     }
@@ -89,8 +88,8 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetTemperatureAlarmState() throws Exception {
         System.out.println("getTemperatureAlarmState");
-        AlarmState alarmState = TimestampProcessor.updateTimestampWithCurrentTime(AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build());
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId()).applyDataUpdate(alarmState, ServiceType.TEMPERATURE_ALARM_STATE_SERVICE);
+        AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId()).applyServiceState(alarmState, ServiceType.TEMPERATURE_ALARM_STATE_SERVICE);
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature alarm state returns the wrong value!", alarmState.getValue(), temperatureSensorRemote.getTemperatureAlarmState().getValue());
     }

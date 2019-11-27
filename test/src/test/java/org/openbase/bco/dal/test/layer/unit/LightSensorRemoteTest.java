@@ -70,8 +70,8 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetIlluminance() throws Exception {
         System.out.println("getIlluminance");
         double illuminance = 0.5;
-        IlluminanceState illuminanceState = TimestampProcessor.updateTimestampWithCurrentTime(IlluminanceState.newBuilder().setIlluminance(illuminance)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId()).applyDataUpdate(illuminanceState, ServiceType.ILLUMINANCE_STATE_SERVICE);
+        IlluminanceState illuminanceState = IlluminanceState.newBuilder().setIlluminance(illuminance).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId()).applyServiceState(illuminanceState, ServiceType.ILLUMINANCE_STATE_SERVICE);
         lightSensorRemote.requestData().get();
         assertEquals("The getter for the illuminance returns the wrong value!", illuminanceState.getIlluminance(), lightSensorRemote.getIlluminanceState().getIlluminance(), 0.1);
     }

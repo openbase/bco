@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test.layer.unit;
 
 import org.junit.*;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.DimmableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -94,18 +95,9 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
-        final PowerState.Builder powerStateBuilder = PowerState.newBuilder().setValue(State.ON);
-        powerStateBuilder.setTimestamp(TimestampProcessor.getCurrentTimestamp());
-        final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(powerStateBuilder.build(), ServiceType.POWER_STATE_SERVICE, dimmableLightRemote);
-        actionParameter.setInterruptible(false);
-        actionParameter.setSchedulable(false);
-        actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
-        powerStateBuilder.setResponsibleAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
-        final PowerState powerState = powerStateBuilder.build();
-
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyDataUpdate(powerState, ServiceType.POWER_STATE_SERVICE);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
         dimmableLightRemote.requestData().get();
-        assertEquals("Power has not been set in time!", powerState.getValue(), dimmableLightRemote.getPowerState().getValue());
+        assertEquals("Power has not been set in time!", Power.ON.getValue(), dimmableLightRemote.getPowerState().getValue());
     }
 
     /**
@@ -132,16 +124,8 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getBrightness");
 
         final Double brightness = 0.70d;
-        final BrightnessState.Builder brightnessStateBuilder = BrightnessState.newBuilder().setBrightness(brightness);
-        brightnessStateBuilder.setTimestamp(TimestampProcessor.getCurrentTimestamp());
-        final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(brightnessStateBuilder.build(), ServiceType.BRIGHTNESS_STATE_SERVICE, dimmableLightRemote);
-        actionParameter.setInterruptible(false);
-        actionParameter.setSchedulable(false);
-        actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
-        brightnessStateBuilder.setResponsibleAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
-        final BrightnessState brightnessState = brightnessStateBuilder.build();
-
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyDataUpdate(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE);
+        final BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyServiceState(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE);
         dimmableLightRemote.requestData().get();
         assertEquals("Brightness has not been set in time!", brightnessState.getBrightness(), dimmableLightRemote.getBrightnessState().getBrightness(), 0.001);
     }

@@ -86,16 +86,8 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
-
-        final BlindState.Builder blindStateBuilder = BlindState.newBuilder().setValue(State.UP).setTimestamp(TimestampProcessor.getCurrentTimestamp());
-        final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(blindStateBuilder.build(), ServiceType.BLIND_STATE_SERVICE, rollerShutterRemote);
-        actionParameter.setInterruptible(false);
-        actionParameter.setSchedulable(false);
-        actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
-        blindStateBuilder.setResponsibleAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
-        final BlindState blindState = blindStateBuilder.build();
-
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId()).applyDataUpdate(blindState, ServiceType.BLIND_STATE_SERVICE);
+        final BlindState blindState = BlindState.newBuilder().setValue(State.UP).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId()).applyServiceState(blindState, ServiceType.BLIND_STATE_SERVICE);
         rollerShutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getValue(), blindState.getValue());
     }

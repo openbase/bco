@@ -78,8 +78,8 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetButtonState() throws Exception {
         System.out.println("getButtonState");
-        ButtonState buttonState = TimestampProcessor.updateTimestampWithCurrentTime(ButtonState.newBuilder().setValue(ButtonState.State.PRESSED)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyServiceState(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
     }
@@ -96,8 +96,8 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
         Stopwatch stopwatch = new Stopwatch();
 
         stopwatch.start();
-        ButtonState buttonState = TimestampProcessor.updateTimestampWithCurrentTime(ButtonState.newBuilder().setValue(ButtonState.State.DOUBLE_PRESSED)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.DOUBLE_PRESSED).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyServiceState(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
@@ -108,8 +108,8 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
         Thread.sleep(1);
 
         stopwatch.start();
-        buttonState = TimestampProcessor.updateTimestampWithCurrentTime(ButtonState.newBuilder().setValue(ButtonState.State.PRESSED)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyServiceState(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
@@ -120,8 +120,8 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
         Thread.sleep(1);
 
         stopwatch.start();
-        buttonState = TimestampProcessor.updateTimestampWithCurrentTime(ButtonState.newBuilder().setValue(ButtonState.State.RELEASED)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        buttonState = ButtonState.newBuilder().setValue(ButtonState.State.RELEASED).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyServiceState(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());

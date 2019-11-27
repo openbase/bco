@@ -77,8 +77,8 @@ public class HandleRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
-        HandleState handlestate = TimestampProcessor.updateTimestampWithCurrentTime(HandleState.newBuilder().setPosition(90)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(handleRemote.getId()).applyDataUpdate(handlestate, ServiceType.HANDLE_STATE_SERVICE);
+        HandleState handlestate =HandleState.newBuilder().setPosition(90).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(handleRemote.getId()).applyServiceState(handlestate, ServiceType.HANDLE_STATE_SERVICE);
         handleRemote.requestData().get();
         Assert.assertEquals("The getter for the handle state returns the wrong value!", handlestate.getPosition(), handleRemote.getHandleState().getPosition());
     }

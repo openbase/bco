@@ -76,8 +76,8 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
         double consumption = 200d;
         double voltage = 100d;
         double current = 2d;
-        PowerConsumptionState state = TimestampProcessor.updateTimestampWithCurrentTime(PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage)).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerConsumptionRemote.getId()).applyDataUpdate(state, ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
+        PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerConsumptionRemote.getId()).applyServiceState(state, ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
         powerConsumptionRemote.requestData().get();
         Assert.assertEquals("The getter for the power consumption returns the wrong voltage value!", state.getVoltage(), powerConsumptionRemote.getPowerConsumptionState().getVoltage(), 0.1);
         Assert.assertEquals("The getter for the power consumption returns the wrong consumption value!", state.getConsumption(), powerConsumptionRemote.getPowerConsumptionState().getConsumption(), 0.1);
