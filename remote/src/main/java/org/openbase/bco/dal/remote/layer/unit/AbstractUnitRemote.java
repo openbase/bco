@@ -91,8 +91,6 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
 
-    public static final String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
-
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
