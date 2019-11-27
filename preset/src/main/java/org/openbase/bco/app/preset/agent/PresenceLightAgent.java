@@ -24,6 +24,7 @@ package org.openbase.bco.app.preset.agent;
 
 import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Brightness;
+import org.openbase.bco.dal.lib.state.States.Color;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.DimmableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
@@ -89,7 +90,9 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
         switch (activationState.getValue()) {
             case ACTIVE:
                 // handle colorable lights
-                observe(locationRemote.setNeutralWhite(getDefaultActionParameter(Long.MAX_VALUE)));
+//                observe(locationRemote.setNeutralWhite(getDefaultActionParameter(Long.MAX_VALUE)));
+//                observe(locationRemote.setPowerState(State.ON, UnitType.COLORABLE_LIGHT, getDefaultActionParameter(Long.MAX_VALUE)));
+                observe(locationRemote.setColorState(Color.BLUE, getDefaultActionParameter(Long.MAX_VALUE)));
 
                 // handle dimmable lights
                 for (DimmableLightRemote light : locationRemote.getUnits(UnitType.DIMMABLE_LIGHT, false, Units.DIMMABLE_LIGHT)) {
