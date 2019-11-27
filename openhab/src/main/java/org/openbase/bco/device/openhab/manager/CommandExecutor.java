@@ -131,9 +131,9 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             // update the responsible action to show that it was triggered by openHAB and add other parameters
             // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
             if (systemSync) {
-                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 5, TimeUnit.MINUTES, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM).build());
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 5, TimeUnit.MINUTES, false, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM).build());
             } else {
-                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, false, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, false, false, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             }
 
             unitController.applyDataUpdate(serviceStateBuilder, metaData.getServiceType());
