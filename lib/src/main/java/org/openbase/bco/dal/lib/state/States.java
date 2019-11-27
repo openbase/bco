@@ -22,8 +22,11 @@ package org.openbase.bco.dal.lib.state;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
+import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.vision.ColorType;
@@ -70,4 +73,21 @@ public class States {
         public static final ColorState YELLOW = ColorState.newBuilder().setColor(YELLOW_VALUE).build();
     }
 
+    /**
+     * Illuminance State Prototypes
+     */
+    public static class Illuminance {
+        public static final IlluminanceState DARK = IlluminanceState.newBuilder().setValue(IlluminanceState.State.DARK).build();
+        public static final IlluminanceState DUSKY = IlluminanceState.newBuilder().setValue(IlluminanceState.State.DUSKY).build();
+        public static final IlluminanceState SHADY = IlluminanceState.newBuilder().setValue(IlluminanceState.State.SHADY).build();
+        public static final IlluminanceState SUNNY = IlluminanceState.newBuilder().setValue(IlluminanceState.State.SUNNY).build();
+    }
+
+    /**
+     * Motion State Prototypes
+     */
+    public static class Motion {
+        public static final MotionState MOTION = MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
+        public static final MotionState NO_MOTION = MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build();
+    }
 }
