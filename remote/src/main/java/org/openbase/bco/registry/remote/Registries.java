@@ -253,6 +253,13 @@ public class Registries {
         CachedTemplateRegistryRemote.shutdown();
     }
 
+    public static void prepare() throws CouldNotPerformException {
+        CachedUnitRegistryRemote.prepare();
+        CachedActivityRegistryRemote.prepare();
+        CachedClassRegistryRemote.prepare();
+        CachedTemplateRegistryRemote.prepare();
+    }
+
     /**
      * Method only returns if all available registries are synchronized.
      *
