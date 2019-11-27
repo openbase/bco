@@ -51,7 +51,7 @@ public class SceneManagerImpl implements SceneManager, Launchable<Void>, VoidIni
         try {
             this.factory = SceneControllerFactoryImpl.getInstance();
             this.sceneControllerRegistry = new UnitControllerRegistryImpl<>();
-            this.sceneRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(sceneControllerRegistry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), factory);
+            this.sceneRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(sceneControllerRegistry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(false), factory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }

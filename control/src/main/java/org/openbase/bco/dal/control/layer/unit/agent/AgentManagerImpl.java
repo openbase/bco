@@ -52,7 +52,7 @@ public class AgentManagerImpl implements AgentManager, Launchable<Void>, VoidIni
         try {
             this.factory = AgentControllerFactoryImpl.getInstance();
             this.agentControllerRegistry = new UnitControllerRegistryImpl<>();
-            this.agentRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(agentControllerRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(), factory);
+            this.agentRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(agentControllerRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(false), factory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }

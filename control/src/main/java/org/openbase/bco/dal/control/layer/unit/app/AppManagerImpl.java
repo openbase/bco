@@ -57,7 +57,7 @@ public class AppManagerImpl implements AppManager, Launchable<Void>, VoidInitial
         try {
             this.factory = AppControllerFactoryImpl.getInstance();
             this.appControllerRegistry = new UnitControllerRegistryImpl<>();
-            this.appRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(appControllerRegistry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(),factory);
+            this.appRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(appControllerRegistry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(false),factory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }

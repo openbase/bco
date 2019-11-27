@@ -76,9 +76,9 @@ public class LocationManagerImpl implements LocationManager, Launchable<Void>, V
             this.unitGroupControllerRegistry = new UnitControllerRegistryImpl<>();
 
             // init synchronizer
-            this.locationRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(locationControllerRegistry, Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(), locationControllerFactory);
-            this.connectionRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(connectionControllerRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(), connectionControllerFactory);
-            this.unitGroupRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(unitGroupControllerRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), unitGroupFactory);
+            this.locationRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(locationControllerRegistry, Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(false), locationControllerFactory);
+            this.connectionRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(connectionControllerRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(false), connectionControllerFactory);
+            this.unitGroupRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(unitGroupControllerRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(false), unitGroupFactory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }

@@ -1619,7 +1619,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     protected Message getServiceState(final ServiceType serviceType, String userId) throws NotAvailableException {
         try {
             // check if user has permissions to read the service state
-            if (!AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
+            if (!AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap())) {
                 if (userId == null) {
                     throw new PermissionDeniedException("User[Other] has no permission to read " + serviceType.name() + " of " + this);
                 }
@@ -1663,7 +1663,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
 
             // no admin so test normal permissions
-            if (AuthorizationHelper.canRead(getConfig(), userClientPair, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
+            if (AuthorizationHelper.canRead(getConfig(), userClientPair, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap())) {
                 // user has read permissions so send everything
                 return (D) dataBuilder.build();
             } else {

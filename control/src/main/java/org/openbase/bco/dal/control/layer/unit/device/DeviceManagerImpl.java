@@ -94,7 +94,7 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
             Registries.waitForData();
 
-            this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), deviceControllerFactory);
+            this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(false), deviceControllerFactory);
             this.deviceRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isSupported(unitConfig));
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

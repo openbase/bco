@@ -64,8 +64,8 @@ public class UserManagerImpl implements UserManager, Launchable<Void>, VoidIniti
             this.userControllerRegistry = new UnitControllerRegistryImpl<>();
             this.authorizationGroupControllerRegistry = new UnitControllerRegistryImpl<>();
 
-            this.userRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(userControllerRegistry, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry(), userControllerFactory);
-            this.authorizationGroupRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(authorizationGroupControllerRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(), authorizationGroupControllerFactory);
+            this.userRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(userControllerRegistry, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry(false), userControllerFactory);
+            this.authorizationGroupRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(authorizationGroupControllerRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(false), authorizationGroupControllerFactory);
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
