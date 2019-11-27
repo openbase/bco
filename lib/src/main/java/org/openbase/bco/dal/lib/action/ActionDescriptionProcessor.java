@@ -566,9 +566,24 @@ public class ActionDescriptionProcessor {
             actionDescriptionBuilder.setInterruptible(false);
         }
 
-        // humans action should be executed some time before they get rejected by automation routines.
-        if (actionDescriptionBuilder.getActionInitiator().getInitiatorType() == InitiatorType.HUMAN && actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
-            actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+
+        // handle human specific properties
+        if (actionDescriptionBuilder.getActionInitiator().getInitiatorType() == InitiatorType.HUMAN) {
+
+            // humans action should be executed some time before they get rejected by automation routines.
+            if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
+                actionDescriptionBuilder.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(15));
+            }
+
+            // most human actions are triggered by direct UI interaction and are therefore prioritized as high by default.
+            if(!actionDescriptionBuilder.hasPriority()) {
+                actionDescriptionBuilder.setPriority(Priority.HIGH);
+            }
+
+            // auto continue human actions by default
+            if(!actionDescriptionBuilder.hasAutoContinueWithLowPriority()) {
+                actionDescriptionBuilder.setAutoContinueWithLowPriority(true);
+            }
         }
 
         // validate id field
@@ -949,7 +964,7 @@ public class ActionDescriptionProcessor {
      * @throws CouldNotPerformException is thrown if the setup failed.
      */
     public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit) throws CouldNotPerformException {
-        return generateAndSetResponsibleAction(serviceStateBuilder, serviceType, targetUnit, executionTimePeriod, timeUnit, true, true, Priority.NORMAL, null);
+        return generateAndSetResponsibleAction(serviceStateBuilder, serviceType, targetUnit, executionTimePeriod, timeUnit, true, true, false, Priority.NORMAL, null);
     }
 
     /**
@@ -969,13 +984,14 @@ public class ActionDescriptionProcessor {
      *
      * @throws CouldNotPerformException is thrown if the setup failed.
      */
-    public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit, final boolean interruptible, final boolean schedulable, final ActionPriority.Priority priority, final ActionInitiator actionInitiator) throws CouldNotPerformException {
+    public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final ServiceType serviceType, final Unit<?> targetUnit, final long executionTimePeriod, final TimeUnit timeUnit, final boolean interruptible, final boolean schedulable, final boolean autoContinueWithLowPriority, final ActionPriority.Priority priority, final ActionInitiator actionInitiator) throws CouldNotPerformException {
         try {
             // generate action parameter
             final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateBuilder.build(), serviceType, targetUnit);
             actionParameter.setInterruptible(interruptible);
             actionParameter.setSchedulable(schedulable);
             actionParameter.setPriority(priority);
+            actionParameter.setAutoContinueWithLowPriority(autoContinueWithLowPriority);
             actionParameter.setExecutionTimePeriod(timeUnit.toMicros(executionTimePeriod));
 
             if (actionInitiator != null) {
