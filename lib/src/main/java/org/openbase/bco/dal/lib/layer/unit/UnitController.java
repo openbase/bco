@@ -114,7 +114,7 @@ public interface UnitController<D extends AbstractMessage, DB extends D.Builder<
      * @throws CouldNotPerformException is thrown if the update could not be applied. Check the cause chain for more details.
      */
     default <MB extends Message.Builder> MB applyServiceState(final MB serviceStateBuilder, final ServiceType serviceType, final String actionInitiatorId) throws CouldNotPerformException {
-        ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MILLISECONDS, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorId((actionInitiatorId != null ? actionInitiatorId : getId())).build());
+        ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MILLISECONDS, false, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorId((actionInitiatorId != null ? actionInitiatorId : getId())).build());
         applyDataUpdate(serviceStateBuilder, serviceType);
         return serviceStateBuilder;
     }
