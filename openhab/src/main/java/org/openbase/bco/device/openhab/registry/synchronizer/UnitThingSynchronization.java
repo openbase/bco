@@ -26,6 +26,7 @@ import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -141,7 +142,9 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
         try {
             return handledByBCOBinding(identifiableMessage.getMessage());
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not verify unit " + identifiableMessage.getMessage().getAlias(0), ex, logger);
+            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)){
+                ExceptionPrinter.printHistory("Could not verify unit " + identifiableMessage.getMessage().getAlias(0), ex, logger);
+            }
             return false;
         }
     }
