@@ -103,7 +103,7 @@ public class ActionImpl implements SchedulableAction {
      * Constructor creates a new action object which is already executing.
      * The action description is fully generated based on the responsible action of the service state.
      *
-     * @param serviceState descriping the ongoingg action.
+     * @param serviceState describing the ongoing action.
      * @param unit         the target unit which needs to be allocated.
      *
      * @throws InstantiationException is throw in case the given action description is invalid. Checkout the exception cause chain for more details.
@@ -204,6 +204,12 @@ public class ActionImpl implements SchedulableAction {
     @Override
     public Future<ActionDescription> execute() {
         synchronized (executionSync) {
+
+            // avoid execution in case unit is shutting down
+            if (unit.isShutdownInProgress()) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, new ShutdownInProgressException(unit));
+            }
+
             if (isExecuting()) {
                 return actionTask;
             }
@@ -251,6 +257,12 @@ public class ActionImpl implements SchedulableAction {
                                 }
                                 break;
                             } catch (CouldNotPerformException | ExecutionException | RuntimeException ex) {
+                                // avoid execution in case unit is shutting down
+                                if (unit.isShutdownInProgress() || ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                                    updateActionState(State.ABORTED);
+                                    throw new ShutdownInProgressException(ex);
+                                }
+
                                 if (!isDone()) {
                                     updateActionState(ActionState.State.EXECUTION_FAILED);
                                 }

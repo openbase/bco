@@ -1212,6 +1212,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
             unitDataObservableMap.get(serviceTempus).shutdown();
         }
+
+        // cancel all actions on stack
+        for (SchedulableAction schedulableAction : scheduledActionList) {
+            schedulableAction.cancel();
+        }
     }
 
     @Override
