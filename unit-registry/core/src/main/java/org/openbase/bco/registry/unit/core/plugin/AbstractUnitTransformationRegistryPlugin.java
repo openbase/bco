@@ -26,12 +26,10 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
-import org.openbase.rct.GlobalTransformReceiver;
-import org.openbase.rct.TransformPublisher;
-import org.openbase.rct.TransformerFactory;
-import org.openbase.rct.Transform;
+import org.openbase.rct.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -60,11 +58,11 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
     public void init(final ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
         try {
             super.init(registry);
-            this.transformPublisher = transformerFactory.createTransformPublisher(registry.getName());
+            this.transformPublisher = GlobalTransformPublisher.getInstance();
             for (IdentifiableMessage<String, UnitConfig, Builder> entry : registry.getEntries()) {
                 publishTransformation(entry);
             }
-        } catch (CouldNotPerformException | TransformerFactory.TransformerFactoryException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
