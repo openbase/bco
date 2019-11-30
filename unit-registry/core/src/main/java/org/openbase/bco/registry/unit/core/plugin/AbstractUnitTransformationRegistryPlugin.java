@@ -102,16 +102,5 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
         publishTransformation(entry);
     }
 
-    @Override
-    public void shutdown() {
-        if (transformPublisher != null) {
-            try {
-                transformPublisher.shutdown();
-            } catch (Exception ex) {
-                logger.warn("Could not shutdown transformation publisher");
-            }
-        }
-    }
-
     protected abstract void publishTransformation(final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry);
 }

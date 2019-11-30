@@ -125,10 +125,16 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
             return FutureProcessor.canceledFuture(new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation frame id!"));
         }
 
-        Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
-                unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
-                unitConfigSource.getPlacementConfig().getTransformationFrameId(),
-                System.currentTimeMillis());
+
+        Future<Transform> transformationFuture = null;
+        try {
+            transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
+                    unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
+                    unitConfigSource.getPlacementConfig().getTransformationFrameId(),
+                    System.currentTimeMillis());
+        } catch (NotAvailableException ex) {
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
+        }
         return FutureProcessor.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
     }
 
