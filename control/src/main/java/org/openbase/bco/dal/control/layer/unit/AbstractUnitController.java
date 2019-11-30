@@ -1224,12 +1224,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
 
-            // log state transition
-            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
-            if(!Services.hasResponsibleAction(newState)) {
-                StackTracePrinter.printStackTrace(logger);
-            }
-
             // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
             try {
                 newState = computeNewState(newState, serviceType, internalBuilder);
@@ -1238,20 +1232,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 return;
             }
 
-            // log state transition
-            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
-
             // verify the service state
             newState = Services.verifyAndRevalidateServiceState(newState);
 
             // move current state to last state
             updateLastWithCurrentState(serviceType, internalBuilder);
-
-            // log state transition
-            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
-            if(!Services.hasResponsibleAction(newState)) {
-                StackTracePrinter.printStackTrace(logger);
-            }
 
             // copy latestValueOccurrence map from current state, only if available
             try {
@@ -1467,11 +1452,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // compute responsible action if not exist
             if (!Services.hasResponsibleAction(serviceStateBuilder)) {
-                // do not complain in test mode since simple state updates makes writing tests much more comfortable.
-                if(!JPService.testMode()) {
+                // outdated:
+                // @ do not complain in test mode since simple state updates makes writing tests much more comfortable.
+                // @ if(!JPService.testMode()) {
                     logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
                     StackTracePrinter.printStackTrace(logger);
-                }
+                // @ }
                 ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, false, Priority.LOW, null);
             }
 
