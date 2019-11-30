@@ -359,6 +359,8 @@ public class ActionImpl implements SchedulableAction {
             throw new VerificationFailedException(this + "is not compatible to be automatically extended because flag is not set!");
         } else if (ActionDescriptionProcessor.getInitialInitiator(getActionDescription()).getInitiatorType() != InitiatorType.HUMAN) {
             throw new VerificationFailedException(this + "is not compatible to be automatically extended because it was not initiated by a human!");
+        } else if (isDone()){
+            throw new VerificationFailedException(this + "is not compatible to be automatically extended because it is already done!");
         }
 
         // auto extend

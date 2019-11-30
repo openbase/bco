@@ -542,6 +542,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
+    private String terminatingActionId;
+
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
@@ -559,7 +561,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(Long.MAX_VALUE));
 
                 // register remote for auto extension support.
-                new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
+                terminatingActionId = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive()).getId();
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not register state termination!", ex, logger);
@@ -854,6 +856,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             final ActionInitiator currentInitiator = ActionDescriptionProcessor.getInitialInitiator(schedulableAction.getActionDescription());
                             if (!newInitiator.getInitiatorId().equals(currentInitiator.getInitiatorId())) {
                                 // actions do not have the same initiator
+                                continue;
+                            }
+
+
+                            // workaround hack - do not cancel termination
+                            // todo: remove me if termination is done by app or agent
+                            if(schedulableAction.getId().equals(terminatingActionId)) {
                                 continue;
                             }
 
