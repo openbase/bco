@@ -102,7 +102,7 @@ public class RemoteActionPool {
         }
 
         try {
-            MultiException.checkAndThrow(() -> "Could not fully init action remotes of " + this, exceptionStack);
+            MultiException.checkAndThrow(() -> "Could not fully init action remotes of " + unit, exceptionStack);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
         }
