@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -354,9 +355,9 @@ public class ActionImpl implements SchedulableAction {
     public void autoExtendWithLowPriority() throws VerificationFailedException {
 
         // validate
-        if(!isAutoContinueWithLowPriorityIntended()) {
+        if (!isAutoContinueWithLowPriorityIntended()) {
             throw new VerificationFailedException(this + "is not compatible to be automatically extended because flag is not set!");
-        } else if(ActionDescriptionProcessor.getInitialInitiator(getActionDescription()).getInitiatorType() != InitiatorType.HUMAN) {
+        } else if (ActionDescriptionProcessor.getInitialInitiator(getActionDescription()).getInitiatorType() != InitiatorType.HUMAN) {
             throw new VerificationFailedException(this + "is not compatible to be automatically extended because it was not initiated by a human!");
         }
 
@@ -382,17 +383,21 @@ public class ActionImpl implements SchedulableAction {
 
         // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
         updateActionState(State.CANCELING);
-        return GlobalCachedExecutorService.submit(() -> {
-            if (!isExecutionTaskFinish()) {
-                actionTask.cancel(true);
-                waitForExecutionTaskFinalization();
-            }
-            if (!isDone()) {
-                updateActionState(State.CANCELED);
-            }
-            unit.reschedule();
-            return actionDescriptionBuilder.build();
-        });
+        try {
+            return GlobalCachedExecutorService.submit(() -> {
+                if (!isExecutionTaskFinish()) {
+                    actionTask.cancel(true);
+                    waitForExecutionTaskFinalization();
+                }
+                if (!isDone()) {
+                    updateActionState(State.CANCELED);
+                }
+                unit.reschedule();
+                return actionDescriptionBuilder.build();
+            });
+        } catch (RejectedExecutionException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel " + this, ex));
+        }
     }
 
     @Override

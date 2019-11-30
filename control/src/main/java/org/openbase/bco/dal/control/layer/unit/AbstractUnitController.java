@@ -251,9 +251,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     protected long getShutdownDelay() {
-        if(this instanceof AppController) {
+        if (this instanceof AppController) {
             return 0;
-        } else if(this instanceof AgentController) {
+        } else if (this instanceof AgentController) {
             return 0;
         } else {
             return 2000;
@@ -590,7 +590,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     logger.info("incomming unauthorized action: " + builder.toString());
 
                     // handle legacy case for UIs without authentication support.
-                    if(JPService.getValue(JPRSBLegacyMode.class, false)) {
+                    if (JPService.getValue(JPRSBLegacyMode.class, false)) {
                         builder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
                     }
 
@@ -993,7 +993,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         ExceptionPrinter.printHistory("Could not update transaction id", ex, logger);
                     }
                 }
-            } finally{
+            } finally {
                 actionListNotificationLock.writeLock().unlock();
                 notifyScheduledActionList();
             }
@@ -1158,7 +1158,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             try {
                 serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
             } catch (NullPointerException ex) {
-                logger.warn("Non supported observer registration requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus );
+                logger.warn("Non supported observer registration requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus);
             }
         }
     }
@@ -1178,7 +1178,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             try {
                 serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
             } catch (NullPointerException ex) {
-                logger.warn("Non supported Observer[{}] removal requested! {} does not support Service[{}] in ServiceTempus[{}]", observer, this, serviceType, serviceTempus );
+                logger.warn("Non supported Observer[{}] removal requested! {} does not support Service[{}] in ServiceTempus[{}]", observer, this, serviceType, serviceTempus);
             }
         }
     }
@@ -1249,7 +1249,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // log state transition
             logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
-            if(!Services.hasResponsibleAction(newState)) {
+            if (!Services.hasResponsibleAction(newState)) {
                 StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
             }
 
@@ -1298,13 +1298,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     /**
-     * @param serviceState the prototype of the new state.
-     * @param serviceType the service type of the new state.
+     * @param serviceState    the prototype of the new state.
+     * @param serviceType     the service type of the new state.
      * @param internalBuilder the builder object used to access the currently applied state.
      *
      * @return the computed state.
      *
-     * @throws RejectedException in case the state would not change anything compared to the current one.
+     * @throws RejectedException        in case the state would not change anything compared to the current one.
      * @throws CouldNotPerformException if the state could not be computed.
      */
     private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException, RejectedException {
@@ -1327,7 +1327,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
 
                 // validate responsible action
-                if(Services.hasResponsibleAction(requestedState)) {
+                if (Services.hasResponsibleAction(requestedState)) {
 
                     // choose with which value to update
                     if (Services.equalServiceStates(serviceState, requestedState)) {
@@ -1455,8 +1455,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // outdated:
                 // @ do not complain in test mode since simple state updates makes writing tests much more comfortable.
                 // @ if(!JPService.testMode()) {
-                    logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
-                    StackTracePrinter.printStackTrace(logger);
+                logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
+                StackTracePrinter.printStackTrace(logger);
                 // @ }
                 ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, false, Priority.LOW, null);
             }
