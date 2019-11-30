@@ -1239,6 +1239,8 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * instance of the given unit type. If the unit type is unknown or location, all child locations of the provided
      * locations are resolved. In case the {@code recursive} flag is set to true than recursive related units are included as well.
      *
+     * Note: Unit super types are returned as well. For example if you query a Light you will also get Dimmable and Colorable Lights.
+     *
      * @param unitType   the unit type after which unit configs are filtered.
      * @param locationId the location inside which unit configs are resolved.
      * @param recursive  defines if recursive related unit should be included as well.
@@ -1248,6 +1250,23 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLocationIdAndUnitTypeRecursive(final String locationId, final UnitType unitType, final boolean recursive) throws CouldNotPerformException {
+        return getUnitConfigsByLocationIdAndUnitTypeInclusiveSuperTypeRecursive(locationId, unitType, true, recursive);
+    }
+
+    /**
+     * Method returns all unit configurations which are direct related to the given location id and an
+     * instance of the given unit type. If the unit type is unknown or location, all child locations of the provided
+     * locations are resolved. In case the {@code recursive} flag is set to true than recursive related units are included as well.
+     *
+     * @param unitType   the unit type after which unit configs are filtered.
+     * @param locationId the location inside which unit configs are resolved.
+     * @param recursive  defines if recursive related unit should be included as well.
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigsByLocationIdAndUnitTypeInclusiveSuperTypeRecursive(final String locationId, final UnitType unitType, final boolean inclusiveSuperType, final boolean recursive) throws CouldNotPerformException {
         final List<UnitConfig> unitConfigList = new ArrayList<>();
         final UnitConfig location = getUnitConfigById(locationId);
 
@@ -1275,7 +1294,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
             UnitConfig unitConfig;
             for (final String unitConfigId : getUnitConfigById(locationId).getLocationConfig().getUnitIdList()) {
                 unitConfig = getUnitConfigById(unitConfigId);
-                if (unitType == UnitType.UNKNOWN || unitConfig.getUnitType().equals(unitType) || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(unitType).contains(unitConfig.getUnitType())) {
+                if (unitType == UnitType.UNKNOWN || unitConfig.getUnitType().equals(unitType) || (inclusiveSuperType && CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(unitType).contains(unitConfig.getUnitType()))) {
                     if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(locationId)) {
                         unitConfigList.add(unitConfig);
                     }
