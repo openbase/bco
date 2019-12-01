@@ -25,6 +25,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -112,6 +113,10 @@ public class UnitControllerRegistryImpl<CONTROLLER extends UnitController<?, ?>>
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+
+        // required to guarantee permission check is possible when controllers are started.
+        Registries.getUnitRegistry().waitForData();
+
         active = true;
         if(unitSimulationManager != null) {
             unitSimulationManager.activate();

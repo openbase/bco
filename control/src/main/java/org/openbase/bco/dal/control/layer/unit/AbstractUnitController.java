@@ -561,7 +561,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(Long.MAX_VALUE));
 
                 // register remote for auto extension support.
-                terminatingActionId = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive()).getId();
+                final RemoteAction terminationAction = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
+                terminationAction.waitForExecution(5, TimeUnit.SECONDS);
+                this.terminatingActionId = terminationAction.getId();
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not register state termination!", ex, logger);

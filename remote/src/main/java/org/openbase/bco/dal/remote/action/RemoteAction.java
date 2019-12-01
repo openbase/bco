@@ -966,6 +966,9 @@ public class RemoteAction implements Action {
             ExceptionPrinter.printHistory("Could not observe intermediary actions!", ex, LOGGER);
         }
 
+        // wait until unit is ready
+        targetUnit.waitForData(timeout, timeUnit);
+
         // wait on this action
         synchronized (executionSync) {
             // wait until state is reached
