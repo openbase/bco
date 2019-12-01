@@ -562,7 +562,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // register remote for auto extension support.
                 final RemoteAction terminationAction = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
-                terminationAction.waitForExecution(5, TimeUnit.SECONDS);
+                terminationAction.waitForSubmission(5, TimeUnit.SECONDS);
                 this.terminatingActionId = terminationAction.getId();
             }
         } catch (CouldNotPerformException ex) {
