@@ -577,4 +577,11 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
             }
         }
     }
+
+    @Override
+    public void validateData() throws InvalidStateException {
+        if (isDataAvailable()) {
+            throw new InvalidStateException(new NotAvailableException("Data"));
+        }
+    }
 }

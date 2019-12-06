@@ -85,6 +85,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     public static final ActionIdGenerator ACTION_ID_GENERATOR = new ActionIdGenerator();
 
     private boolean active;
+    private boolean shutdownInitiated = false;
     private boolean filterInfrastructureUnits;
     private final ServiceType serviceType;
     private ServiceTemplate serviceTemplate;
@@ -1066,6 +1067,18 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         return serviceStateObservable.isValueAvailable();
     }
 
+    @Override
+    public void validateData() throws InvalidStateException {
+
+        if (isShutdownInitiated()) {
+            throw new InvalidStateException(new ShutdownInProgressException(this));
+        }
+
+        if (isDataAvailable()) {
+            throw new InvalidStateException(new NotAvailableException("Data"));
+        }
+    }
+
     public static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
             if ((serviceConfig.getServiceDescription().getServiceType() == serviceType)) {
@@ -1274,12 +1287,18 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         return serviceTemplate;
     }
 
+    public boolean isShutdownInitiated() {
+        return shutdownInitiated;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void shutdown() {
         try {
+            shutdownInitiated = true;
+
             verifyMaintainability();
             deactivate();
             for (UnitRemote<?> unitRemote : unitRemoteMap.values()) {

@@ -550,7 +550,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
         try {
             // auto switch of unused dal units
-            if (isDalUnit() && !isInfrastructure() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
+            if (isDalUnit() && !isInfrastructure() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE) && !JPService.testMode()) {
 
                 // generate action parameter
                 final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(Power.OFF, ServiceType.POWER_STATE_SERVICE, this);

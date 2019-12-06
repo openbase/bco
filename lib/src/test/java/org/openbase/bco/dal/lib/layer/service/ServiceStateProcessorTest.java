@@ -25,6 +25,7 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.Message;
 import org.junit.Test;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.pattern.Observer;
@@ -193,6 +194,11 @@ public class ServiceStateProcessorTest {
 
         @Override
         public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        }
+
+        @Override
+        public void validateData() throws InvalidStateException {
+
         }
     }
 }

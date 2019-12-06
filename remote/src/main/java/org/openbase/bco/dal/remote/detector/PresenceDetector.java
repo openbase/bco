@@ -78,6 +78,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
     private final CustomUnitPool connectionUnitPool;
 
     private boolean active;
+    private boolean shutdownInitiated = false;
 
     public PresenceDetector() throws InstantiationException {
         try {
@@ -233,8 +234,24 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
     }
 
     @Override
+    public void validateData() throws InvalidStateException {
+        if (isShutdownInitiated()) {
+            throw new InvalidStateException(new ShutdownInProgressException(this));
+        }
+
+        if (isDataAvailable()) {
+            throw new InvalidStateException(new NotAvailableException("Data"));
+        }
+    }
+
+    public boolean isShutdownInitiated() {
+        return shutdownInitiated;
+    }
+
+    @Override
     public void shutdown() {
         try {
+            shutdownInitiated = true;
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
