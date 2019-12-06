@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.app.AppRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -234,5 +235,10 @@ public class AppRemoteAdapter implements App {
 
     public AppRemote getAppRemote() {
         return appRemote;
+    }
+
+    @Override
+    public void validateData() throws InvalidStateException {
+        appRemote.validateData();
     }
 }
