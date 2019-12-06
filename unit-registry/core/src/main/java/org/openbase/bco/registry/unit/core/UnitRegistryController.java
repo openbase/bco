@@ -967,13 +967,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public void validateData() throws InvalidStateException {
-        if (!isDataAvailable()) {
-            throw new InvalidStateException(this + " not synchronized yet!", new NotAvailableException("data"));
-        }
-    }
-
-    @Override
     public Shape getUnitShapeByUnitConfig(final UnitConfig unitConfig) throws NotAvailableException {
         return UnitShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
     }

@@ -384,7 +384,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
                 logger.debug("Trigger initial consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
                 registry.checkConsistency();
             } catch (CouldNotPerformException ex) {
-                if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
                 }
                 notifyChange();
@@ -476,7 +476,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     @Override
     public Boolean isReady() {
         for (ProtoBufFileSynchronizedRegistry registry : registryList) {
-            if(!registry.isReady()) {
+            if (!registry.isReady()) {
                 return false;
             }
         }
@@ -498,6 +498,11 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
         return true;
     }
 
+    @Override
+    protected M filterDataForUser(MB dataBuilder, final UserClientPair userClientPair) throws CouldNotPerformException {
+        return (M) dataBuilder.build();
+    }
+
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException, InterruptedException;
 
     protected abstract void registerPlugins() throws CouldNotPerformException, InterruptedException;
@@ -509,9 +514,4 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     protected abstract void syncRegistryFlags() throws CouldNotPerformException, InterruptedException;
 
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
-
-    @Override
-    protected M filterDataForUser(MB dataBuilder, final UserClientPair userClientPair) throws CouldNotPerformException {
-        return (M) dataBuilder.build();
-    }
 }

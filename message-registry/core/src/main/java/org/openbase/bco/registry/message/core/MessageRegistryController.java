@@ -270,13 +270,6 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
     }
 
     @Override
-    public void validateData() throws InvalidStateException {
-        if (!isDataAvailable()) {
-            throw new InvalidStateException(this + " not synchronized yet!", new NotAvailableException("data"));
-        }
-    }
-
-    @Override
     protected MessageRegistryData filterDataForUser(final MessageRegistryData.Builder dataBuilder, final UserClientPair userClientPair) throws CouldNotPerformException {
         // Create a filter which removes all user messages from a list without read permissions to its location by the user
         final ListFilter<UserMessage> readFilter = userMessage -> {
