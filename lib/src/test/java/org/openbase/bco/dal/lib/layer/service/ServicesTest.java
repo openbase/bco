@@ -90,7 +90,7 @@ public class ServicesTest {
     }
 
     @Test
-    public void testEqualColorStateServices() throws Exception {
+    public void testEqualBrightnessStateServices() throws Exception {
         double brightness = 0.5;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
         BrightnessState brightnessStateInMargin = BrightnessState.newBuilder().setBrightness(brightness + 0.9 * Services.DOUBLE_MARGIN).build();
@@ -98,5 +98,21 @@ public class ServicesTest {
 
         assertTrue("Brightness states are not considered equal even though the value is within margin", Services.equalServiceStates(brightnessState, brightnessStateInMargin));
         assertFalse("Brightness states are considered equal even though the value is outside margin", Services.equalServiceStates(brightnessState, brightnessStateOutsideMargin));
+    }
+
+
+    @Test
+    public void testEqualColorStateServices() throws Exception {
+        //TODO: maybe put into ColorStateProviderServiceTest and also check values outside the margin
+        double hue = 220.1;
+        double saturation = 0.5;
+        double brightness = 0.7;
+
+        ColorStateType.ColorState.Builder builder = ColorStateType.ColorState.newBuilder();
+        builder.getColorBuilder().getHsbColorBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness);
+        ColorStateType.ColorState.Builder builder1 = ColorStateType.ColorState.newBuilder();
+        builder1.getColorBuilder().getHsbColorBuilder().setHue(hue + 0.9).setSaturation(saturation + 0.009).setBrightness(brightness - 0.009);
+
+        assertTrue(Services.equalServiceStates(builder.build(), builder1.build()));
     }
 }

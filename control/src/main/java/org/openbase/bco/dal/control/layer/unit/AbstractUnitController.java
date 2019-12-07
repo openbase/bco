@@ -1257,7 +1257,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
                 newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
             } catch (NotAvailableException ex) {
-                // skip last vaule update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
+                // skip last value update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
             }
 
             // log state transition
