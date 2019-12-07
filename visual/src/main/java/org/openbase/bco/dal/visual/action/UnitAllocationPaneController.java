@@ -27,15 +27,19 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.util.Pair;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.action.RemoteAction;
@@ -66,7 +70,9 @@ import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class UnitAllocationPaneController extends AbstractFXController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitAllocationPaneController.class);
@@ -313,6 +319,20 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 actionChainTable.refresh();
             }), 1, 1, TimeUnit.SECONDS);
 
+            actionTable.setOnKeyPressed(new EventHandler<KeyEvent>() {
+                @Override
+                public void handle(KeyEvent keyEvent) {
+                    if (keyEvent.getCode() != KeyCode.ESCAPE) {
+                        return;
+                    }
+                    
+                    try {
+                        ((UnitAllocationBean) actionTable.getSelectionModel().getSelectedItem()).getRemoteAction().cancel().get(3, TimeUnit.SECONDS);
+                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not cancel action!", e), LOGGER);
+                    }
+                }
+            });
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
