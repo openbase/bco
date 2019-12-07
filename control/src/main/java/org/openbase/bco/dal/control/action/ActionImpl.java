@@ -522,7 +522,7 @@ public class ActionImpl implements SchedulableAction {
             }
 
             // perform the update
-            actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
+            actionDescriptionBuilder.getActionStateBuilder().setValue(state);
             try {
                 ServiceStateProcessor.updateLatestValueOccurrence(state.getValueDescriptor(), TimestampProcessor.getCurrentTimestamp(), actionDescriptionBuilder.getActionStateBuilder());
             } catch (CouldNotPerformException ex) {
