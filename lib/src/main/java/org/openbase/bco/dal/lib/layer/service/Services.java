@@ -31,25 +31,22 @@ import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.processing.MessageProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor.JavaTypeToProto;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -920,6 +917,11 @@ public class Services extends ServiceStateProcessor {
 
         if (!serviceState1.getClass().equals(serviceState2.getClass())) {
             return false;
+        }
+
+        //TODO resolve generically for all service states
+        if (serviceState1.getClass().equals(ColorState.class)) {
+            return ColorStateProviderService.equalServiceStates((ColorState) serviceState1, (ColorState) serviceState2);
         }
 
         // make sure total equals or both empty messages pass the check

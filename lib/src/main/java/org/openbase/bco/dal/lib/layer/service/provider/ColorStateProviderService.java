@@ -162,4 +162,16 @@ public interface ColorStateProviderService extends ProviderService {
             return false;
         }
     }
+
+    static Boolean equalServiceStates(final ColorState colorStateA, final ColorState colorStateB) {
+        //TODO: explain this (required because of openhab) and put margins into constants
+
+        final HSBColor hsbColorA = colorStateA.getColor().getHsbColor();
+        final HSBColor hsbColorB = colorStateB.getColor().getHsbColor();
+        boolean hueEquals = OperationService.equals(hsbColorA.getHue(), hsbColorB.getHue(), 1.0);
+        boolean saturationEquals = OperationService.equals(hsbColorA.getSaturation(), hsbColorB.getSaturation(), 0.01);
+        boolean brightnessEquals = OperationService.equals(hsbColorA.getBrightness(), hsbColorB.getBrightness(), 0.01);
+
+        return hueEquals && saturationEquals && brightnessEquals;
+    }
 }
