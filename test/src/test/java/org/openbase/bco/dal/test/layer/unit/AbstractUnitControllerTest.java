@@ -31,6 +31,7 @@ import org.openbase.bco.dal.lib.state.States.Brightness;
 import org.openbase.bco.dal.lib.state.States.Color;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
+import org.openbase.bco.dal.remote.layer.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
@@ -44,6 +45,7 @@ import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priori
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -181,11 +183,11 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     @Test
     public void rejectUpdateWhenStateIsCompatibleTest() {
         try {
-
             final RemoteAction mainAction = waitForExecution(colorableLightRemote.setColorState(Color.BLUE));
             Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
             Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
 
+            // test compatible power state
             Message.Builder serviceStateBuilder = Power.ON.toBuilder();
             serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.POWER_STATE_SERVICE, colorableLightController, 30, TimeUnit.MINUTES, false, true, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             colorableLightController.applyDataUpdate(serviceStateBuilder, ServiceType.POWER_STATE_SERVICE);
@@ -193,6 +195,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
             Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
 
+            // test compatible color state
             serviceStateBuilder = Color.BLUE.toBuilder();
             serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.COLOR_STATE_SERVICE, colorableLightController, 30, TimeUnit.MINUTES, false, true, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             colorableLightController.applyDataUpdate(serviceStateBuilder, ServiceType.COLOR_STATE_SERVICE);
@@ -200,9 +203,21 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
             Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
 
+            // test compatible brightness state
             serviceStateBuilder = Brightness.MAX.toBuilder();
             serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightController, 30, TimeUnit.MINUTES, false, true, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             colorableLightController.applyDataUpdate(serviceStateBuilder, ServiceType.BRIGHTNESS_STATE_SERVICE);
+
+            Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
+            Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
+
+            // test nearly compatible color state
+            ColorState.Builder colorServiceStateBuilder = Color.BLUE.toBuilder();
+            colorServiceStateBuilder.getColorBuilder().getHsbColorBuilder().setHue(Color.BLUE.getColor().getHsbColor().getHue() + 0.0001);
+            colorServiceStateBuilder.getColorBuilder().getHsbColorBuilder().setSaturation(Color.BLUE.getColor().getHsbColor().getSaturation() - 0.0001);
+            colorServiceStateBuilder.getColorBuilder().getHsbColorBuilder().setBrightness(Color.BLUE.getColor().getHsbColor().getBrightness() - 0.0001);
+            colorServiceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(colorServiceStateBuilder, ServiceType.COLOR_STATE_SERVICE, colorableLightController, 30, TimeUnit.MINUTES, false, true, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
+            colorableLightController.applyDataUpdate(colorServiceStateBuilder, ServiceType.COLOR_STATE_SERVICE);
 
             Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
             Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
