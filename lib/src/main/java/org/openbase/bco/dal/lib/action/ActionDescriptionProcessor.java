@@ -125,7 +125,7 @@ public class ActionDescriptionProcessor {
      * @return an ActionParameter type with the described values.
      */
     public static ActionParameter.Builder generateDefaultActionParameter(final ServiceStateDescription serviceStateDescription, final boolean authenticated) {
-        ActionParameter.Builder actionParameter = ActionParameter.getDefaultInstance().toBuilder();
+        ActionParameter.Builder actionParameter = ActionParameter.newBuilder();
         actionParameter.setServiceStateDescription(serviceStateDescription);
         actionParameter.setActionInitiator(detectActionInitiatorId(authenticated));
         return actionParameter;
@@ -350,14 +350,31 @@ public class ActionDescriptionProcessor {
 
         // add values from ActionParameter
         actionDescriptionBuilder.addAllCategory(actionParameter.getCategoryList());
-        actionDescriptionBuilder.setLabel(actionParameter.getLabel());
-        actionDescriptionBuilder.setActionInitiator(actionParameter.getActionInitiator());
-        actionDescriptionBuilder.setServiceStateDescription(actionParameter.getServiceStateDescription());
-        actionDescriptionBuilder.setExecutionTimePeriod(actionParameter.getExecutionTimePeriod());
-        actionDescriptionBuilder.setPriority(actionParameter.getPriority());
-        actionDescriptionBuilder.setInterruptible(actionParameter.getInterruptible());
-        actionDescriptionBuilder.setSchedulable(actionParameter.getSchedulable());
-        actionDescriptionBuilder.setAutoContinueWithLowPriority(actionParameter.getAutoContinueWithLowPriority());
+
+        if (actionParameter.hasLabel()) {
+            actionDescriptionBuilder.setLabel(actionParameter.getLabel());
+        }
+        if (actionParameter.hasActionInitiator()) {
+            actionDescriptionBuilder.setActionInitiator(actionParameter.getActionInitiator());
+        }
+        if (actionParameter.hasServiceStateDescription()) {
+            actionDescriptionBuilder.setServiceStateDescription(actionParameter.getServiceStateDescription());
+        }
+        if (actionParameter.hasExecutionTimePeriod()) {
+            actionDescriptionBuilder.setExecutionTimePeriod(actionParameter.getExecutionTimePeriod());
+        }
+        if (actionParameter.hasPriority()) {
+            actionDescriptionBuilder.setPriority(actionParameter.getPriority());
+        }
+        if (actionParameter.hasInterruptible()) {
+            actionDescriptionBuilder.setInterruptible(actionParameter.getInterruptible());
+        }
+        if (actionParameter.hasSchedulable()) {
+            actionDescriptionBuilder.setSchedulable(actionParameter.getSchedulable());
+        }
+        if (actionParameter.hasAutoContinueWithLowPriority()) {
+            actionDescriptionBuilder.setAutoContinueWithLowPriority(actionParameter.getAutoContinueWithLowPriority());
+        }
 
         // if an initiator action is defined in ActionParameter the actionChain is updated
         if (actionParameter.hasCause()) {
@@ -543,7 +560,6 @@ public class ActionDescriptionProcessor {
         actionDescriptionBuilder.setSchedulable(getSchedulable(actionDescriptionBuilder));
         actionDescriptionBuilder.setInterruptible(getInterruptible(actionDescriptionBuilder));
         actionDescriptionBuilder.addAllCategory(getCategoryList(actionDescriptionBuilder));
-        actionDescriptionBuilder.setPriority(getPriority(actionDescriptionBuilder));
 
         // update initiator type
 
@@ -566,7 +582,6 @@ public class ActionDescriptionProcessor {
             actionDescriptionBuilder.setInterruptible(false);
         }
 
-
         // handle human specific properties
         if (actionDescriptionBuilder.getActionInitiator().getInitiatorType() == InitiatorType.HUMAN) {
 
@@ -576,22 +591,25 @@ public class ActionDescriptionProcessor {
             }
 
             // most human actions are triggered by direct UI interaction and are therefore prioritized as high by default.
-            if(!actionDescriptionBuilder.hasPriority()) {
+            if (!actionDescriptionBuilder.hasPriority()) {
                 actionDescriptionBuilder.setPriority(Priority.HIGH);
             }
 
             // auto continue human actions by default
-            if(!actionDescriptionBuilder.hasAutoContinueWithLowPriority()) {
+            if (!actionDescriptionBuilder.hasAutoContinueWithLowPriority()) {
                 actionDescriptionBuilder.setAutoContinueWithLowPriority(true);
             }
         }
+
+        // validate priority
+        actionDescriptionBuilder.setPriority(getPriority(actionDescriptionBuilder));
 
         // validate id field
         if (actionDescriptionBuilder.hasActionId()) {
             throw new InvalidStateException(toString(actionDescriptionBuilder) + " is already initialized and can not prepared twice!");
         }
 
-        // prepare
+        // generate and set a new id
         actionDescriptionBuilder.setActionId(ACTION_ID_GENERATOR.generateId(actionDescriptionBuilder.build()));
         LabelProcessor.addLabel(actionDescriptionBuilder.getLabelBuilder(), Locale.ENGLISH, GENERIC_ACTION_LABEL);
 
@@ -871,7 +889,7 @@ public class ActionDescriptionProcessor {
             } else {
                 // validate action id
                 if (!actionDescriptionBuilder.hasActionId()) {
-                   throw new NotAvailableException("Action Id!");
+                    throw new NotAvailableException("Action Id!");
                 }
             }
 
