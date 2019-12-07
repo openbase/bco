@@ -47,10 +47,8 @@ import org.openbase.bco.dal.lib.layer.unit.*;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
-import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
-import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -95,6 +93,7 @@ import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -102,7 +101,6 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
@@ -134,6 +132,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
     private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
+
+    private static final long EXECUTING_ACTION_MATCHING_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
+    private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
 
     private static final String LOCK_CONSUMER_SCHEDULEING = AbstractUnitController.class.getSimpleName() + ".reschedule(..)";
     private static final String LOCK_CONSUMER_INDEX_LOOKUP = AbstractUnitController.class.getSimpleName() + ".getSchedulingIndex()";
@@ -1323,15 +1324,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         //System.out.println("compute new state");
 
         try {
-            // if the given state is a provider service, than no further steps has to be performed
-            // because only operation service action can be remapped
+            // if the given state is a provider service, than no further steps have to be performed
+            // because only operation service actions can be remapped
             if (!hasOperationServiceForType(serviceType)) {
                 return serviceState;
             }
 
             Message requestedState = null;
 
-            // in case the new incoming state is matching the requested one we used the requested
+            // in case the new incoming state is matching the requested one we use the requested
             // one since it probably contains more information about the actions origin like initiator
             // and further fields which are lost during the hardware feedback loop like the executor and the action cain.
             if (Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
@@ -1365,18 +1366,50 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // requested state is not available so obviously it does not match
             }
 
+            // if a lot of actions are executed over a short time period it can happen that the requested
+            // state currently does not match the external update from openHAB
+            // thus, match the service state to all actions of the same service that were executing in the last
+            // three seconds
+            final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Action.TYPE_FIELD_NAME_ACTION);
+            final List<ActionDescription> actionDescriptionList = (List<ActionDescription>) internalBuilder.getField(actionFieldDescriptor);
+            for (final ActionDescription actionDescription : actionDescriptionList) {
+                final ServiceStateDescriptionType.ServiceStateDescription serviceStateDescription = actionDescription.getServiceStateDescription();
+
+                // do not consider actions for a different service
+                if(serviceStateDescription.getServiceType() != serviceType) {
+                    continue;
+                }
+
+                // do not consider actions which were not executing in the last three seconds
+                try {
+                    final Timestamp lastTimeExecuting = ServiceStateProcessor.getLatestValueOccurrence(State.EXECUTING, actionDescription.getActionState());
+                    if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) < TimeUnit.SECONDS.toMillis(EXECUTING_ACTION_MATCHING_TIMEOUT)) {
+                        continue;
+                    }
+                } catch (NotAvailableException ex) {
+                    // it the last executing time is not available skip comparison
+                    continue;
+                }
+
+                // compare service states
+                final Message actionServiceState = SERVICE_JSON_PROCESSOR.deserialize(serviceStateDescription.getServiceState(), serviceStateDescription.getServiceStateClassName());
+                if (Services.equalServiceStates(serviceState, actionServiceState)) {
+                    throw new RejectedException("New state has already been scheduled!");
+                }
+            }
+
             // because the requested action does not match this action was triggered outside BCO e.g. via openHAB or is just a state sync.
 
             // however, the problem remains that openHAB notifies all service states as new updates
             // e.g. if the power of a colorable light is set a brightness state and a color state are also updated
             // furthermore the power state is notified twice
-            // this is a problem because it overwrites the scheduling of actions performed though bco
+            // this is a problem because it overwrites the scheduling of actions performed through bco
             // e.g. an agent controlling something would always be superseded by these actions scheduled through
             // the openHAB user
             // therefore, in the following a hack strategy is implemented which tests if a matching requested
             // state was cached and if yes this update will not be scheduled
 
-            // skip if update is still compatible and would nothing change
+            // skip if update is still compatible and would change nothing
             if (Services.isCompatible(serviceState, serviceType, Services.invokeProviderServiceMethod(serviceType, internalBuilder))) {
                 throw new RejectedException("Incoming state already applied!");
             }
@@ -1436,7 +1469,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // force execution to properly apply new state synchronized with the current action scheduling
             return forceActionExecution(serviceState, serviceType, internalBuilder);
         } catch (RejectedException ex) {
-            // passthrough rejection to make it comparable to the error case.
+            // pass through rejection to make it comparable to the error case.
             throw ex;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not compute new state!", ex);
