@@ -76,6 +76,6 @@ public interface OperationService extends Service {
      * @return true if delta is within margin, otherwise false.
      */
     static boolean equals(final double valueA, final double valueB, final double margin) {
-        return valueA < valueB - margin || valueA > valueB + margin;
+        return valueA < valueB + margin && valueA > valueB - margin;
     }
 }

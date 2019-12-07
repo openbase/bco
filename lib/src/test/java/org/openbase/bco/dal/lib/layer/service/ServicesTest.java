@@ -25,10 +25,12 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.Message;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
+import org.openbase.bco.dal.lib.state.States;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.ColorStateType;
 import org.openbase.type.domotic.state.LocalPositionStateType.LocalPositionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
@@ -36,8 +38,7 @@ import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -86,5 +87,16 @@ public class ServicesTest {
             }
             assertFalse("PowerState should never match a local position state", Services.equalServiceStates(localPositionStateList.get(i), powerState));
         }
+    }
+
+    @Test
+    public void testEqualColorStateServices() throws Exception {
+        double brightness = 0.5;
+        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
+        BrightnessState brightnessStateInMargin = BrightnessState.newBuilder().setBrightness(brightness + 0.9 * Services.DOUBLE_MARGIN).build();
+        BrightnessState brightnessStateOutsideMargin = BrightnessState.newBuilder().setBrightness(brightness + 2 * Services.DOUBLE_MARGIN).build();
+
+        assertTrue("Brightness states are not considered equal even though the value is within margin", Services.equalServiceStates(brightnessState, brightnessStateInMargin));
+        assertFalse("Brightness states are considered equal even though the value is outside margin", Services.equalServiceStates(brightnessState, brightnessStateOutsideMargin));
     }
 }

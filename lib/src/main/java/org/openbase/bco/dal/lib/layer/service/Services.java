@@ -72,6 +72,8 @@ public class Services extends ServiceStateProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Services.class);
 
+    public static final double DOUBLE_MARGIN = 0.001;
+
     /**
      * This method returns the service base name of the given service type.
      * <p>
@@ -968,9 +970,19 @@ public class Services extends ServiceStateProcessor {
 
             // compare primitives
             if (field.getJavaType() != JavaType.MESSAGE) {
-                if (serviceState1.hasField(field) && serviceState2.hasField(field) && !(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
-                    //System.out.println("field not equal: " + field.getName());
-                    return false;
+                if(serviceState1.hasField(field) && serviceState2.hasField(field)) {
+                    if (field.getJavaType() == JavaType.DOUBLE) {
+                        double value1 = (double) serviceState1.getField(field);
+                        double value2 = (double) serviceState2.getField(field);
+
+                        if(!OperationService.equals(value1, value2, DOUBLE_MARGIN)) {
+                            return false;
+                        }
+                    } else {
+                        if (!(serviceState1.getField(field).equals(serviceState2.getField(field)))) {
+                            return false;
+                        }
+                    }
                 }
             }
         }
