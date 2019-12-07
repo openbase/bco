@@ -1366,6 +1366,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // requested state is not available so obviously it does not match
             }
 
+            int executing = 0;
+            int notAvail = 0;
             // if a lot of actions are executed over a short time period it can happen that the requested
             // state currently does not match the external update from openHAB
             // thus, match the service state to all actions of the same service that were executing in the last
@@ -1384,9 +1386,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 try {
                     final Timestamp lastTimeExecuting = ServiceStateProcessor.getLatestValueOccurrence(State.EXECUTING, actionDescription.getActionState());
                     if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) < TimeUnit.SECONDS.toMillis(EXECUTING_ACTION_MATCHING_TIMEOUT)) {
+                        executing++;
                         continue;
                     }
                 } catch (NotAvailableException ex) {
+                    notAvail++;
                     // it the last executing time is not available skip comparison
                     continue;
                 }
@@ -1397,6 +1401,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     throw new RejectedException("New state has already been scheduled!");
                 }
             }
+
+            logger.warn(executing + " actions for service " + serviceType + " were executing in the last three seconds and " + notAvail + " had not latest value occurrence for the state executing!");
 
             // because the requested action does not match this action was triggered outside BCO e.g. via openHAB or is just a state sync.
 
