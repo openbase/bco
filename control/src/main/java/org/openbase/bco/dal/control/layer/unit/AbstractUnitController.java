@@ -101,6 +101,7 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
+import org.openbase.type.domotic.state.ColorStateType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
@@ -1374,8 +1375,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // three seconds
             final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Action.TYPE_FIELD_NAME_ACTION);
             final List<ActionDescription> actionDescriptionList = (List<ActionDescription>) internalBuilder.getField(actionFieldDescriptor);
-            for (final ActionDescription actionDescription : actionDescriptionList) {
-                final ServiceStateDescriptionType.ServiceStateDescription serviceStateDescription = actionDescription.getServiceStateDescription();
+
+            for (final SchedulableAction action : scheduledActionList) {
+                final ServiceStateDescriptionType.ServiceStateDescription serviceStateDescription = action.getActionDescription().getServiceStateDescription();
 
                 // do not consider actions for a different service
                 if(serviceStateDescription.getServiceType() != serviceType) {
@@ -1384,7 +1386,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // do not consider actions which were not executing in the last three seconds
                 try {
-                    final Timestamp lastTimeExecuting = ServiceStateProcessor.getLatestValueOccurrence(State.EXECUTING, actionDescription.getActionState());
+                    final Timestamp lastTimeExecuting = ServiceStateProcessor.getLatestValueOccurrence(State.EXECUTING, action.getActionDescription().getActionState());
                     if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) < TimeUnit.SECONDS.toMillis(EXECUTING_ACTION_MATCHING_TIMEOUT)) {
                         executing++;
                         continue;
