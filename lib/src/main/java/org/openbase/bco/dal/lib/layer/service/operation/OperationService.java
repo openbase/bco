@@ -30,7 +30,7 @@ import org.openbase.jul.exception.VerificationFailedException;
  */
 public interface OperationService extends Service {
 
-    // todo: move methods to a new jul math module
+    // todo: move methods and its related unit test to a new jul math module
 
     /**
      * Method verifies the range of the value.
@@ -61,7 +61,7 @@ public interface OperationService extends Service {
      * @throws VerificationFailedException is thrown if the value is not within the default value margin.
      */
     static void verifyValue(final String name, final double value, final double defaultValue, final double margin) throws VerificationFailedException {
-        if (equals(value, defaultValue, margin)) {
+        if (!equals(value, defaultValue, margin)) {
             throw new VerificationFailedException("The value of " + name + " is " + value + " but should be " + defaultValue);
         }
     }
@@ -76,6 +76,6 @@ public interface OperationService extends Service {
      * @return true if delta is within margin, otherwise false.
      */
     static boolean equals(final double valueA, final double valueB, final double margin) {
-        return valueA < valueB + margin && valueA > valueB - margin;
+        return valueA <= valueB + margin && valueA >= valueB - margin;
     }
 }
