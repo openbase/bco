@@ -184,32 +184,32 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     public void rejectUpdateWhenStateIsCompatibleTest() {
         try {
             final RemoteAction mainAction = waitForExecution(colorableLightRemote.setColorState(Color.BLUE));
-            Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
-            Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
+            Assert.assertTrue("Main action not on top!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
+            Assert.assertEquals("Main action not executing!", ActionState.State.EXECUTING, mainAction.getActionState());
 
             // test compatible power state
             Message.Builder serviceStateBuilder = Power.ON.toBuilder();
             serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.POWER_STATE_SERVICE, colorableLightController, 30, TimeUnit.MINUTES, false, true, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             colorableLightController.applyDataUpdate(serviceStateBuilder, ServiceType.POWER_STATE_SERVICE);
 
-            Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
             Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
+            Assert.assertEquals("Main action not executing!", ActionState.State.EXECUTING, mainAction.getActionState());
 
             // test compatible color state
             serviceStateBuilder = Color.BLUE.toBuilder();
             serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.COLOR_STATE_SERVICE, colorableLightController, 30, TimeUnit.MINUTES, false, true, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             colorableLightController.applyDataUpdate(serviceStateBuilder, ServiceType.COLOR_STATE_SERVICE);
 
-            Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
             Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
+            Assert.assertEquals("Main action not executing!", ActionState.State.EXECUTING, mainAction.getActionState());
 
             // test compatible brightness state
             serviceStateBuilder = Brightness.MAX.toBuilder();
             serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightController, 30, TimeUnit.MINUTES, false, true, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             colorableLightController.applyDataUpdate(serviceStateBuilder, ServiceType.BRIGHTNESS_STATE_SERVICE);
 
-            Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
             Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
+            Assert.assertEquals("Main action not executing!", ActionState.State.EXECUTING, mainAction.getActionState());
 
             // test nearly compatible color state
             ColorState.Builder colorServiceStateBuilder = Color.BLUE.toBuilder();
@@ -219,8 +219,8 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             colorServiceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(colorServiceStateBuilder, ServiceType.COLOR_STATE_SERVICE, colorableLightController, 30, TimeUnit.MINUTES, false, true, false, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             colorableLightController.applyDataUpdate(colorServiceStateBuilder, ServiceType.COLOR_STATE_SERVICE);
 
-            Assert.assertEquals("Too many actions on stack!", 1, colorableLightController.getActionList().size());
             Assert.assertTrue("Too many actions on stack!", colorableLightController.getActionList().get(0).getActionId().equals(mainAction.getId()));
+            Assert.assertEquals("Main action not executing!", ActionState.State.EXECUTING, mainAction.getActionState());
 
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, System.err);
