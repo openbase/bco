@@ -23,6 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.Disabled;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
@@ -30,17 +31,21 @@ import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
+import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.TokenGenerator;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
@@ -78,18 +83,18 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
 
-        // uncomment to enable debug mode
-        // JPService.registerProperty(JPDebugMode.class, true);
-
-        // uncomment to visualize action inspector during tests
-        // String[] args = {};
-        // new Thread(() -> BCOActionInspector.main(args)).start();
-
         // trigger super method
         AbstractBCODeviceManagerTest.setUpClass();
 
         // retrieve colorable light remote
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
+
+        // uncomment to enable debug mode
+        // JPService.registerProperty(JPDebugMode.class, true);
+
+        // uncomment to visualize action inspector during tests
+        //String[] args = {};
+        //new Thread(() -> BCOActionInspector.main(args)).start();
     }
 
     @AfterClass
@@ -321,8 +326,14 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(0.5d).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(6000));
         primaryActionParameter.setPriority(Priority.HIGH);
+
         primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserClientPair().getUserId());
-        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null);
+        primaryActionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
+        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build();
+        assertTrue("initiator type not set.", actionDescription.getActionInitiator().hasInitiatorType());
+        assertEquals("initiator type not correct.", InitiatorType.SYSTEM, actionDescription.getActionInitiator().getInitiatorType());
+
+        AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(actionDescription, null);
 
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
 
