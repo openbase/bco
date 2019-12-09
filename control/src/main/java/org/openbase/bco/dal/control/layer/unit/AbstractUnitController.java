@@ -102,6 +102,7 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.state.ColorStateType;
+import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
@@ -866,7 +867,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                             // workaround hack - do not cancel termination
                             // todo: remove me if termination is done by app or agent
-                            if(schedulableAction.getId().equals(terminatingActionId)) {
+                            if (schedulableAction.getId().equals(terminatingActionId)) {
                                 continue;
                             }
 
@@ -1322,6 +1323,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException, RejectedException {
 
+//        ColorState colorStateOrig = null;
+//        if (serviceType == ServiceType.COLOR_STATE_SERVICE) {
+//            colorStateOrig = (ColorState) serviceState;
+//        }
+
         //System.out.println("compute new state");
 
         try {
@@ -1380,7 +1386,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 final ServiceStateDescriptionType.ServiceStateDescription serviceStateDescription = action.getActionDescription().getServiceStateDescription();
 
                 // do not consider actions for a different service
-                if(serviceStateDescription.getServiceType() != serviceType) {
+                if (serviceStateDescription.getServiceType() != serviceType) {
                     continue;
                 }
 
@@ -1404,7 +1410,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
             }
 
-            logger.warn(executing + " actions for service " + serviceType + " were executing in the last three seconds and " + notAvail + " had not latest value occurrence for the state executing!");
+            //logger.warn(executing + " actions for service " + serviceType + " were executing in the last three seconds and " + notAvail + " had not latest value occurrence for the state executing!");
 
             // because the requested action does not match this action was triggered outside BCO e.g. via openHAB or is just a state sync.
 
@@ -1473,6 +1479,20 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             } catch (NotAvailableException ex) {
                 // if responsible action is not available, than we should continue since this action was maybe externally triggered by a human.
             }
+
+
+//            if (serviceType == ServiceType.COLOR_STATE_SERVICE) {
+//                final ColorState colorState = (ColorState) serviceState;
+//                if (colorState.getColor().getHsbColor().getSaturation() == 0.0 && colorState.getColor().getHsbColor().getBrightness() == 1.0d) {
+//                    StackTracePrinter.printStackTrace(logger);
+//                    if (colorStateOrig != null) {
+//                        logger.warn("orig: " + colorStateOrig.getColor());
+//                    }
+//                    if (colorState != null) {
+//                        logger.warn("new : " + colorState.getColor());
+//                    }
+//                }
+//            }
 
             // force execution to properly apply new state synchronized with the current action scheduling
             return forceActionExecution(serviceState, serviceType, internalBuilder);
