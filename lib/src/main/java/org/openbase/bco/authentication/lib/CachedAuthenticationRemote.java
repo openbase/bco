@@ -93,14 +93,20 @@ public class CachedAuthenticationRemote {
 
     public static void prepare() throws CouldNotPerformException {
         synchronized (REMOTE_LOCK) {
+
+            // handle legal operation
+            if( authenticationRemote == null && shutdown == false ) {
+                getRemote();
+                return;
+            }
+
             // check if externally called.
-            if (authenticationRemote != null || !JPService.testMode()) {
+            if (!JPService.testMode()) {
                 LOGGER.warn("This manual registry preparation is only available during unit tests and not allowed during normal operation!");
                 return;
             }
 
             shutdown = false;
-
             getRemote();
         }
     }
