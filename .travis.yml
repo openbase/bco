@@ -18,10 +18,14 @@ matrix:
 install:
   - mvn --settings .travis/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --update-snapshots --show-version --quiet
 
+before_script:
+  - cd distribution
+
 script:
   - mvn test -Dmaven.javadoc.skip=true --batch-mode --fail-fast # --quiet
 
 before_install:
+  - cd distribution
   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
