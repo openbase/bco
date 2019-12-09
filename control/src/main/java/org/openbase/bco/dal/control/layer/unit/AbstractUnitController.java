@@ -1066,6 +1066,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // clear auth fields which are in the following recomputed by the given auth values.
             actionDescriptionBuilder.getActionInitiatorBuilder().clear();
 
+            // recover initiator type
+            actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
+
             // if an authentication token is send replace the initiator in any case
             if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
                 actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
@@ -1092,9 +1095,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // if not yet available, setup other as initiator.
             if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
                 actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(User.OTHER);
-
-                // recover initiator type
-                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
             }
 
             final Future<ActionDescription> actionDescriptionFuture = AbstractUnitController.this.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
