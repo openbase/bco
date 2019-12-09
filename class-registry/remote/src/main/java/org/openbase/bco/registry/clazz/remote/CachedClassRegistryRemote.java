@@ -165,8 +165,14 @@ public class CachedClassRegistryRemote {
 
     public static void prepare() throws CouldNotPerformException {
         synchronized (REMOTE_LOCK) {
+            // handle legal operation
+            if( registryRemote == null && shutdown == false ) {
+                getRegistry();
+                return;
+            }
+
             // check if externally called.
-            if (registryRemote != null || !JPService.testMode()) {
+            if (!JPService.testMode()) {
                 LOGGER.warn("This manual registry preparation is only available during unit tests and not allowed during normal operation!");
                 return;
             }
