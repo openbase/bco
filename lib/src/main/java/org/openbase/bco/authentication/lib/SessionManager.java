@@ -30,10 +30,7 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.PermissionDeniedException;
-import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Shutdownable;
@@ -395,11 +392,15 @@ public class SessionManager implements Shutdownable, Session {
                             try {
                                 renewTicket();
                             } catch (CouldNotPerformException ex) {
-                                ExceptionPrinter.printHistory("Could not renew ticket", ex, LOGGER, LogLevel.WARN);
+                                if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                                    ExceptionPrinter.printHistory("Could not renew ticket", ex, LOGGER, LogLevel.WARN);
+                                }
                             }
                         }, delay, delay, TimeUnit.MILLISECONDS);
                     } catch (JPNotAvailableException ex) {
-                        ExceptionPrinter.printHistory("Could not start ticket renewal task", ex, LOGGER, LogLevel.WARN);
+                        if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                            ExceptionPrinter.printHistory("Could not start ticket renewal task", ex, LOGGER, LogLevel.WARN);
+                        }
                     }
                 }
             } catch (CouldNotPerformException ex) {
