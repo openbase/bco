@@ -493,6 +493,7 @@ public class Units {
      */
     private static UnitRemote<?> waitForData(final UnitRemote<?> unitRemote, final boolean waitForData) throws CouldNotPerformException, InterruptedException {
         if (waitForData) {
+            Registries.getUnitRegistry(true);
             unitRemote.waitForData();
         }
         return unitRemote;
