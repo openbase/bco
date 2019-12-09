@@ -109,7 +109,6 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
             // request authentication token for new user
             mrPinkUserToken = TokenGenerator.generateAuthToken(sessionManager);
-            ;
             mrPinkActionParameter = ActionParameterType.ActionParameter.newBuilder().setAuthToken(mrPinkUserToken).build();
 
             // logout user
@@ -140,9 +139,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
             PowerStateType.PowerState.State powerState = (i % 2 == 0) ? PowerStateType.PowerState.State.ON : PowerStateType.PowerState.State.OFF;
 
             final RemoteAction locationRemoteAction = new RemoteAction(locationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT, mrPinkActionParameter), mrPinkUserToken);
-
-            locationRemoteAction.waitForExecution();
-
+            waitForExecution(locationRemoteAction);
             assertTrue("Action of location does not offer an id after submission!", !locationRemoteAction.getId().isEmpty());
 
             for (ColorableLightRemote unit : units) {
@@ -207,10 +204,12 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         });
 
         System.out.println("wait for low prio action...");
-        lowPrioLongtermAction.waitForSubmission();
+        waitForSubmission(lowPrioLongtermAction);
 
         System.out.println("apply normal prio action...");
         Flag dominantActionExtentionFlag = new Flag();
+
+
         final RemoteAction dominantAction = new RemoteAction(locationRemote.setPowerState(State.ON, mrPinkActionParameter), mrPinkUserToken, () -> {
             System.out.println("dominant action is extended");
             dominantActionExtentionFlag.setValue(true);
@@ -218,7 +217,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         });
 
         System.out.println("wait for normal prio action...");
-        dominantAction.waitForSubmission();
+        waitForSubmission(dominantAction);
 
         System.out.println("validate light state ON");
         List<? extends ColorableLightRemote> units = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
@@ -235,7 +234,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         System.out.println("validate light state OFF");
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
-            Assert.assertEquals("Light not on", State.OFF, unit.getPowerState().getValue());
+            Assert.assertEquals("Light not off", State.OFF, unit.getPowerState().getValue());
         }
 
         System.out.println("wait until last extension timeout and validate if no further extension will be performed for dominant action...");

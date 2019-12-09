@@ -103,6 +103,60 @@ public class AbstractBCOTest {
 
     /**
      * This method can be used to register an action during the unit test.
+     * This method blocks until the action is executed. Be aware that this can take a while if a higher ranked action is currently allocating the unit.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param remoteAction the action to observe
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForExecution(final RemoteAction remoteAction) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction testAction = observe(remoteAction);
+        testAction.waitForExecution();
+        return testAction;
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is submitted.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param actionFuture the action to observe
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForSubmission(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction testAction = observe(actionFuture);
+        testAction.waitForSubmission();
+        return testAction;
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is submitted.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param remoteAction the action to observe
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForSubmission(final RemoteAction remoteAction) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction testAction = observe(remoteAction);
+        testAction.waitForSubmission();
+        return testAction;
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
      * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
      *
      * @param actionFuture the action to observe
@@ -110,7 +164,18 @@ public class AbstractBCOTest {
      * @return a remote action instance which can be used to observe the action state.
      */
     public RemoteAction observe(final Future<ActionDescription> actionFuture) {
-        final RemoteAction remoteAction = new RemoteAction(actionFuture);
+        return observe(new RemoteAction(actionFuture));
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param remoteAction the remote action to observe
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     */
+    public RemoteAction observe(final RemoteAction remoteAction) {
 
         // register current action.
         testActions.add(remoteAction);
