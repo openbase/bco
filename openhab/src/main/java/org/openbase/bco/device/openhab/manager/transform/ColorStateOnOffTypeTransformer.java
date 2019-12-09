@@ -43,20 +43,22 @@ public class ColorStateOnOffTypeTransformer implements ServiceStateCommandTransf
     public ColorState transform(final OnOffType onOffType) throws CouldNotTransformException {
 
         try {
-            ColorState.Builder colorState = ColorState.newBuilder();
-            colorState.getColorBuilder().setType(Type.HSB);
-
-            switch (onOffType) {
-                case OFF:
-                    colorState.getColorBuilder().getHsbColorBuilder().setBrightness(0);
-                    break;
-                case ON:
-                    colorState.getColorBuilder().getHsbColorBuilder().setBrightness(1);
-                    break;
-                default:
-                    throw new CouldNotTransformException("Could not transform " + OnOffType.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
-            }
-            return colorState.build();
+//            ColorState.Builder colorState = ColorState.newBuilder();
+//            colorState.getColorBuilder().setType(Type.HSB);
+//
+//            switch (onOffType) {
+//                case OFF:
+//                    colorState.getColorBuilder().getHsbColorBuilder().setBrightness(0);
+//                    break;
+//                case ON:
+//                    colorState.getColorBuilder().getHsbColorBuilder().setBrightness(1);
+//                    break;
+//                default:
+//                    throw new CouldNotTransformException("Could not transform " + OnOffType.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
+//            }
+//            return colorState.build();
+            throw new TypeNotSupportedException("Transformation would generate invalid data.");
+            // todo make sure on off types are only mapped on power states!
         } catch (Exception ex) {
             throw new CouldNotTransformException("Could not transform " + OnOffType.class.getName() + " to " + ColorState.class.getName() + "!", ex);
         }
