@@ -262,15 +262,17 @@ public class MockRegistry {
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 LOGGER.debug("Update serviceTemplates...");
                 for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
-                    final String id = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).getId();
-                    Registries.getTemplateRegistry().updateServiceTemplate(mockServiceTemplate.getServiceTemplate().toBuilder().setId(id).build()).get();
+                    final ServiceTemplate.Builder originalServiceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).toBuilder();
+                    originalServiceTemplate.mergeFrom(mockServiceTemplate.getServiceTemplate());
+                    Registries.getTemplateRegistry().updateServiceTemplate(originalServiceTemplate.build()).get();
                 }
 
                 LOGGER.debug("Update unit templates...");
                 // load templates
                 for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                    String unitTemplateId = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).getId();
-                    Registries.getTemplateRegistry().updateUnitTemplate(template.getUnitTemplate().toBuilder().setId(unitTemplateId).build()).get();
+                    final UnitTemplate.Builder originalUnitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).toBuilder();
+                    originalUnitTemplate.mergeFrom(template.getUnitTemplate());
+                    Registries.getTemplateRegistry().updateUnitTemplate(originalUnitTemplate.build()).get();
                 }
 
                 LOGGER.debug("Register user...");
