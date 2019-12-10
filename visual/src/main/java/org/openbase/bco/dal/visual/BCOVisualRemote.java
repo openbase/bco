@@ -10,12 +10,12 @@ package org.openbase.bco.dal.visual;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -32,6 +32,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -114,8 +115,12 @@ public class BCOVisualRemote extends javax.swing.JFrame {
         GlobalCachedExecutorService.execute(() -> {
             try {
                 selectorPanel.init();
-            } catch (InterruptedException | CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER);
+            } catch (InterruptedException ex) {
+                // just finish task
+            } catch (CouldNotPerformException ex) {
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
+                }
             }
         });
     }
@@ -267,7 +272,9 @@ public class BCOVisualRemote extends javax.swing.JFrame {
             try {
                 new BCOVisualRemote().setVisible(true);
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER);
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
+                }
                 System.exit(1);
             }
         });

@@ -258,7 +258,9 @@ public class SelectorPanel extends javax.swing.JPanel {
             updateRemotePanel();
             MultiException.checkAndThrow(() ->"Could not acquire all informations!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
+            }
         } finally {
             updateComponentLock.writeLock().unlock();
         }
