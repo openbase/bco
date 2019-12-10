@@ -1068,7 +1068,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             actionDescriptionBuilder.getActionInitiatorBuilder().clear();
 
             // recover initiator type
-            actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
+            if(actionDescription.getActionInitiator().hasInitiatorType()) {
+                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
+            }
 
             // if an authentication token is send replace the initiator in any case
             if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
