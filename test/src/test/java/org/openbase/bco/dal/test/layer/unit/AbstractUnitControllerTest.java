@@ -37,6 +37,7 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
@@ -48,12 +49,14 @@ import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import org.openbase.type.vision.ColorType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
 
@@ -226,5 +229,23 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             ExceptionPrinter.printHistory(ex, System.err);
             Assert.assertTrue("Error occurred during update!", false);
         }
+    }
+
+    @Test
+    public void futureSyncTest() throws InterruptedException, ExecutionException, TimeoutException, CouldNotPerformException {
+
+        String anotherColorableLightId = null;
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.COLORABLE_LIGHT)) {
+            if(!unitConfig.equals(colorableLightRemote.getId())) {
+                anotherColorableLightId = unitConfig.getId();
+                break;
+            }
+        }
+
+        Assert.assertTrue("No other colorable light found", anotherColorableLightId != null);
+
+        CachedUnitRegistryRemote.shutdown();
+        CachedUnitRegistryRemote.prepare();
+        Units.getFutureUnit(anotherColorableLightId, true, Units.COLORABLE_LIGHT).get(10000, TimeUnit.MILLISECONDS).setColorState(Color.BLUE);
     }
 }
