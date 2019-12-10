@@ -35,13 +35,12 @@ import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.remote.layer.unit.user.UserRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessageMap;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
-import org.openbase.bco.registry.lib.generator.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
@@ -64,7 +63,9 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.communication.ScopeType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -203,8 +204,9 @@ public class Units {
         @Override
         public void update(DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
-            UNIT_DIFF.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
             try {
+                // avoid wait for data while holding the lock
+                UNIT_DIFF.diffMessages(Registries.getUnitRegistry(false).getUnitConfigs());
                 for (String unitId : UNIT_DIFF.getRemovedMessageMap().keySet()) {
                     if (unitRemoteRegistry.contains(unitId)) {
                         removeUnitRemote(unitRemoteRegistry.get(unitId));
@@ -252,7 +254,7 @@ public class Units {
                 UNIT_DIFF.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
             }
         } catch (CouldNotPerformException ex) {
-            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
             }
         }
@@ -306,23 +308,36 @@ public class Units {
      * @throws InterruptedException
      */
     public static void reinitialize() throws CouldNotPerformException, InterruptedException {
+        ExceptionStack stack = null;
+        final HashMap<UnitRemote<?>, Future<?>> syncTaskList = new HashMap<>();
+
         UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
         try {
-            for (UnitRemote unitRemote : unitRemoteRegistry.getEntries()) {
+            for (UnitRemote<?> unitRemote : unitRemoteRegistry.getEntries()) {
                 try {
                     unitRemote.unlock(unitRemoteRegistry);
                     unitRemote.init(unitRemote.getConfig());
                     unitRemote.lock(unitRemoteRegistry);
-                    unitRemote.requestData().get(500, TimeUnit.MILLISECONDS);
-                } catch (ExecutionException | TimeoutException ex) {
-                    throw new CouldNotPerformException("Could not reinitialize Units");
+                    syncTaskList.put(unitRemote, unitRemote.requestData());
+                } catch (CouldNotPerformException ex) {
+                    stack = MultiException.push(Units.class, new CouldNotPerformException("Could not reinitialize " + unitRemote, ex), stack);
                 }
             }
+            resetUnitRegistryObserver();
         } finally {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
         }
 
-        resetUnitRegistryObserver();
+        // wait for data resync but not within lock
+        for (Entry<UnitRemote<?>, Future<?>> unitRemoteFutureEntry : syncTaskList.entrySet()) {
+            try {
+                unitRemoteFutureEntry.getValue().get(500, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException | TimeoutException ex) {
+                stack = MultiException.push(Units.class, new CouldNotPerformException("Could not wait for data resync of " + unitRemoteFutureEntry.getKey(), ex), stack);
+            }
+        }
+
+        MultiException.checkAndThrow(() -> "Could not reinitialize unit pool!", stack);
     }
 
     /**
@@ -358,25 +373,26 @@ public class Units {
         Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
     }
 
-    /**
-     * Method returns an instance of the unit registry. If this method is called
-     * for the first time, a new registry instance will be created. This method
-     * only returns if the unit registry synchronization is finished otherwise
-     * this method blocks forever. In case you won't wait for the
-     * synchronization, request your own instance by calling:
-     * <code>Registries.getUnitRegistry();</code>
-     *
-     * @return the unit registry instance.
-     *
-     * @throws InterruptedException     is thrown if the current thread was
-     *                                  externally interrupted.
-     * @throws CouldNotPerformException Is thrown in case an error occurs during
-     *                                  registry connection.
-     */
-    public synchronized static UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
-        Registries.waitForData();
-        return Registries.getUnitRegistry();
-    }
+//    todo: method is outdated and should be removed
+//    /**
+//     * Method returns an instance of the unit registry. If this method is called
+//     * for the first time, a new registry instance will be created. This method
+//     * only returns if the unit registry synchronization is finished otherwise
+//     * this method blocks forever. In case you won't wait for the
+//     * synchronization, request your own instance by calling:
+//     * <code>Registries.getUnitRegistry();</code>
+//     *
+//     * @return the unit registry instance.
+//     *
+//     * @throws InterruptedException     is thrown if the current thread was
+//     *                                  externally interrupted.
+//     * @throws CouldNotPerformException Is thrown in case an error occurs during
+//     *                                  registry connection.
+//     */
+//    private synchronized static UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
+//        Registries.waitForData();
+//        return Registries.getUnitRegistry();
+//    }
 
     /**
      * Returns the unit remote of the unit identified by the given unit id.
@@ -399,12 +415,15 @@ public class Units {
                 throw new ShutdownInProgressException("UnitPool");
             }
 
+            // it is important that this wait is performed outside of the lock to avoid deadlocks in case registry changes are applied via the observer.
+            Registries.getUnitRegistry(true);
+
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
             try {
                 if (!unitRemoteRegistry.contains(unitId)) {
                     // create new instance.
                     newInstance = true;
-                    final UnitConfig unitConfig = getUnitRegistry().getUnitConfigById(unitId);
+                    final UnitConfig unitConfig = Registries.getUnitRegistry(false).getUnitConfigById(unitId);
                     UnitConfigProcessor.verifyEnablingState(unitConfig);
                     unitRemote = UNIT_REMOTE_FACTORY.newInitializedInstance(unitConfig);
                     unitRemoteRegistry.register(unitRemote);
@@ -657,7 +676,7 @@ public class Units {
     public static List<UnitRemote<?>> getUnits(boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
             final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
-            for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigs()) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
                 if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
                 }
@@ -695,7 +714,7 @@ public class Units {
             }
 
             final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
-            for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigsByLabelAndUnitType(label, unitType)) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(label, unitType)) {
                 unitRemoteList.add(getUnit(unitConfig, waitForData));
             }
             return unitRemoteList;
@@ -729,7 +748,7 @@ public class Units {
                 assert false;
                 throw new NotAvailableException("UnitName");
             }
-            final List<UnitConfigType.UnitConfig> unitConfigList = getUnitRegistry().getUnitConfigsByLabelAndUnitType(label, unitType);
+            final List<UnitConfigType.UnitConfig> unitConfigList = Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(label, unitType);
 
             if (unitConfigList.isEmpty()) {
                 throw new NotAvailableException("No configuration found in registry!");
@@ -767,7 +786,7 @@ public class Units {
             }
 
             final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
-            for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigsByLabel(label)) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabel(label)) {
                 unitRemoteList.add(getUnit(unitConfig, waitForData));
             }
             return unitRemoteList;
@@ -798,7 +817,7 @@ public class Units {
                 assert false;
                 throw new NotAvailableException("UnitAlias");
             }
-            return getUnit(getUnitRegistry().getUnitConfigByAlias(alias), waitForData);
+            return getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias(alias), waitForData);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "alias:" + alias, ex);
         }
@@ -827,7 +846,7 @@ public class Units {
                 assert false;
                 throw new NotAvailableException("UnitAlias");
             }
-            return castUnitRemote(getUnit(getUnitRegistry().getUnitConfigByAlias(alias), waitForData), unitRemoteClass);
+            return castUnitRemote(getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias(alias), waitForData), unitRemoteClass);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "alias:" + alias, ex);
         }
@@ -892,7 +911,7 @@ public class Units {
                 assert false;
                 throw new NotAvailableException("UnitName");
             }
-            final List<UnitConfigType.UnitConfig> unitConfigList = getUnitRegistry().getUnitConfigsByLabel(label);
+            final List<UnitConfigType.UnitConfig> unitConfigList = Registries.getUnitRegistry(true).getUnitConfigsByLabel(label);
 
             if (unitConfigList.isEmpty()) {
                 throw new NotAvailableException("No configuration found in registry!");
@@ -999,7 +1018,7 @@ public class Units {
                 assert false;
                 throw new NotAvailableException("UnitScope");
             }
-            return getUnit(getUnitRegistry().getUnitConfigByScope(scope), waitForData);
+            return getUnit(Registries.getUnitRegistry(true).getUnitConfigByScope(scope), waitForData);
         } catch (CouldNotPerformException ex) {
             try {
                 throw new NotAvailableException("Unit[" + ScopeProcessor.generateStringRep(scope) + "]", ex);
@@ -1519,8 +1538,8 @@ public class Units {
                 throw new NotAvailableException("UnitLocationScope");
             }
 
-            for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigsByLabel(label)) {
-                if (ScopeProcessor.generateStringRep(getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getScope()).equals(locationScope)) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabel(label)) {
+                if (ScopeProcessor.generateStringRep(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getScope()).equals(locationScope)) {
                     return getUnit(unitConfig, waitForData);
                 }
             }
