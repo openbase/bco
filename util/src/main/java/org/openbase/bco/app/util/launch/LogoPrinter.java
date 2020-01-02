@@ -6,7 +6,7 @@ import org.openbase.bco.authentication.lib.BCO;
  * #%L
  * BCO App Utility
  * %%
- * Copyright (C) 2018 - 2019 openbase.org
+ * Copyright (C) 2018 - 2020 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
