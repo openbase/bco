@@ -4,7 +4,7 @@ package org.openbase.bco.authentication.mock;
  * #%L
  * BCO Authentication Test
  * %%
- * Copyright (C) 2017 - 2019 openbase.org
+ * Copyright (C) 2017 - 2020 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
