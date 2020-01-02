@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * #%L
  * BCO DAL Visualisation
  * %%
- * Copyright (C) 2014 - 2019 openbase.org
+ * Copyright (C) 2014 - 2020 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
