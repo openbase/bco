@@ -97,6 +97,13 @@ public class RemoteAction implements Action {
         }
     };
 
+    private final Observer impactActionObserver = new Observer<RemoteAction, ActionDescription>() {
+        @Override
+        public void update(RemoteAction source, ActionDescription observable) throws Exception {
+            actionDescriptionObservable.notifyObservers(source, observable);
+        }
+    };
+
     private ActionDescription actionDescription;
     private ActionReference actionReference;
     private UnitRemote<?> targetUnit;
@@ -258,13 +265,13 @@ public class RemoteAction implements Action {
                 throw new NotAvailableException("ActionParameter");
             }
 
+            if (force) {
+                // we do not need to cancel a running actions because its rejected on the target unit anyway when a the new action is executed.
+                reset();
+            }
+
             if (isRunning()) {
-                if (force) {
-                    // we do not need to cancel the action since its rejected on the target unit anyway when a the new action is executed.
-                    reset();
-                } else {
-                    throw new InvalidStateException("Action is still running and can not be executed twice! Use the force flag to continue the execution.");
-                }
+                throw new InvalidStateException("Action is still running and can not be executed twice! Use the force flag to continue the execution.");
             }
 
             synchronized (executionSync) {
@@ -350,7 +357,7 @@ public class RemoteAction implements Action {
                 // observe impact actions and register callback if available to support action auto extension.
                 for (ActionReference actionReference : actionDescription.getActionImpactList()) {
                     RemoteAction remoteAction = new RemoteAction(actionReference, authToken, autoExtendCheckCallback);
-                    remoteAction.addActionDescriptionObserver((source, observable) -> actionDescriptionObservable.notifyObservers(source, observable));
+                    remoteAction.addActionDescriptionObserver(impactActionObserver);
                     impactedRemoteActions.add(remoteAction);
 
                     try {
@@ -720,7 +727,7 @@ public class RemoteAction implements Action {
                 actionDescriptionBuilder.setServiceStateDescription(actionReference.getServiceStateDescription());
                 actionDescriptionBuilder.setCancel(true);
                 return actionDescriptionBuilder.build();
-            } else if(actionId != null && serviceType != null) {
+            } else if (actionId != null && serviceType != null) {
                 final Builder actionDescriptionBuilder = ActionDescription.newBuilder();
                 actionDescriptionBuilder.setActionId(actionId);
                 actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceType(serviceType);
@@ -736,7 +743,7 @@ public class RemoteAction implements Action {
     private Future<ActionDescription> registerPostActionStateUpdate(final Future<ActionDescription> future, final ActionState.State actionState) {
         return FutureProcessor.postProcess((result) -> {
 
-            // when all subactions are canceled, than we can mark this intermediary action as canceled as well.
+            // when all sub actions are canceled, than we can mark this intermediary action as canceled as well.
             if (result != null) {
                 result = result.toBuilder().setActionState(ActionState.newBuilder().setValue(actionState)).build();
             }
@@ -755,10 +762,11 @@ public class RemoteAction implements Action {
     public void reset() {
         cleanup();
 
+        // reset auto extension task
+        autoExtensionTask = null;
+
         // reset observation task
-        if (futureObservationTask != null) {
-            futureObservationTask = null;
-        }
+        futureObservationTask = null;
 
         // reset action state and id
         actionId = null;
@@ -780,6 +788,9 @@ public class RemoteAction implements Action {
 
         // cleanup synchronisation and observation tasks
         actionDescriptionObservable.reset();
+        for (RemoteAction impactedRemoteAction : impactedRemoteActions) {
+            impactedRemoteAction.removeActionDescriptionObserver(impactActionObserver);
+        }
 
         // cancel the auto extension task
         cancelAutoExtension();
@@ -809,7 +820,7 @@ public class RemoteAction implements Action {
         }
 
         if (RemoteAction.this.actionDescription == null) {
-            LOGGER.warn("Update skipped because no action description is not available!");
+            LOGGER.warn("Update skipped because action description is not available!");
             return;
         }
 
@@ -821,11 +832,6 @@ public class RemoteAction implements Action {
                 synchronized (executionSync) {
                     final boolean actionExtended = RemoteAction.this.actionDescription.getLastExtensionTimestamp().getTime() < actionDescription.getLastExtensionTimestamp().getTime();
                     RemoteAction.this.actionDescription = actionDescription;
-
-                    // cleanup observation if action is done.
-                    if (isDone()) {
-                        cleanup();
-                    }
 
                     // notify about update
                     executionSync.notifyAll();
@@ -843,6 +849,12 @@ public class RemoteAction implements Action {
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not notify all observers!", ex, LOGGER);
                 }
+
+                // cleanup observation if action is done.
+                if (isDone()) {
+                    cleanup();
+                }
+
                 return;
             }
         }
