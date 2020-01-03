@@ -252,9 +252,10 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     }
 
     /**
-     *
      * @param snapshot
+     *
      * @return
+     *
      * @deprecated Deprecated because not yet fully compatible with unit allocation.
      */
     @RPCMethod(legacy = true)
@@ -468,9 +469,10 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      *
      * @param serviceType The service type on which the observer is added.
      * @param observer    The observer which is added.
+     * @throws CouldNotPerformException method throws an InvalidStateException if the requested service type is not supported by this unit.
      */
     @Override
-    default void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+    default void addServiceStateObserver(final ServiceType serviceType, final Observer observer) throws CouldNotPerformException {
         addServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
     }
 
@@ -496,8 +498,10 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @param serviceTempus The service tempus on which the observer is added.
      * @param serviceType   The service type on which the observer is added.
      * @param observer      The observer which is added.
+     *
+     * @throws CouldNotPerformException method throws an InvalidStateException if the requested service type is not supported by this unit.
      */
-    void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer);
+    void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) throws CouldNotPerformException;
 
     /**
      * Remove an observer which is only notified if the desired service type for
