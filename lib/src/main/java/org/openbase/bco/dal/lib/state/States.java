@@ -22,13 +22,13 @@ package org.openbase.bco.dal.lib.state;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.vision.ColorType;
 import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.HSBColorType.HSBColor;
@@ -36,12 +36,21 @@ import org.openbase.type.vision.HSBColorType.HSBColor;
 public class States {
 
     /**
+     * Activation State Prototypes
+     */
+    public static class Activation {
+
+        public static final ActivationState ACTIVE = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
+        public static final ActivationState INACTIVE = ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build();
+    }
+
+    /**
      * Power State Prototypes
      */
     public static class Power {
 
-        public static final PowerState ON = PowerState.newBuilder().setValue(State.ON).build();
-        public static final PowerState OFF = PowerState.newBuilder().setValue(State.OFF).build();
+        public static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+        public static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
     }
 
     /**
