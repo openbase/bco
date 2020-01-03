@@ -55,7 +55,7 @@ public abstract class AbstractBCOTrigger<UR extends AbstractUnitRemote<DT>, DT e
     private final STE targetState;
     private final ServiceType serviceType;
     private final Observer<DataProvider<DT>, DT> dataObserver;
-    private final Observer<Remote, ConnectionState.State> connectionObserver;
+    private final Observer<Remote<?>, ConnectionState.State> connectionObserver;
     private boolean active = false;
 
     public AbstractBCOTrigger(final UR unitRemote, final STE targetState, final ServiceType serviceType) throws InstantiationException {
@@ -68,7 +68,7 @@ public abstract class AbstractBCOTrigger<UR extends AbstractUnitRemote<DT>, DT e
             verifyCondition(data, targetState, serviceType);
         };
 
-        this.connectionObserver = (Remote source, ConnectionState.State data) -> {
+        this.connectionObserver = (Remote<?> source, ConnectionState.State data) -> {
             if (data.equals(ConnectionState.State.CONNECTED)) {
                 verifyCondition(unitRemote.getData(), targetState, serviceType);
             } else {

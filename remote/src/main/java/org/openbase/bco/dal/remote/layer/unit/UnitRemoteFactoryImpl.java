@@ -35,6 +35,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.communication.ScopeType.Scope;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -131,8 +132,8 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
     @Override
     public <R extends AbstractUnitRemote> R newInstance(final Class<R> unitRemoteClass) throws InstantiationException {
         try {
-            return unitRemoteClass.newInstance();
-        } catch (java.lang.InstantiationException | IllegalAccessException ex) {
+            return unitRemoteClass.getConstructor().newInstance();
+        } catch (java.lang.InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
             throw new org.openbase.jul.exception.InstantiationException("Could not instantiate unit remote out of Class[" + unitRemoteClass.getName() + "]", ex);
         }
     }

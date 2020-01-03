@@ -196,8 +196,8 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
      * @param observer the observer to observe the connection state of the internal unit remotes.
      */
     @Override
-    default void addConnectionStateObserver(Observer<Remote, ConnectionState.State> observer) {
-        for (Remote remote : getInternalUnits()) {
+    default void addConnectionStateObserver(Observer<Remote<?>, ConnectionState.State> observer) {
+        for (final Remote<?> remote : getInternalUnits()) {
             remote.addConnectionStateObserver(observer);
         }
     }
@@ -208,8 +208,8 @@ public interface ServiceRemote<S extends Service, ST extends Message> extends Ma
      * @param observer the observer to remove.
      */
     @Override
-    default void removeConnectionStateObserver(Observer<Remote, ConnectionState.State> observer) {
-        for (final Remote remote : getInternalUnits()) {
+    default void removeConnectionStateObserver(Observer<Remote<?>, ConnectionState.State> observer) {
+        for (final Remote<?> remote : getInternalUnits()) {
             remote.removeConnectionStateObserver(observer);
         }
     }

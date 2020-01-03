@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 
 /**
@@ -77,18 +78,18 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
                 String className = PRESET_AGENT_PACKAGE_PREFIX
                         + ".agent"
                         + "." + agentLabel + "Agent";
-                agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
-            } catch (ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+                agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).getConstructor().newInstance();
+            } catch (ClassNotFoundException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | InvocationTargetException ex) {
                 // try to load custom agent
                 String className = CUSTOM_AGENT_PACKAGE_PREFIX
                         + "." + StringProcessor.removeWhiteSpaces(agentLabel).toLowerCase()
                         + ".agent"
                         + "." + StringProcessor.transformToPascalCase(StringProcessor.removeWhiteSpaces(agentLabel)) + "Agent";
-                agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
+                agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).getConstructor().newInstance();
             }
             logger.debug("Creating agent of type [" + LabelProcessor.getBestMatch(agentClass.getLabel()) + "]");
             agent.init(agentUnitConfig);
-        } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {
+        } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException | NoSuchMethodException | InvocationTargetException ex) {
             throw new org.openbase.jul.exception.InstantiationException(Agent.class, agentUnitConfig.getId(), ex);
         }
         return agent;

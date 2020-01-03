@@ -70,7 +70,7 @@ import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescripti
 public class GenericUnitPanel<RS extends AbstractUnitRemote<Message>> extends UnitRemoteView<RS> {
 
     private final Observer<DataProvider<UnitConfig>, UnitConfig> unitConfigObserver;
-    private final Observer<Remote, ConnectionState.State> connectionStateObserver;
+    private final Observer<Remote<?>, ConnectionState.State> connectionStateObserver;
     private boolean autoRemove;
     private List<JComponent> componentList;
     private StatusPanel statusPanel;
@@ -309,10 +309,10 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote<Message>> extends Un
 
     private AbstractServicePanel instantiatServicePanel(Class<? extends AbstractServicePanel> servicePanelClass, AbstractUnitRemote unitRemote) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            AbstractServicePanel instance = servicePanelClass.newInstance();
+            AbstractServicePanel instance = servicePanelClass.getConstructor().newInstance();
             instance.init(unitRemote);
             return instance;
-        } catch (NullPointerException | InstantiationException | CouldNotPerformException | IllegalAccessException ex) {
+        } catch (NullPointerException | InstantiationException | CouldNotPerformException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
             throw new org.openbase.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);
         }
     }

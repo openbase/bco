@@ -34,6 +34,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 
 /**
@@ -73,17 +74,17 @@ public class AppControllerFactoryImpl implements AppControllerFactory {
                 // try to load preset app
                 String className = PRESET_APP_PACKAGE_PREFIX
                         + "." + LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel()) + "App";
-                app = (AppController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
-            } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+                app = (AppController) Thread.currentThread().getContextClassLoader().loadClass(className).getConstructor().newInstance();
+            } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | InvocationTargetException ex) {
                 // try to load custom app
                 String className = CUSTOM_APP_PACKAGE_PREFIX
                         + "." + StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel())).toLowerCase()
                         + "." + StringProcessor.transformToPascalCase(StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel()))) + "App";
-                app = (AppController) Thread.currentThread().getContextClassLoader().loadClass(className).newInstance();
+                app = (AppController) Thread.currentThread().getContextClassLoader().loadClass(className).getConstructor().newInstance();
             }
             logger.debug("Creating app of type [" + LabelProcessor.getBestMatch(appClass.getLabel()) + "]");
             app.init(appUnitConfig);
-        } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {
+        } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException | NoSuchMethodException | InvocationTargetException ex) {
             throw new org.openbase.jul.exception.InstantiationException(App.class, appUnitConfig.getId(), ex);
         }
         return app;

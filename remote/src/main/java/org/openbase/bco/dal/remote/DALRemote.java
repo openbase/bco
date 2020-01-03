@@ -55,7 +55,7 @@ public class DALRemote {
         try {
             AbstractRemoteClient remote;
             try {
-                remote = JPService.getProperty(JPRemoteService.class).getValue().newInstance();
+                remote = JPService.getProperty(JPRemoteService.class).getValue().getConstructor().newInstance();
             } catch (InstantiationException ex) {
                 throw new CouldNotPerformException("Could not build remote instance!", ex);
             } catch (IllegalAccessException ex) {

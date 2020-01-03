@@ -198,7 +198,7 @@ public class UnitAllocationPaneController extends AbstractFXController {
     @FXML
     private TableColumn actionChainUnitLabelColumn;
 
-    private Observer<Remote, State> connectionStateObserver;
+    private Observer<Remote<?>, State> connectionStateObserver;
 
     private Observer unitObserver;
     private UnitRemote<?> unit;

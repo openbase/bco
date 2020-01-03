@@ -28,6 +28,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 //import org.openbase.jul.exception.InstantiationException;
@@ -107,9 +108,9 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
 
     private static AbstractServiceRemote<?, ?> instantiateServiceRemote(final Class<? extends AbstractServiceRemote> serviceRemoteClass) throws org.openbase.jul.exception.InstantiationException {
         try {
-            AbstractServiceRemote<?, ?> remote = serviceRemoteClass.newInstance();
+            AbstractServiceRemote<?, ?> remote = serviceRemoteClass.getConstructor().newInstance();
             return remote;
-        } catch (InstantiationException | IllegalAccessException ex) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
             throw new org.openbase.jul.exception.InstantiationException(serviceRemoteClass, ex);
         }
     }

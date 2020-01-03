@@ -44,7 +44,7 @@ import org.openbase.type.domotic.state.WindowStateType.WindowState;
 public class NeighborConnectionPresenceTrigger extends AbstractTrigger {
 
     private final Observer dataObserver;
-    private final Observer<Remote, ConnectionState.State> connectionObserver;
+    private final Observer<Remote<?>, ConnectionState.State> connectionObserver;
     private final LocationRemote locationRemote;
     private final ConnectionRemote connectionRemote;
     private boolean active = false;
