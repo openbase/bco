@@ -100,7 +100,7 @@ public interface ServiceProvider<ST extends Message> extends Identifiable<String
      * @param serviceType the type of service to observe.
      * @param observer    the observer to inform about changes.
      */
-    void addServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer);
+    void addServiceStateObserver(final ServiceType serviceType, final Observer<ServiceStateProvider<ST>, ST> observer) throws CouldNotPerformException;
 
     /**
      * Method remove an already registered service state observer.

@@ -258,7 +258,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     }
 
     @Override
-    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) {
+    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer<ServiceStateProvider<Message>, Message> observer) throws InvalidStateException {
         if (serviceTempus == ServiceTempus.UNKNOWN) {
             // if unknown tempus add observer on all other tempi
             for (ServiceTempus value : ServiceTempus.values()) {
@@ -270,9 +270,15 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
             }
         } else {
             try {
-                serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+                if (serviceType == ServiceType.UNKNOWN) {
+                    for (MessageObservable<ServiceStateProvider<Message>, Message> observable : serviceTempusServiceTypeObservableMap.get(serviceTempus).values()) {
+                        observable.addObserver(observer);
+                    }
+                } else {
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+                }
             } catch (NullPointerException ex) {
-                logger.warn("Non supported observer registration requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus );
+                throw new InvalidStateException("Non supported observer registration requested! "+this+" does not support Service["+serviceType+"] in ServiceTempus["+serviceTempus+"]", ex);
             }
         }
     }

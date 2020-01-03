@@ -340,9 +340,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         Message serviceData = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data);
                         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
                     } catch (CouldNotPerformException ex) {
-                        logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this controller.", ex);
+                        if (logger.isDebugEnabled()) {
+                            logger.trace("Could not notify state update for service[{}] because this service is not supported by this controller: {}", serviceDescription.getServiceType(), ExceptionProcessor.getInitialCauseMessage(ex));
+                        }
                     }
-
                 }
             }
         }
@@ -535,7 +536,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 if (!serviceInterfaceClass.isAssignableFrom(this.getClass())) {
                     // interface not supported dummy.
-                    throw new CouldNotPerformException("Could not register methods for ServiceInterface [" + serviceInterfaceClass.getName() + "]");
+                    throw new CouldNotPerformException("Interface[" + serviceInterfaceClass.getName() + "] is not supported by "+ this);
                 }
 
                 RPCHelper.registerInterface((Class) serviceInterfaceClass, this, server);
@@ -594,7 +595,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // In this case we perform an unauthorized action.
             for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
                 if (stackTraceElement.getClassName().equals(RPCHelper.class.getName())) {
-                    logger.info("incomming unauthorized action: " + builder.toString());
+                    logger.info("incoming unauthorized action: " + builder.toString());
 
                     // handle legacy case for UIs without authentication support.
                     if (JPService.getValue(JPRSBLegacyMode.class, false)) {
@@ -988,7 +989,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         // setup timer only if action needs to be removed or the current action provides a limited execution time.
                         if (atLeastOneDoneActionOnList || currentAction.getExecutionTimePeriod(TimeUnit.MICROSECONDS) != 0) {
                             final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : Math.min(nextAction.getExecutionTime(), Action.MAX_EXECUTION_TIME_PERIOD);
-                            logger.debug("Reschedule scheduled in:" + rescheduleTimeout);
+                            logger.debug("Reschedule scheduled in {} ms.", rescheduleTimeout);
                             // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
                             // this should not cause any latency because new incoming actions are scheduled anyway.
                             scheduleTimeout.restart(Math.max(rescheduleTimeout, 50), TimeUnit.MILLISECONDS);
@@ -1068,7 +1069,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             actionDescriptionBuilder.getActionInitiatorBuilder().clear();
 
             // recover initiator type
-            if(actionDescription.getActionInitiator().hasInitiatorType()) {
+            if (actionDescription.getActionInitiator().hasInitiatorType()) {
                 actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
             }
 
@@ -1160,7 +1161,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
-    public void addServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer<ServiceStateProvider<Message>, Message> observer) {
+    public void addServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer<ServiceStateProvider<Message>, Message> observer) throws CouldNotPerformException {
         if (serviceTempus == ServiceTempus.UNKNOWN) {
             // if unknown tempus add observer on all other tempi
             for (ServiceTempus value : ServiceTempus.values()) {
@@ -1172,9 +1173,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         } else {
             try {
-                serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+                if (serviceType == ServiceType.UNKNOWN) {
+                    for (MessageObservable<ServiceStateProvider<Message>, Message> observable : serviceTempusServiceTypeObservableMap.get(serviceTempus).values()) {
+                        observable.addObserver(observer);
+                    }
+                } else {
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
+                }
             } catch (NullPointerException ex) {
-                logger.warn("Non supported observer registration requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus);
+                throw new InvalidStateException("Non supported observer registration requested! "+this+" does not support Service["+serviceType+"] in ServiceTempus["+serviceTempus+"]", ex);
             }
         }
     }
