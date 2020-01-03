@@ -45,6 +45,7 @@ public class CachedUnitRegistryRemote {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedUnitRegistryRemote.class);
 
     private static final SyncObject REMOTE_LOCK = new SyncObject("CachedUnitRegistryRemoteLock");
+    private static final SyncObject REGISTY_LOCK = new SyncObject("RegistyLock");
 
     private static UnitRegistryRemote registryRemote;
     private transient static boolean shutdown = false;
@@ -71,11 +72,13 @@ public class CachedUnitRegistryRemote {
      * @throws InterruptedException     is thrown in case the thread was externally interrupted.
      * @throws CouldNotPerformException is thrown if the reinitialization could not be performed.
      */
-    public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
+    public static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             // only call re-init if the registry was activated and initialized in the first place
             if (registryRemote != null) {
-                getRegistry().reinit(REMOTE_LOCK);
+                synchronized (REGISTY_LOCK) {
+                    getRegistry().reinit(REMOTE_LOCK);
+                }
             }
             getRegistry().requestData().get(30, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
@@ -93,8 +96,10 @@ public class CachedUnitRegistryRemote {
      * @throws NotAvailableException if the initial startup of the UnitRegistryRemote fails
      * @throws InterruptedException  is thrown if the thread is externally interrupted.
      */
-    public synchronized static UnitRegistryRemote getRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
-        waitForData();
+    public static UnitRegistryRemote getRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            waitForData();
+        }
         return getRegistry();
     }
 
@@ -105,28 +110,34 @@ public class CachedUnitRegistryRemote {
      *
      * @throws NotAvailableException if the initial startup of the UnitRegistryRemote fails
      */
-    public synchronized static UnitRegistryRemote getRegistry() throws NotAvailableException {
+    public static UnitRegistryRemote getRegistry() throws NotAvailableException {
         try {
             if (shutdown) {
                 throw new ShutdownInProgressException(UnitRegistry.class);
             }
 
-            if (registryRemote == null) {
-                try {
-                    registryRemote = new UnitRegistryRemote();
-                    registryRemote.init();
-                    registryRemote.activate();
-                    registryRemote.lock(REMOTE_LOCK);
-                } catch (Exception ex) {
-                    if (registryRemote != null) {
-                        registryRemote.unlock(REMOTE_LOCK);
-                        registryRemote.shutdown();
-                        registryRemote = null;
-                    }
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached unit registry remote!", ex), LOGGER);
-                }
+            if (registryRemote != null) {
+                return registryRemote;
             }
-            return registryRemote;
+
+            synchronized (REGISTY_LOCK) {
+                if (registryRemote == null) {
+                    try {
+                        registryRemote = new UnitRegistryRemote();
+                        registryRemote.init();
+                        registryRemote.activate();
+                        registryRemote.lock(REMOTE_LOCK);
+                    } catch (Exception ex) {
+                        if (registryRemote != null) {
+                            registryRemote.unlock(REMOTE_LOCK);
+                            registryRemote.shutdown();
+                            registryRemote = null;
+                        }
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached unit registry remote!", ex), LOGGER);
+                    }
+                }
+                return registryRemote;
+            }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Cached unit registry is not available!", ex);
         }
@@ -167,7 +178,7 @@ public class CachedUnitRegistryRemote {
     public static void prepare() throws CouldNotPerformException {
         synchronized (REMOTE_LOCK) {
             // handle legal operation
-            if( registryRemote == null && shutdown == false ) {
+            if (registryRemote == null && shutdown == false) {
                 getRegistry();
                 return;
             }

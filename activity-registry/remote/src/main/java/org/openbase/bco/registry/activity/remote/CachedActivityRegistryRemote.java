@@ -44,6 +44,7 @@ public class CachedActivityRegistryRemote {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedActivityRegistryRemote.class);
 
     private static final SyncObject REMOTE_LOCK = new SyncObject("CachedActivityRegistryRemoteLock");
+    private static final SyncObject REGISTY_LOCK = new SyncObject("RegistyLock");
 
     private static ActivityRegistryRemote registryRemote;
     private static transient boolean shutdown = false;
@@ -70,11 +71,13 @@ public class CachedActivityRegistryRemote {
      * @throws InterruptedException     is thrown in case the thread was externally interrupted.
      * @throws CouldNotPerformException is thrown if the reinitialization could not be performed.
      */
-    public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
+    public static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             // only call re-init if the registry was activated and initialized in the first place
             if (registryRemote != null) {
-                getRegistry().reinit(REMOTE_LOCK);
+                synchronized (REGISTY_LOCK) {
+                    getRegistry().reinit(REMOTE_LOCK);
+                }
             }
             getRegistry().requestData().get(30, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
@@ -92,8 +95,10 @@ public class CachedActivityRegistryRemote {
      * @throws NotAvailableException if the initial startup of the ActivityRegistryRemote fails
      * @throws InterruptedException  is thrown if the thread is externally interrupted.
      */
-    public synchronized static ActivityRegistryRemote getRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
-        waitForData();
+    public static ActivityRegistryRemote getRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            waitForData();
+        }
         return getRegistry();
     }
 
@@ -104,28 +109,34 @@ public class CachedActivityRegistryRemote {
      *
      * @throws NotAvailableException if the initial startup of the ActivityRegistryRemote fails
      */
-    public synchronized static ActivityRegistryRemote getRegistry() throws NotAvailableException {
+    public static ActivityRegistryRemote getRegistry() throws NotAvailableException {
         try {
             if (shutdown) {
                 throw new ShutdownInProgressException(ActivityRegistry.class);
             }
 
-            if (registryRemote == null) {
-                try {
-                    registryRemote = new ActivityRegistryRemote();
-                    registryRemote.init();
-                    registryRemote.activate();
-                    registryRemote.lock(REMOTE_LOCK);
-                } catch (Exception ex) {
-                    if (registryRemote != null) {
-                        registryRemote.unlock(REMOTE_LOCK);
-                        registryRemote.shutdown();
-                        registryRemote = null;
-                    }
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached activity registry remote!", ex), LOGGER);
-                }
+            if (registryRemote != null) {
+                return registryRemote;
             }
-            return registryRemote;
+
+            synchronized (REGISTY_LOCK) {
+                if (registryRemote == null) {
+                    try {
+                        registryRemote = new ActivityRegistryRemote();
+                        registryRemote.init();
+                        registryRemote.activate();
+                        registryRemote.lock(REMOTE_LOCK);
+                    } catch (Exception ex) {
+                        if (registryRemote != null) {
+                            registryRemote.unlock(REMOTE_LOCK);
+                            registryRemote.shutdown();
+                            registryRemote = null;
+                        }
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached activity registry remote!", ex), LOGGER);
+                    }
+                }
+                return registryRemote;
+            }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("cached activity registry", ex);
         }
@@ -167,7 +178,7 @@ public class CachedActivityRegistryRemote {
     public static void prepare() throws CouldNotPerformException {
         synchronized (REMOTE_LOCK) {
             // handle legal operation
-            if( registryRemote == null && shutdown == false ) {
+            if (registryRemote == null && shutdown == false) {
                 getRegistry();
                 return;
             }
