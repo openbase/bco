@@ -143,9 +143,12 @@ public class UnitApiController implements UnitApi {
                         final UnitSSEObserver unitSSEObserver = new UnitSSEObserver(unitRemote);
                         unitSSEObserver.addEmitter(sseEmitter);
                         observerMap.put(unitRemote.getId(), unitSSEObserver);
-                        unitRemote.addServiceStateObserver(serviceTempus, serviceType, unitSSEObserver);
+                        try {
+                            unitRemote.addServiceStateObserver(serviceTempus, serviceType, unitSSEObserver);
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory("Could not register service state observer!", ex, logger);
+                        }
                     }
-
                 }
             }
 

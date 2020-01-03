@@ -94,7 +94,7 @@ public class AppRemoteAdapter implements App {
     }
 
     @Override
-    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer) {
+    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer) throws InvalidStateException {
         appRemote.addServiceStateObserver(serviceTempus, serviceType, observer);
     }
 
