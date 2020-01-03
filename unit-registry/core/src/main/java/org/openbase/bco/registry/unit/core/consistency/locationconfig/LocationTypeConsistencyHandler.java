@@ -23,6 +23,8 @@ package org.openbase.bco.registry.unit.core.consistency.locationconfig;
  */
 import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -58,7 +60,7 @@ public class LocationTypeConsistencyHandler extends AbstractProtoBufRegistryCons
                     throw new EntryModification(entry.setMessage(locationUnit, this), this);
                 }
             } catch (CouldNotPerformException ex) {
-                logger.debug("Could not detect locationType for location[" + locationUnit.getLabel() + "] with current type [" + locationConfig.getLocationType().name() + "]", ex);
+                ExceptionPrinter.printHistory("Could not detect locationType for location[" + locationUnit.getLabel() + "] with current type [" + locationConfig.getLocationType().name() + "]", ex, logger, LogLevel.DEBUG);
             }
         }
     }
