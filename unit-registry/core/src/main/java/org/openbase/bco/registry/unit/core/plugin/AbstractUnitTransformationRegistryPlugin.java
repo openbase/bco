@@ -23,9 +23,9 @@ package org.openbase.bco.registry.unit.core.plugin;
  */
 
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.iface.Transformer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
@@ -37,7 +37,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
@@ -67,28 +66,31 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
         }
     }
 
-    protected void verifyPublication(final Transform transformation, String targetFrame, String sourceFrame) throws CouldNotPerformException {
+    protected void verifyPublication(final Transform transformation, String targetFrame, String sourceFrame) throws VerificationFailedException {
         // wait until transformation was published
         try {
             int maxChecks = 10;
             for (int i = 0; i < maxChecks; i++) {
                 try {
                     // check if transformation was published
-                    if (transformation.getTransform().equals(GlobalTransformReceiver.getInstance().requestTransform(targetFrame, sourceFrame, System.currentTimeMillis()).get(100, TimeUnit.MILLISECONDS).getTransform())) {
+                    if (transformation.equalsWithoutTime(GlobalTransformReceiver.getInstance().lookupTransform(targetFrame, sourceFrame, System.currentTimeMillis()))) {
                         // was published
-                        break;
+                        if (!JPService.testMode() && JPService.verboseMode()) {
+                            logger.info("Published " + targetFrame + " to " + sourceFrame);
+                        }
+                        return;
                     }
-                } catch (TimeoutException e) {
+                } catch (TransformerException ex) {
                     // try again if needed
+                    Thread.sleep(100);
                 }
             }
-            if (!JPService.testMode() && JPService.verboseMode()) {
-                logger.info("Published " + targetFrame + " to " + sourceFrame);
-            }
+            throw new TimeoutException("Transformation not published in time!");
         } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Application shutdown detected!");
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not verify publication!");
+            Thread.currentThread().interrupt();
+            throw new VerificationFailedException(new ShutdownInProgressException(this));
+        } catch (CouldNotPerformException ex) {
+            throw new VerificationFailedException("Could not verify publication!", ex);
         }
     }
 
