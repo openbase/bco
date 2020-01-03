@@ -109,7 +109,6 @@ public class AbstractAuthenticatedConfigurableRemote<M extends Message, CONFIG e
         @Override
         public void internalNotify(Event event) {
             try {
-                logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
                 if (event.getData() != null) {
                     otherData = (M) event.getData();
                     if (SessionManager.getInstance().isLoggedIn()) {
