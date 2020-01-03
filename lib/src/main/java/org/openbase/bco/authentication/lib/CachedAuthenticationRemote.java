@@ -40,6 +40,7 @@ public class CachedAuthenticationRemote {
     private static AuthenticationRemote authenticationRemote;
     private static transient boolean shutdown = false;
     private static final SyncObject REMOTE_LOCK = new SyncObject("CachedAuthenticationRemote");
+    private static final SyncObject REGISTY_LOCK = new SyncObject("RegistyLock");
 
     /**
      * Setup shutdown hook
@@ -65,27 +66,33 @@ public class CachedAuthenticationRemote {
      *
      * @throws NotAvailableException if the cashed instance is not available
      */
-    public synchronized static AuthenticationRemote getRemote() throws NotAvailableException {
+    public static AuthenticationRemote getRemote() throws NotAvailableException {
         try {
             if (shutdown) {
                 throw new ShutdownInProgressException("AuthenticationRemote");
             }
 
-            if (authenticationRemote == null) {
-                try {
-                    authenticationRemote = new AuthenticationRemote();
-                    authenticationRemote.init();
-                    authenticationRemote.activate();
-                    authenticationRemote.waitForActivation();
-                } catch (Exception ex) {
-                    if (authenticationRemote != null) {
-                        authenticationRemote.shutdown();
-                        authenticationRemote = null;
-                    }
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached authenticator remote!", ex), LOGGER);
-                }
+            if (authenticationRemote != null) {
+                return authenticationRemote;
             }
-            return authenticationRemote;
+
+            synchronized (REGISTY_LOCK) {
+                if (authenticationRemote == null) {
+                    try {
+                        authenticationRemote = new AuthenticationRemote();
+                        authenticationRemote.init();
+                        authenticationRemote.activate();
+                        authenticationRemote.waitForActivation();
+                    } catch (Exception ex) {
+                        if (authenticationRemote != null) {
+                            authenticationRemote.shutdown();
+                            authenticationRemote = null;
+                        }
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached authenticator remote!", ex), LOGGER);
+                    }
+                }
+                return authenticationRemote;
+            }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("CachedAuthenticatorClientRemote", ex);
         }
@@ -95,7 +102,7 @@ public class CachedAuthenticationRemote {
         synchronized (REMOTE_LOCK) {
 
             // handle legal operation
-            if( authenticationRemote == null && shutdown == false ) {
+            if (authenticationRemote == null && shutdown == false) {
                 getRemote();
                 return;
             }
