@@ -99,13 +99,13 @@ public class RegistryApiController implements RegistryApi {
         class Tmp extends ArrayList<OpenbaseUnitConfig> {}
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
-
-    @Override
-    @CrossOrigin(origins = "*")
-    public ResponseEntity<List<OpenbaseUnitConfig>> registryUnitGetUnitConfigsByUnitTypePost(@Valid @RequestBody InlineObject133 inlineObject133) {
-        class Tmp extends ArrayList<OpenbaseUnitConfig> {}
-        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject133, Tmp.class, logger);
-    }
+//
+//    @Override
+//    @CrossOrigin(origins = "*")
+//    public ResponseEntity<List<OpenbaseUnitConfig>> registryUnitGetUnitConfigsByUnitTypePost(@Valid @RequestBody InlineObject133 inlineObject133) {
+//        class Tmp extends ArrayList<OpenbaseUnitConfig> {}
+//        return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject133, Tmp.class, logger);
+//    }
 
     @Override
     @CrossOrigin(origins = "*")
@@ -114,15 +114,15 @@ public class RegistryApiController implements RegistryApi {
         return (ResponseEntity) RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(null, Tmp.class, logger);
     }
 
-    @Override
-    @CrossOrigin(origins = "*")
-    public ResponseEntity<OpenbaseUnitConfig> registryUnitGetUnitConfigByAliasPost(@Valid @RequestBody InlineObject106 inlineObject106) {
-        return RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject106, OpenbaseUnitConfig.class, logger);
-    }
-
-    @Override
-    @CrossOrigin(origins = "*")
-    public ResponseEntity<Boolean> registryClassContainsAppClassByIdPost(@Valid @RequestBody InlineObject44 inlineObject44) {
-        return RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject44, Boolean.class, logger);
-    }
+//    @Override
+//    @CrossOrigin(origins = "*")
+//    public ResponseEntity<OpenbaseUnitConfig> registryUnitGetUnitConfigByAliasPost(@Valid @RequestBody InlineObject106 inlineObject106) {
+//        return RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject106, OpenbaseUnitConfig.class, logger);
+//    }
+//
+//    @Override
+//    @CrossOrigin(origins = "*")
+//    public ResponseEntity<Boolean> registryClassContainsAppClassByIdPost(@Valid @RequestBody InlineObject44 inlineObject44) {
+//        return RegistryRPCProcessor.invokeMethodOrFailWithBadRequest(inlineObject44, Boolean.class, logger);
+//    }
 }
