@@ -220,61 +220,76 @@ public class ActionImpl implements SchedulableAction {
                     // Initiate
                     updateActionState(ActionState.State.INITIATING);
 
-                    try {
-                        while (!Thread.interrupted() && !actionTask.isCancelled()) {
-                            try {
-                                boolean hasOperationService = false;
-                                for (ServiceDescription description : unit.getUnitTemplate().getServiceDescriptionList()) {
-                                    if (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == ServicePattern.OPERATION) {
-                                        hasOperationService = true;
-                                        break;
-                                    }
-                                }
-
-                                if (isDone()) {
-                                    LOGGER.error(ActionImpl.this + " was done before executed!");
-                                    return getActionDescription();
-                                }
-
-                                // Execute
-                                updateActionState(ActionState.State.EXECUTING);
-
-                                // only update requested state if it is an operation state, else throw an exception if not in provider control mode
-                                if (!hasOperationService) {
-                                    if (!JPService.getValue(JPProviderControlMode.class, false)) {
-                                        throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
-                                    }
-                                } else {
-                                    setRequestedState();
-                                }
-
-                                LOGGER.debug("Wait for execution...");
-                                unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.SECONDS);
-                                LOGGER.debug("Execution finished!");
-
-                                // action can be finished if not done yet and time has expired or execution time was never required.
-                                if (!isDone() && (isExpired() || getExecutionTimePeriod(TimeUnit.MICROSECONDS) == 0)) {
-                                    updateActionState(State.FINISHED);
-                                }
-                                break;
-                            } catch (CouldNotPerformException | ExecutionException | RuntimeException ex) {
-                                // avoid execution in case unit is shutting down
-                                if (unit.isShutdownInProgress() || ExceptionProcessor.isCausedBySystemShutdown(ex)) {
-                                    updateActionState(State.ABORTED);
-                                    throw new ShutdownInProgressException(ex);
-                                }
-
-                                if (!isDone()) {
-                                    updateActionState(ActionState.State.EXECUTION_FAILED);
-                                }
-                                ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
-                                Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
-                            }
+                    // validate operation service
+                    boolean hasOperationService = false;
+                    for (ServiceDescription description : unit.getUnitTemplate().getServiceDescriptionList()) {
+                        if (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == ServicePattern.OPERATION) {
+                            hasOperationService = true;
+                            break;
                         }
-                        return getActionDescription();
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                        throw ex;
+                    }
+
+                    LOGGER.debug("Enter action loop...");
+
+                    while (!Thread.interrupted() && !actionTask.isCancelled()) {
+
+                        LOGGER.debug("Next action loop...");
+
+                        try {
+                            // validate action state
+                            if (isDone()) {
+                                LOGGER.error(ActionImpl.this + " was done before executed!");
+                                return getActionDescription();
+                            }
+
+                            if(!isValid()) {
+                                LOGGER.debug(ActionImpl.this + " no longer valid and will be rejected!");
+                                updateActionState(State.REJECTED);
+                                return getActionDescription();
+                            }
+
+                            // Execute
+                            updateActionState(ActionState.State.EXECUTING);
+
+                            // only update requested state if it is an operation state, else throw an exception if not in provider control mode
+                            if (!hasOperationService) {
+                                if (!JPService.getValue(JPProviderControlMode.class, false)) {
+                                    throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
+                                }
+                            } else {
+                                setRequestedState();
+                            }
+
+                            LOGGER.debug("Wait for execution...");
+                            unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.SECONDS);
+                            LOGGER.debug("Execution finished!");
+
+                            // action can be finished if not done yet and time has expired or execution time was never required.
+                            if (!isDone() && (isExpired() || getExecutionTimePeriod(TimeUnit.MICROSECONDS) == 0)) {
+                                updateActionState(State.FINISHED);
+                            }
+                            break;
+                        } catch (CouldNotPerformException | ExecutionException | RuntimeException ex) {
+                            // avoid execution in case unit is shutting down
+                            if (unit.isShutdownInProgress() || ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                                updateActionState(State.ABORTED);
+                                return getActionDescription();
+                            }
+
+                            if (!isDone()) {
+                                updateActionState(ActionState.State.EXECUTION_FAILED);
+                            }
+                            ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
+                            Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
+                        }
+                    }
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw ex;
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory("Action task crashed!", ex, LOGGER);
+                    if(!isDone()) {
+                        updateActionState(State.ABORTED);
                     }
                 } finally {
                     synchronized (executionSync) {
@@ -282,6 +297,7 @@ public class ActionImpl implements SchedulableAction {
                         executionSync.notifyAll();
                     }
                 }
+                return getActionDescription();
             });
             return actionTask;
         }
