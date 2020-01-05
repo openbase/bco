@@ -46,7 +46,6 @@ import rsb.converter.ProtocolBufferConverter;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.TimeoutException;
 
 public class RemoteActionPool {
 
