@@ -145,13 +145,6 @@ public class NightLightApp extends AbstractAppController {
                         // location not supported for nightlight
                     }
 
-                    // not useful since it would enable LIGHTS to switch back on.
-//                    // cancel absence actions
-//                    if (absenceAction != null) {
-//                        absenceAction.cancel();
-//                        absenceActionLocationMap.remove(location);
-//                    }
-
                     break;
                 case ABSENT:
 
@@ -163,13 +156,14 @@ public class NightLightApp extends AbstractAppController {
                     if (timeout.isExpired() || !timeout.isActive()) {
                         // System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
                         absenceActionLocationMap.put(location, observe(location.setPowerState(State.OFF, UnitType.LIGHT, getDefaultActionParameter())));
+
+                        // cancel presents actions
+                        if (presentsAction != null) {
+                            presentsAction.cancel();
+                            presentsActionLocationMap.remove(location);
+                        }
                     }
 
-                    // cancel presents actions
-                    if (presentsAction != null) {
-                        presentsAction.cancel();
-                        presentsActionLocationMap.remove(location);
-                    }
                     break;
             }
         } catch (ShutdownInProgressException ex) {
