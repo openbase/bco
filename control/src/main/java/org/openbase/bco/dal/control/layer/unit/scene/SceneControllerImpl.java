@@ -71,10 +71,7 @@ import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData.Builder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -311,8 +308,21 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     }
 
     private void stop() {
-        requiredActionPool.stop();
-        optionalActionPool.stop();
+
+        // cancel required actions
+        final Map<RemoteAction, Future<ActionDescription>> remoteActionActionDescriptionFutureMap = requiredActionPool.cancel();
+
+        // cancel optional actions
+        remoteActionActionDescriptionFutureMap.putAll(optionalActionPool.cancel());
+
+        // print if something went wrong
+        try {
+            RemoteActionPool.observeCancelation(remoteActionActionDescriptionFutureMap, this, 5, TimeUnit.SECONDS);
+        } catch (MultiException ex) {
+            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(ex, logger);
+            }
+        }
     }
 
     public class ActivationStateOperationServiceImpl implements ActivationStateOperationService {

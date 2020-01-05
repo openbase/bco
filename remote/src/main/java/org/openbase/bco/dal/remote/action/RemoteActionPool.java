@@ -23,13 +23,12 @@ package org.openbase.bco.dal.remote.action;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
@@ -45,13 +44,9 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
 
 public class RemoteActionPool {
 
@@ -194,6 +189,10 @@ public class RemoteActionPool {
         return Collections.unmodifiableList(remoteActionList);
     }
 
+    /**
+     * @deprecated Please use the cancel() method instead.
+     */
+    @Deprecated
     public void stop() {
         for (final RemoteAction action : remoteActionList) {
             if (action.isRunning()) {
@@ -201,6 +200,17 @@ public class RemoteActionPool {
             }
         }
     }
+
+    public Map<RemoteAction, Future<ActionDescription>> cancel() {
+        final HashMap<RemoteAction, Future<ActionDescription>> remoteActionActionDescriptionFutureMap = new HashMap<>();
+        for (final RemoteAction action : remoteActionList) {
+            if (action.isRunning()) {
+                remoteActionActionDescriptionFutureMap.put(action, action.cancel());
+            }
+        }
+        return remoteActionActionDescriptionFutureMap;
+    }
+
 
     public void waitUntilDone() throws CouldNotPerformException, InterruptedException {
         for (final RemoteAction action : remoteActionList) {
@@ -224,5 +234,25 @@ public class RemoteActionPool {
         for (final RemoteAction action : remoteActionList) {
             action.removeActionDescriptionObserver(observer);
         }
+    }
+
+    public static void observeCancelation(final Map<RemoteAction, Future<ActionDescription>> remoteActionActionDescriptionFutureMap, final Object responsibleInstance, final long timeout, final TimeUnit timeUnit) throws MultiException {
+
+        // validate cancellation
+        MultiException.ExceptionStack exceptionStack = null;
+        for (Map.Entry<RemoteAction, Future<ActionDescription>> remoteActionFutureEntry : remoteActionActionDescriptionFutureMap.entrySet()) {
+
+            try {
+                remoteActionFutureEntry.getValue().get(timeout, timeUnit);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch (ExecutionException | java.util.concurrent.TimeoutException ex) {
+                exceptionStack = MultiException.push(responsibleInstance, ex, exceptionStack);
+            }
+        }
+
+        // check if something went wrong
+        MultiException.checkAndThrow(() -> "Could not cancel all action of "+ responsibleInstance, exceptionStack);
     }
 }
