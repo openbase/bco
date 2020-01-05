@@ -256,11 +256,6 @@ public class AmbientColorAgent extends AbstractAgentController {
         return color.getHue() + SEPERATOR + color.getSaturation() + SEPERATOR + color.getBrightness();
     }
 
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        super.deactivate();
-    }
-
     private class AllStrategyThread extends Thread {
 
         @Override
