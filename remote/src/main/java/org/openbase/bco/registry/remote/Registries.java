@@ -24,12 +24,16 @@ package org.openbase.bco.registry.remote;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
+import org.openbase.bco.registry.activity.lib.ActivityRegistry;
 import org.openbase.bco.registry.activity.remote.ActivityRegistryRemote;
 import org.openbase.bco.registry.activity.remote.CachedActivityRegistryRemote;
+import org.openbase.bco.registry.clazz.lib.ClassRegistry;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
+import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.template.remote.TemplateRegistryRemote;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.annotation.Experimental;
@@ -171,7 +175,7 @@ public class Registries {
             }
             return CachedUnitRegistryRemote.getRegistry();
         } catch (CouldNotPerformException ex) {
-            throw ExceptionProcessor.interruptOnShutdown(ex);
+            throw new NotAvailableException(UnitRegistry.class, ex);
         }
     }
 
@@ -192,7 +196,7 @@ public class Registries {
             }
             return CachedActivityRegistryRemote.getRegistry();
         } catch (CouldNotPerformException ex) {
-            throw ExceptionProcessor.interruptOnShutdown(ex);
+            throw new NotAvailableException(ActivityRegistry.class, ex);
         }
     }
 
@@ -213,7 +217,7 @@ public class Registries {
             }
             return CachedClassRegistryRemote.getRegistry();
         } catch (CouldNotPerformException ex) {
-            throw ExceptionProcessor.interruptOnShutdown(ex);
+            throw new NotAvailableException(ClassRegistry.class, ex);
         }
     }
 
@@ -234,7 +238,7 @@ public class Registries {
             }
             return CachedTemplateRegistryRemote.getRegistry();
         } catch (CouldNotPerformException ex) {
-            throw ExceptionProcessor.interruptOnShutdown(ex);
+            throw new NotAvailableException(TemplateRegistry.class, ex);
         }
     }
 
