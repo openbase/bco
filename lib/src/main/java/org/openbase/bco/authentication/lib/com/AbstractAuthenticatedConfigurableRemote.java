@@ -27,6 +27,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.communication.controller.AbstractConfigurableRemote;
@@ -140,7 +141,9 @@ public class AbstractAuthenticatedConfigurableRemote<M extends Message, CONFIG e
                     applyEventUpdate(event);
                 }
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);
+                if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);
+                }
             }
         }
     }
