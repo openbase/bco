@@ -89,6 +89,13 @@
                             </platforms>
                         </program>
                         <program>
+                            <mainClass>org.openbase.bco.app.util.launch.BCORegistryValidator</mainClass>
+                            <id>bco-registry-validate</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
                             <mainClass>org.openbase.bco.app.util.launch.BCOTrainDataGeneratorLauncher</mainClass>
                             <id>bco-generate-trainingdata</id>
                             <platforms>
