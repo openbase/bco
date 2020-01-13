@@ -31,6 +31,7 @@ import com.influxdb.query.FluxTable;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -134,7 +135,9 @@ public class InfluxDbProcessor {
             }
 
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not update configuration!", ex, LOGGER);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not update configuration!", ex, LOGGER);
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
