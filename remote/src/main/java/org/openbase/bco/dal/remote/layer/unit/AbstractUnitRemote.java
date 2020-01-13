@@ -585,7 +585,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
             logger.warn("New action offers an id which will be overwritten by controller!");
         }
 
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, this.getSessionManager(), authenticatedValue -> applyActionAuthenticated(authenticatedValue));
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionDescription.class, getSessionManager(), authenticatedValue -> applyActionAuthenticated(authenticatedValue));
     }
 
     @Override
@@ -596,9 +596,9 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                 actionDescripBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
             }
             if (SessionManager.getInstance().isLoggedIn() && (authToken != null)) {
-                final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescripBuilder.build(), authToken);
+                final AuthenticatedValue authenticatedValue = getSessionManager().initializeRequest(actionDescripBuilder.build(), authToken);
                 final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
-                return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+                return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), getSessionManager());
             } else {
                 return applyAction(actionDescripBuilder.build());
             }
