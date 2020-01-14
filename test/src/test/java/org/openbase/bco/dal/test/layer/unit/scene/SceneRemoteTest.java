@@ -48,10 +48,14 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionReferenceType;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActionStateType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
@@ -524,6 +528,64 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertEquals("Location off scene is not active", State.ACTIVE, sceneRemoteOff.getActivationState().getValue());
 
             System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
+        }
+    }
+
+    /**
+     * Test triggering a scene which only refer to intermediary actions and makes sure all impacted action are canceled when the scene gets deactivated.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 20000)
+    public void testTestIntermediaryActionCancellationOnSceneDeactivation() throws Exception {
+        System.out.println("testTestIntermediaryActionCancellationOnSceneDeactivation");
+
+        LightRemote internalLight = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, Units.LIGHT);
+        PowerSwitchRemote internalPowerSwitch = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, Units.POWER_SWITCH);
+
+        waitForExecution(internalLight.setPowerState(POWER_ON));
+        waitForExecution(internalPowerSwitch.setPowerState(POWER_ON));
+
+        internalLight.requestData().get();
+        internalPowerSwitch.requestData().get();
+
+
+        assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
+        assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
+
+        final SceneRemote sceneRemoteOff = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_OFF, true, Units.SCENE).get(0);
+        final RemoteAction sceneAction = waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
+
+        Assert.assertEquals("Scene action is not marked as intermediary one!", true, sceneAction.getActionDescription().getIntermediary());
+
+        Assert.assertNotEquals("Scene did not impact any action!", 0, sceneAction.getActionDescription().getActionImpactList().size());
+        Assert.assertNotEquals("Scene did not impact any action!", 0, sceneAction.getImpactedRemoteActions().size());
+
+        final List<RemoteAction> actionImpactList = sceneAction.getImpactedRemoteActions();
+
+        for (RemoteAction actionImpact : actionImpactList) {
+            actionImpact.waitForSubmission();
+            Assert.assertEquals("Impacted action not executing!", ActionStateType.ActionState.State.EXECUTING, actionImpact.getActionState());
+        }
+
+        assertTrue("internalLight has not switched off by scene!", internalLight.getPowerState().getValue() == POWER_OFF);
+        assertTrue("internalPowerSwitch has not switched off by scene!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
+
+        waitForExecution(sceneRemoteOff.setActivationState(State.INACTIVE, SCENE_ACTION_PARAM));
+
+        for (RemoteAction actionImpact : actionImpactList) {
+            actionImpact.waitUntilDone();
+            Assert.assertEquals("Impacted "+actionImpact+" not canceled!", ActionStateType.ActionState.State.CANCELED, actionImpact.getActionState());
+        }
+
+        for (ActionDescriptionType.ActionDescription actionDescription : internalLight.getActionList()) {
+            System.out.println("Action on stack: " +actionDescription.getActionState().getValue().name()+" = "+ MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
+            assertTrue("internalLight has an ongoing action on its stack!", new RemoteAction(actionDescription).isDone());
+        }
+
+        for (ActionDescriptionType.ActionDescription actionDescription : internalPowerSwitch.getActionList()) {
+            System.out.println("Action on stack: " + actionDescription.getActionState().getValue().name() + " = " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
+            assertTrue("internalPowerSwitch has an ongoing action on its stack!", new RemoteAction(actionDescription).isDone());
         }
     }
 }
