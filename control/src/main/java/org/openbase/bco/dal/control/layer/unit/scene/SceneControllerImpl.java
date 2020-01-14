@@ -299,7 +299,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                 applyDataUpdate(activationStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE);
 
                 // return the generated action description
-                return actionDescriptionBuilder.build();
+                return actionDescriptionBuilderNew.build();
 
             }, activationStateOperationService.setActivationState(activationStateBuilder.build()));
         } catch (CouldNotPerformException ex) {
