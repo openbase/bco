@@ -229,7 +229,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
                 return super.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
             }
 
-            // apply action on all service remotes, action impact in set via the actionDescriptionBuilder.
+            // apply action on all service remotes, action impact is set via the actionDescriptionBuilder.
             final byte[] sessionKey = (authenticationBaseData != null) ? authenticationBaseData.getSessionKey() : null;
             return FutureProcessor.postProcess((result) -> actionDescriptionBuilder.build(), serviceRemoteManager.applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey));
         } catch (CouldNotPerformException ex) {
