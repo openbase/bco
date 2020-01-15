@@ -104,7 +104,7 @@ public class BCOSystemValidator {
             System.out.println(StringProcessor.fillWithSpaces("Unit Pool", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futureUnits, DEFAULT_UNIT_POOL_DELAY_TIME));
             System.out.println();
 
-            if (taskSuccessful(futureUnits)) {
+            if (!taskSuccessful(futureUnits)) {
                 System.out.println(AnsiColor.colorize("Connection could not be established, please make sure BaseCubeOne is up and running!\n", AnsiColor.ANSI_YELLOW));
                 try {
                     futureUnits.get();
