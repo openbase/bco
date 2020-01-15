@@ -24,6 +24,8 @@ package org.openbase.bco.registry.mock;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.rct.GlobalTransformPublisher;
+import org.openbase.rct.GlobalTransformReceiver;
 
 /**
  *
@@ -52,6 +54,8 @@ public class MockRegistryHolder {
             }
             mockRegistry.shutdown();
             mockRegistry = null;
+            GlobalTransformReceiver.shutdown();
+            GlobalTransformPublisher.shutdown();
         }
     }
 }
