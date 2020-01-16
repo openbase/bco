@@ -19,7 +19,7 @@ install:
   - mvn --settings .travis/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --update-snapshots --show-version --quiet
 
 before_script:
-  - cd distribution
+  - #cd distribution
 
 script:
   - mvn test -Dmaven.javadoc.skip=true --batch-mode --fail-fast # --quiet
