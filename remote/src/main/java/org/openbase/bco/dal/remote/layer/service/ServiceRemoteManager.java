@@ -381,11 +381,11 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
                 }
             }
 
-            return FutureProcessor.allOf(input -> {
+            return FutureProcessor.allOf((input, time, timeUnit) -> {
                 try {
                     long sum = 0;
                     for (final Future<Long> future : input) {
-                        sum += future.get();
+                        sum += future.get(time, timeUnit);
                     }
 
                     long ping;

@@ -635,6 +635,7 @@ public class RemoteAction implements Action {
      */
     @Override
     public Future<ActionDescription> cancel() {
+        LOGGER.debug("cancel {}", this);
         Future<ActionDescription> future = null;
         try {
             synchronized (executionSync) {
@@ -667,8 +668,9 @@ public class RemoteAction implements Action {
 
                 // handle intermediary action
                 if (actionDescription != null && getActionDescription().getIntermediary()) {
+                    LOGGER.debug("Cancel impact of {}", this);
                     // cancel all impacts of this actions and return the current action description
-                    future = FutureProcessor.allOf(impactedRemoteActions, input -> actionDescription, remoteAction -> remoteAction.cancel());
+                    future = FutureProcessor.allOf(impactedRemoteActions, (input, time, timeUnit) -> actionDescription, (remoteAction, time, timeUnit) -> remoteAction.cancel());
                     return registerPostActionStateUpdate(future, State.CANCELED);
                 }
 
@@ -677,7 +679,7 @@ public class RemoteAction implements Action {
                     if (targetUnit.isConnected()) {
                         future = targetUnit.cancelAction(buildBestActionDescriptionToCancelAction(), authToken);
                     } else {
-                        future = FutureProcessor.postProcess((data) -> {
+                        future = FutureProcessor.postProcess((data, time, timeUnit) -> {
                             try {
                                 return targetUnit.cancelAction(buildBestActionDescriptionToCancelAction(), authToken).get(3, TimeUnit.SECONDS);
                             } catch (InterruptedException ex) {
@@ -742,7 +744,7 @@ public class RemoteAction implements Action {
     }
 
     private Future<ActionDescription> registerPostActionStateUpdate(final Future<ActionDescription> future, final ActionState.State actionState) {
-        return FutureProcessor.postProcess((result) -> {
+        return FutureProcessor.postProcess((result, time, timeUnit) -> {
 
             // when all sub actions are canceled, than we can mark this intermediary action as canceled as well.
             if (result != null) {

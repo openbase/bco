@@ -687,7 +687,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
 
             // collect results and setup action impact list of intermediary action
-            return FutureProcessor.allOf(input -> {
+            return FutureProcessor.allOf((input, time, timeUnit) -> {
 
                 // we are done if this is not a new action
                 if (!newSubmission) {
@@ -819,7 +819,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
 
             // collect results and setup action impact list of intermediary cause action
-            return FutureProcessor.allOf(input -> {
+            return FutureProcessor.allOf((input, time, timeUnit) -> {
 
                 // we are done if this is not a new action
                 if (!newSubmission) {
@@ -829,7 +829,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // generate impact list set store it into the authenticated value
                 for (final Future<AuthenticatedValue> future : input) {
                     try {
-                        final AuthenticatedValue unitAuthenticatedValue = future.get();
+                        final AuthenticatedValue unitAuthenticatedValue = future.get(time, timeUnit);
                         final ActionDescription unitActionResponse;
 
                         // validate responses and decrypt results
@@ -1180,11 +1180,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
         }
 
-        return FutureProcessor.allOf(input -> {
+        return FutureProcessor.allOf((input, time, timeUnit) -> {
             try {
                 long sum = 0;
                 for (final Future<Long> future : input) {
-                    sum += future.get();
+                    sum += future.get(time, timeUnit);
                 }
 
                 long ping;

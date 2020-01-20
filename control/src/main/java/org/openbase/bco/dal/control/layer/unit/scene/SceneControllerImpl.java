@@ -278,7 +278,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             // needs to be set before calling "setActivationState" because cause is used
             activationStateBuilder.setResponsibleAction(actionDescriptionBuilder);
 
-            return FutureProcessor.postProcess((result) -> {
+            return FutureProcessor.postProcess((result, time, timeUnit) -> {
 
                 // update builder with updated action impact
                 final ActionDescription.Builder actionDescriptionBuilderNew = result.toBuilder();

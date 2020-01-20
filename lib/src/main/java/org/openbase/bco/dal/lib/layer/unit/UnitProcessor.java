@@ -151,7 +151,7 @@ public class UnitProcessor {
                 try {
                     final TicketAuthenticatorWrapper initializedTicket = AuthenticationClientHandler.initServiceServerRequest(authenticationBaseData.getSessionKey(), authenticationBaseData.getTicketAuthenticatorWrapper());
 
-                    return FutureProcessor.allOf(input -> {
+                    return FutureProcessor.allOf((input, time, timeUnit) -> {
                         try {
                             for (Future<AuthenticatedValue> authenticatedValueFuture : input) {
                                 AuthenticationClientHandler.handleServiceServerResponse(authenticationBaseData.getSessionKey(), initializedTicket, authenticatedValueFuture.get().getTicketAuthenticatorWrapper());
@@ -165,7 +165,7 @@ public class UnitProcessor {
                     throw new CouldNotPerformException("Could not update ticket for further requests", ex);
                 }
             } else {
-                return FutureProcessor.allOf(input -> null, generateSnapshotActions(snapshot, null, null, logger, units));
+                return FutureProcessor.allOf((input, time, timeUnit)  -> null, generateSnapshotActions(snapshot, null, null, logger, units));
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not record snapshot authenticated!", ex));
