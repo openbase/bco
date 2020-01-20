@@ -113,25 +113,27 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     @Test
     public void applyCustomDataStateUpdateTest() {
         try {
-            colorableLightController.applyServiceState(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
-            Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
-            Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
-            Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor().getHsbColor().getBrightness(), 0.0001);
+            for (int i = 0; i < 10; i++) {
+                colorableLightController.applyServiceState(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
+                Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
+                Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
+                Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor().getHsbColor().getBrightness(), 0.0001);
 
-            colorableLightController.applyServiceState(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
-            Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
-            Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
-            Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor().getHsbColor().getBrightness(), 0.0001);
+                colorableLightController.applyServiceState(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
+                Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
+                Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
+                Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor().getHsbColor().getBrightness(), 0.0001);
 
-            colorableLightController.applyServiceState(States.Color.GREEN, ServiceType.COLOR_STATE_SERVICE);
-            Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
-            Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
-            Assert.assertEquals("Power state updated was not applied!", Color.GREEN_VALUE, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor());
+                colorableLightController.applyServiceState(States.Color.GREEN, ServiceType.COLOR_STATE_SERVICE);
+                Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
+                Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
+                Assert.assertEquals("Power state updated was not applied!", Color.GREEN_VALUE, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor());
 
-            colorableLightController.applyServiceState(Color.BLACK, ServiceType.COLOR_STATE_SERVICE);
-            Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
-            Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
-            Assert.assertEquals("Power state updated was not applied!", Color.BLACK_VALUE, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor());
+                colorableLightController.applyServiceState(Color.BLACK, ServiceType.COLOR_STATE_SERVICE);
+                Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
+                Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
+                Assert.assertEquals("Power state updated was not applied!", Color.BLACK_VALUE, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor());
+            }
 
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, System.err);
