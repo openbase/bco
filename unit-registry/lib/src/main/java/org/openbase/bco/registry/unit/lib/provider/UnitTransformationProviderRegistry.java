@@ -146,7 +146,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a future of a transform relative to root location
      */
     default Future<Transform3D> getRootToUnitTransform3D(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((input -> input.getTransform()), getRootToUnitTransformation(unitConfig));
+        return FutureProcessor.postProcess((input, time, timeUnit) -> input.getTransform(), getRootToUnitTransformation(unitConfig));
     }
 
     /**
@@ -159,7 +159,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a future of a transform relative to root location
      */
     default Future<Transform3D> getUnitToRootTransform3D(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((input -> input.getTransform()), getUnitToRootTransformation(unitConfig));
+        return FutureProcessor.postProcess((input, time, timeUnit)  -> input.getTransform(), getUnitToRootTransformation(unitConfig));
     }
 
     /**
@@ -170,7 +170,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a future of a position relative to the root location
      */
     default Future<Point3d> getUnitPositionGlobalPoint3d(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((input -> new Point3d(input)), getUnitPositionGlobalVector3d(unitConfig));
+        return FutureProcessor.postProcess((input, time, timeUnit)  -> new Point3d(input), getUnitPositionGlobalVector3d(unitConfig));
     }
 
     /**
@@ -182,7 +182,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      */
     @RPCMethod
     default Future<Vec3DDouble> getUnitPositionGlobalVec3DDouble(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((vec -> Vec3DDouble.newBuilder().setX(vec.x).setY(vec.y).setZ(vec.z).build()), getUnitPositionGlobalVector3d(unitConfig));
+        return FutureProcessor.postProcess((vec, time, timeUnit) -> Vec3DDouble.newBuilder().setX(vec.x).setY(vec.y).setZ(vec.z).build(), getUnitPositionGlobalVector3d(unitConfig));
     }
 
     /**
@@ -193,11 +193,11 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a future of a position relative to the root location
      */
     default Future<Vector3d> getUnitPositionGlobalVector3d(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((transformation -> {
+        return FutureProcessor.postProcess((transformation, time, timeUnit)  -> {
             final Vector3d pos = new Vector3d();
             transformation.get(pos);
             return pos;
-        }), getUnitToRootTransform3D(unitConfig));
+        }, getUnitToRootTransform3D(unitConfig));
     }
 
     /**
@@ -208,7 +208,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a future of a position relative to the root location
      */
     default Future<TranslationType.Translation> getUnitPositionGlobal(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((pos) -> TranslationType.Translation.newBuilder().setX(pos.x).setY(pos.y).setZ(pos.z).build(), getUnitPositionGlobalPoint3d(unitConfig));
+        return FutureProcessor.postProcess((pos, time, timeUnit) -> TranslationType.Translation.newBuilder().setX(pos.x).setY(pos.y).setZ(pos.z).build(), getUnitPositionGlobalPoint3d(unitConfig));
     }
 
     /**
@@ -219,7 +219,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a future of a rotation relative to the root location
      */
     default Future<Quat4d> getUnitRotationGlobalQuat4d(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((transformation -> {
+        return FutureProcessor.postProcess(((transformation, time, timeUnit)  -> {
             final Quat4d quat = new Quat4d();
             transformation.get(quat);
             return quat;
@@ -234,7 +234,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a future of a rotation relative to the root location
      */
     default Future<RotationType.Rotation> getUnitRotationGlobal(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((quat -> RotationType.Rotation.newBuilder().setQw(quat.w).setQx(quat.x).setQy(quat.y).setQz(quat.z).build()), getUnitRotationGlobalQuat4d(unitConfig));
+        return FutureProcessor.postProcess(((quat, time, timeUnit)  -> RotationType.Rotation.newBuilder().setQw(quat.w).setQx(quat.x).setQy(quat.y).setQz(quat.z).build()), getUnitRotationGlobalQuat4d(unitConfig));
     }
 
     /**
@@ -245,7 +245,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a future of a center coordinates of the unit's BoundingBox relative to root location
      */
     default Future<Point3d> getUnitBoundingBoxCenterGlobalPoint3d(final UnitConfig unitConfig) {
-        return FutureProcessor.postProcess((transformation -> {
+        return FutureProcessor.postProcess(((transformation, time, timeUnit)  -> {
             final Point3d center = getUnitBoundingBoxCenterPoint3d(unitConfig);
             transformation.transform(center);
             return center;
