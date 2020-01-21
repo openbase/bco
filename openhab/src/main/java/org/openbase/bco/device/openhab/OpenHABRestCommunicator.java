@@ -33,9 +33,7 @@ import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Shutdownable;
@@ -78,6 +76,8 @@ public class OpenHABRestCommunicator implements Shutdownable {
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABRestCommunicator.class);
 
     private static OpenHABRestCommunicator instance = null;
+
+    private boolean shutdownInitiated = false;
 
     public static OpenHABRestCommunicator getInstance() {
         if (instance == null) {
@@ -135,8 +135,13 @@ public class OpenHABRestCommunicator implements Shutdownable {
         }
     }
 
+    public boolean isShutdownInitiated() {
+        return shutdownInitiated;
+    }
+
     @Override
     public void shutdown() {
+        shutdownInitiated = true;
         synchronized (topicObservableMapLock) {
             for (final Observable<Object, JsonObject> jsonObjectObservable : topicObservableMap.values()) {
                 jsonObjectObservable.shutdown();
@@ -365,6 +370,9 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             return validateResponse(response);
         } catch (CouldNotPerformException | ProcessingException ex) {
+            if(isShutdownInitiated()) {
+                ExceptionProcessor.setInitialCause(ex, new ShutdownInProgressException(this));
+            }
             throw new CouldNotPerformException("Could not get sub-URL[" + target + "]", ex);
         }
     }
@@ -376,6 +384,9 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             return validateResponse(response);
         } catch (CouldNotPerformException | ProcessingException ex) {
+            if(isShutdownInitiated()) {
+                ExceptionProcessor.setInitialCause(ex, new ShutdownInProgressException(this));
+            }
             throw new CouldNotPerformException("Could not delete sub-URL[" + target + "]", ex);
         }
     }
@@ -391,6 +402,9 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             return validateResponse(response);
         } catch (CouldNotPerformException | ProcessingException ex) {
+            if(isShutdownInitiated()) {
+                ExceptionProcessor.setInitialCause(ex, new ShutdownInProgressException(this));
+            }
             throw new CouldNotPerformException("Could not put value[" + value + "] on sub-URL[" + target + "]", ex);
         }
     }
@@ -406,6 +420,9 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
             return validateResponse(response);
         } catch (CouldNotPerformException | ProcessingException ex) {
+            if(isShutdownInitiated()) {
+                ExceptionProcessor.setInitialCause(ex, new ShutdownInProgressException(this));
+            }
             throw new CouldNotPerformException("Could not post value[" + value + "] on sub-URL[" + target + "]", ex);
         }
     }

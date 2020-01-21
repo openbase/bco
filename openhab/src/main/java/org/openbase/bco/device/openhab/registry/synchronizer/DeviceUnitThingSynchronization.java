@@ -32,9 +32,8 @@ import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -222,8 +221,10 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
             if (deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("openhab")) {
                 return true;
             }
-        } catch (CouldNotPerformException e) {
-            ExceptionPrinter.printHistory(e, logger);
+        } catch (CouldNotPerformException ex) {
+            if(ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(new InvalidStateException("Not supported check failed!", ex), logger);
+            }
         }
         return false;
     }
