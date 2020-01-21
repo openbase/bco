@@ -244,7 +244,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                 try {
                     unit = Units.getFutureUnit(unitConfig, true).get(MAX_INITIAL_STORAGE_TIMEOUT, TimeUnit.MILLISECONDS);
                 } catch (ExecutionException | TimeoutException ex) {
-                    ExceptionPrinter.printHistory("Could not reach Unit " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "! Skip initial service state synchronisation!", ex, logger);
+                    ExceptionPrinter.printHistory("Could not reach Unit " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "! Skip initial service state synchronisation because unit will be synchronized anyway when it connection is established.", ex, logger, LogLevel.DEBUG);
                     continue;
                 }
                 try {
@@ -266,9 +266,25 @@ public class InfluxDbconnectorApp extends AbstractAppController {
 
     private void storeServiceState(Unit<?> unit, ServiceTemplateType.ServiceTemplate.ServiceType serviceType, boolean initialSync) throws CouldNotPerformException {
 
-        final Message currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
+        final Message currentServiceState;
         Message lastServiceState = null;
+        try {
+            currentServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempus.CURRENT, unit.getData());
+        } catch (NotAvailableException ex) {
+            // if the current state is not available, we just try to at least store the last known service state if available.
 
+            try {
+                lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
+                storeServiceState(unit, serviceType, lastServiceState);
+            } catch (CouldNotPerformException exx) {
+                // we don't care if the last service state is not available
+                // which can be the case for an initial sync
+                // or any states which got only one state update since system startup.
+            }
+            return;
+        }
+
+        // store t - 1 entry
         try {
             lastServiceState = Services.invokeProviderServiceMethod(serviceType, ServiceTempusTypeType.ServiceTempusType.ServiceTempus.LAST, unit.getData());
             final long serviceStateTimestamp = TimestampProcessor.getTimestamp(currentServiceState, TimeUnit.MILLISECONDS) - 1l;
