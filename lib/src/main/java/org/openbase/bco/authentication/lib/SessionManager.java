@@ -179,6 +179,8 @@ public class SessionManager implements Shutdownable, Session {
     /**
      * Get the key of the current session managed by this session manager.
      *
+     * Note: returned key can be null if no one is logged in.
+     *
      * @return the current session key
      */
     public byte[] getSessionKey() {
