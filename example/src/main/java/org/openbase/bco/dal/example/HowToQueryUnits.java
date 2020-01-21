@@ -30,7 +30,6 @@ public class HowToQueryUnits {
 
     public static void howto() throws InterruptedException {
 
-        final SceneRemote testScene;
         try {
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
@@ -38,10 +37,11 @@ public class HowToQueryUnits {
             LOGGER.info("authenticate current session...");
             BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
 
-            // First of all we need the id of the location to list all internal units of a specific type
+            // First of all we need an id of the location to query.
             final String locationId = Registries.getUnitRegistry().getRootLocationConfig().getId();
 
-            // Then we have do declare the unit type to lookup
+            // Then, we have to declare the unit type we want to lookup.
+            // For example LIGHT which also includes COLORABLE_LIGHTs and DIMMABLE_LIGHTs.
             final UnitType unitType = UnitType.LIGHT;
 
             // now we are ready lookup all light at the specific location. For sure you can use the location alias as well to specify the target location
@@ -49,11 +49,13 @@ public class HowToQueryUnits {
             LOGGER.info("query lights");
             final List<UnitConfig> lightUnitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(locationId, unitType);
 
+            // check if we got some results
             if(lightUnitConfigList.isEmpty()) {
                 LOGGER.warn("No lights available in your current setup! Please create one in order to query it!");
                 return;
             }
 
+            // print all queried lights.
             LOGGER.info("print all lights");
             for (UnitConfig lightUnitConfig : lightUnitConfigList) {
                 LOGGER.info("found Light[{}] with Alias[{}]", LabelProcessor.getBestMatch(lightUnitConfig.getLabel()), lightUnitConfig.getAlias(0));
