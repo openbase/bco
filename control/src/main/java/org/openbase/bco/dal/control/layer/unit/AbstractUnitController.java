@@ -1587,6 +1587,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         try {
             final Object currentState = Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.CURRENT, internalBuilder);
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.LAST, internalBuilder, currentState);
+        } catch (NotAvailableException ex) {
+            // skip last state update if the current state is not available.
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not save last state!", ex, logger);
         }
