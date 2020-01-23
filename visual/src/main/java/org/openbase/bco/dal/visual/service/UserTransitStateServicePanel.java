@@ -120,7 +120,7 @@ public class UserTransitStateServicePanel extends AbstractServicePanel<UserTrans
     @Override
     protected void updateDynamicComponents() {
         try {
-            logger.info("state: " + getProviderService().getUserTransitState().getValue().name());
+            logger.debug("state: " + getProviderService().getUserTransitState().getValue().name());
             switch (getProviderService().getUserTransitState().getValue()) {
                 case LONG_TERM_PRESENT:
                     userTransitStateLabel.setForeground(Color.BLACK);
