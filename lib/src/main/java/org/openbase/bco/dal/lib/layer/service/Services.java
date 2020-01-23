@@ -419,12 +419,12 @@ public class Services extends ServiceStateProcessor {
                 try {
                     boolean serviceStateAvailable = (boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance);
                     if(!serviceStateAvailable) {
-                        throw new NotAvailableException(instance, serviceType.name());
+                        throw new NotAvailableException(serviceType.name(), instance);
                     }
-                } catch (IllegalAccessException e) {
+                } catch (CouldNotPerformException ex) {
                     // validation just not supported by this instance.
-                } catch (InvocationTargetException e) {
-                    // validation just not supported by this instance.
+                } catch (InvocationTargetException | IllegalAccessException ex) {
+                    ExceptionPrinter.printHistory("Something went wrong during the service state validation!", ex, LOGGER, LogLevel.WARN);
                 }
                 break;
             default:
