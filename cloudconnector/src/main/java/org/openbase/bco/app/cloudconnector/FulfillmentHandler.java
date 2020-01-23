@@ -42,11 +42,8 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.MultiException.ExceptionStack;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
@@ -69,6 +66,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Class parsing JSON requests send by Google and fulfilling them.
@@ -198,8 +196,12 @@ public class FulfillmentHandler {
             try {
                 unitRegistryRemote.waitForData(REGISTRY_TIMEOUT, TimeUnit.SECONDS);
                 Registries.getTemplateRegistry().waitForData(REGISTRY_TIMEOUT, TimeUnit.SECONDS);
-            } catch (CouldNotPerformException | InterruptedException ex) {
+            } catch (CouldNotPerformException ex) {
                 setError(payload, ex, ErrorCode.TIMEOUT);
+                return;
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                setError(payload, ex, ErrorCode.DEVICE_OFFLINE);
                 return;
             }
             payload.addProperty(AGENT_USER_ID_KEY, userId + "@" + Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS).getId());
@@ -793,7 +795,9 @@ public class FulfillmentHandler {
 
     public static void setError(final JsonObject jsonObject, final Exception exception, final ErrorCode errorCode) {
         setError(jsonObject, exception.toString(), errorCode);
-        ExceptionPrinter.printHistory(exception, LOGGER);
+        if (!ExceptionProcessor.isCausedBySystemShutdown(exception) && !ExceptionProcessor.isCausedByInterruption(exception)) {
+            ExceptionPrinter.printHistory(exception, LOGGER);
+        }
     }
 
     private static void setError(final JsonObject jsonObject, final String debugString, final ErrorCode errorCode) {
