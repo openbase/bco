@@ -1237,7 +1237,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
 
         // cancel all actions on stack
-        for (SchedulableAction schedulableAction : scheduledActionList) {
+        for (SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
             schedulableAction.cancel();
         }
     }
