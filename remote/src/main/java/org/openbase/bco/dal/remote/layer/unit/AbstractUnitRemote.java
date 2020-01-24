@@ -591,16 +591,16 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription, final AuthToken authToken) {
         try {
-            final ActionDescription.Builder actionDescripBuilder = actionDescription.toBuilder();
-            if (actionDescripBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
-                actionDescripBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
+            final ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+            if (actionDescriptionBuilder.getServiceStateDescriptionBuilder().getUnitId().isEmpty()) {
+                actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(getId());
             }
             if (SessionManager.getInstance().isLoggedIn() && (authToken != null)) {
-                final AuthenticatedValue authenticatedValue = getSessionManager().initializeRequest(actionDescripBuilder.build(), authToken);
+                final AuthenticatedValue authenticatedValue = getSessionManager().initializeRequest(actionDescriptionBuilder.build(), authToken);
                 final Future<AuthenticatedValue> future = applyActionAuthenticated(authenticatedValue);
                 return new AuthenticatedValueFuture<>(future, ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), getSessionManager());
             } else {
-                return applyAction(actionDescripBuilder.build());
+                return applyAction(actionDescriptionBuilder.build());
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
