@@ -231,7 +231,8 @@ public class ActionImpl implements SchedulableAction {
 
                     LOGGER.debug("Enter action loop...");
 
-                    while (!Thread.interrupted() && !actionTask.isCancelled()) {
+                    // loop as long as task is not canceled.
+                    while (!Thread.interrupted() && (actionTask == null || !actionTask.isCancelled())) {
 
                         LOGGER.debug("Next action loop...");
 
