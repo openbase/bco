@@ -215,7 +215,7 @@ public class ActionImpl implements SchedulableAction {
                 return actionTask;
             }
 
-            actionTask = GlobalCachedExecutorService.submit(() -> {
+            final Future<ActionDescription> newActionTask = GlobalCachedExecutorService.submit(() -> {
                 try {
                     // Initiate
                     updateActionState(ActionState.State.INITIATING);
@@ -300,7 +300,11 @@ public class ActionImpl implements SchedulableAction {
                 }
                 return getActionDescription();
             });
-            return actionTask;
+
+            // this copy is required and the actionTask not directly set because this variable
+            // is reset to null when the task finishes, but we have to make sure the task is always returned.
+            actionTask = newActionTask;
+            return newActionTask;
         }
     }
 
