@@ -81,7 +81,7 @@ public class ServiceStateDescriptionHierarchyConsistencyHandler extends Abstract
 
         // remove all optional service state descriptions with the same unit id as required service state descriptions
         for (int i = 0; i < sceneConfig.getRequiredServiceStateDescriptionCount(); i++) {
-            for (int j = 0; i < sceneConfig.getOptionalServiceStateDescriptionCount(); j++) {
+            for (int j = 0; j < sceneConfig.getOptionalServiceStateDescriptionCount(); j++) {
                 if (sceneConfig.getOptionalServiceStateDescription(j).getUnitId().equals(sceneConfig.getRequiredServiceStateDescription(i).getUnitId())) {
                     sceneConfig.removeOptionalServiceStateDescription(j);
                     j--;
