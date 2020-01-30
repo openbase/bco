@@ -518,6 +518,8 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * service tempus changes.
      * The value unknown is equivalent to listening on all changes.
      *
+     * Note: Use Tempus.UNKNOWN to get informed about any action state changes.
+     *
      * @param serviceTempus The service tempus on which the observer is added.
      * @param observer      The observer which is added.
      */
