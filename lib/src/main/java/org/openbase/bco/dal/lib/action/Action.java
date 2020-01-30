@@ -49,7 +49,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * The max execution time of an action until the action finishes if it was never extended.
      * The time unit is milliseconds.
      */
-    long MAX_EXECUTION_TIME_PERIOD = (JPService.testMode() ? TimeUnit.SECONDS.toMillis(3) : TimeUnit.MINUTES.toMillis(30));
+    long MAX_EXECUTION_TIME_PERIOD = (JPService.testMode() ? TimeUnit.SECONDS.toMillis(5) : TimeUnit.MINUTES.toMillis(30));
 
     /**
      * Returns the id of this action.
@@ -114,7 +114,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      *                               if a remote action is not yet fully synchronized and the related action description is not available.
      */
     default long getLastExtensionTime(final TimeUnit timeUnit) throws NotAvailableException {
-        if(!getActionDescription().hasLastExtensionTimestamp() || !getActionDescription().getLastExtensionTimestamp().hasTime() || getActionDescription().getLastExtensionTimestamp().getTime() == 0) {
+        if (!getActionDescription().hasLastExtensionTimestamp() || !getActionDescription().getLastExtensionTimestamp().hasTime() || getActionDescription().getLastExtensionTimestamp().getTime() == 0) {
             throw new NotAvailableException("LastExtentionTime", new InvalidStateException(this + " has never been extended!"));
         }
 
@@ -266,17 +266,17 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
         switch (getActionState()) {
             case UNKNOWN:
             case INITIALIZED:
-            case ABORTED:
-            case EXECUTION_FAILED:
             case REJECTED:
             case FINISHED:
+            case CANCELED:
+            case CANCELING:
                 return false;
             case ABORTING:
             case INITIATING:
+            case SUBMISSION:
+            case SUBMISSION_FAILED:
             case EXECUTING:
             case SCHEDULED:
-            case ABORTING_FAILED:
-            case FINISHING:
                 return true;
         }
         return false;
@@ -297,7 +297,40 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
             case FINISHED:
             case SCHEDULED:
             case EXECUTING:
-            case EXECUTION_FAILED:
+            case SUBMISSION:
+            case SUBMISSION_FAILED:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Check if the action is currently processing which means one the way to be executed or currently executing.
+     * <p>
+     * Note: A action is processing if it is in one of the following states (INITIATING, EXECUTING, SUBMISSION, SUBMISSION_FAILED).
+     *
+     * @return true if the action is currently processing, otherwise false.
+     */
+    default boolean isProcessing() {
+       return isProcessing(getActionState());
+    }
+
+    /**
+     * Check if the action is currently processing which means one the way to be executed or currently executing.
+     * <p>
+     * Note: A action is processing if it is in one of the following states (INITIATING, EXECUTING, SUBMISSION, SUBMISSION_FAILED).
+     *
+     * @param actionState the state tested.
+     *
+     * @return true if the action is currently processing, otherwise false.
+     */
+    static boolean isProcessing(final ActionState.State actionState) {
+        switch (actionState) {
+            case INITIATING:
+            case EXECUTING:
+            case SUBMISSION:
+            case SUBMISSION_FAILED:
                 return true;
             default:
                 return false;
