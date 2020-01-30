@@ -31,18 +31,15 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationConfigType;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -157,7 +154,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                     if (locationRemote.isConnected() && locationRemote.isDataAvailable()) {
                         final RemoteAction remoteAction = observe(locationRemote.setColor(color, getDefaultActionParameter()));
                         actionLocationMap.put(locationRemote, remoteAction);
-                        remoteAction.waitForSubmission();
+                        remoteAction.waitForRegistration();
                     }
                     Thread.sleep(1000);
                 }

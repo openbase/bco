@@ -208,7 +208,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         // test if all task are done.
         for (ActionDescription actionDescription : colorableLightRemote.requestData().get().getActionList()) {
             final RemoteAction remoteAction = new RemoteAction(actionDescription);
-            remoteAction.waitForSubmission();
+            remoteAction.waitForRegistration();
             assertEquals("There is still the running Action[" + MultiLanguageTextProcessor.getBestMatch(remoteAction.getActionDescription().getDescription(), "?") + "] found which should actually be terminated!", true, remoteAction.isDone());
         }
     }
