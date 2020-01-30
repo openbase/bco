@@ -133,6 +133,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
             this.unitDataObservableMap.put(serviceTempus, new UnitDataFilteredObservable<>(this, serviceTempus));
             super.addDataObserver((DataProvider<D> source, D data1) -> {
+                //logger.trace("Notify update "+ data1.getClass().getSimpleName()+" in tempus:"+ serviceTempus.name());
                 unitDataObservableMap.get(serviceTempus).notifyObservers(data1);
             });
 
@@ -143,6 +144,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
             this.serviceTempusServiceTypeObservableMap.put(serviceTempus, new HashMap<>());
             this.addDataObserver(serviceTempus, (source, data1) -> {
+
                 final Set<ServiceType> serviceTypeSet = new HashSet<>();
                 for (final ServiceDescription serviceDescription : AbstractUnitRemote.this.getUnitTemplate().getServiceDescriptionList()) {
                     if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
