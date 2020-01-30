@@ -22,31 +22,21 @@ package org.openbase.bco.dal.remote.action;
  * #L%
  */
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.GlobalScheduledExecutorService;
-import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.*;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
@@ -57,8 +47,6 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
-import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
-import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -817,6 +805,7 @@ public class RemoteAction implements Action {
     }
 
     private void updateActionDescription(final Collection<ActionDescription> actionDescriptions) {
+
         if (actionDescriptions == null) {
             LOGGER.warn("Update skipped because no action descriptions passed!");
             return;
@@ -874,7 +863,7 @@ public class RemoteAction implements Action {
      */
     @Override
     public void waitUntilDone() throws CouldNotPerformException, InterruptedException {
-        waitForSubmission();
+        waitForRegistration();
 
         try {
             if (getActionDescription().getIntermediary()) {
@@ -906,22 +895,49 @@ public class RemoteAction implements Action {
      * @throws InterruptedException     if the thread was externally interrupted.
      */
     public void waitForActionState(final ActionState.State actionState) throws CouldNotPerformException, InterruptedException {
+        try {
+            waitForActionState(actionState, Timeout.INFINITY_TIMEOUT, TimeUnit.MICROSECONDS);
+        } catch (TimeoutException ex) {
+            new FatalImplementationErrorException("Timeout while wait infinitely.", this);
+        }
+    }
+
+    /**
+     * Wait until this action reaches a provided action state. It is only possible to wait for states which will
+     * certainly be notified (see {@link #isNotifiedActionState(State)}).
+     *
+     * @param actionState the state on which is waited.
+     *
+     * @throws CouldNotPerformException if the action was not yet executed, the provided action state is not certainly notified
+     *                                  or the provided state cannot be reached anymore.
+     * @throws InterruptedException     if the thread was externally interrupted.
+     * @throws TimeoutException         is thrown in case the timeout is reached.
+     */
+    public void waitForActionState(final ActionState.State actionState, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final TimeoutSplitter timeSplit = new TimeoutSplitter(timeout, timeUnit);
+
         if (!isNotifiedActionState(actionState)) {
             throw new CouldNotPerformException("Cannot wait for state[" + actionState + "] because it is not always notified");
         }
-        waitForSubmission();
+
+        waitForRegistration(timeSplit.getTime(), TimeUnit.MILLISECONDS);
 
         try {
             if (actionDescription.getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                    impactedRemoteAction.waitForActionState(actionState);
+                    impactedRemoteAction.waitForActionState(actionState, timeSplit.getTime(), TimeUnit.MILLISECONDS);
                 }
                 return;
             }
 
         } catch (NotAvailableException ex) {
-            // if the action description is not available, than we just continue and wait for it.
+            // if the action description is not available, then we just continue and wait for it.
+            // sure? this does not work for intermediary actions!
+            ExceptionPrinter.printHistory("Could not observe intermediary actions!", ex, LOGGER);
         }
+
+        // wait until unit is ready
+        targetUnit.waitForData(timeSplit.getTime(), TimeUnit.MILLISECONDS);
 
         synchronized (executionSync) {
             // wait until state is reached
@@ -930,90 +946,96 @@ public class RemoteAction implements Action {
                 if (actionDescription != null && isDone()) {
                     throw new CouldNotPerformException("Stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
                 }
-                executionSync.wait();
+                executionSync.wait(timeSplit.getTime());
             }
         }
     }
 
-    /**
-     * This method blocks until the action is executing.
-     * Depending of your execution priority and emphasis category the execution can be delayed for a longer term.
-     * <p>
-     * Note: This can really take some time in case the execution target unit can not directly be allocated.
-     *
-     * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
-     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
-     */
-    public void waitForExecution() throws CouldNotPerformException, InterruptedException {
-        waitForExecution(0L, TimeUnit.MILLISECONDS);
-    }
 
-    /**
-     * This method blocks until the action is executing.
-     * Depending of your execution priority and emphasis category the execution can be delayed for a longer term.
-     * <p>
-     * Note: This can really take some time in case the execution target unit can not directly be allocated.
-     *
-     * @param timeout  the maximal time to wait for the execution.
-     * @param timeUnit the time unit of the timeout.
-     *
-     * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
-     * @throws TimeoutException         is thrown in case the timeout is reached.
-     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
-     */
-    public void waitForExecution(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, org.openbase.jul.exception.TimeoutException, InterruptedException {
-        final long timestamp = System.currentTimeMillis();
 
-        waitForSubmission(timeout, timeUnit);
+//    /**
+//     * This method blocks until the action is executing.
+//     * Depending of your execution priority and emphasis category the execution can be delayed for a longer term.
+//     * <p>
+//     * Note: This can really take some time in case the execution target unit can not directly be allocated.
+//     *
+//     * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
+//     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+//     */
+//    public void waitForExecution() throws CouldNotPerformException, InterruptedException {
+//        waitForExecution(0L, TimeUnit.MILLISECONDS);
+//    }
 
-        try {
-            if (actionDescription.getIntermediary()) {
-
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                    // todo splitt timeout
-                    impactedRemoteAction.waitForExecution(timeout, timeUnit);
-                }
-                return;
-            }
-        } catch (NotAvailableException ex) {
-            // if the action description is not available, then we just continue and wait for it.
-            // sure? this does not work for intermediary actions!
-            ExceptionPrinter.printHistory("Could not observe intermediary actions!", ex, LOGGER);
-        }
-
-        // wait until unit is ready
-        targetUnit.waitForData(timeout, timeUnit);
-
-        // wait on this action
-        synchronized (executionSync) {
-            // wait until state is reached
-            while (!isStateExecuting()) {
-                if (isDone()) {
-                    throw new CouldNotPerformException(this + " is done but is has never been executed.");
-                }
-
-                // handle waiting without a timeout.
-                if (timeout == 0L) {
-                    executionSync.wait(0);
-                    continue;
-                }
-
-                // handle waiting with timeout
-                final long timeToWait = timeUnit.toMillis(timeout) - (System.currentTimeMillis() - timestamp);
-                if (timeToWait < 0) {
-                    throw new org.openbase.jul.exception.TimeoutException();
-                }
-                executionSync.wait(timeToWait);
-            }
-        }
-    }
-
-    private boolean isStateExecuting() throws CouldNotPerformException {
-        final Message serviceState = Services.invokeProviderServiceMethod(actionDescription.getServiceStateDescription().getServiceType(), targetUnit);
-        final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-        final ActionDescription responsibleAction = (ActionDescription) serviceState.getField(descriptor);
-        return actionDescription.getActionId().equals(responsibleAction.getActionId());
-    }
+//    /**
+//     * This method blocks until the action is executing.
+//     * Depending of your execution priority and emphasis category the execution can be delayed for a longer term.
+//     * <p>
+//     * Note: This can really take some time in case the execution target unit can not directly be allocated.
+//     *
+//     * @param timeout  the maximal time to wait for the execution.
+//     * @param timeUnit the time unit of the timeout.
+//     *
+//     * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
+//     * @throws TimeoutException         is thrown in case the timeout is reached.
+//     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+//     */
+//    public void waitForExecution(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, org.openbase.jul.exception.TimeoutException, InterruptedException {
+//        waitForActionState(State.EXECUTING, timeout, timeUnit);
+//        final long timestamp = System.currentTimeMillis();
+//
+//        waitForRegistration(timeout, timeUnit);
+//
+//        try {
+//            if (actionDescription.getIntermediary()) {
+//
+//                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+//                    // todo split timeout
+//                    impactedRemoteAction.waitForExecution(timeout, timeUnit);
+//                }
+//                return;
+//            }
+//        } catch (NotAvailableException ex) {
+//            // if the action description is not available, then we just continue and wait for it.
+//            // sure? this does not work for intermediary actions!
+//            ExceptionPrinter.printHistory("Could not observe intermediary actions!", ex, LOGGER);
+//        }
+//
+//        // wait until unit is ready
+//        targetUnit.waitForData(timeout, timeUnit);
+//
+//        // wait on this action
+//        synchronized (executionSync) {
+//            // wait until state is reached
+//
+//            waitForActionState(State.EXECUTING);
+//
+//            while (!isStateExecuting()) {
+//                if (isDone()) {
+//                    throw new CouldNotPerformException(this + " is done but is has never been executed.");
+//                }
+//
+//                // handle waiting without a timeout.
+//                if (timeout == 0L) {
+//                    executionSync.wait(0);
+//                    continue;
+//                }
+//
+//                // handle waiting with timeout
+//                final long timeToWait = timeUnit.toMillis(timeout) - (System.currentTimeMillis() - timestamp);
+//                if (timeToWait < 0) {
+//                    throw new org.openbase.jul.exception.TimeoutException();
+//                }
+//                executionSync.wait(timeToWait);
+//            }
+//        }
+//    }
+//
+//    private boolean isStateExecuting() throws CouldNotPerformException {
+//        final Message serviceState = Services.invokeProviderServiceMethod(actionDescription.getServiceStateDescription().getServiceType(), targetUnit);
+//        final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+//        final ActionDescription responsibleAction = (ActionDescription) serviceState.getField(descriptor);
+//        return actionDescription.getActionId().equals(responsibleAction.getActionId());
+//    }
 
     /**
      * Method blocks until the next successful action extension or the timeout was reached.
@@ -1040,7 +1062,7 @@ public class RemoteAction implements Action {
         }
     }
 
-    public void waitForSubmission() throws CouldNotPerformException, InterruptedException {
+    public void waitForRegistration() throws CouldNotPerformException, InterruptedException {
 
         // in case this action was generated by an action reference and the referred action is intermediary we are already done since action references are only delivered through submitted actions.
         if (isInitializedByIntermediaryActionReference()) {
@@ -1060,7 +1082,7 @@ public class RemoteAction implements Action {
 
             if (getActionDescription().getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                    impactedRemoteAction.waitForSubmission();
+                    impactedRemoteAction.waitForRegistration();
                 }
             }
         } catch (ExecutionException ex) {
@@ -1068,7 +1090,8 @@ public class RemoteAction implements Action {
         }
     }
 
-    public void waitForSubmission(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+    public void waitForRegistration(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final TimeoutSplitter timeSplit = new TimeoutSplitter(timeout, timeUnit);
 
         // in case this action was generated by an action reference and the referred action is intermediary we are already done since action references are only delivered through submitted actions.
         if (isInitializedByIntermediaryActionReference()) {
@@ -1087,25 +1110,24 @@ public class RemoteAction implements Action {
                     if (timeout == 0l) {
                         futureObservationTask.get();
                     } else {
-                        futureObservationTask.get(timeout, timeUnit);
+                        futureObservationTask.get(timeSplit.getTime(), TimeUnit.MILLISECONDS);
                     }
                 } catch (java.util.concurrent.TimeoutException ex) {
                     throw new org.openbase.jul.exception.TimeoutException();
                 }
             }
 
-            //TODO: split timeout
             if (getActionDescription().getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                    impactedRemoteAction.waitForSubmission(timeout, timeUnit);
+                    impactedRemoteAction.waitForRegistration(timeSplit.getTime(), TimeUnit.MILLISECONDS);
                 }
             }
         } catch (ExecutionException | CancellationException ex) {
-            throw new CouldNotPerformException("Could not wait for submission!", ex);
+            throw new CouldNotPerformException("Could not wait for action registration!", ex);
         }
     }
 
-    public boolean isSubmissionDone() {
+    public boolean isRegistrationDone() {
         if (futureObservationTask != null && futureObservationTask.isDone()) {
 
             if (actionDescription == null) {
@@ -1114,7 +1136,7 @@ public class RemoteAction implements Action {
 
             if (actionDescription.getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                    if (!impactedRemoteAction.isSubmissionDone()) {
+                    if (!impactedRemoteAction.isRegistrationDone()) {
                         return false;
                     }
                 }
