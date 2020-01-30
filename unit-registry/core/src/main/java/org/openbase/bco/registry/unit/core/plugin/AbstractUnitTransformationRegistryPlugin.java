@@ -70,6 +70,7 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
         // wait until transformation was published
         try {
             int maxChecks = 10;
+            Exception exception = null;
             for (int i = 0; i < maxChecks; i++) {
                 try {
                     // check if transformation was published
@@ -81,11 +82,12 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
                         return;
                     }
                 } catch (TransformerException ex) {
+                    exception = ex;
                     // try again if needed
                     Thread.sleep(100);
                 }
             }
-            throw new TimeoutException("Transformation not published in time!");
+            throw new TimeoutException("Transformation not published in time!", exception);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new VerificationFailedException(new ShutdownInProgressException(this));

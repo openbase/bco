@@ -27,10 +27,10 @@ import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.RejectedException;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPTestMode;
+import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
@@ -141,7 +141,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
             idAliasMap.put(admin.getId(), UnitRegistry.ADMIN_USER_ALIAS);
             idAliasMap.put(bco.getId(), UnitRegistry.BCO_USER_ALIAS);
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
-            throw new InitializationException(this, new CouldNotPerformException("Could not validate or register initial user accounts", ex));
+            throw new InitializationException(this, new CouldNotPerformException("Could not validate or register initial user accounts!", ex));
         }
     }
 
@@ -187,12 +187,17 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
         // verify initial password
         if (initialRegistrationPassword == null) {
-            LOGGER.error("The initial registration password is not available even though no initial admin was registered at the authenticator. " +
-                    "This means that either the authenticator has not been started in the same process or that a user is already registered which could not be identified as the default admin. " +
-                    "Please verify that you used to bco launcher and reset all credentials with '--reset-credentials'");
+            LOGGER.error("Found an admin account in the registry which is not compatible with the one in the credential store. Make sure you are using the right registry db and credential store pair." +
+                    "This issue can be solved by resetting the credential store by adding the parameter '--reset-credentials' to the bco launcher during startup.");
+            LOGGER.debug("The initial registration password is not available even though no initial admin was registered at the authenticator. " +
+                    "This means that either the authenticator has not been started in the same process or that a user is already registered which could not be identified as the default admin.");
 
             // init shutdown
-            new Thread(() -> System.exit(1)).start();
+            if (!JPService.testMode()) {
+                new Thread(() -> System.exit(1)).start();
+            } else {
+                throw new FatalImplementationErrorException("Initial password not available!", this);
+            }
 
             throw new NotAvailableException("initial registration password");
         }
