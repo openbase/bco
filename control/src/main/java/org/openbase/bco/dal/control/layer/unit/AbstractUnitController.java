@@ -101,8 +101,6 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
-import org.openbase.type.domotic.state.ColorStateType;
-import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.timing.TimestampType.Timestamp;
@@ -135,7 +133,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
-    private static final long EXECUTING_ACTION_MATCHING_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
+    private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
     private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
 
     private static final String LOCK_CONSUMER_SCHEDULEING = AbstractUnitController.class.getSimpleName() + ".reschedule(..)";
@@ -232,6 +230,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         this.scheduleTimeout = new Timeout(1000) {
             @Override
             public void expired() {
+                logger.debug("Reschedule by timer.");
                 reschedule();
             }
         };
@@ -536,7 +535,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 if (!serviceInterfaceClass.isAssignableFrom(this.getClass())) {
                     // interface not supported dummy.
-                    throw new CouldNotPerformException("Interface[" + serviceInterfaceClass.getName() + "] is not supported by "+ this);
+                    throw new CouldNotPerformException("Interface[" + serviceInterfaceClass.getName() + "] is not supported by " + this);
                 }
 
                 RPCHelper.registerInterface((Class) serviceInterfaceClass, this, server);
@@ -566,7 +565,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // register remote for auto extension support.
                 final RemoteAction terminationAction = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
-                terminationAction.waitForSubmission(5, TimeUnit.SECONDS);
+                terminationAction.waitForRegistration(5, TimeUnit.SECONDS);
                 this.terminatingActionId = terminationAction.getId();
             }
         } catch (CouldNotPerformException ex) {
@@ -896,8 +895,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // save if there is at least one action which is done but remains on the list
                     boolean atLeastOneDoneActionOnList = false;
 
+                    //logger.debug("stack size: "+scheduledActionList.size());
+
+
                     // reject outdated and finish completed actions
                     for (final SchedulableAction action : scheduledActionList) {
+
                         // only terminate if not valid and still running
                         if (!action.isValid() && !action.isDone()) {
 
@@ -933,23 +936,27 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                                 }
                             } catch (NotAvailableException ex) {
                                 // action timestamp could not be evaluated so print warning and remove action so that it does not stay on the list forever
-                                logger.warn("Remove finished action {} because its finishing time could not be evaluated", action);
+                                ExceptionPrinter.printHistory("Remove finished " + action + " because its finishing time could not be evaluated!", ex, logger, LogLevel.WARN);
                                 scheduledActionList.remove(action);
                             }
                         } else {
+                            if (!action.isValid()) {
+                                new FatalImplementationErrorException("Found invalid action which has not been removed from list!", this);
+                            }
                             atLeastOneActionToSchedule = true;
                         }
                     }
 
                     // skip further steps if no actions are scheduled
                     if (!atLeastOneActionToSchedule) {
+                        logger.debug("No valid action on stack, so finish scheduling.");
                         return null;
                     }
 
                     // detect and store current action
                     SchedulableAction currentAction = null;
                     for (final SchedulableAction schedulableAction : scheduledActionList) {
-                        if (schedulableAction.getActionDescription().getActionState().getValue() == State.EXECUTING) {
+                        if (schedulableAction.isProcessing()) {
                             currentAction = schedulableAction;
                             break;
                         }
@@ -988,7 +995,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     try {
                         // setup timer only if action needs to be removed or the current action provides a limited execution time.
                         if (atLeastOneDoneActionOnList || currentAction.getExecutionTimePeriod(TimeUnit.MICROSECONDS) != 0) {
-                            final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, nextAction.getExecutionTime()) : Math.min(nextAction.getExecutionTime(), Action.MAX_EXECUTION_TIME_PERIOD);
+                            final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, currentAction.getExecutionTime()) : Math.min(currentAction.getExecutionTime(), Action.MAX_EXECUTION_TIME_PERIOD);
                             logger.debug("Reschedule scheduled in {} ms.", rescheduleTimeout);
                             // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
                             // this should not cause any latency because new incoming actions are scheduled anyway.
@@ -1025,6 +1032,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
         if (actionListNotificationLock.isWriteLocked()) {
             // skip since notification will be performed when lock is unlocked anyway.
+            logger.debug("skip action list notification.");
             return;
         }
 
@@ -1181,7 +1189,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
                 }
             } catch (NullPointerException ex) {
-                throw new InvalidStateException("Non supported observer registration requested! "+this+" does not support Service["+serviceType+"] in ServiceTempus["+serviceTempus+"]", ex);
+                throw new InvalidStateException("Non supported observer registration requested! " + this + " does not support Service[" + serviceType + "] in ServiceTempus[" + serviceTempus + "]", ex);
             }
         }
     }
@@ -1284,6 +1292,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // do custom state depending update in sub classes
             applyCustomDataUpdate(internalBuilder, serviceType);
+
+            // sync updated action list
+            syncActionList(dataBuilder.getInternalBuilder());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + newState + "] for " + this + "!", ex);
         }
@@ -1332,13 +1343,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException, RejectedException {
 
-//        ColorState colorStateOrig = null;
-//        if (serviceType == ServiceType.COLOR_STATE_SERVICE) {
-//            colorStateOrig = (ColorState) serviceState;
-//        }
-
-        //System.out.println("compute new state");
-
         try {
             // if the given state is a provider service, than no further steps have to be performed
             // because only operation service actions can be remapped
@@ -1386,7 +1390,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             int notAvail = 0;
             // if a lot of actions are executed over a short time period it can happen that the requested
             // state currently does not match the external update from openHAB
-            // thus, match the service state to all actions of the same service that were executing in the last
+            // thus, match the service state to all actions of the same service that were submitted in the last
             // three seconds
             final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Action.TYPE_FIELD_NAME_ACTION);
             final List<ActionDescription> actionDescriptionList = (List<ActionDescription>) internalBuilder.getField(actionFieldDescriptor);
@@ -1401,8 +1405,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // do not consider actions which were not executing in the last three seconds
                 try {
-                    final Timestamp lastTimeExecuting = ServiceStateProcessor.getLatestValueOccurrence(State.EXECUTING, action.getActionDescription().getActionState());
-                    if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) < TimeUnit.SECONDS.toMillis(EXECUTING_ACTION_MATCHING_TIMEOUT)) {
+                    final Timestamp lastTimeExecuting = ServiceStateProcessor.getLatestValueOccurrence(State.SUBMISSION, action.getActionDescription().getActionState());
+                    if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) < TimeUnit.SECONDS.toMillis(SUBMISSION_ACTION_MATCHING_TIMEOUT)) {
                         executing++;
                         continue;
                     }
@@ -1489,20 +1493,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // if responsible action is not available, than we should continue since this action was maybe externally triggered by a human.
             }
 
-
-//            if (serviceType == ServiceType.COLOR_STATE_SERVICE) {
-//                final ColorState colorState = (ColorState) serviceState;
-//                if (colorState.getColor().getHsbColor().getSaturation() == 0.0 && colorState.getColor().getHsbColor().getBrightness() == 1.0d) {
-//                    StackTracePrinter.printStackTrace(logger);
-//                    if (colorStateOrig != null) {
-//                        logger.warn("orig: " + colorStateOrig.getColor());
-//                    }
-//                    if (colorState != null) {
-//                        logger.warn("new : " + colorState.getColor());
-//                    }
-//                }
-//            }
-
             // force execution to properly apply new state synchronized with the current action scheduling
             return forceActionExecution(serviceState, serviceType, internalBuilder);
         } catch (RejectedException ex) {
@@ -1524,7 +1514,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     private Message forceActionExecution(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
 
-        //System.out.println("force execution");
         try {
             final Message.Builder serviceStateBuilder = serviceState.toBuilder();
 
@@ -1552,8 +1541,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 actionListNotificationLock.writeLock().lock();
                 try {
                     final SchedulableAction schedulableAction = scheduledActionList.get(1);
-                    if (schedulableAction.getActionState() == State.EXECUTING) {
-                        // only abort/reject action if the action is executing
+                    if (schedulableAction.isProcessing()) {
+                        // only abort/reject action if the action is processing
                         if (schedulableAction.getActionDescription().getInterruptible()) {
                             schedulableAction.abort();
                         } else {
