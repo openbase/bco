@@ -26,13 +26,11 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthPair;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
-import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.scene.SceneController;
-import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Activation;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
@@ -53,16 +51,13 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState.MapFieldEntry;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState.State;
-import org.openbase.type.domotic.state.DoorStateType.DoorState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
@@ -111,7 +106,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
             // trigger initial validation
             for (RemoteAction remoteAction : requiredActionPool.getRemoteActionList()) {
-                if (remoteAction.isSubmissionDone()) {
+                if (remoteAction.isRegistrationDone()) {
                     try {
                         requiredActionPoolObserver.update(remoteAction, remoteAction.getActionDescription());
                     } catch (Exception ex) {
@@ -156,7 +151,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                 @Override
                 public void update(RemoteAction source, ActionDescription data) throws Exception {
                     synchronized (requiredActionPoolObserverLock) {
-                        if (getActivationState().getValue() == ActivationState.State.ACTIVE && (!source.isValid() || !source.getActionState().equals(ActionState.State.EXECUTING))) {
+                        if (getActivationState().getValue() == ActivationState.State.ACTIVE && (!source.isValid() || !source.isProcessing())) {
                             logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
                             requiredActionPool.removeActionDescriptionObserver(requiredActionPoolObserver);
                             try {
@@ -317,7 +312,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         // print if something went wrong
         try {
-            RemoteActionPool.observeCancelation(remoteActionActionDescriptionFutureMap, this, 5, TimeUnit.SECONDS);
+            RemoteActionPool.observeCancellation(remoteActionActionDescriptionFutureMap, this, 5, TimeUnit.SECONDS);
         } catch (MultiException ex) {
             if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(ex, logger);
