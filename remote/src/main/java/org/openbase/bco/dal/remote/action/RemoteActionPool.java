@@ -28,7 +28,6 @@ import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
@@ -155,14 +154,14 @@ public class RemoteActionPool {
                         if (action.isDone()) {
                             continue;
                         }
-                        LOGGER.info("Waiting for action submission[" + action + "]");
+                        LOGGER.info("Waiting for action registration[" + action + "]");
                         try {
                             timeout = checkStart - System.currentTimeMillis();
                             if (timeout <= 0) {
                                 throw new RejectedException("Rejected because of scene timeout.");
                             }
 
-                            action.waitForSubmission(timeout, TimeUnit.MILLISECONDS);
+                            action.waitForRegistration(timeout, TimeUnit.MILLISECONDS);
                         } catch (TimeoutException ex) {
                             // will be handled anyway
                         }
@@ -170,9 +169,9 @@ public class RemoteActionPool {
                 } catch (CouldNotPerformException | CancellationException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Remote pool action execution failed!", ex), LOGGER);
                 } finally {
-                    // cancel all actions which could not be submitted
+                    // cancel all actions which could not be registered
                     for (final RemoteAction action : remoteActionList) {
-                        if (!action.isSubmissionDone()) {
+                        if (!action.isRegistrationDone()) {
                             action.cancel();
                         }
                     }
@@ -217,9 +216,9 @@ public class RemoteActionPool {
         }
     }
 
-    public void waitForSubmission() throws CouldNotPerformException, InterruptedException {
+    public void waitForRegistration() throws CouldNotPerformException, InterruptedException {
         for (final RemoteAction action : remoteActionList) {
-            action.waitForSubmission();
+            action.waitForRegistration();
         }
     }
 
@@ -235,7 +234,7 @@ public class RemoteActionPool {
         }
     }
 
-    public static void observeCancelation(final Map<RemoteAction, Future<ActionDescription>> remoteActionActionDescriptionFutureMap, final Object responsibleInstance, final long timeout, final TimeUnit timeUnit) throws MultiException {
+    public static void observeCancellation(final Map<RemoteAction, Future<ActionDescription>> remoteActionActionDescriptionFutureMap, final Object responsibleInstance, final long timeout, final TimeUnit timeUnit) throws MultiException {
 
         // validate cancellation
         MultiException.ExceptionStack exceptionStack = null;
