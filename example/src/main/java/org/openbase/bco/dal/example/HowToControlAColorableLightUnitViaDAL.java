@@ -30,6 +30,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,13 +73,13 @@ public class HowToControlAColorableLightUnitViaDAL {
             Future<ActionDescription> actionFuture = testLight.setPowerState(State.ON);
 
             LOGGER.info("wait until action is done...");
-            new RemoteAction(actionFuture).waitForExecution(5, TimeUnit.SECONDS);
+            new RemoteAction(actionFuture).waitForActionState(ActionState.State.EXECUTING, 5, TimeUnit.SECONDS);
 
             LOGGER.info("switch light color to red");
             actionFuture = testLight.setColor(HSBColor.newBuilder().setHue(0).setSaturation(1.0).setBrightness(1.0).build());
 
             LOGGER.info("wait until action is executing...");
-            new RemoteAction(actionFuture).waitForExecution(5, TimeUnit.SECONDS);
+            new RemoteAction(actionFuture).waitForActionState(ActionState.State.EXECUTING,5, TimeUnit.SECONDS);
 
         } catch (CouldNotPerformException | CancellationException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
