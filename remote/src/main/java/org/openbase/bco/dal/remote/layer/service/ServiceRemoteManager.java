@@ -538,10 +538,10 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
 
     @Override
     public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final TimeoutSplitter timeSplit = new TimeoutSplitter(timeout, timeUnit);
         try (final CloseableReadLockWrapper ignored = lockProvider.getCloseableReadLock(this)) {
             for (final Remote<D> remote : serviceRemoteMap.values()) {
-                // todo: split timeout
-                remote.waitForData(timeout, timeUnit);
+                remote.waitForData(timeSplit.getTime(), TimeUnit.MILLISECONDS);
             }
         }
     }
