@@ -389,6 +389,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 // clear initials password
                 initialPassword = null;
+
                 // return credentials
                 return adminCredentials;
             }
