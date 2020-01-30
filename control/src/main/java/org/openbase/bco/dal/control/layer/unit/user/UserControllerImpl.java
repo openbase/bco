@@ -23,7 +23,6 @@ package org.openbase.bco.dal.control.layer.unit.user;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivityMultiStateOperationService;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
@@ -42,8 +41,6 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.action.ActionPriorityType;
-import org.openbase.type.domotic.state.StandbyStateType;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -319,14 +316,14 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
             try {
                 if (activityMultiState.getActivityIdCount() == 0) {
                     for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
-                        RemoteActionPool.observeCancelation(stringRemoteActionPoolEntry.getValue().cancel(), this, 5, TimeUnit.SECONDS);
+                        RemoteActionPool.observeCancellation(stringRemoteActionPoolEntry.getValue().cancel(), this, 5, TimeUnit.SECONDS);
                     }
                 } else if ((activityMultiState.getActivityIdCount() > 0)) {
                     // todo: why is only the first action validated and AbstractUnitControllerTest()where are activities disabled and their actions canceled?
                     final String activityId = activityMultiState.getActivityId(0);
                     for (Entry<String, RemoteActionPool> stringRemoteActionPoolEntry : remoteActionPoolMap.entrySet()) {
                         if (!stringRemoteActionPoolEntry.getKey().equals(activityId)) {
-                            RemoteActionPool.observeCancelation(stringRemoteActionPoolEntry.getValue().cancel(), this, 5, TimeUnit.SECONDS);
+                            RemoteActionPool.observeCancellation(stringRemoteActionPoolEntry.getValue().cancel(), this, 5, TimeUnit.SECONDS);
                         }
                     }
                     if (!remoteActionPoolMap.containsKey(activityId)) {
