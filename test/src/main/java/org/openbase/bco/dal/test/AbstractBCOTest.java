@@ -22,7 +22,6 @@ package org.openbase.bco.dal.test;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -31,6 +30,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -97,7 +97,7 @@ public class AbstractBCOTest {
      */
     public RemoteAction waitForExecution(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
         final RemoteAction testAction = observe(actionFuture);
-        testAction.waitForExecution();
+        testAction.waitForActionState(State.EXECUTING);
         return testAction;
     }
 
@@ -115,13 +115,13 @@ public class AbstractBCOTest {
      */
     public RemoteAction waitForExecution(final RemoteAction remoteAction) throws CouldNotPerformException, InterruptedException {
         final RemoteAction testAction = observe(remoteAction);
-        testAction.waitForExecution();
+        testAction.waitForActionState(State.EXECUTING);
         return testAction;
     }
 
     /**
      * This method can be used to register an action during the unit test.
-     * This method blocks until the action is submitted.
+     * This method blocks until the action is registered.
      * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
      *
      * @param actionFuture the action to observe
@@ -131,15 +131,15 @@ public class AbstractBCOTest {
      * @throws CouldNotPerformException is thrown if the action could not be observed.
      * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
      */
-    public RemoteAction waitForSubmission(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
+    public RemoteAction waitForRegistration(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
         final RemoteAction testAction = observe(actionFuture);
-        testAction.waitForSubmission();
+        testAction.waitForRegistration();
         return testAction;
     }
 
     /**
      * This method can be used to register an action during the unit test.
-     * This method blocks until the action is submitted.
+     * This method blocks until the action is registered.
      * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
      *
      * @param remoteAction the action to observe
@@ -149,9 +149,9 @@ public class AbstractBCOTest {
      * @throws CouldNotPerformException is thrown if the action could not be observed.
      * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
      */
-    public RemoteAction waitForSubmission(final RemoteAction remoteAction) throws CouldNotPerformException, InterruptedException {
+    public RemoteAction waitForRegistration(final RemoteAction remoteAction) throws CouldNotPerformException, InterruptedException {
         final RemoteAction testAction = observe(remoteAction);
-        testAction.waitForSubmission();
+        testAction.waitForRegistration();
         return testAction;
     }
 

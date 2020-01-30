@@ -52,10 +52,10 @@ import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.action.ActionReferenceType;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType;
+import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
@@ -487,7 +487,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
 
         LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, LocationRemote.class);
-        new RemoteAction(locationRemote.setPowerState(POWER_OFF)).waitForExecution();
+        new RemoteAction(locationRemote.setPowerState(POWER_OFF)).waitForActionState(ActionState.State.EXECUTING);
 
         internalLight.requestData().get();
         internalPowerSwitch.requestData().get();
@@ -564,7 +564,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         final List<RemoteAction> actionImpactList = sceneAction.getImpactedRemoteActions();
 
         for (RemoteAction actionImpact : actionImpactList) {
-            actionImpact.waitForSubmission();
+            actionImpact.waitForRegistration();
             Assert.assertEquals("Impacted action not executing!", ActionStateType.ActionState.State.EXECUTING, actionImpact.getActionState());
         }
 

@@ -24,7 +24,6 @@ package org.openbase.bco.dal.test.action;
 
 import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -34,6 +33,10 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.TokenGenerator;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPLogLevel;
+import org.openbase.jps.preset.JPLogLevel.LogLevel;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -71,6 +74,11 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
     private static ActionParameterType.ActionParameter mrPinkActionParameter;
 
     public RemoteActionTest() {
+
+        // uncomment to enable debug mode
+        // JPService.registerProperty(JPDebugMode.class, true);
+        // JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
+
         // uncomment to visualize action inspector during tests
         /*String[] args = {};
         new Thread(() -> {
@@ -204,7 +212,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         });
 
         System.out.println("wait for low prio action...");
-        waitForSubmission(lowPrioLongtermAction);
+        waitForRegistration(lowPrioLongtermAction);
 
         System.out.println("apply normal prio action...");
         Flag dominantActionExtentionFlag = new Flag();
@@ -217,14 +225,14 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         });
 
         System.out.println("wait for normal prio action...");
-        waitForSubmission(dominantAction);
+        waitForExecution(dominantAction);
 
         System.out.println("validate light state ON");
         List<? extends ColorableLightRemote> units = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
 
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
-            Assert.assertEquals("Light not on", State.ON, unit.getPowerState().getValue());
+            Assert.assertEquals("Light[\"+unit+\"] not on", State.ON, unit.getPowerState().getValue());
         }
 
         System.out.println("cancel dominant action");
@@ -234,7 +242,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         System.out.println("validate light state OFF");
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
-            Assert.assertEquals("Light not off", State.OFF, unit.getPowerState().getValue());
+            Assert.assertEquals("Light["+unit+"] not off", State.OFF, unit.getPowerState().getValue());
         }
 
         System.out.println("wait until last extension timeout and validate if no further extension will be performed for dominant action...");
