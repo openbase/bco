@@ -24,8 +24,12 @@ package org.openbase.bco.dal.remote.action;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.state.ActionStateType.ActionState;
+import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -33,8 +37,18 @@ import java.util.concurrent.Future;
 public class Actions {
 
     public static RemoteAction waitForExecution(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
+        return waitForActionState(actionFuture, State.EXECUTING);
+    }
+
+    public static RemoteAction waitForActionState(final Future<ActionDescription> actionFuture, final ActionState.State actionState) throws CouldNotPerformException, InterruptedException {
         final RemoteAction remoteAction = new RemoteAction(actionFuture);
-        remoteAction.waitForExecution();
+        remoteAction.waitForActionState(actionState);
+        return remoteAction;
+    }
+
+    public static RemoteAction waitForActionState(final Future<ActionDescription> actionFuture, final ActionState.State actionState, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException {
+        final RemoteAction remoteAction = new RemoteAction(actionFuture);
+        remoteAction.waitForActionState(actionState, timeout, timeUnit);
         return remoteAction;
     }
 }
