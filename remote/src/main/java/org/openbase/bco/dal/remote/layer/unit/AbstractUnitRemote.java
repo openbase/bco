@@ -28,7 +28,6 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
 import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProcessor;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -51,7 +50,6 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -59,7 +57,6 @@ import org.openbase.type.domotic.database.QueryType;
 import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
-import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -67,7 +64,6 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
-import org.openbase.type.domotic.state.DoorStateType;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -103,7 +99,15 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
-    private UnitTemplate template;
+
+    /**
+     * The template of the type of unit supported by this remote.
+     * This needs not to be equal with the template of the actually connected unit because it can be a supertype as well.
+     * For example a {@code LightRemote} can be connected to a {@code ColorableLight} unit.
+     * In this case the {@code unitTemplate} refers to the {@code LIGHT_UNIT} while the actually unit is based on the {@code COLORABLE_LIGHT_UNIT} template.
+     */
+    private UnitTemplate unitTemplate;
+
     private boolean initialized = false;
     private SessionManager sessionManager;
     private boolean infrastructure = false;
@@ -160,9 +164,6 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                         Message serviceData = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
                         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
                     } catch (CouldNotPerformException ex) {
-                        // todo: implement handling of super types which not always support all fields. e.g. A LightRemote can receive a ColorableLightData but can for sure not handle all field.
-                        // checkout log output of test ColorableLightRemoteTest:testControllingViaLightRemote to reproduce the issue.
-                        // close issue openbase/bco.dal#147 after fix
                         ExceptionPrinter.printHistory("Could not notify state update for service[" + serviceDescription.getServiceType() + "] in tempus[" + serviceTempus.name() + "]", ex, logger, LogLevel.WARN);
                     }
                 }
@@ -280,7 +281,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                     serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
                 }
             } catch (NullPointerException ex) {
-                throw new InvalidStateException("Non supported observer registration requested! "+this+" does not support Service["+serviceType+"] in ServiceTempus["+serviceTempus+"]", ex);
+                throw new InvalidStateException("Non supported observer registration requested! " + this + " does not support Service[" + serviceType + "] in ServiceTempus[" + serviceTempus + "]", ex);
             }
         }
     }
@@ -300,7 +301,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
             try {
                 serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
             } catch (NullPointerException ex) {
-                logger.warn("Non supported observer removal requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus );
+                logger.warn("Non supported observer removal requested! {} does not support Service[{}] in ServiceTempus[{}]", this, serviceType, serviceTempus);
             }
         }
     }
@@ -351,19 +352,19 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
             logger.trace("Unit config change check failed because config is not available yet.");
         }
 
-        // update unit template
-        template = Registries.getTemplateRegistry(true).getUnitTemplateByType(unitConfig.getUnitType());
+        // update unit templates
+        unitTemplate = Registries.getTemplateRegistry(true).getUnitTemplateByType(Units.getUnitTypeByRemoteClass((Class<? extends UnitRemote<D>>)getClass()));
 
         // register service observable which are not handled yet.
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
-            unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
+            unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(unitTemplate);
 
             // skip creation of service state observable if tempus unknown
             if (serviceTempus == ServiceTempus.UNKNOWN) {
                 continue;
             }
 
-            for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
+            for (final ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
 
                 // filter because provider do not offer an requested state.
                 if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
@@ -381,7 +382,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         for (Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>> serviceTypeObservableMap : serviceTempusServiceTypeObservableMap.values()) {
             outer:
             for (final ServiceType serviceType : serviceTypeObservableMap.keySet()) {
-                for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
+                for (final ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
 
                     // verify if service type is still valid.
                     if (serviceType == serviceDescription.getServiceType()) {
@@ -501,10 +502,10 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      */
     @Override
     public UnitTemplate getUnitTemplate() throws NotAvailableException {
-        if (template == null) {
+        if (unitTemplate == null) {
             throw new NotAvailableException("UnitTemplate");
         }
-        return template;
+        return unitTemplate;
     }
 
     /**
@@ -522,8 +523,8 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                     UnitConfig user = Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserClientPair().getUserId());
                     return LabelProcessor.getLabelByLanguage(user.getUserConfig().getLanguage(), getConfig().getLabel());
                 } catch (CouldNotPerformException ex) {
-                    // as a backup use the first label as seen below
-                    //TODO: this should parse a value from the root location meta config that defines a default label lang.
+                    // as a backup use the best match result
+                    //TODO: this should parse a value from the root location meta config that defines a default label lang for this smart environment.
                 }
             }
             return LabelProcessor.getBestMatch(getConfig().getLabel());
