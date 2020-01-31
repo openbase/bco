@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test.layer.unit;
 
 import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.remote.action.Actions;
@@ -34,12 +35,16 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPLogLevel;
+import org.openbase.jps.preset.JPLogLevel.LogLevel;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
@@ -71,6 +76,11 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
         // legacy mode needed for testLegacyRemoteCallGetColor() test.
         JPService.registerProperty(JPRSBLegacyMode.class, true);
+
+        // enable to get debug logging
+        // JPService.registerProperty(JPDebugMode.class, true);
+        // JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
+
         AbstractBCODeviceManagerTest.setUpClass();
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
     }
@@ -122,7 +132,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
             // test if the initial state was synced correctly
             assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
-            // test controlling vid light remote
+
+            // test controlling via light remote
             waitForExecution(lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()));
             lightRemote.requestData().get();
             while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
@@ -178,6 +189,12 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         Assert.assertNotEquals("Invalid hue color has been applied!", color.getHue(), colorableLightRemote.getHSBColor().getHue());
         Assert.assertNotEquals("Parts of an invalid color has been applied!", color.getSaturation(), colorableLightRemote.getHSBColor().getSaturation());
         Assert.assertNotEquals("Parts of an invalid color has been applied!", color.getBrightness(), colorableLightRemote.getHSBColor().getBrightness());
+
+        colorableLightRemote.requestData().get();
+        for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
+            final RemoteAction remoteAction = new RemoteAction(actionDescription);
+            Assert.assertTrue(remoteAction + " is not done!", remoteAction.isDone());
+        }
     }
 
     /**
@@ -202,9 +219,17 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testLegacyRemoteCallGetColor() throws Exception {
         System.out.println("getColor");
         HSBColor color = HSBColor.newBuilder().setHue(61).setSaturation(0.23).setBrightness(0.37).build();
-        waitForExecution(colorableLightRemote.setColor(color));
+        final RemoteAction action = waitForExecution(colorableLightRemote.setColor(color));
         ColorState colorResult = (ColorState) colorableLightRemote.callMethodAsync("getColorState").get();
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, colorResult.getColor().getHsbColor());
+
+        // cancel manual action
+        action.cancel().get();
+        colorableLightRemote.requestData().get();
+        for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
+            final RemoteAction remoteAction = new RemoteAction(actionDescription);
+            Assert.assertTrue(remoteAction + " is not done!", remoteAction.isDone());
+        }
     }
 
     /**
