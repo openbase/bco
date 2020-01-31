@@ -896,9 +896,9 @@ public class RemoteAction implements Action {
      */
     public void waitForActionState(final ActionState.State actionState) throws CouldNotPerformException, InterruptedException {
         try {
-            waitForActionState(actionState, Timeout.INFINITY_TIMEOUT, TimeUnit.MICROSECONDS);
+            waitForActionState(actionState, Timeout.INFINITY_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
-            new FatalImplementationErrorException("Timeout while wait infinitely.", this);
+            throw new FatalImplementationErrorException("Timeout while wait infinitely.", this);
         }
     }
 
@@ -1107,7 +1107,7 @@ public class RemoteAction implements Action {
         try {
             if (futureObservationTask != null) {
                 try {
-                    if (timeout == 0l) {
+                    if (timeout == 0l || timeUnit.toMillis(timeout) == Timeout.INFINITY_TIMEOUT) {
                         futureObservationTask.get();
                     } else {
                         futureObservationTask.get(timeSplit.getTime(), TimeUnit.MILLISECONDS);
