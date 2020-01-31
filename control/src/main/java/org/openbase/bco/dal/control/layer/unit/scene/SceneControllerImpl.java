@@ -259,9 +259,38 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         // todo: remove this method to avoid bypassing the action scheduling of this unit after openbase/bco.dal#159 has been solved.
 
         try {
+
             // verify that the service type matches
             if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
                 throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
+            }
+
+            // handle action cancellation
+            if (actionDescriptionBuilder.getCancel()) {
+                try {
+                    if (!actionDescriptionBuilder.hasActionId() || actionDescriptionBuilder.getActionId().isEmpty()) {
+                        throw new NotAvailableException("ActionId");
+                    }
+
+                    if (!getActivationState().getResponsibleAction().getActionId().equals(actionDescriptionBuilder.getActionId())) {
+                        logger.warn("Skip scene cancellation because current action["+getActivationState().getResponsibleAction()+"] is not the one which should be canceled("+actionDescriptionBuilder+")!");
+                        // return successful because scene do cache outdated actions so if the action is not the currently executing one, everything is fine.
+                        return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
+                    }
+
+                    optionalActionPool.cancel();
+                    requiredActionPool.cancel();
+
+                    return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
+                }
+            }
+
+            // handle action execution time extension
+            if (actionDescriptionBuilder.getExtend()) {
+               // skip because scene action do not expire anyway.
+                return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
             }
 
             // mark this action as intermediary because its bypassing the action scheduling and therefore not directly requestable via the scene unit.
