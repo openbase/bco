@@ -113,6 +113,7 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
      * @return true if the action should be extended, otherwise fales.
      */
     default boolean isAutoContinueWithLowPriorityIntended() {
+
         final ActionDescription actionDescription = getActionDescription();
         if (actionDescription.getAutoContinueWithLowPriority()) {
             return true;

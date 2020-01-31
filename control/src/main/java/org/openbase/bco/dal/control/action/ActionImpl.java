@@ -41,6 +41,7 @@ import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
@@ -183,7 +184,7 @@ public class ActionImpl implements SchedulableAction {
      *
      * @return true if the execution task is finish otherwise true.
      */
-    private boolean isExecutionTaskFinish() {
+    private boolean isActionTaskFinish() {
         synchronized (executionSync) {
             return actionTask == null || actionTask.isDone();
         }
@@ -191,7 +192,7 @@ public class ActionImpl implements SchedulableAction {
 
     @Override
     public boolean isProcessing() {
-        return !isExecutionTaskFinish() || SchedulableAction.super.isProcessing();
+        return !isActionTaskFinish() || SchedulableAction.super.isProcessing();
     }
 
     /**
@@ -220,7 +221,7 @@ public class ActionImpl implements SchedulableAction {
                 return FutureProcessor.canceledFuture(ActionDescription.class, new ShutdownInProgressException(unit));
             }
 
-            if (!isExecutionTaskFinish()) {
+            if (!isActionTaskFinish()) {
                 return actionTask;
             }
 
@@ -342,17 +343,17 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
-    private void waitForExecutionTaskFinalization(final long timeout) throws InterruptedException {
+    private void waitForActionTaskFinalization(final long timeout) throws InterruptedException {
         synchronized (executionSync) {
-            while (!isExecutionTaskFinish()) {
+            while (!isActionTaskFinish()) {
                 executionSync.wait(timeout);
             }
         }
     }
 
-    private void waitForExecutionTaskFinalization() throws InterruptedException {
+    private void waitForActionTaskFinalization() throws InterruptedException {
         synchronized (executionSync) {
-            while (!isExecutionTaskFinish()) {
+            while (!isActionTaskFinish()) {
                 executionSync.wait();
             }
         }
@@ -388,7 +389,7 @@ public class ActionImpl implements SchedulableAction {
     @Override
     public void autoExtendWithLowPriority() throws VerificationFailedException {
 
-        // validate
+        // validate if action is extendable
         if (!isAutoContinueWithLowPriorityIntended()) {
             throw new VerificationFailedException(this + "is not compatible to be automatically extended because flag is not set!");
         } else if (ActionDescriptionProcessor.getInitialInitiator(getActionDescription()).getInitiatorType() != InitiatorType.HUMAN) {
@@ -406,6 +407,11 @@ public class ActionImpl implements SchedulableAction {
             actionDescriptionBuilder.setExecutionTimePeriod(Long.MAX_VALUE);
         } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
+        }
+
+        // validate that action is valid after extension
+        if(!isValid()) {
+            throw new VerificationFailedException(this + "is not valid after extension!");
         }
     }
 
@@ -426,13 +432,15 @@ public class ActionImpl implements SchedulableAction {
         updateActionState(State.CANCELING);
         try {
             return GlobalCachedExecutorService.submit(() -> {
-                if (!isExecutionTaskFinish()) {
-                    actionTask.cancel(true);
-                    waitForExecutionTaskFinalization();
-                }
+
+                // cancel action task
+                cancelActionTask();
+
                 if (!isDone()) {
                     updateActionState(State.CANCELED);
                 }
+
+                // trigger reschedule because any next action can be executed.
                 unit.reschedule();
 
                 return getActionDescription();
@@ -452,10 +460,9 @@ public class ActionImpl implements SchedulableAction {
 
         updateActionState(State.ABORTING);
         return GlobalCachedExecutorService.submit(() -> {
-            if (!isExecutionTaskFinish()) {
-                actionTask.cancel(true);
-                waitForExecutionTaskFinalization();
-            }
+
+            // cancel action task
+            cancelActionTask();
 
             // if not done jet
             if (!isDone()) {
@@ -485,13 +492,18 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public void reject() {
-        if (actionTask != null && !actionTask.isDone()) {
-            actionTask.cancel(true);
-        }
+
+        // cancel action task
+        cancelActionTask();
+
         if (isProcessing()) {
             abort(true);
         }
-        updateActionState(State.REJECTED);
+
+        // if not already finished then we force the state.
+        if (!isDone()) {
+            updateActionState(State.REJECTED);
+        }
     }
 
     /**
@@ -500,38 +512,43 @@ public class ActionImpl implements SchedulableAction {
     @Override
     public void finish() {
 
+        // cancel action task
+        cancelActionTask();
+
+        // if not already finished then we force the state.
+        if (!isDone()) {
+            updateActionState(State.FINISHED);
+        }
+    }
+
+    private void cancelActionTask() {
         // finalize if still running
-        if (!isExecutionTaskFinish()) {
+        if (!isActionTaskFinish()) {
             // try a smooth finishing if not already failed.
             actionTask.cancel(getActionState() == State.SUBMISSION_FAILED);
 
             try {
-                waitForExecutionTaskFinalization(1000);
+                waitForActionTaskFinalization(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
             // check if finished yet
-            if (!isExecutionTaskFinish()) {
+            if (!isActionTaskFinish()) {
                 LOGGER.warn("Execution of " + this + " can not be finished smoothly! Force finalization...");
                 actionTask.cancel(true);
             }
 
             try {
-                waitForExecutionTaskFinalization(1000);
+                waitForActionTaskFinalization(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
             // check if finished after force
-            if (!isExecutionTaskFinish()) {
+            if (!isActionTaskFinish()) {
                 LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
             }
-        }
-
-        // if not already finished than we force the state.
-        if (!isDone()) {
-            updateActionState(State.FINISHED);
         }
     }
 

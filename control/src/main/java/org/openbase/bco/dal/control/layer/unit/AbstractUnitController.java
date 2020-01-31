@@ -906,7 +906,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                             // handle auto extension if flag is set and human is initiator
                             try {
-                                if (action.isAutoContinueWithLowPriorityIntended()) {
+                                // the canceling state needs to be checked again, because its the only state where an action can still not be done but already invalid while a extension would be fatal.
+                                if (action.isAutoContinueWithLowPriorityIntended() && action.getActionState() != State.CANCELING) {
                                     // extend with low priority
                                     action.autoExtendWithLowPriority();
                                     continue;
