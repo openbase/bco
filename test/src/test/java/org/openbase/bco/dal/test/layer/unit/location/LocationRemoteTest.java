@@ -30,11 +30,14 @@ import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.*;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.unit.Light;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
@@ -387,6 +390,85 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             assertEquals("PresenceState of location has not been updated!", PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+    }
+
+    /**
+     * Test of setColor and setPowerstate method, of class LocationRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 10000)
+    public void testColorableLightControlViaLocation() throws Exception {
+        System.out.println("testColorableLightControlViaLocation");
+
+        final List<? extends ColorableLightRemote> colorableLightRemotes = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
+        final List<? extends LightRemote> lightRemotes = locationRemote.getUnits(UnitType.LIGHT, true, Units.LIGHT);
+
+        // ==== TEST SUBTYPES
+
+        // validate light remotes are sublist of colorable lights
+        // todo: this can only be realized if interfaces like the "LightRemote" interface are introduced. Then ColorableLightRemoteImpl and LightRemoteImpl can both implement the "LightRemote" interface and locationRemote.getUnits(UnitType.LIGHT, true, Units.LIGHT); could list all of them.
+        // Currently, only pur lightRemotes are returned to guarantee the remote class cast.
+//        for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
+//            boolean found = false;
+//            for (LightRemote lightRemote : lightRemotes) {
+//                if(colorableLightRemote.getId().equals(lightRemote.getId())) {
+//                    found = true;
+//                }
+//            }
+//            Assert.assertTrue(colorableLightRemote + " is not included in light list of same loction.", found);
+//        }
+
+        // ==== TEST POWER ON SYNC
+
+        // switch lights on
+        waitForExecution(locationRemote.setPowerState(State.ON));
+
+        // validate colorable light remote states
+        for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
+            colorableLightRemote.requestData().get();
+            assertEquals("Power has not been set in time!", State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        }
+
+        // validate light remote states
+        for (LightRemote lightRemote : lightRemotes) {
+            lightRemote.requestData().get();
+            assertEquals("Power has not been set in time!", State.ON, lightRemote.getData().getPowerState().getValue());
+        }
+
+        // ==== TEST COLOR SYNC
+
+        // set color via location
+        waitForExecution(locationRemote.setColorState(States.Color.RED));
+
+        // validate at colorable light remote
+        for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
+            colorableLightRemote.requestData().get();
+            assertEquals("Color has not been set in time!", States.Color.RED.getColor().getHsbColor(), colorableLightRemote.getData().getColorState().getColor().getHsbColor());
+        }
+
+        // validate light remote states
+        for (LightRemote lightRemote : lightRemotes) {
+            lightRemote.requestData().get();
+            assertEquals("Power has not been set in time!", State.ON, lightRemote.getData().getPowerState().getValue());
+        }
+
+        // ==== TEST POWER OFF SYNC
+
+        // switch lights on
+        waitForExecution(locationRemote.setPowerState(State.OFF, UnitType.LIGHT));
+
+        // validate colorable light remote states
+        for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
+            colorableLightRemote.requestData().get();
+            assertEquals("Power has not been set in time!", State.OFF, colorableLightRemote.getData().getPowerState().getValue());
+        }
+
+        // validate light remote states
+        for (LightRemote lightRemote : lightRemotes) {
+            lightRemote.requestData().get();
+            assertEquals("Power has not been set in time!", State.OFF, lightRemote.getData().getPowerState().getValue());
         }
     }
 
