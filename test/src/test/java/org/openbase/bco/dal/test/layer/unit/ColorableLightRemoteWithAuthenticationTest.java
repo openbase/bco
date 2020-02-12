@@ -34,6 +34,7 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.action.Actions;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
@@ -44,8 +45,10 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
@@ -282,13 +285,42 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         waitForExecution(future);
         assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
 
+        LOGGER.warn("Description: " + MultiLanguageTextProcessor.getBestMatch(future.get().getDescription()));
+
+        colorableLightRemote.cancelAction(actionDescription);
+        try {
+            authenticatedValue = sessionManager.initializeRequest(future.get().toBuilder().setCancel(true).build(), token.build());
+            new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager).get();
+            LOGGER.warn("Successfully canceled action: " + future.get().getActionId() + " - " + MultiLanguageTextProcessor.getBestMatch(future.get().getDescription()));
+        }catch (ExecutionException ex) {
+            LOGGER.error("Could not cancel action!", ex);
+            throw ex;
+        }
+        //remoteAction.cancel()
+
         powerState = PowerState.newBuilder().setValue(State.OFF);
         actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState.build(), ServiceType.POWER_STATE_SERVICE, colorableLightRemote).build();
 
-        authenticatedValue = sessionManager.initializeRequest(actionDescription, token.setAuthenticationToken(authenticationToken).build());
-        future = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
-        waitForExecution(future);
+        token.setAuthenticationToken(authenticationToken);
+        authenticatedValue = sessionManager.initializeRequest(actionDescription, token.build());
+        Future<ActionDescription>  f = colorableLightRemote.setPowerState(State.OFF, ActionParameterType.ActionParameter.newBuilder().setAuthToken(token.build()).build());
+        waitForExecution(f);
+        //future = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
+        //waitForExecution(future);
         assertEquals(State.OFF, colorableLightRemote.getPowerState().getValue());
+
+        LOGGER.warn("Description: " + MultiLanguageTextProcessor.getBestMatch(f.get().getDescription()));
+
+        try {
+            colorableLightRemote.cancelAction(f.get(), token.build()).get();
+        }catch (ExecutionException ex) {
+            LOGGER.error("Could not cancel action!", ex);
+            throw ex;
+        }
+
+        for (ActionDescription description : colorableLightRemote.getActionList()) {
+            LOGGER.warn("Actions still on stack: {}, {}", description.getActionId(), description.getActionState().getValue());
+        }
 
         // reset root location permissions to not interfere with other tests
         rootLocation.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(true);
