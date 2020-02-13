@@ -30,22 +30,25 @@ import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.*;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.Light;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.state.States;
+import org.openbase.bco.dal.lib.state.States.Activation;
+import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionReferenceType;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -64,6 +67,7 @@ import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.vision.ColorType.Color;
@@ -85,7 +89,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LocationRemoteTest.class);
 
-    private static LocationRemote locationRemote;
+    private static LocationRemote rootLocationRemote;
 
     public LocationRemoteTest() {
     }
@@ -94,7 +98,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOLocationManagerTest.setUpClass();
-            locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+            rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
@@ -125,12 +129,12 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
             PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
-            waitForExecution(locationRemote.setPowerState(powerOn));
+            waitForExecution(rootLocationRemote.setPowerState(powerOn));
             for (PowerStateOperationService powerStateService : powerServiceList) {
                 assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the locationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
             }
 
-            waitForExecution(locationRemote.setPowerState(powerOff));
+            waitForExecution(rootLocationRemote.setPowerState(powerOff));
             for (PowerStateOperationService powerStateService : powerServiceList) {
                 assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the locationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
             }
@@ -186,17 +190,17 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             temperatureController.applyServiceState(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
             temperatureController.applyServiceState(targetTemperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
         }
-        locationRemote.ping().get();
-        while (locationRemote.getTemperatureState().getTemperature() != temperature) {
-            System.out.println("current temp: " + locationRemote.getTemperatureState().getTemperature() + " waiting for: " + temperature);
+        rootLocationRemote.ping().get();
+        while (rootLocationRemote.getTemperatureState().getTemperature() != temperature) {
+            System.out.println("current temp: " + rootLocationRemote.getTemperatureState().getTemperature() + " waiting for: " + temperature);
             Thread.sleep(10);
         }
-        assertEquals("Temperature of the location has not been updated!", temperature, locationRemote.getTemperatureState().getTemperature(), 0.01);
-        while (locationRemote.getTargetTemperatureState().getTemperature() != targetTemperature) {
-            System.out.println("current target temp: " + locationRemote.getTargetTemperatureState().getTemperature() + " waiting for: " + targetTemperature);
+        assertEquals("Temperature of the location has not been updated!", temperature, rootLocationRemote.getTemperatureState().getTemperature(), 0.01);
+        while (rootLocationRemote.getTargetTemperatureState().getTemperature() != targetTemperature) {
+            System.out.println("current target temp: " + rootLocationRemote.getTargetTemperatureState().getTemperature() + " waiting for: " + targetTemperature);
             Thread.sleep(10);
         }
-        assertEquals("TargetTemperature of the location has not been updated!", targetTemperature, locationRemote.getTargetTemperatureState().getTemperature(), 0.01);
+        assertEquals("TargetTemperature of the location has not been updated!", targetTemperature, rootLocationRemote.getTargetTemperatureState().getTemperature(), 0.01);
 
         System.out.println("PowerConsumptionSensors: " + powerConsumptionSensorList.size());
         PowerConsumptionState powerConsumptionState = PowerConsumptionState.newBuilder().setVoltage(240).setConsumption(10).setCurrent(1).build();
@@ -205,13 +209,13 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             System.out.println("Updated powerConsumptionState of [" + powerConsumptionSensor.toString() + "] to [" + powerConsumptionSensor.getPowerConsumptionState() + "]");
         }
 
-        while (locationRemote.getPowerConsumptionState().getCurrent() != powerConsumptionState.getCurrent()) {
+        while (rootLocationRemote.getPowerConsumptionState().getCurrent() != powerConsumptionState.getCurrent()) {
             System.out.println("Waiting for locationRemote powerConsumptionState update!");
             Thread.sleep(10);
         }
-        assertEquals("Voltage of location has not been updated!", powerConsumptionState.getVoltage(), locationRemote.getPowerConsumptionState().getVoltage(), 0.01);
-        assertEquals("Current of location has not been updated!", powerConsumptionState.getCurrent(), locationRemote.getPowerConsumptionState().getCurrent(), 0.01);
-        assertEquals("Consumption of location has not been updated!", powerConsumptionState.getConsumption() * powerConsumptionSensorList.size(), locationRemote.getPowerConsumptionState().getConsumption(), 0.01);
+        assertEquals("Voltage of location has not been updated!", powerConsumptionState.getVoltage(), rootLocationRemote.getPowerConsumptionState().getVoltage(), 0.01);
+        assertEquals("Current of location has not been updated!", powerConsumptionState.getCurrent(), rootLocationRemote.getPowerConsumptionState().getCurrent(), 0.01);
+        assertEquals("Consumption of location has not been updated!", powerConsumptionState.getConsumption() * powerConsumptionSensorList.size(), rootLocationRemote.getPowerConsumptionState().getConsumption(), 0.01);
     }
 
     @Test(timeout = 15000)
@@ -227,43 +231,43 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
         logger.info("Set initial states");
 
-        waitForExecution(locationRemote.setBlindState(snapshotBlindState));
-        waitForExecution(locationRemote.setColorState(snapshotColorState));
-        waitForExecution(locationRemote.setPowerState(snapshotPowerState));
-        waitForExecution(locationRemote.setTargetTemperatureState(snapshotTemperatureState));
+        waitForExecution(rootLocationRemote.setBlindState(snapshotBlindState));
+        waitForExecution(rootLocationRemote.setColorState(snapshotColorState));
+        waitForExecution(rootLocationRemote.setPowerState(snapshotPowerState));
+        waitForExecution(rootLocationRemote.setTargetTemperatureState(snapshotTemperatureState));
 
         logger.info("Record snapshot");
 
-        Snapshot snapshot = locationRemote.recordSnapshot().get();
+        Snapshot snapshot = rootLocationRemote.recordSnapshot().get();
 
         // save location state
-        snapshotBlindState = locationRemote.getBlindState(UnitType.UNKNOWN);
-        snapshotColorState = locationRemote.getColorState(UnitType.UNKNOWN);
-        snapshotPowerState = locationRemote.getPowerState(UnitType.UNKNOWN);
-        snapshotTemperatureState = locationRemote.getTargetTemperatureState(UnitType.UNKNOWN);
+        snapshotBlindState = rootLocationRemote.getBlindState(UnitType.UNKNOWN);
+        snapshotColorState = rootLocationRemote.getColorState(UnitType.UNKNOWN);
+        snapshotPowerState = rootLocationRemote.getPowerState(UnitType.UNKNOWN);
+        snapshotTemperatureState = rootLocationRemote.getTargetTemperatureState(UnitType.UNKNOWN);
 
         logger.info("Change states");
 
-        waitForExecution(locationRemote.setBlindState(newBlindState));
-        waitForExecution(locationRemote.setColorState(newColorState));
-        waitForExecution(locationRemote.setPowerState(newPowerState));
-        waitForExecution(locationRemote.setTargetTemperatureState(newTemperatureState));
+        waitForExecution(rootLocationRemote.setBlindState(newBlindState));
+        waitForExecution(rootLocationRemote.setColorState(newColorState));
+        waitForExecution(rootLocationRemote.setPowerState(newPowerState));
+        waitForExecution(rootLocationRemote.setTargetTemperatureState(newTemperatureState));
 
-        assertTrue("BlindState of location has not changed!", locationRemote.getBlindState(UnitType.UNKNOWN).getValue() != snapshotBlindState.getValue());
-        assertTrue("ColorState of location has not changed!", !locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
-        assertTrue("PowerState of location has not changed!", locationRemote.getPowerState(UnitType.UNKNOWN).getValue() != snapshotPowerState.getValue());
-        assertTrue("TargetTemperatureState of location has not changed!", locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() != snapshotTemperatureState.getTemperature());
+        assertTrue("BlindState of location has not changed!", rootLocationRemote.getBlindState(UnitType.UNKNOWN).getValue() != snapshotBlindState.getValue());
+        assertTrue("ColorState of location has not changed!", !rootLocationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
+        assertTrue("PowerState of location has not changed!", rootLocationRemote.getPowerState(UnitType.UNKNOWN).getValue() != snapshotPowerState.getValue());
+        assertTrue("TargetTemperatureState of location has not changed!", rootLocationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() != snapshotTemperatureState.getTemperature());
 
         logger.info("Restore snapshot");
 
-        locationRemote.restoreSnapshot(snapshot).get(10, TimeUnit.SECONDS);
-        locationRemote.requestData().get(10, TimeUnit.SECONDS);
+        rootLocationRemote.restoreSnapshot(snapshot).get(10, TimeUnit.SECONDS);
+        rootLocationRemote.requestData().get(10, TimeUnit.SECONDS);
 
         final BlindState.State blindStateValue = snapshotBlindState.getValue();
         final HSBColor hsbColor = snapshotColorState.getColor().getHsbColor();
         final PowerState.State powerStateValue = snapshotPowerState.getValue();
         final double targetTemperature = snapshotTemperatureState.getTemperature();
-        final UnitStateAwaiter<LocationData, LocationRemote> stateAwaiter = new UnitStateAwaiter<>(locationRemote);
+        final UnitStateAwaiter<LocationData, LocationRemote> stateAwaiter = new UnitStateAwaiter<>(rootLocationRemote);
         logger.warn("Wait for blindState");
         stateAwaiter.waitForState(data -> blindStateValue == data.getBlindState().getValue());
         logger.warn("Wait for Color");
@@ -276,10 +280,10 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             return targetTemperature == data.getTargetTemperatureState().getTemperature();
         });
 
-        assertEquals("BlindState of location has not been restored through snapshot!", snapshotBlindState.getValue(), locationRemote.getBlindState(UnitType.UNKNOWN).getValue());
-        assertEquals("ColorState of location has not been restored through snapshot!", snapshotColorState.getColor().getHsbColor(), locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor());
-        assertEquals("PowerState of location has not been restored through snapshot!", snapshotPowerState.getValue(), locationRemote.getPowerState(UnitType.UNKNOWN).getValue());
-        assertEquals("TargetTemperatureState of location has not been restored through snapshot!", snapshotTemperatureState.getTemperature(), locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature(), 0.5);
+        assertEquals("BlindState of location has not been restored through snapshot!", snapshotBlindState.getValue(), rootLocationRemote.getBlindState(UnitType.UNKNOWN).getValue());
+        assertEquals("ColorState of location has not been restored through snapshot!", snapshotColorState.getColor().getHsbColor(), rootLocationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor());
+        assertEquals("PowerState of location has not been restored through snapshot!", snapshotPowerState.getValue(), rootLocationRemote.getPowerState(UnitType.UNKNOWN).getValue());
+        assertEquals("TargetTemperatureState of location has not been restored through snapshot!", snapshotTemperatureState.getTemperature(), rootLocationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature(), 0.5);
 
 
         // manual cleanup of all snapshot actions because restore snapshot does not offer an action description to cancel its impact.
@@ -317,12 +321,12 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
             PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
-            waitForExecution(locationRemote.setPowerState(powerOn, UnitType.LIGHT));
+            waitForExecution(rootLocationRemote.setPowerState(powerOn, UnitType.LIGHT));
             for (PowerStateOperationService powerStateService : powerServiceList) {
                 assertEquals("PowerState of lightUnit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
             }
 
-            waitForExecution(locationRemote.setPowerState(powerOff));
+            waitForExecution(rootLocationRemote.setPowerState(powerOff));
             for (PowerStateOperationService powerStateService : powerServiceList) {
                 assertEquals("PowerState of lightUnit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
             }
@@ -330,21 +334,21 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             for (PowerStateOperationService powerStateOperationService : powerServiceList) {
                 powerStateOperationService.setPowerState(powerOn).get();
             }
-            while (locationRemote.getPowerState(UnitType.LIGHT).getValue() != powerOn.getValue()) {
+            while (rootLocationRemote.getPowerState(UnitType.LIGHT).getValue() != powerOn.getValue()) {
                 System.out.println("Waiting for locationRemote update!");
                 Thread.sleep(10);
             }
-            assertEquals("PowerState of location has not been updated!", powerOn.getValue(), locationRemote.getPowerState(UnitType.LIGHT).getValue());
+            assertEquals("PowerState of location has not been updated!", powerOn.getValue(), rootLocationRemote.getPowerState(UnitType.LIGHT).getValue());
 
             for (PowerStateOperationService powerStateOperationService : powerServiceList) {
                 powerStateOperationService.setPowerState(powerOff).get();
             }
 
-            while (locationRemote.getPowerState(UnitType.LIGHT).getValue() != powerOff.getValue()) {
+            while (rootLocationRemote.getPowerState(UnitType.LIGHT).getValue() != powerOff.getValue()) {
                 System.out.println("Waiting for locationRemote update!");
                 Thread.sleep(10);
             }
-            assertEquals("PowerState of location has not been updated!", powerOff.getValue(), locationRemote.getPowerState(UnitType.LIGHT).getValue());
+            assertEquals("PowerState of location has not been updated!", powerOff.getValue(), rootLocationRemote.getPowerState(UnitType.LIGHT).getValue());
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
@@ -374,20 +378,20 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
             motionDetectorController.applyServiceState(MotionState.newBuilder().setValue(MotionState.State.MOTION).build(), ServiceType.MOTION_STATE_SERVICE);
 
-            while (locationRemote.getPresenceState().getValue() != PresenceState.State.PRESENT) {
+            while (rootLocationRemote.getPresenceState().getValue() != PresenceState.State.PRESENT) {
                 System.out.println("Waiting for locationRemote presenceState update!");
                 Thread.sleep(10);
             }
-            assertEquals("PresenceState of location has not been updated!", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
+            assertEquals("PresenceState of location has not been updated!", PresenceState.State.PRESENT, rootLocationRemote.getPresenceState().getValue());
 
             motionDetectorController.applyServiceState(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build(), ServiceType.MOTION_STATE_SERVICE);
 
             Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT);
-            while (locationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
+            while (rootLocationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
                 System.out.println("Waiting for locationRemote presenceState update!");
                 Thread.sleep(10);
             }
-            assertEquals("PresenceState of location has not been updated!", PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
+            assertEquals("PresenceState of location has not been updated!", PresenceState.State.ABSENT, rootLocationRemote.getPresenceState().getValue());
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
@@ -402,8 +406,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public void testColorableLightControlViaLocation() throws Exception {
         System.out.println("testColorableLightControlViaLocation");
 
-        final List<? extends ColorableLightRemote> colorableLightRemotes = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
-        final List<? extends LightRemote> lightRemotes = locationRemote.getUnits(UnitType.LIGHT, true, Units.LIGHT);
+        final List<? extends ColorableLightRemote> colorableLightRemotes = rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
+        final List<? extends LightRemote> lightRemotes = rootLocationRemote.getUnits(UnitType.LIGHT, true, Units.LIGHT);
 
         // ==== TEST SUBTYPES
 
@@ -423,7 +427,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         // ==== TEST POWER ON SYNC
 
         // switch lights on
-        waitForExecution(locationRemote.setPowerState(State.ON));
+        waitForExecution(rootLocationRemote.setPowerState(State.ON));
 
         // validate colorable light remote states
         for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
@@ -440,7 +444,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         // ==== TEST COLOR SYNC
 
         // set color via location
-        waitForExecution(locationRemote.setColorState(States.Color.RED));
+        waitForExecution(rootLocationRemote.setColorState(States.Color.RED));
 
         // validate at colorable light remote
         for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
@@ -457,7 +461,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         // ==== TEST POWER OFF SYNC
 
         // switch lights on
-        waitForExecution(locationRemote.setPowerState(State.OFF, UnitType.LIGHT));
+        waitForExecution(rootLocationRemote.setPowerState(State.OFF, UnitType.LIGHT));
 
         // validate colorable light remote states
         for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
@@ -499,22 +503,22 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
                 lightSensorController.applyServiceState(IlluminanceState.newBuilder().setIlluminance(illuminance).build(), ServiceType.ILLUMINANCE_STATE_SERVICE);
             }
 
-            while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
+            while (rootLocationRemote.getIlluminanceState().getIlluminance() != illuminance) {
                 System.out.println("Waiting for locationRemote illuminance update!");
                 Thread.sleep(10);
             }
-            assertEquals("IlluminationState of location has not been updated!", illuminance, locationRemote.getIlluminanceState().getIlluminance(), 1.0);
+            assertEquals("IlluminationState of location has not been updated!", illuminance, rootLocationRemote.getIlluminanceState().getIlluminance(), 1.0);
 
             illuminance = 10000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
                 lightSensorController.applyServiceState(IlluminanceState.newBuilder().setIlluminance(illuminance).build(), ServiceType.ILLUMINANCE_STATE_SERVICE);
             }
 
-            while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
+            while (rootLocationRemote.getIlluminanceState().getIlluminance() != illuminance) {
                 System.out.println("Waiting for locationRemote illuminance update!");
                 Thread.sleep(10);
             }
-            assertEquals("IlluminationState of location has not been updated!", illuminance, locationRemote.getIlluminanceState().getIlluminance(), 1.0);
+            assertEquals("IlluminationState of location has not been updated!", illuminance, rootLocationRemote.getIlluminanceState().getIlluminance(), 1.0);
 
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
@@ -531,33 +535,33 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         System.out.println("testApplyActionAuthenticated");
 
         // wait for data
-        locationRemote.waitForData();
-        waitForExecution(locationRemote.setPowerState(State.OFF));
+        rootLocationRemote.waitForData();
+        waitForExecution(rootLocationRemote.setPowerState(State.OFF));
 
         // init authenticated value
         final PowerState serviceState = PowerState.newBuilder().setValue(State.ON).build();
-        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.POWER_STATE_SERVICE, locationRemote).build();
+        final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, ServiceType.POWER_STATE_SERVICE, rootLocationRemote).build();
         final AuthenticatedValue authenticatedValue = SessionManager.getInstance().initializeRequest(actionDescription, null);
 
         // perform request
-        final AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(locationRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
+        final AuthenticatedValueFuture<ActionDescription> future = new AuthenticatedValueFuture<>(rootLocationRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), SessionManager.getInstance());
         // wait for request
         waitForExecution(future);
 
-        while (locationRemote.getPowerState().getValue() != serviceState.getValue()) {
+        while (rootLocationRemote.getPowerState().getValue() != serviceState.getValue()) {
             // sleep until state is published back to location
             Thread.sleep(10);
         }
 
         // test if new value has been set
-        assertEquals(serviceState.getValue(), locationRemote.getPowerState().getValue());
+        assertEquals(serviceState.getValue(), rootLocationRemote.getPowerState().getValue());
     }
 
     @Test(timeout = 20000)
     public void testActionCancellation() throws Exception {
         System.out.println("testActionCancellation");
 
-        final List<? extends ColorableLightRemote> colorableLightRemotes = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, false, Units.COLORABLE_LIGHT);
+        final List<? extends ColorableLightRemote> colorableLightRemotes = rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, false, Units.COLORABLE_LIGHT);
         // validate that location has at least one unit of the type used in this test
         assertTrue("Cannot execute test if location does not have a colorable light!",
                 colorableLightRemotes.size() > 0);
@@ -566,7 +570,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             final PowerState.State powerState = (i % 2 == 0) ? State.ON : State.OFF;
 
             // execute an action
-            final Future<ActionDescription> actionFuture = locationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT);
+            final Future<ActionDescription> actionFuture = rootLocationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT);
             // wait for its execution
             waitForExecution(actionFuture);
             // save the action description
