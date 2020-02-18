@@ -500,7 +500,7 @@ public class ActionImpl implements SchedulableAction {
         }
 
         // if not already finished then we force the state.
-        if (!isDone()) {
+        if (!isDone() && getActionState() != State.CANCELING) {
             updateActionState(State.REJECTED);
         }
     }
