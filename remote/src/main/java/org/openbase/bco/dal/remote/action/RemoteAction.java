@@ -692,18 +692,22 @@ public class RemoteAction implements Action {
             } else {
                 // otherwise create cleanup task
                 final Future<ActionDescription> passthroughFuture = future;
-                return GlobalCachedExecutorService.submit(() -> {
-                    try {
-                        return passthroughFuture.get(10, TimeUnit.SECONDS);
-                    } catch (InterruptedException ex) {
-                        throw ex;
-                    } catch (ExecutionException | java.util.concurrent.TimeoutException ex) {
-                        throw new CouldNotProcessException("Could not cancel " + RemoteAction.this.toString(), ex);
-                    } finally {
-                        // clear
-                        cleanup();
-                    }
-                });
+                try {
+                    return GlobalCachedExecutorService.submit(() -> {
+                        try {
+                            return passthroughFuture.get(10, TimeUnit.SECONDS);
+                        } catch (InterruptedException ex) {
+                            throw ex;
+                        } catch (ExecutionException | java.util.concurrent.TimeoutException ex) {
+                            throw new CouldNotProcessException("Could not cancel " + RemoteAction.this.toString(), ex);
+                        } finally {
+                            // clear
+                            cleanup();
+                        }
+                    });
+                } catch (RejectedExecutionException ex) {
+                    return FutureProcessor.canceledFuture(ex);
+                }
             }
         }
     }
