@@ -89,9 +89,17 @@
                         <goals>
                             <goal>assemble</goal>
                         </goals>
+                        <!--<configuration>-->
+                        <!--<descriptorRefs>-->
+                        <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+                        <!--</descriptorRefs>-->
+                        <!--<appendAssemblyId>false</appendAssemblyId>-->
+                        <!--</configuration>-->
                     </execution>
                 </executions>
                 <configuration>
+                    <binFolder>${deb.prefix.bin}</binFolder>
+                    <repositoryLayout>flat</repositoryLayout>
                     <repositoryName>${build.appassembler.repo.name}</repositoryName>
                     <programs>
                         <program>
@@ -150,7 +158,7 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
-                       <program>
+                        <program>
                             <mainClass>org.openbase.bco.ontology.lib.OntologyManagerLauncher</mainClass>
                             <id>bco-ontology-manager</id>
                             <platforms>
@@ -267,186 +275,110 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <artifactId>jdeb</artifactId>
+                <groupId>org.vafer</groupId>
+                <version>1.8</version>
                 <executions>
                     <execution>
-                        <id>build-first</id>
-                        <phase>package</phase>
+                        <phase>install</phase>
                         <goals>
-                            <goal>shade</goal>
-                        </goals>   
-                        <configuration>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">                        
-                                    <mainClass>org.openbase.bco.app.util.launch.BCOLauncher</mainClass>
-                                </transformer>
-                            </transformers>
-                            <finalName>bco-${project.version}</finalName>
-                            <dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
-                            <filters>
-                                <filter>
-                                <artifact>*:*</artifact>
-                                <excludes>
-                                    <exclude>META-INF/*.SF</exclude>
-                                    <exclude>META-INF/*.DSA</exclude>
-                                    <exclude>META-INF/*.RSA</exclude>
-                                </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>build-second</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>   
-                        <configuration>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">                        
-                                    <mainClass>org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher</mainClass>
-                                </transformer>
-                            </transformers>
-                            <finalName>bco-manager-device-openhab-${project.version}</finalName>
-                            <dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
-                            <filters>
-                                <filter>
-                                <artifact>*:*</artifact>
-                                <excludes>
-                                    <exclude>META-INF/*.SF</exclude>
-                                    <exclude>META-INF/*.DSA</exclude>
-                                    <exclude>META-INF/*.RSA</exclude>
-                                </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>build-third</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
+                            <goal>jdeb</goal>
                         </goals>
                         <configuration>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.openbase.bco.app.util.launch.BCOTestLauncher</mainClass>
-                                </transformer>
-                            </transformers>
-                            <finalName>bco-test-${project.version}</finalName>
-                            <dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
+                            <snapshotExpand>true</snapshotExpand>
+                            <!-- expand "SNAPSHOT" to what is in the "USER" env variable -->
+                            <snapshotEnv/>
+                            <verbose>true</verbose>
+                            <controlDir>${basedir}/src/main/deb/control</controlDir>
+                            <dataSet>
+
+                                <!-- Install Daemon-->
+                                <data>
+                                    <src>${basedir}/src/main/deb/init.d</src>
+                                    <type>directory</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/etc/init.d</prefix>
+                                        <user>loader</user>
+                                        <group>loader</group>
+                                    </mapper>
+                                </data>
+
+                                <!-- Copy Deps-->
+                                <data>
+                                    <src>${build.appassembler}/${build.appassembler.repo.name}</src>
+                                    <type>directory</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/${deb.prefix.lib}</prefix>
+                                        <user>loader</user>
+                                        <group>loader</group>
+                                    </mapper>
+                                </data>
+
+                                <!-- Copy Bins-->
+                                <data>
+                                    <src>${build.appassembler}/${deb.prefix.bin}</src>
+                                    <type>directory</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/${deb.prefix.bin}</prefix>
+                                        <user>loader</user>
+                                        <group>loader</group>
+                                        <filemode>755</filemode>
+                                    </mapper>
+                                </data>
+                                <!---->
+                                <!-- Create Config/Template Folders-->
+                                <data>
+                                    <type>template</type>
+                                    <paths>
+                                        <path>etc/${project.artifactId}</path>
+                                        <path>${deb.prefix.share}</path>
+                                        <!--path>var/lib/${project.artifactId}</path-->
+                                        <path>var/log/${project.artifactId}</path>
+                                        <!--path>var/run/${project.artifactId}</path-->
+                                    </paths>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <user>loader</user>
+                                        <group>loader</group>
+                                    </mapper>
+                                </data>
+                                <!---->
+                                <!-- Copy Templates-->
+                                <data>
+                                    <src>${project.basedir}/src/main/template/db.tar.gz</src>
+                                    <type>archive</type>
+                                    <!--<includes>...</includes>-->
+                                    <!--<excludes>...</excludes>-->
+                                    <mapper>
+                                        <type>perm</type>
+                                        <strip>1</strip>
+                                        <prefix>${deb.prefix.share}/template/db</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                        <!--<filemode>600</filemode>-->
+                                    </mapper>
+                                </data>
+                            </dataSet>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <useReleaseProfile>true</useReleaseProfile>
-                    <releaseProfiles>deploy</releaseProfiles>
-                    <goals>deploy</goals>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>deploy</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.0.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!--plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <configuration-->
-                            <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233>
-                            <source>8</source>
-                            <javaApiLinks>
-                                <property>
-                                    <name>foo</name>
-                                    <value>bar</value>
-                                </property>
-                            </javaApiLinks>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>sonatype</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.7</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <properties>
         <skipTests>true</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <build.appassembler>${project.build.directory}/appassembler</build.appassembler>
+        <build.appassembler.repo.name>share/bco/lib</build.appassembler.repo.name>
+        <deb.prefix>usr</deb.prefix>
+        <deb.prefix.lib>${deb.prefix}/${build.appassembler.repo.name}</deb.prefix.lib>
+        <deb.prefix.bin>${deb.prefix}/bin</deb.prefix.bin>
+        <deb.prefix.share>${deb.prefix}/share/${project.artifactId}</deb.prefix.share>
     </properties>
 
     <dependencies>
