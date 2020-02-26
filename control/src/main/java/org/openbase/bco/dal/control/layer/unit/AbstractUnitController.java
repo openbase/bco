@@ -547,9 +547,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     private String terminatingActionId;
 
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
+    public void registerTerminatingAction() {
 
         try {
             // auto switch of unused dal units
@@ -568,6 +566,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 terminationAction.waitForRegistration(5, TimeUnit.SECONDS);
                 this.terminatingActionId = terminationAction.getId();
             }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not register state termination!", ex, logger);
         }
@@ -846,6 +846,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
 
                 if (actionToSchedule != null) {
+
+                    // init terminating action if not yet done
+                    if (terminatingActionId == null) {
+                        registerTerminatingAction();
+                    }
+
                     // test if there is another action already in the list by the same initiator
                     try {
                         final ActionInitiator newInitiator = ActionDescriptionProcessor.getInitialInitiator(actionToSchedule.getActionDescription());
@@ -863,7 +869,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                                 // actions do not have the same initiator
                                 continue;
                             }
-
 
                             // workaround hack - do not cancel termination
                             // todo: remove me if termination is done by app or agent
@@ -906,8 +911,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                             // handle auto extension if flag is set and human is initiator
                             try {
-                                // the canceling state needs to be checked again, because its the only state where an action can still not be done but already invalid while a extension would be fatal.
-                                if (action.isAutoContinueWithLowPriorityIntended() && action.getActionState() != State.CANCELING) {
+                                if (action.isAutoContinueWithLowPriorityIntended()) {
                                     // extend with low priority
                                     action.autoExtendWithLowPriority();
                                     continue;
