@@ -80,7 +80,7 @@ public class RemoteAction implements Action {
         }
 
         try {
-            updateActionDescription((Collection<ActionDescription>) ProtoBufFieldProcessor.getRepeatedFieldList("action", (Message) data));
+            updateActionDescription((Collection<ActionDescription>) ProtoBufFieldProcessor.getRepeatedFieldList("action", (Message) data), false);
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory("Incoming DataType[" + data.getClass().getSimpleName() + "] does not provide an action list!", ex, LOGGER, LogLevel.WARN);
         }
@@ -422,7 +422,7 @@ public class RemoteAction implements Action {
         // because future can already be outdated but the update not received because
         // the action id was not yet available we need to trigger an manual update.
         if (targetUnit.isDataAvailable()) {
-            updateActionDescription(targetUnit.getActionList());
+            updateActionDescription(targetUnit.getActionList(), true);
         }
 
         // setup auto extension if needed
@@ -776,6 +776,8 @@ public class RemoteAction implements Action {
      */
     private void cleanup() {
 
+        LOGGER.debug("cleanup {}", this);
+
         // cancel observation task
         if (futureObservationTask != null && !futureObservationTask.isDone()) {
             futureObservationTask.cancel(true);
@@ -808,7 +810,7 @@ public class RemoteAction implements Action {
         }
     }
 
-    private void updateActionDescription(final Collection<ActionDescription> actionDescriptions) {
+    private void updateActionDescription(final Collection<ActionDescription> actionDescriptions, final boolean initialSync) {
 
         if (actionDescriptions == null) {
             LOGGER.warn("Update skipped because no action descriptions passed!");
@@ -855,8 +857,11 @@ public class RemoteAction implements Action {
             }
         }
 
-        // this action is not listed on its target unit, therefore its an outdated one and the remote action can be cleaned up.
-        cleanup();
+        // if this action is not listed on its target unit and its not just the initial sync where the action id is maybe not yet listed,
+        // then we can be sure that this action is an outdated one and the remote action can be cleaned up.
+        if(!initialSync) {
+            cleanup();
+        }
     }
 
     /**
