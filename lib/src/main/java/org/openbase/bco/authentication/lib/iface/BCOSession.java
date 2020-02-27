@@ -23,6 +23,7 @@ package org.openbase.bco.authentication.lib.iface;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 import java.util.concurrent.Future;
@@ -94,4 +95,14 @@ public interface BCOSession extends Session {
      * @throws InterruptedException     is thrown if the thread was externally interrupted.
      */
     void loginBCOUser() throws CouldNotPerformException, InterruptedException;
+
+    /**
+     * Method generates a new AuthToken including an authentication token for the user who is currently logged in.
+     *
+     * @return the token.
+     *
+     * @throws CouldNotPerformException is thrown if the token could not be generated.
+     * @throws InterruptedException     is thrown if the thread was externally interrupted which could indicated an system shutdown.
+     */
+    AuthToken generateAuthToken() throws CouldNotPerformException, InterruptedException;
 }

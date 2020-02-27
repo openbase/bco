@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.lib.iface;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
@@ -132,4 +133,10 @@ public interface Session {
      * @param loginCredentials the credentials to be stored.
      */
     void storeCredentials(final String id, final LoginCredentials loginCredentials) throws CouldNotPerformException;
+
+    /**
+     * Method returns the session manager of this session.
+     * @return the session manager instance used by this session.
+     */
+    SessionManager getSessionManager();
 }

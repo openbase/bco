@@ -787,6 +787,11 @@ public class SessionManager implements Shutdownable, Session {
         loginObservable.removeObserver(observer);
     }
 
+    @Override
+    public SessionManager getSessionManager() {
+        return this;
+    }
+
     /**
      * {@inheritDoc}
      */
