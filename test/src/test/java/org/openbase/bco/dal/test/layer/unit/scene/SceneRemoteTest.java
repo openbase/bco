@@ -23,11 +23,16 @@ package org.openbase.bco.dal.test.layer.unit.scene;
  */
 
 import org.junit.*;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.state.States;
+import org.openbase.bco.dal.lib.state.States.Activation;
+import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.layer.service.PowerStateServiceRemote;
@@ -39,10 +44,16 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.test.AbstractBCOTest;
+import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
+import org.openbase.bco.registry.remote.session.BCOSessionImpl;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPLogLevel;
+import org.openbase.jps.preset.JPLogLevel.LogLevel;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -51,7 +62,13 @@ import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType;
@@ -62,6 +79,7 @@ import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.scene.SceneConfigType.SceneConfig;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
@@ -75,6 +93,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -102,16 +121,31 @@ public class SceneRemoteTest extends AbstractBCOTest {
     private static final PowerState POWER_STATE_ON = PowerState.newBuilder().setValue(POWER_ON).build();
     private static final PowerState POWER_STATE_OFF = PowerState.newBuilder().setValue(POWER_OFF).build();
     private static final HSBColor COLOR_VALUE = HSBColor.newBuilder().setBrightness(1d).setSaturation(.9d).setHue(10).build();
-    private static final HSBColor GROUP_COLOR_VALUE = HSBColor.newBuilder().setBrightness(.95d).setSaturation(.55d).setHue(110).build();
+    private static final HSBColor GROUP_COLOR_VALUE = HSBColor.newBuilder().setHue(110).setSaturation(.55d).setBrightness(.95d).build();
     private static final double TEMPERATURE = 21.3;
     private static SceneManagerLauncher sceneManagerLauncher;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static LocationManagerLauncher locationManagerLauncher;
     private static PowerStateServiceRemote powerStateServiceRemote;
     private static ColorStateServiceRemote colorStateServiceRemote;
-    final SyncObject LOCK = new SyncObject("waitForSceneExecution");
 
     public SceneRemoteTest() {
+        // uncomment to enable debug mode
+//         JPService.registerProperty(JPDebugMode.class, true);
+//         JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
+
+        // uncomment to visualize action inspector during tests
+//        String[] args = {};
+//        new Thread(() -> {
+//            try {
+//                Registries.waitForData();
+//                BCOActionInspector.main(args);
+//            } catch (CouldNotPerformException e) {
+//                e.printStackTrace();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }).start();
     }
 
     @BeforeClass
@@ -339,6 +373,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         colorStateServiceRemote.requestData().get();
 
         assertEquals("PowerState has not been updated by scene!", POWER_ON, powerStateServiceRemote.getPowerState().getValue());
+
         // the colorStateServiceRemote computes an average in the rgb space which is why the values have to be compared with a tolerance
         assertEquals("Brightness has not been updated by scene!", COLOR_VALUE.getBrightness(), colorStateServiceRemote.getColorState().getColor().getHsbColor().getBrightness(), 0.01);
         assertEquals("Hue has not been updated by scene!", COLOR_VALUE.getHue(), colorStateServiceRemote.getColorState().getColor().getHsbColor().getHue(), 0.2);
@@ -381,7 +416,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         final UnitGroupRemote unitGroupRemote = Units.getUnitsByLabel(COLORABLE_LIGHT_GROUP, true, UnitGroupRemote.class).get(0);
         final SceneRemote sceneRemote = Units.getUnitsByLabel(SCENE_GROUP, true, Units.SCENE).get(0);
 
-        List<ColorableLightRemote> colorableLightRemotes = new ArrayList<>();
+        final List<ColorableLightRemote> colorableLightRemotes = new ArrayList<>();
         for (String memberId : unitGroupRemote.getConfig().getUnitGroupConfig().getMemberIdList()) {
             colorableLightRemotes.add(Units.getUnit(memberId, true, ColorableLightRemote.class));
         }
@@ -398,9 +433,9 @@ public class SceneRemoteTest extends AbstractBCOTest {
         unitGroupRemote.requestData().get();
 
         // for the group the values can be slightly modified because of computing averages
-        assertEquals("Brightness in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getBrightness(), unitGroupRemote.getColorState().getColor().getHsbColor().getBrightness(), 1.0);
-        assertEquals("Hue in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getHue(), unitGroupRemote.getColorState().getColor().getHsbColor().getHue(), 1.0);
-        assertEquals("Saturation in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getSaturation(), unitGroupRemote.getColorState().getColor().getHsbColor().getSaturation(), 1.0);
+        assertEquals("Brightness in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getBrightness(), unitGroupRemote.getColorState().getColor().getHsbColor().getBrightness(), 0.01);
+        assertEquals("Hue in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getHue(), unitGroupRemote.getColorState().getColor().getHsbColor().getHue(), 0.01);
+        assertEquals("Saturation in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getSaturation(), unitGroupRemote.getColorState().getColor().getHsbColor().getSaturation(), 0.01);
     }
 
     /**
@@ -415,16 +450,14 @@ public class SceneRemoteTest extends AbstractBCOTest {
         LightRemote internalLight = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, Units.LIGHT);
         PowerSwitchRemote internalPowerSwitch = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, Units.POWER_SWITCH);
 
-        internalLight.setPowerState(POWER_ON).get();
-        internalPowerSwitch.setPowerState(POWER_ON).get();
+        waitForExecution(internalLight.setPowerState(POWER_ON));
+        waitForExecution(internalPowerSwitch.setPowerState(POWER_ON));
 
-        internalLight.requestData().get();
-        internalPowerSwitch.requestData().get();
         assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
         assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
 
         LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, LocationRemote.class);
-        locationRemote.setPowerState(POWER_OFF).get();
+        waitForExecution(locationRemote.setPowerState(POWER_OFF));
 
         internalLight.requestData().get();
         internalPowerSwitch.requestData().get();
@@ -433,15 +466,13 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
         final SceneRemote sceneRemoteDevicesOn = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_ALL_DEVICES_ON, true, Units.SCENE).get(0);
         final SceneRemote sceneRemoteDevicesOff = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_ALL_DEVICES_OFF, true, Units.SCENE).get(0);
+
         waitForExecution(sceneRemoteDevicesOn.setActivationState(State.INACTIVE, SCENE_ACTION_PARAM));
         waitForExecution(sceneRemoteDevicesOff.setActivationState(State.INACTIVE, SCENE_ACTION_PARAM));
 
         int TEST_ITERATIONS = 3;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             waitForExecution(sceneRemoteDevicesOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
-            while (locationRemote.getPowerState().getValue() != POWER_ON) {
-                locationRemote.requestData().get();
-            }
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
@@ -450,10 +481,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertEquals("Devices off scene is not inactive", State.INACTIVE, sceneRemoteDevicesOff.getActivationState().getValue());
 
             waitForExecution(sceneRemoteDevicesOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
-            while (locationRemote.getPowerState().getValue() != POWER_OFF) {
-                System.out.println("location was not yet switched " + POWER_OFF);
-                locationRemote.requestData().get();
-            }
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
 
@@ -487,7 +514,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
 
         LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, LocationRemote.class);
-        new RemoteAction(locationRemote.setPowerState(POWER_OFF)).waitForActionState(ActionState.State.EXECUTING);
+        waitForExecution(locationRemote.setPowerState(POWER_OFF));
 
         internalLight.requestData().get();
         internalPowerSwitch.requestData().get();
@@ -496,6 +523,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
         final SceneRemote sceneRemoteOn = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_ON, true, Units.SCENE).get(0);
         final SceneRemote sceneRemoteOff = Units.getUnitsByLabel(SCENE_ROOT_LOCATION_OFF, true, Units.SCENE).get(0);
+
         waitForExecution(sceneRemoteOn.setActivationState(State.INACTIVE, SCENE_ACTION_PARAM));
         waitForExecution(sceneRemoteOff.setActivationState(State.INACTIVE, SCENE_ACTION_PARAM));
 
@@ -503,10 +531,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             System.out.println("Current iteration: " + i);
             waitForExecution(sceneRemoteOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
-            while (locationRemote.getPowerState().getValue() != POWER_ON) {
-                System.out.println("location was not yet switched " + POWER_ON);
-                locationRemote.requestData().get();
-            }
 
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
@@ -516,10 +540,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertEquals("Location off scene is not inactive", State.INACTIVE, sceneRemoteOff.getActivationState().getValue());
 
             waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
-            while (locationRemote.getPowerState().getValue() != POWER_OFF) {
-                System.out.println("location was not yet switched " + POWER_OFF);
-                locationRemote.requestData().get();
-            }
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
             assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
@@ -548,7 +568,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
         internalLight.requestData().get();
         internalPowerSwitch.requestData().get();
-
 
         assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
         assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
@@ -587,5 +606,80 @@ public class SceneRemoteTest extends AbstractBCOTest {
             System.out.println("Action on stack: " + actionDescription.getActionState().getValue().name() + " = " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
             assertTrue("internalPowerSwitch has an ongoing action on its stack!", new RemoteAction(actionDescription).isDone());
         }
+    }
+
+    @Test(timeout = 20000)
+    public void testActionCancellationViaScene() throws Exception {
+
+        final LocationRemote rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+
+        final ServiceStateDescription allOffAction = rootLocationRemote.setPowerState(Power.OFF).get().getServiceStateDescription();
+        final Builder allOffSceneConfig = UnitConfig.newBuilder().setUnitType(UnitType.SCENE);
+
+        // setup all off scene
+        allOffSceneConfig.getSceneConfigBuilder().addOptionalServiceStateDescription(allOffAction);
+        final UnitConfig unitConfig = Registries.getUnitRegistry().registerUnitConfig(allOffSceneConfig.build()).get();
+        final SceneRemote allOffScene = Units.getUnit(unitConfig, true, Units.SCENE);
+
+        // query all lights
+        final List<? extends ColorableLightRemote> colorableLights = rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
+
+        // validate that all lights are initially off
+        for (ColorableLightRemote colorableLight : colorableLights) {
+            colorableLight.requestData().get();
+            Assert.assertEquals("Light still on!", Power.OFF.getValue(), colorableLight.getPowerState().getValue());
+        }
+
+        // switch all lights on via another authority
+        final BCOSessionImpl session = new BCOSessionImpl(new SessionManager());
+        session.loginUserViaUsername("admin", "admin", true);
+        for (ColorableLightRemote colorableLight : colorableLights) {
+            final ColorableLightRemote adminsColorableLightRemote = new ColorableLightRemote();
+            adminsColorableLightRemote.setSession(session);
+            adminsColorableLightRemote.init(colorableLight.getConfig());
+            adminsColorableLightRemote.activate();
+            adminsColorableLightRemote.waitForData();
+            waitForExecution(adminsColorableLightRemote.setColorState(States.Color.RED, ActionParameter.newBuilder().setPriority(Priority.LOW).build()), session);
+            adminsColorableLightRemote.shutdown();
+        }
+
+        // validate cancellation and make sure all lights are RED
+        for (ColorableLightRemote colorableLight : colorableLights) {
+            colorableLight.requestData().get();
+            Assert.assertEquals("Color not restored!", States.Color.RED.getColor(), colorableLight.getColorState().getColor());
+        }
+
+        // switch all off via scene
+        final RemoteAction allOffSceneAction = waitForExecution(allOffScene.setActivationState(Activation.ACTIVE));
+
+        // validate all off and store responsible action
+        final ArrayList<ActionDescription> allOffActionDescriptionList = new ArrayList<>();
+        for (ColorableLightRemote colorableLight : colorableLights) {
+            colorableLight.requestData().get();
+            final PowerState powerState = colorableLight.getPowerState();
+            Assert.assertEquals("Light still on!", Power.OFF.getValue(), powerState.getValue());
+            allOffActionDescriptionList.add(powerState.getResponsibleAction());
+        }
+
+        // make sure each discovered action is listed as impact
+        for (ActionDescription colorableLightAction : allOffActionDescriptionList) {
+            boolean found = false;
+            for (ActionReference actionImpact : allOffSceneAction.getActionDescription().getActionImpactList()) {
+                if(colorableLightAction.getActionId().equals(actionImpact.getActionId())) {
+                    found = true;
+                }
+            }
+            Assert.assertTrue("Impact not registered!", found);
+        }
+
+        // cancel all off
+        allOffSceneAction.cancel().get();
+
+        // validate cancellation and make sure all lights are RED again
+        for (ColorableLightRemote colorableLight : colorableLights) {
+            colorableLight.requestData().get();
+            Assert.assertEquals("Color not restored!", States.Color.RED.getColor(), colorableLight.getColorState().getColor());
+        }
+        session.logout();
     }
 }
