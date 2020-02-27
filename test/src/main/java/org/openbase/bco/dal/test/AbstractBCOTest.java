@@ -22,6 +22,8 @@ package org.openbase.bco.dal.test;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.iface.BCOSession;
+import org.openbase.bco.authentication.lib.iface.Session;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -30,6 +32,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +92,105 @@ public class AbstractBCOTest {
      * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
      *
      * @param actionFuture the action to observe
+     * @param authToken    the auth token used to maintain the remote action.
+     * @param autoExtend   if flag is set to true, then the action is auto extended, otherwise no extension is performed.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForExecution(final Future<ActionDescription> actionFuture, final AuthToken authToken, final boolean autoExtend) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction testAction = observe(actionFuture, authToken, autoExtend);
+        testAction.waitForActionState(State.EXECUTING);
+        return testAction;
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is executed. Be aware that this can take a while if a higher ranked action is currently allocating the unit.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     * <p>
+     * Note: Method will additionally auto extend the given action. Overwrite flag via additional argument if this behavior is not intended.
+     *
+     * @param actionFuture the action to observe
+     * @param authToken    the auth token used to maintain the remote action.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForExecution(final Future<ActionDescription> actionFuture, final AuthToken authToken) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction testAction = observe(actionFuture, authToken, true);
+        testAction.waitForActionState(State.EXECUTING);
+        return testAction;
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is executed. Be aware that this can take a while if a higher ranked action is currently allocating the unit.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param actionFuture the action to observe
+     * @param session      the session used to generate a new auth token which is then used to maintain the remote action.
+     * @param autoExtend   if flag is set to true, then the action is auto extended, otherwise no extension is performed.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForExecution(final Future<ActionDescription> actionFuture, final BCOSession session, final boolean autoExtend) throws CouldNotPerformException, InterruptedException {
+        return waitForExecution(actionFuture, session.generateAuthToken(), autoExtend);
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is executed. Be aware that this can take a while if a higher ranked action is currently allocating the unit.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     * <p>
+     * Note: Method will additionally auto extend the given action. Overwrite flag via additional argument if this behavior is not intended.
+     *
+     * @param actionFuture the action to observe
+     * @param session      the session used to generate a new auth token which is then used to maintain the remote action.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForExecution(final Future<ActionDescription> actionFuture, final BCOSession session) throws CouldNotPerformException, InterruptedException {
+        return waitForExecution(actionFuture, session.generateAuthToken(), true);
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is executed. Be aware that this can take a while if a higher ranked action is currently allocating the unit.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param actionFuture the action to observe
+     * @param autoExtend   if flag is set to true, then the action is auto extended, otherwise no extension is performed.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForExecution(final Future<ActionDescription> actionFuture, final boolean autoExtend) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction testAction = observe(actionFuture, autoExtend);
+        testAction.waitForActionState(State.EXECUTING);
+        return testAction;
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is executed. Be aware that this can take a while if a higher ranked action is currently allocating the unit.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     * <p>
+     * Note: Method will additionally auto extend the given action. Overwrite flag via additional argument if this behavior is not intended.
+     *
+     * @param actionFuture the action to observe
      *
      * @return a remote action instance which can be used to observe the action state.
      *
@@ -96,7 +198,7 @@ public class AbstractBCOTest {
      * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
      */
     public RemoteAction waitForExecution(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
-        final RemoteAction testAction = observe(actionFuture);
+        final RemoteAction testAction = observe(actionFuture, true);
         testAction.waitForActionState(State.EXECUTING);
         return testAction;
     }
@@ -123,6 +225,8 @@ public class AbstractBCOTest {
      * This method can be used to register an action during the unit test.
      * This method blocks until the action is registered.
      * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     * <p>
+     * Note: Method will additionally auto extend the given action. Overwrite flag via additional argument if this behavior is not intended.
      *
      * @param actionFuture the action to observe
      *
@@ -132,7 +236,46 @@ public class AbstractBCOTest {
      * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
      */
     public RemoteAction waitForRegistration(final Future<ActionDescription> actionFuture) throws CouldNotPerformException, InterruptedException {
-        final RemoteAction testAction = observe(actionFuture);
+        final RemoteAction testAction = observe(actionFuture, true);
+        testAction.waitForRegistration();
+        return testAction;
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is registered.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param actionFuture the action to observe
+     * @param autoExtend   if flag is set to true, then the action is auto extended, otherwise no extension is performed.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForRegistration(final Future<ActionDescription> actionFuture, final boolean autoExtend) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction testAction = observe(actionFuture, autoExtend);
+        testAction.waitForRegistration();
+        return testAction;
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * This method blocks until the action is registered.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param actionFuture the action to observe
+     * @param authToken    the auth token used to maintain the remote action.
+     * @param autoExtend   if flag is set to true, then the action is auto extended, otherwise no extension is performed.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be observed.
+     * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
+     */
+    public RemoteAction waitForRegistration(final Future<ActionDescription> actionFuture, final AuthToken authToken, final boolean autoExtend) throws CouldNotPerformException, InterruptedException {
+        final RemoteAction testAction = observe(actionFuture, authToken, autoExtend);
         testAction.waitForRegistration();
         return testAction;
     }
@@ -158,13 +301,42 @@ public class AbstractBCOTest {
     /**
      * This method can be used to register an action during the unit test.
      * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     * <p>
+     * Note: Action will be observed but not auto extended, if this behavior is intended then overwrite flag via method argument.
      *
      * @param actionFuture the action to observe
      *
      * @return a remote action instance which can be used to observe the action state.
      */
     public RemoteAction observe(final Future<ActionDescription> actionFuture) {
-        return observe(new RemoteAction(actionFuture));
+        return observe(actionFuture, false);
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param actionFuture the action to observe
+     * @param autoExtend   if flag is set to true, then the action is auto extended, otherwise no extension is performed.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     */
+    public RemoteAction observe(final Future<ActionDescription> actionFuture, final boolean autoExtend) {
+        return observe(new RemoteAction(actionFuture, () -> autoExtend));
+    }
+
+    /**
+     * This method can be used to register an action during the unit test.
+     * After the test run is done, all registered actions are canceled automatically to avoid interferences between different test runs.
+     *
+     * @param actionFuture the action to observe
+     * @param authToken    the auth token used to maintain the remote action.
+     * @param autoExtend   if flag is set to true, then the action is auto extended, otherwise no extension is performed.
+     *
+     * @return a remote action instance which can be used to observe the action state.
+     */
+    public RemoteAction observe(final Future<ActionDescription> actionFuture, final AuthToken authToken, final boolean autoExtend) {
+        return observe(new RemoteAction(actionFuture, authToken, () -> autoExtend));
     }
 
     /**
@@ -200,7 +372,7 @@ public class AbstractBCOTest {
     public void cancelAllTestActions() throws CouldNotPerformException, InterruptedException {
 
         if (testActions.size() > 0) {
-            LOGGER.info("Cancel " + testActions.size() + " ongoing test action"+(testActions.size() == 1 ? "" : "s")+" ...");
+            LOGGER.info("Cancel " + testActions.size() + " ongoing test action" + (testActions.size() == 1 ? "" : "s") + " ...");
         }
 
         final List<Future<?>> cancelTasks = new ArrayList<>();
