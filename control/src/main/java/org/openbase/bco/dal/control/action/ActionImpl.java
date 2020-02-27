@@ -41,6 +41,7 @@ import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
@@ -403,7 +404,10 @@ public class ActionImpl implements SchedulableAction {
             actionDescriptionBuilder.setPriority(Priority.LOW);
             actionDescriptionBuilder.setInterruptible(false);
             actionDescriptionBuilder.setSchedulable(false);
-            actionDescriptionBuilder.setExecutionTimePeriod(Long.MAX_VALUE);
+            actionDescriptionBuilder.setExecutionTimePeriod(Timeout.getInfinityTimeout(TimeUnit.MICROSECONDS));
+
+            // has to be reset because otherwise the action would still be invalid.
+            actionDescriptionBuilder.setLastExtensionTimestamp(TimestampProcessor.getCurrentTimestamp());
         } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
         }
