@@ -24,6 +24,7 @@ package org.openbase.bco.registry.remote.session;
 
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
+import org.openbase.bco.authentication.lib.iface.Session;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPBCOHomeDirectory;
 import org.openbase.bco.registry.lib.jp.JPBCOAutoLoginUser;
@@ -54,10 +55,20 @@ public class BCOSessionImpl implements BCOSession {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BCOSessionImpl.class);
 
-    private static Properties loginProperties;
+    private Properties loginProperties;
+    private SessionManager sessionManager;
 
-    public BCOSessionImpl(Properties loginProperties) {
-        BCOSessionImpl.loginProperties = loginProperties;
+    public BCOSessionImpl(final SessionManager sessionManager) {
+        this(new Properties(), sessionManager);
+    }
+
+    public BCOSessionImpl(final Properties loginProperties) {
+        this(loginProperties, SessionManager.getInstance());
+    }
+
+    public BCOSessionImpl(final Properties loginProperties, final SessionManager sessionManager) {
+        this.loginProperties = loginProperties;
+        this.sessionManager = sessionManager;
     }
 
     /**
@@ -79,7 +90,7 @@ public class BCOSessionImpl implements BCOSession {
         }
 
         final UnitConfig bcoUser = Registries.getUnitRegistry(true).getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS);
-        SessionManager.getInstance().loginClient(bcoUser.getId(), true);
+        sessionManager.loginClient(bcoUser.getId(), true);
     }
 
     /**
@@ -124,7 +135,7 @@ public class BCOSessionImpl implements BCOSession {
         final String userId = loadAutoLoginUserId(includeSystemUser);
 
         // during tests the registry generation is skipped because the mock registry is handling the db initialization.
-        if (!SessionManager.getInstance().hasCredentialsForId(userId)) {
+        if (!sessionManager.hasCredentialsForId(userId)) {
             String user = userId;
             try {
                 // resolve user via registry name
@@ -135,17 +146,17 @@ public class BCOSessionImpl implements BCOSession {
             throw new CouldNotPerformException("User[" + user + "] can not be used for auto login because its credentials are not stored in the local credential store.");
         }
 
-        SessionManager.getInstance().loginUser(userId, true);
+        sessionManager.loginUser(userId, true);
         setLocalDefaultUser(userId);
     }
 
-    private static String loadAutoLoginUserId(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException {
+    private String loadAutoLoginUserId(final boolean includeSystemUser) throws CouldNotPerformException, InterruptedException {
         try {
 
             Registries.waitUntilReady();
 
             // load via local properties file
-            String userId =  loginProperties.getProperty(BCOLogin.DEFAULT_USER_KEY);
+            String userId = loginProperties.getProperty(BCOLogin.DEFAULT_USER_KEY);
 
             // load via command line
             try {
@@ -260,7 +271,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void loginUser(String id, boolean stayLoggedIn) throws CouldNotPerformException {
-        SessionManager.getInstance().loginUser(id, stayLoggedIn);
+        sessionManager.loginUser(id, stayLoggedIn);
     }
 
     /**
@@ -274,7 +285,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void loginUser(String id, String password, boolean stayLoggedIn) throws CouldNotPerformException {
-        SessionManager.getInstance().loginUser(id, password, stayLoggedIn);
+        sessionManager.loginUser(id, password, stayLoggedIn);
     }
 
     /**
@@ -288,7 +299,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void loginUser(String id, LoginCredentials credentials, boolean stayLoggedIn) throws CouldNotPerformException {
-        SessionManager.getInstance().loginUser(id, credentials, stayLoggedIn);
+        sessionManager.loginUser(id, credentials, stayLoggedIn);
     }
 
     /**
@@ -301,7 +312,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void loginClient(String id, boolean stayLoggedIn) throws CouldNotPerformException {
-        SessionManager.getInstance().loginClient(id, stayLoggedIn);
+        sessionManager.loginClient(id, stayLoggedIn);
     }
 
     /**
@@ -315,7 +326,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void loginClient(String id, String password, boolean stayLoggedIn) throws CouldNotPerformException {
-        SessionManager.getInstance().loginClient(id, password, stayLoggedIn);
+        sessionManager.loginClient(id, password, stayLoggedIn);
     }
 
     /**
@@ -329,7 +340,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void loginClient(String id, LoginCredentials credentials, boolean stayLoggedIn) throws CouldNotPerformException {
-        SessionManager.getInstance().loginClient(id, credentials, stayLoggedIn);
+        sessionManager.loginClient(id, credentials, stayLoggedIn);
     }
 
     /**
@@ -337,7 +348,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void logout() {
-        SessionManager.getInstance().logout();
+        sessionManager.logout();
     }
 
     /**
@@ -347,7 +358,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public boolean isLoggedIn() {
-        return SessionManager.getInstance().isLoggedIn();
+        return sessionManager.isLoggedIn();
     }
 
     /**
@@ -357,7 +368,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public boolean isAdmin() {
-        return SessionManager.getInstance().isAdmin();
+        return sessionManager.isAdmin();
     }
 
     /**
@@ -367,7 +378,7 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void reLogin() throws CouldNotPerformException {
-        SessionManager.getInstance().reLogin();
+        sessionManager.reLogin();
     }
 
     /**
@@ -380,18 +391,29 @@ public class BCOSessionImpl implements BCOSession {
      */
     @Override
     public void storeCredentials(String id, LoginCredentials loginCredentials) throws CouldNotPerformException {
-        SessionManager.getInstance().storeCredentials(id, loginCredentials);
+        sessionManager.storeCredentials(id, loginCredentials);
     }
 
     /**
-     * Method generates a new AuthToken including an authentication token for the user who is currently logged in.
+     * {@inheritDoc}
      *
-     * @return the token.
+     * @return {@inheritDoc}
      *
-     * @throws CouldNotPerformException is thrown if the token could not be generated.
-     * @throws InterruptedException     is thrown if the thread was externally interrupted which could indicated an system shutdown.
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
      */
-    public static AuthToken generateAuthToken() throws CouldNotPerformException, InterruptedException {
-        return TokenGenerator.generateAuthToken();
+    @Override
+    public AuthToken generateAuthToken() throws CouldNotPerformException, InterruptedException {
+        return TokenGenerator.generateAuthToken(sessionManager);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public SessionManager getSessionManager() {
+        return sessionManager;
     }
 }
