@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.iface.Session;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.controller.ConfigurableRemote;
 import org.openbase.type.communication.ScopeType;
@@ -88,6 +89,15 @@ public interface UnitRemote<M extends Message> extends Unit<M>, ConfigurableRemo
      * @param sessionManager the session manager containing authorization information for the usage of the remote.
      */
     void setSessionManager(final SessionManager sessionManager);
+
+    /**
+     * Sets the session which is used for the authentication of the client/user
+     *
+     * @param session a session instance.
+     */
+    default void setSession(final Session session) {
+        setSessionManager(session.getSessionManager());
+    }
 
     /**
      * Get the current session manager of the unit remote.
