@@ -188,6 +188,7 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
             for (final UnitRemote<?> remote : unitRemoteSet) {
                 try {
                     if (UnitProcessor.isDalUnit(remote)) {
+                        remote.waitForData(5, TimeUnit.SECONDS);
                         if (!remote.isConnected()) {
                             throw new InvalidStateException("Unit[" + remote.getLabel() + "] is currently not reachable!");
                         }
