@@ -581,6 +581,7 @@ public class ActionImpl implements SchedulableAction {
                         new FatalImplementationErrorException("Found illegal state transition!", this, ex);
                     } else {
                         ExceptionPrinter.printHistory("Found illegal state transition!", ex, LOGGER, LogLevel.WARN);
+                        StackTracePrinter.printStackTrace(LOGGER);
                     }
                 }
 
