@@ -549,6 +549,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     public void registerTerminatingAction() {
 
+        // this is just a workaround to avoid duplicated registration.
+        if(terminatingActionId != null) {
+            return;
+        }
+        terminatingActionId = "n/a";
+
         try {
             // auto switch of unused dal units
             if (isDalUnit() && !isInfrastructure() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE) && !JPService.testMode()) {
