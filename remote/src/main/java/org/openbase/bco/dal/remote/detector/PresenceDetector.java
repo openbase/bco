@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.detector;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;

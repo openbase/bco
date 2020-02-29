@@ -41,6 +41,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.CompletableFutureLite;
@@ -53,6 +54,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -320,7 +322,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             verifyMaintainability();
 
             if (!verifyServiceCompatibility(unitConfig, serviceType)) {
-                throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", unitConfig.getLabel());
+                throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", LabelProcessor.getBestMatch(unitConfig.getLabel(), "?"));
             }
 
             final UnitRemote<?> unitRemote = Units.getUnit(unitConfig, false);
@@ -528,7 +530,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         return serviceRemoteManager != null;
     }
 
-    public ServiceRemoteManager<?> getServiceRemoteManager() {
+    public ServiceRemoteManager<?> getServiceRemoteManager() throws NotAvailableException {
+
+        if (serviceRemoteManager == null) {
+            throw new NotAvailableException("ServiceRemoteManager");
+        }
         return serviceRemoteManager;
     }
 
@@ -635,6 +641,13 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         return serviceType;
     }
 
+    public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
+        try {
+            return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
+        }
+    }
 
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         return applyAction(actionDescription.toBuilder());
@@ -649,8 +662,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
             final boolean newSubmission = !actionDescriptionBuilder.getCancel() && !actionDescriptionBuilder.getExtend();
 
-            // only setup id of this intermediary action if this is an new submission
-            if (newSubmission) {
+            // only setup id of this intermediary action if this is an new submission and responsible unit is declared
+            if (newSubmission && actionDescriptionBuilder.getServiceStateDescription().hasUnitId()) {
 
                 // validate that the action is really a new one
                 if (!actionDescriptionBuilder.getActionId().isEmpty()) {
@@ -676,7 +689,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
                 // update action cause if this is a new submission
-                if (newSubmission) {
+                if (newSubmission && actionDescriptionBuilder.getServiceStateDescription().hasUnitId()) {
                     unitActionDescriptionBuilder.clearActionId();
                     unitActionDescriptionBuilder.clearIntermediary();
                     ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
@@ -687,7 +700,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
 
             // collect results and setup action impact list of intermediary action
-            return FutureProcessor.allOf(input -> {
+            return FutureProcessor.allOf((input, time, timeUnit) -> {
 
                 // we are done if this is not a new action
                 if (!newSubmission) {
@@ -819,7 +832,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
 
             // collect results and setup action impact list of intermediary cause action
-            return FutureProcessor.allOf(input -> {
+            return FutureProcessor.allOf((input, time, timeUnit) -> {
 
                 // we are done if this is not a new action
                 if (!newSubmission) {
@@ -829,7 +842,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // generate impact list set store it into the authenticated value
                 for (final Future<AuthenticatedValue> future : input) {
                     try {
-                        final AuthenticatedValue unitAuthenticatedValue = future.get();
+                        final AuthenticatedValue unitAuthenticatedValue = future.get(time, timeUnit);
                         final ActionDescription unitActionResponse;
 
                         // validate responses and decrypt results
@@ -1096,7 +1109,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     @Override
     public void verifyMaintainability() throws VerificationFailedException {
         if (isLocked()) {
-            throw new VerificationFailedException("Manipulation of " + this + "is currently not valid because the maintains is protected by another instance! "
+            throw new VerificationFailedException("Manipulation of " + this + " is currently not valid because the maintains is protected by another instance! "
                     + "Did you try to modify an instance which is locked by a managed instance pool?");
         }
     }
@@ -1180,11 +1193,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             }
         }
 
-        return FutureProcessor.allOf(input -> {
+        return FutureProcessor.allOf((input, time, timeUnit) -> {
             try {
                 long sum = 0;
                 for (final Future<Long> future : input) {
-                    sum += future.get();
+                    sum += future.get(time, timeUnit);
                 }
 
                 long ping;

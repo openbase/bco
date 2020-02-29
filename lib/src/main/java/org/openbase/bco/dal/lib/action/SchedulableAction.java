@@ -113,6 +113,12 @@ public interface SchedulableAction extends Action, Executable<ActionDescription>
      * @return true if the action should be extended, otherwise fales.
      */
     default boolean isAutoContinueWithLowPriorityIntended() {
+
+        // the canceling state needs to be checked, because its the only state where an action can still not be done but already invalid while a extension would be fatal.
+        if(getActionState() == State.CANCELING) {
+            return false;
+        }
+
         final ActionDescription actionDescription = getActionDescription();
         if (actionDescription.getAutoContinueWithLowPriority()) {
             return true;

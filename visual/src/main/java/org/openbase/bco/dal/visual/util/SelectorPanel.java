@@ -162,14 +162,18 @@ public class SelectorPanel extends javax.swing.JPanel {
                 }
             } catch (Exception ex) {
                 selectedLocationConfigHolder = ALL_LOCATION;
-                ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                }
             }
 
             try {
                 selectedUnitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
             } catch (Exception ex) {
                 selectedUnitConfigHolder = null;
-                ExceptionPrinter.printHistory(ex, logger);
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
             }
 
             try {
@@ -189,7 +193,9 @@ public class SelectorPanel extends javax.swing.JPanel {
                 locationComboBox.setEnabled(locationConfigHolderList.size() > 0);
             } catch (CouldNotPerformException ex) {
                 locationComboBox.setEnabled(false);
-                ExceptionPrinter.printHistory(ex, logger);
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
             }
 
             try {
@@ -256,7 +262,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                 throw ex;
             }
             updateRemotePanel();
-            MultiException.checkAndThrow(() ->"Could not acquire all informations!", exceptionStack);
+            MultiException.checkAndThrow(() -> "Could not acquire all informations!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
             if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);

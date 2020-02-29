@@ -26,13 +26,11 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthPair;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
-import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.scene.SceneController;
-import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Activation;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
@@ -53,16 +51,13 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState.MapFieldEntry;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState.State;
-import org.openbase.type.domotic.state.DoorStateType.DoorState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
@@ -111,7 +106,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
             // trigger initial validation
             for (RemoteAction remoteAction : requiredActionPool.getRemoteActionList()) {
-                if (remoteAction.isSubmissionDone()) {
+                if (remoteAction.isRegistrationDone()) {
                     try {
                         requiredActionPoolObserver.update(remoteAction, remoteAction.getActionDescription());
                     } catch (Exception ex) {
@@ -156,7 +151,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                 @Override
                 public void update(RemoteAction source, ActionDescription data) throws Exception {
                     synchronized (requiredActionPoolObserverLock) {
-                        if (getActivationState().getValue() == ActivationState.State.ACTIVE && (!source.isValid() || !source.getActionState().equals(ActionState.State.EXECUTING))) {
+                        if (getActivationState().getValue() == ActivationState.State.ACTIVE && (!source.isValid() || !source.isProcessing())) {
                             logger.info("Deactivate scene {} because at least one required action {} is not executing.", SceneControllerImpl.this, source);
                             requiredActionPool.removeActionDescriptionObserver(requiredActionPoolObserver);
                             try {
@@ -264,9 +259,38 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         // todo: remove this method to avoid bypassing the action scheduling of this unit after openbase/bco.dal#159 has been solved.
 
         try {
+
             // verify that the service type matches
             if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
                 throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
+            }
+
+            // handle action cancellation
+            if (actionDescriptionBuilder.getCancel()) {
+                try {
+                    if (!actionDescriptionBuilder.hasActionId() || actionDescriptionBuilder.getActionId().isEmpty()) {
+                        throw new NotAvailableException("ActionId");
+                    }
+
+                    if (!getActivationState().getResponsibleAction().getActionId().equals(actionDescriptionBuilder.getActionId())) {
+                        logger.warn("Skip scene cancellation because current action["+getActivationState().getResponsibleAction()+"] is not the one which should be canceled("+actionDescriptionBuilder+")!");
+                        // return successful because scene do cache outdated actions so if the action is not the currently executing one, everything is fine.
+                        return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
+                    }
+
+                    optionalActionPool.cancel();
+                    requiredActionPool.cancel();
+
+                    return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
+                }
+            }
+
+            // handle action execution time extension
+            if (actionDescriptionBuilder.getExtend()) {
+               // skip because scene action do not expire anyway.
+                return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
             }
 
             // mark this action as intermediary because its bypassing the action scheduling and therefore not directly requestable via the scene unit.
@@ -278,7 +302,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             // needs to be set before calling "setActivationState" because cause is used
             activationStateBuilder.setResponsibleAction(actionDescriptionBuilder);
 
-            return FutureProcessor.postProcess((result) -> {
+            return FutureProcessor.postProcess((result, time, timeUnit) -> {
 
                 // update builder with updated action impact
                 final ActionDescription.Builder actionDescriptionBuilderNew = result.toBuilder();
@@ -317,7 +341,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         // print if something went wrong
         try {
-            RemoteActionPool.observeCancelation(remoteActionActionDescriptionFutureMap, this, 5, TimeUnit.SECONDS);
+            RemoteActionPool.observeCancellation(remoteActionActionDescriptionFutureMap, this, 5, TimeUnit.SECONDS);
         } catch (MultiException ex) {
             if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(ex, logger);

@@ -412,6 +412,25 @@ public class Services extends ServiceStateProcessor {
     }
 
     public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Object instance, final Object... arguments) throws CouldNotPerformException, IllegalArgumentException {
+
+        // validate
+        switch (servicePattern) {
+            case PROVIDER: // make sure service state is available
+                try {
+                    boolean serviceStateAvailable = (boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance);
+                    if(!serviceStateAvailable) {
+                        throw new NotAvailableException(serviceType.name(), instance);
+                    }
+                } catch (CouldNotPerformException ex) {
+                    // validation just not supported by this instance.
+                } catch (InvocationTargetException | IllegalAccessException ex) {
+                    ExceptionPrinter.printHistory("Something went wrong during the service state validation!", ex, LOGGER, LogLevel.WARN);
+                }
+                break;
+            default:
+                break; // just continue
+        }
+
         try {
             return detectServiceMethod(serviceType, servicePattern, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError | ClassCastException ex) {

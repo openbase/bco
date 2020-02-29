@@ -880,6 +880,14 @@ public class ActionDescriptionProcessor {
                 throw new InvalidStateException("Action initiator id missing!");
             }
 
+            if(!actionDescriptionBuilder.getServiceStateDescription().hasServiceState() && actionDescriptionBuilder.getServiceStateDescription().getServiceState().isEmpty()) {
+                throw new NotAvailableException("ActionDescription.ServiceStateDescription.ServiceState");
+            }
+
+            if(!actionDescriptionBuilder.getServiceStateDescription().hasServiceStateClassName() && actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName().isEmpty()) {
+                throw new NotAvailableException("ActionDescription.ServiceStateDescription.ServiceStateClassName");
+            }
+
             // validate if service state can be deserialized
             Message serviceState = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName());
             Message.Builder serviceStateBuilder = Services.verifyAndRevalidateServiceState(serviceState).toBuilder();

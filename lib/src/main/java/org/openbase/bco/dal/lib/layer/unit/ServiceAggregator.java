@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.collection.*;
+import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -37,6 +38,7 @@ import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
@@ -62,7 +64,8 @@ public interface ServiceAggregator extends
         PowerConsumptionStateProviderServiceCollection,
         TamperStateProviderServiceCollection,
         IlluminanceStateProviderServiceCollection,
-        EmphasisStateOperationServiceCollection {
+        EmphasisStateOperationServiceCollection,
+        PresenceStateProviderServiceCollection {
 
     ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException;
 
@@ -92,6 +95,11 @@ public interface ServiceAggregator extends
     @Override
     default StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException {
         return ((StandbyStateOperationServiceCollection) getServiceRemote(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState(unitType);
+    }
+
+    @Override
+    default PresenceState getPresenceState(final UnitType unitType) throws NotAvailableException {
+        return ((PresenceStateProviderServiceCollection) getServiceRemote(ServiceType.PRESENCE_STATE_SERVICE)).getPresenceState(unitType);
     }
 
     @Override

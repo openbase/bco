@@ -21,9 +21,7 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.remote.action.Actions;
-import org.openbase.bco.dal.remote.action.RemoteAction;
-import org.openbase.bco.dal.remote.layer.unit.Units;
+
 import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
@@ -31,35 +29,29 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.state.ActionStateType.ActionState;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CancellationException;
+
 
 /**
  *
- * This howto shows how to list all available scenes and how to activate a scene via the bco-dal-remote api.
+ * This howto demonstrates how the configuration of units of a specific type can be queried to perform any further processing.
  *
  * Note: This howto requires a running bco platform provided by your network.
- * Note: If your setup does not provide a scene unit called \"WatchingTV"\ you
- * can use the command-line tool \"bco-query Scene\" to get a list of available scenes in your setup.
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class HowToActivateASceneViaDAL {
+public class HowToQueryUnits {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HowToActivateASceneViaDAL.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HowToQueryUnits.class);
 
     public static void howto() throws InterruptedException {
 
-        final SceneRemote testScene;
         try {
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
@@ -67,27 +59,29 @@ public class HowToActivateASceneViaDAL {
             LOGGER.info("authenticate current session...");
             BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
 
-            final List<UnitConfig> sceneUnitConfigList = Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.SCENE);
+            // First of all we need an id of the location to query.
+            final String locationId = Registries.getUnitRegistry().getRootLocationConfig().getId();
 
-            if(sceneUnitConfigList.isEmpty()) {
-                LOGGER.warn("No scenes available in your current setup! Please create a new one in order to activate it!");
+            // Then, we have to declare the unit type we want to lookup.
+            // For example LIGHT which also includes COLORABLE_LIGHTs and DIMMABLE_LIGHTs.
+            final UnitType unitType = UnitType.LIGHT;
+
+            // now we are ready lookup all light at the specific location. For sure you can use the location alias as well to specify the target location
+            // or lookup units via its ServiceType instead of its UnitType. For this, please checkout the provided methods of the UnitRegistry.
+            LOGGER.info("query lights");
+            final List<UnitConfig> lightUnitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(locationId, unitType);
+
+            // check if we got some results
+            if(lightUnitConfigList.isEmpty()) {
+                LOGGER.warn("No lights available in your current setup! Please create one in order to query it!");
                 return;
             }
 
-            LOGGER.info("print all scenes");
-            for (UnitConfig sceneUnitConfig : sceneUnitConfigList) {
-                LOGGER.info("found Scene[{}] with Alias[{}]", LabelProcessor.getBestMatch(sceneUnitConfig.getLabel()), sceneUnitConfig.getAlias(0));
+            // print all queried lights.
+            LOGGER.info("print all lights");
+            for (UnitConfig lightUnitConfig : lightUnitConfigList) {
+                LOGGER.info("found Light[{}] with Alias[{}]", LabelProcessor.getBestMatch(lightUnitConfig.getLabel()), lightUnitConfig.getAlias(0));
             }
-
-            LOGGER.info("request a specific scene via its alias \"Scene-9\"");
-            testScene = Units.getUnitByAlias("Scene-9", true, Units.SCENE);
-
-            LOGGER.info("activate the scene");
-
-            final Future<ActionDescription> actionFuture = testScene.setActivationState(State.ACTIVE);
-
-            LOGGER.info("wait until action is executing...");
-            Actions.waitForActionState(actionFuture, ActionState.State.EXECUTING);
 
         } catch (CouldNotPerformException | CancellationException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);

@@ -175,7 +175,7 @@ public class ActivityMultiStateServicePanel extends AbstractServicePanel<Activit
                 }
 
                 ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityId);
-                logger.info("state: " + activityConfig.getLabel());
+                logger.debug("state: " + activityConfig.getLabel());
 //                    activityComboBox.getModel().setSelectedItem(new ActivityConfigHolder(activityConfig));
                 activityList += LabelProcessor.getBestMatch(activityConfig.getLabel());
             }

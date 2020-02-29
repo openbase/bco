@@ -101,13 +101,15 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     UnitType getUnitType() throws NotAvailableException;
 
     /**
-     * Returns the related template for this unit.
+     * Method returns the unit template which refers to the most compatible unit template supported by this instance.
      * <p>
-     * Note: The unit template defines which services are provided by this unit.
+     * This needs not to be equal with the actual unit template of the connected unit because result because it can be a supertype.
+     * For example a {@code LightRemote} can be connected to a {@code ColorableLight} unit.
+     * In this case the {@code template} of the unit is actually of the type {@code COLORABLE_LIGHT_UNIT}. When calling {@code getUnitTemplate()} on remote site the method will refer to the {@code LIGHT_UNIT} template.
      *
-     * @return UnitTemplate the unit template of this unit.
+     * @return the unit template..
      *
-     * @throws NotAvailableException in case the unit template is not available.
+     * @throws NotAvailableException is thrown when the template is not available, for instance when not yet synchronized with the bco registry.
      */
     UnitTemplate getUnitTemplate() throws NotAvailableException;
 
@@ -517,6 +519,8 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * Add a data observer which is only notified if data for the given
      * service tempus changes.
      * The value unknown is equivalent to listening on all changes.
+     *
+     * Note: Use Tempus.UNKNOWN to get informed about any action state changes.
      *
      * @param serviceTempus The service tempus on which the observer is added.
      * @param observer      The observer which is added.
