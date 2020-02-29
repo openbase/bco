@@ -22,13 +22,10 @@ package org.openbase.bco.dal.test;
  * #L%
  */
 
-<<<<<<< HEAD
 import org.junit.Assert;
 import org.openbase.bco.dal.remote.action.Actions;
-=======
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.authentication.lib.iface.Session;
->>>>>>> 2cd65ce2bd542a516b72bfc4bb4e08f9e1f13f28
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
