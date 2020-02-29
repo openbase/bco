@@ -36,8 +36,7 @@ public class JPSessionTimeout extends AbstractJPTime {
 
     public final static String[] COMMAND_IDENTIFIERS = {"--session-timeout"};
 
-    //private static final long DEFAULT_TIMEOUT = TimeUnit.DAYS.toMillis(7);
-    private static final long DEFAULT_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
+    private static final long DEFAULT_TIMEOUT = TimeUnit.DAYS.toMillis(7);
     private static final long DEFAULT_TEST_TIMEOUT = TimeUnit.MINUTES.toMillis(15);
 
     public JPSessionTimeout() {
