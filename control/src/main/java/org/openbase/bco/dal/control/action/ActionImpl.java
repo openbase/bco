@@ -487,6 +487,14 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public void schedule() {
+
+        // cancel action task
+        cancelActionTask();
+
+        if (isProcessing()) {
+            abort(true);
+        }
+
         updateActionState(State.SCHEDULED);
     }
 
