@@ -26,6 +26,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openbase.bco.dal.remote.action.Actions;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -39,6 +40,7 @@ import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
+import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -123,10 +125,13 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
 
         // test if both unit remotes can be used
-        waitForExecution(powerSwitchRemote.setPowerState(PowerState.State.ON));
+        final RemoteAction action = waitForExecution(powerSwitchRemote.setPowerState(State.ON));
         waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
         assertEquals("Power state has not been set in time!", PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue());
         assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
+
+        // cancel action because cancellation is not possible afterwards
+        action.cancel().get();
 
         // remote the second unit template config again
         deviceClassBuilder = deviceClass.toBuilder();
