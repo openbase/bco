@@ -55,6 +55,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -371,13 +372,13 @@ public class SessionManager implements Shutdownable, Session {
 
             try {
                 // request ticket granting ticket
-                TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(getUserClientPair()).get();
+                TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(getUserClientPair()).get(5, TimeUnit.SECONDS);
                 // handle response
 
                 TicketWrapperSessionKeyPair ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleKeyDistributionCenterResponse(getUserClientPair(), userCredentials, clientCredentials, ticketSessionKeyWrapper);
 
                 // request client server ticket
-                ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get();
+                ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper()).get(5, TimeUnit.SECONDS);
                 // handle response
                 ticketWrapperSessionKeyPair = AuthenticationClientHandler.handleTicketGrantingServiceResponse(getUserClientPair(), ticketWrapperSessionKeyPair.getSessionKey(), ticketSessionKeyWrapper);
                 this.ticketAuthenticatorWrapper = ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper();
@@ -397,6 +398,8 @@ public class SessionManager implements Shutdownable, Session {
                                 if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                                     ExceptionPrinter.printHistory("Could not renew ticket", ex, LOGGER, LogLevel.WARN);
                                 }
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
                             }
                         }, delay, delay, TimeUnit.MILLISECONDS);
                     } catch (JPNotAvailableException ex) {
@@ -421,9 +424,12 @@ public class SessionManager implements Shutdownable, Session {
 
                 ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
                 throw new CouldNotPerformException("Internal server error.", cause);
+            } catch (TimeoutException e) {
+                throw new org.openbase.jul.exception.TimeoutException("Requests to the authenticator timed out!");
             } catch (InterruptedException ex) {
+                //TODO: handle me correctly
                 Thread.currentThread().interrupt();
-                throw new CouldNotPerformException("Could not login", ex);
+                throw new CouldNotPerformException(ex);
             }
         } catch (CouldNotPerformException ex) {
             // clear id on failure
@@ -439,6 +445,7 @@ public class SessionManager implements Shutdownable, Session {
             // todo: @pleminoq anything else the reset?
             // e.g. ticketAuthenticatorWrapper, sessionKey
 
+            LOGGER.info("Login failed: ", ex);
             throw ex;
         }
     }
@@ -533,8 +540,8 @@ public class SessionManager implements Shutdownable, Session {
         }
 
         try {
-            return CachedAuthenticationRemote.getRemote().isAdmin(userClientPair.getUserId()).get();
-        } catch (InterruptedException | CouldNotPerformException | ExecutionException ex) {
+            return CachedAuthenticationRemote.getRemote().isAdmin(userClientPair.getUserId()).get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | CouldNotPerformException | ExecutionException | TimeoutException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
         }
 
@@ -547,7 +554,7 @@ public class SessionManager implements Shutdownable, Session {
      *
      * @throws CouldNotPerformException if the ticket could not be renewed
      */
-    private synchronized void renewTicket() throws CouldNotPerformException {
+    private synchronized void renewTicket() throws CouldNotPerformException, InterruptedException {
         // validate that someone is logged in
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Could not renew ticket because not one is logged in");
@@ -558,13 +565,9 @@ public class SessionManager implements Shutdownable, Session {
             // initialize current ticket for a request
             TicketAuthenticatorWrapper request = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
             // perform the request
-            TicketAuthenticatorWrapper response = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request).get();
+            TicketAuthenticatorWrapper response = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request).get(5, TimeUnit.SECONDS);
             // validate response and set as current ticket
             ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, request, response);
-        } catch (InterruptedException ex) {
-            // keep the interruption
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Action was interrupted.", ex);
         } catch (ExecutionException ex) {
             Throwable cause = ex.getCause();
 
@@ -593,6 +596,8 @@ public class SessionManager implements Shutdownable, Session {
 
             ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Internal server error.", cause);
+        } catch (TimeoutException e) {
+            throw new org.openbase.jul.exception.TimeoutException(e);
         }
     }
 
