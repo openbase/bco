@@ -664,9 +664,11 @@ public class FulfillmentHandler {
                     if (ex.getCause() instanceof TimeoutException) {
                         // cause was a timeout meaning waiting for data failed, so assume that the unit is offline
                         offline.add(entry.getKey());
+                        ExceptionPrinter.printHistory("Could not perform execute commands for unit[" + entry.getKey() + "]", ex, LOGGER);
                     } else if (ex.getCause() instanceof java.util.concurrent.TimeoutException) {
                         // cause was a timeout on waiting for operation service return so still pending
                         pending.add(entry.getKey());
+                        ExceptionPrinter.printHistory("Could not perform execute commands for unit[" + entry.getKey() + "]", ex, LOGGER);
                     } else {
                         // something failed so add as error
                         error.add(entry.getKey());
