@@ -22,6 +22,7 @@ package org.openbase.bco.dal.test;
  * #L%
  */
 
+import org.junit.Assert;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -79,6 +80,7 @@ public class AbstractBCOTest {
         try {
             cancelAllTestActions();
         } catch (Exception ex) {
+            Assert.fail("Could not cancel all test actions of test suite: " + getClass().getName());
             ExceptionPrinter.printHistory("Could not cancel all test actions of test suite: " + getClass().getName(), ex, LOGGER);
         }
     }
