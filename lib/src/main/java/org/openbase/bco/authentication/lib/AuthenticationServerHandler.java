@@ -68,11 +68,8 @@ public class AuthenticationServerHandler {
      *
      * @return Returns wrapper class containing both the TGT and TGS session key
      * <p>
-     * <<<<<<< HEAD
-     * =======
      *
      * @throws NotAvailableException    Throws, if clientID was not found in database
-     *                                  >>>>>>> master
      * @throws CouldNotPerformException If the data for the remotes has not been synchronized yet.
      */
     public static TicketSessionKeyWrapper handleKDCRequest(final UserClientPair userClientPair, final LoginCredentials userCredentials, final LoginCredentials clientCredentials, final byte[] ticketGrantingServiceSecretKey, final long validityTime)
