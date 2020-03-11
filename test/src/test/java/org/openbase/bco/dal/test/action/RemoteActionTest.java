@@ -232,7 +232,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
-            Assert.assertEquals("Light[\"+unit+\"] not on", State.ON, unit.getPowerState().getValue());
+            Assert.assertEquals("Light["+unit+"] not on", State.ON, unit.getPowerState().getValue());
         }
 
         System.out.println("cancel dominant action");
