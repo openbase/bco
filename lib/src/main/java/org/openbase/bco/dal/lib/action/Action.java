@@ -317,7 +317,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
     }
 
     /**
-     * Check if the action is currently processing which means one the way to be executed or currently executing.
+     * Check if the action is currently processing which means its on the way to be executed or currently executing.
      * <p>
      * Note: A action is processing if it is in one of the following states (INITIATING, EXECUTING, SUBMISSION, SUBMISSION_FAILED).
      *
