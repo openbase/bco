@@ -230,10 +230,11 @@ public class ActionImpl implements SchedulableAction {
                 return FutureProcessor.canceledFuture(new InvalidStateException("Can not execute an already processing action!"));
             }
 
+            // Initiate
+            updateActionState(ActionState.State.INITIATING);
+
             actionTask = GlobalCachedExecutorService.submit(() -> {
                 try {
-                    // Initiate
-                    updateActionStateIfNotCanceled(ActionState.State.INITIATING);
 
                     // validate operation service
                     boolean hasOperationService = false;
@@ -682,6 +683,7 @@ public class ActionImpl implements SchedulableAction {
                 switch (state) {
                     case SUBMISSION:
                     case REJECTED:
+                    case CANCELED:
                         return;
                     default:
                         throw new InvalidStateException("State transition " + getActionState().name() + " -> " + state.name() + " is invalid!");
