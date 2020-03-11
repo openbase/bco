@@ -195,7 +195,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
     @Test(timeout = 10000)
     public void testExtentionCancelation() throws Exception {
-        System.out.println("testExecutionAndCancellationWithToken");
+        System.out.println("testExtentionCancelation");
 
         final LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
 
