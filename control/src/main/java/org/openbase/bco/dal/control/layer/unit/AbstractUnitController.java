@@ -841,6 +841,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If there is no action left to schedule null is returned.
      */
     private Action reschedule(final SchedulableAction actionToSchedule) {
+
+        // avoid scheduling during shutdown
+        if(isShutdownInProgress()) {
+            return null;
+        }
+
         builderSetup.lockWrite(LOCK_CONSUMER_SCHEDULEING);
         try {
             // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications

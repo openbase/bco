@@ -186,11 +186,16 @@ public class ActionImpl implements SchedulableAction {
      * @return true if the execution task is finish otherwise true.
      */
     private boolean isActionTaskFinish() {
-        synchronized (actionTaskLock) {
-            // when the action task finishes it will finally reset the action task to null.
-            // actionTask.isDone(); is not a solution at all because when the action task is
-            // canceled then the method already returns true but the task is maybe still running.
-            return actionTask == null;
+        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            synchronized (actionTaskLock) {
+                // when the action task finishes it will finally reset the action task to null.
+                // actionTask.isDone(); is not a solution at all because when the action task is
+                // canceled then the method already returns true but the task is maybe still running.
+                return actionTask == null;
+            }
+        } finally {
+            actionDescriptionBuilderLock.writeLock().unlock();
         }
     }
 
@@ -244,13 +249,13 @@ public class ActionImpl implements SchedulableAction {
                                 // validate action state
                                 if (isDone()) {
                                     LOGGER.error(ActionImpl.this + " was done before executed!");
-                                    return getActionDescription();
+                                    break;
                                 }
 
                                 if (!isValid()) {
                                     LOGGER.debug(ActionImpl.this + " no longer valid and will be rejected!");
                                     updateActionStateIfNotCanceled(State.REJECTED);
-                                    return getActionDescription();
+                                    break;
                                 }
 
                                 // Submission
@@ -277,7 +282,7 @@ public class ActionImpl implements SchedulableAction {
                                 // avoid execution in case unit is shutting down
                                 if (unit.isShutdownInProgress() || ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                                     updateActionStateIfNotCanceled(State.REJECTED);
-                                    return getActionDescription();
+                                    break;
                                 }
 
                                 if (!isDone()) {
@@ -306,7 +311,7 @@ public class ActionImpl implements SchedulableAction {
 
                 return actionTask;
             }
-        }  finally {
+        } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
         }
     }
@@ -419,63 +424,74 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public Future<ActionDescription> cancel() {
-        // if action is not executing, set to canceled if not already done and finish
-        if (!isProcessing()) {
-            if (!isDone()) {
-                updateActionState(State.CANCELED);
-            }
-            return FutureProcessor.completedFuture(getActionDescription());
-        }
 
-        // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
-        updateActionState(State.CANCELING);
+        actionDescriptionBuilderLock.writeLock().lock();
         try {
-            return GlobalCachedExecutorService.submit(() -> {
-
-                // cancel action task
-                cancelActionTask();
-
+            // if action is not executing, set to canceled if not already done and finish
+            if (!isProcessing()) {
                 if (!isDone()) {
                     updateActionState(State.CANCELED);
                 }
+                return FutureProcessor.completedFuture(getActionDescription());
+            }
 
-                // trigger reschedule because any next action can be executed.
-                unit.reschedule();
+            // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
+            updateActionState(State.CANCELING);
+            try {
+                return GlobalCachedExecutorService.submit(() -> {
 
-                return getActionDescription();
-            });
-        } catch (RejectedExecutionException ex) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel " + this, ex));
+                    // cancel action task
+                    cancelActionTask();
+
+                    if (!isDone()) {
+                        updateActionState(State.CANCELED);
+                    }
+
+                    // trigger reschedule because any next action can be executed.
+                    unit.reschedule();
+
+                    return getActionDescription();
+                });
+            } catch (RejectedExecutionException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel " + this, ex));
+            }
+        } finally {
+            actionDescriptionBuilderLock.writeLock().unlock();
         }
     }
 
     @Override
     public Future<ActionDescription> abort(boolean forceReject) {
-        if (!isProcessing()) {
-            // this should never happen since a task should be executing before it is aborted
-            LOGGER.error("Aborted action was not executing before");
-            return FutureProcessor.completedFuture(getActionDescription());
-        }
-
-        updateActionState(State.ABORTING);
-        return GlobalCachedExecutorService.submit(() -> {
-
-            // cancel action task
-            cancelActionTask();
-
-            // if not done yet
-            if (!isDone()) {
-                // if action is interruptible it can be scheduled otherwise it is rejected
-                if (!forceReject && getActionDescription().getInterruptible() && getActionDescription().getSchedulable()) {
-                    updateActionState(State.SCHEDULED);
-                } else {
-                    updateActionState(State.REJECTED);
-                }
+        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            if (!isProcessing()) {
+                // this should never happen since a task should be executing before it is aborted
+                LOGGER.error("Aborted action was not executing before");
+                return FutureProcessor.completedFuture(getActionDescription());
             }
 
-            // rescheduling is not necessary because aborting is only done when rescheduling
-            return getActionDescription();
-        });
+            updateActionState(State.ABORTING);
+            return GlobalCachedExecutorService.submit(() -> {
+
+                // cancel action task
+                cancelActionTask();
+
+                // if not done yet
+                if (!isDone()) {
+                    // if action is interruptible it can be scheduled otherwise it is rejected
+                    if (!forceReject && getActionDescription().getInterruptible() && getActionDescription().getSchedulable()) {
+                        updateActionState(State.SCHEDULED);
+                    } else {
+                        updateActionState(State.REJECTED);
+                    }
+                }
+
+                // rescheduling is not necessary because aborting is only done when rescheduling
+                return getActionDescription();
+            });
+        } finally {
+            actionDescriptionBuilderLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -487,13 +503,19 @@ public class ActionImpl implements SchedulableAction {
         // cancel action task
         cancelActionTask();
 
-        if (isProcessing()) {
-            abort(true);
-        }
+        actionDescriptionBuilderLock.writeLock().lock();
+        try {
 
-        // if not already finished then we force the state.
-        if (!isDone() && getActionState() != State.CANCELING) {
-            updateActionState(State.SCHEDULED);
+            if (isProcessing()) {
+                abort(true);
+            }
+
+            // if not already finished then we force the state.
+            if (!isDone() && getActionState() != State.CANCELING) {
+                updateActionState(State.SCHEDULED);
+            }
+        } finally {
+            actionDescriptionBuilderLock.writeLock().unlock();
         }
     }
 
@@ -506,13 +528,19 @@ public class ActionImpl implements SchedulableAction {
         // cancel action task
         cancelActionTask();
 
-        if (isProcessing()) {
-            abort(true);
-        }
+        actionDescriptionBuilderLock.writeLock().lock();
+        try {
 
-        // if not already finished then we force the state.
-        if (!isDone() && getActionState() != State.CANCELING) {
-            updateActionState(State.REJECTED);
+            if (isProcessing()) {
+                abort(true);
+            }
+
+            // if not already finished then we force the state.
+            if (!isDone() && getActionState() != State.CANCELING) {
+                updateActionState(State.REJECTED);
+            }
+        } finally {
+            actionDescriptionBuilderLock.writeLock().unlock();
         }
     }
 
@@ -525,30 +553,41 @@ public class ActionImpl implements SchedulableAction {
         // cancel action task
         cancelActionTask();
 
-        // if not already finished then we force the state.
-        if (!isDone() && getActionState() != State.CANCELING) {
-            updateActionState(State.FINISHED);
+        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+
+            // if not already finished then we force the state.
+            if (!isDone() && getActionState() != State.CANCELING) {
+                updateActionState(State.FINISHED);
+            }
+        } finally {
+            actionDescriptionBuilderLock.writeLock().unlock();
         }
     }
 
     private void cancelActionTask() {
+
+        if (actionDescriptionBuilderLock.isWriteLockedByCurrentThread()) {
+            new FatalImplementationErrorException("Any thead that cancels the action task should not hold the builder lock, because the lock is required to guarantee a proper task shutdown.", this);
+        }
+
         // finalize if still running
         if (!isActionTaskFinish()) {
             // try to speedup cancellation by forcing the thread by interruption if this is working, cleanup the following disabled code:
-//            // try a smooth finishing if not already failed.
-//            actionTask.cancel(getActionState() == State.SUBMISSION_FAILED);
-//
-//            try {
-//                waitForActionTaskFinalization(1000);
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
-//
-//            // check if finished yet
-//            if (!isActionTaskFinish()) {
-//                LOGGER.warn("Execution of " + this + " can not be finished smoothly! Force finalization...");
+            //            // try a smooth finishing if not already failed.
+            //            actionTask.cancel(getActionState() == State.SUBMISSION_FAILED);
+            //
+            //            try {
+            //                waitForActionTaskFinalization(1000);
+            //            } catch (InterruptedException e) {
+            //                Thread.currentThread().interrupt();
+            //            }
+            //
+            //            // check if finished yet
+            //            if (!isActionTaskFinish()) {
+            //                LOGGER.warn("Execution of " + this + " can not be finished smoothly! Force finalization...");
             actionTask.cancel(true);
-//            }
+            //            }
 
             try {
                 waitForActionTaskFinalization(1000);
@@ -577,8 +616,8 @@ public class ActionImpl implements SchedulableAction {
         actionDescriptionBuilderLock.writeLock().lock();
         try {
 
-            // duplicated termination in same state should be ok, but than skip the update.
-            if (getActionState() == state && isDone()) {
+            // duplicated state confirmation should be ok to simplify the code, but than skip the update.
+            if (getActionState() == state) {
                 return;
             }
 
