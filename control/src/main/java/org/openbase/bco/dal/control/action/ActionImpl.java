@@ -38,10 +38,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
-import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.SyncObject;
-import org.openbase.jul.schedule.Timeout;
+import org.openbase.jul.schedule.*;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
@@ -186,16 +183,11 @@ public class ActionImpl implements SchedulableAction {
      * @return true if the execution task is finish otherwise true.
      */
     private boolean isActionTaskFinish() {
-        actionDescriptionBuilderLock.writeLock().lock();
-        try {
-            synchronized (actionTaskLock) {
-                // when the action task finishes it will finally reset the action task to null.
-                // actionTask.isDone(); is not a solution at all because when the action task is
-                // canceled then the method already returns true but the task is maybe still running.
-                return actionTask == null;
-            }
-        } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+        synchronized (actionTaskLock) {
+            // when the action task finishes it will finally reset the action task to null.
+            // actionTask.isDone(); is not a solution at all because when the action task is
+            // canceled then the method already returns true but the task is maybe still running.
+            return actionTask == null;
         }
     }
 
@@ -227,6 +219,13 @@ public class ActionImpl implements SchedulableAction {
                     return FutureProcessor.canceledFuture(new InvalidStateException("Can not execute an already processing action!"));
                 }
 
+                // handle abortion or cancellation before the execution has started.
+                if (actionDescriptionBuilder.getActionState().getValue() == State.CANCELING) {
+                    return FutureProcessor.canceledFuture(new InvalidStateException("Action was canceled before the execution has started."));
+                } else if (actionDescriptionBuilder.getActionState().getValue() == State.ABORTING) {
+                    return FutureProcessor.canceledFuture(new InvalidStateException("Action was aborted before the execution has started."));
+                }
+
                 // Initiate
                 updateActionState(ActionState.State.INITIATING);
 
@@ -240,6 +239,11 @@ public class ActionImpl implements SchedulableAction {
                                 hasOperationService = true;
                                 break;
                             }
+                        }
+
+                        // check is implicitly used make sure actionTask variable is not null since it will be synchronized during call.
+                        if (isActionTaskFinish()) {
+                            new FatalImplementationErrorException("Action task is marked as finished even when the task is still running!", this);
                         }
 
                         // loop as long as task is not canceled.
@@ -334,26 +338,20 @@ public class ActionImpl implements SchedulableAction {
      *
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public void waitUntilDone(final long timeout) throws InterruptedException {
+    public void waitUntilDone(final long timeout, final TimeUnit timeUnit) throws InterruptedException, TimeoutException {
+        TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
         synchronized (executionStateChangeSync) {
             while (!isDone()) {
-                executionStateChangeSync.wait(timeout);
+                executionStateChangeSync.wait(timeoutSplitter.getTime());
             }
         }
     }
 
-    private void waitForActionTaskFinalization(final long timeout) throws InterruptedException {
+    private void waitForActionTaskFinalization(final long timeout, final TimeUnit timeUnit) throws InterruptedException, TimeoutException {
+        TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
         synchronized (actionTaskLock) {
             while (!isActionTaskFinish()) {
-                actionTaskLock.wait(timeout);
-            }
-        }
-    }
-
-    private void waitForActionTaskFinalization() throws InterruptedException {
-        synchronized (actionTaskLock) {
-            while (!isActionTaskFinish()) {
-                actionTaskLock.wait();
+                actionTaskLock.wait(timeoutSplitter.getTime());
             }
         }
     }
@@ -590,9 +588,11 @@ public class ActionImpl implements SchedulableAction {
             //            }
 
             try {
-                waitForActionTaskFinalization(1000);
+                waitForActionTaskFinalization(1, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+            } catch (TimeoutException ex) {
+                // timeout
             }
 
             // check if finished after force
