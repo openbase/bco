@@ -5,4 +5,4 @@ Priority: optional
 Architecture: all
 Description: [[description]]
 Maintainer: Marian Pohling <divine@openbase.org>
-Depends: default-jre | java8-runtime
+Depends: default-jre | java8-runtime | zulu-8
