@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -85,9 +86,13 @@ public class PublishUnitTransformationRegistryPlugin extends AbstractUnitTransfo
             // verify transformation
             verifyPublication(transformation, parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId());
         } catch (NotAvailableException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
+            }
         } catch (CouldNotPerformException | ConcurrentModificationException | NullPointerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
+            }
         }
     }
 }
