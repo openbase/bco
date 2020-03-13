@@ -146,6 +146,14 @@
             <artifactId>bco.registry.util</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
+
+        <!-- only for building bins -->
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.device.openhab</artifactId>
+            <version>${dependency.bco.version}</version>
+        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>org.openbase</groupId>
