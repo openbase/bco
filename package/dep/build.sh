@@ -20,17 +20,5 @@ fi
 echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
 mvn clean --quiet $@ &&
 echo -e "=== ${APP_NAME} project ${WHITE}build${NC}" &&
-eval mvn install \
-        -DassembleDirectory=${prefix} \
-        -DskipTests=true \
-        -Dmaven.test.skip=true \
-        -Dlicense.skipAddThirdParty=true \
-        -Dlicense.skipUpdateProjectLicense=true \
-        -Dlicense.skipDownloadLicenses \
-        -Dlicense.skipCheckLicense=true \
-        -Dmaven.license.skip=true \
-        $@ $PV &&
-#echo -e "\r=== ${APP_NAME} project launcher ${WHITE}installation${NC}" &&
-#cp docker/bco-launcher $prefix/bin/ &&
-
+eval mvn install package $@ $PV &&
 echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} build to ${WHITE}${prefix}${NC}"
