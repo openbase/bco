@@ -293,7 +293,7 @@
                             <dataSet>
 
                                 <!-- Install Daemon-->
-                                <data>
+                                <!--data>
                                     <src>${basedir}/src/main/deb/init.d</src>
                                     <type>directory</type>
                                     <mapper>
@@ -302,7 +302,7 @@
                                         <user>loader</user>
                                         <group>loader</group>
                                     </mapper>
-                                </data>
+                                </data-->
 
                                 <!-- Copy Deps-->
                                 <data>
