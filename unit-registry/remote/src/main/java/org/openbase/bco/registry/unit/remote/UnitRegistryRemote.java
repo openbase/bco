@@ -140,7 +140,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     aliasIdMap.clear();
                     for (IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage : data.values()) {
                         final UnitConfig unitConfig = identifiableMessage.getMessage();
-                        unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias.toLowerCase(), unitConfig.getId()));
+                        for (String alias : unitConfig.getAliasList()) {
+                            aliasIdMap.put(alias.toLowerCase(), unitConfig.getId());
+                        }
                     }
                 }
             };
