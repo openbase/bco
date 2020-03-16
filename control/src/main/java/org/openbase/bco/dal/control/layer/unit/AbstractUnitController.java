@@ -43,7 +43,10 @@ import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
-import org.openbase.bco.dal.lib.layer.unit.*;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
+import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
@@ -73,7 +76,10 @@ import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.*;
+import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
@@ -550,7 +556,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     public void registerTerminatingAction() {
 
         // this is just a workaround to avoid duplicated registration.
-        if(terminatingActionId != null) {
+        if (terminatingActionId != null) {
             return;
         }
         terminatingActionId = "n/a";
@@ -843,7 +849,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private Action reschedule(final SchedulableAction actionToSchedule) {
 
         // avoid scheduling during shutdown
-        if(isShutdownInProgress()) {
+        if (isShutdownInProgress()) {
             return null;
         }
 
@@ -1261,9 +1267,23 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             unitDataObservableMap.get(serviceTempus).shutdown();
         }
 
-        // cancel all actions on stack
-        for (SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
-            schedulableAction.cancel();
+
+        // reject all actions on stack
+        // wait at least 2 sec until all scheduling routines are finished.
+        try {
+            final boolean success = actionListNotificationLock.writeLock().tryLock(2, TimeUnit.SECONDS);
+            try {
+                for (SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
+                    schedulableAction.reject();
+                }
+            } finally {
+                if (success) {
+                    actionListNotificationLock.writeLock().unlock();
+                }
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // skip action rejection on interrupt to speedup the shutdown...
         }
     }
 
