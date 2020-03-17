@@ -22,10 +22,9 @@ package org.openbase.bco.dal.test;
  * #L%
  */
 
+import org.junit.After;
 import org.junit.Assert;
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
-import org.openbase.bco.authentication.lib.iface.Session;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -38,12 +37,14 @@ import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.slf4j.LoggerFactory;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import org.junit.After;
 
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
@@ -51,6 +52,8 @@ import org.junit.After;
 public class AbstractBCOTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractBCOTest.class);
+
+    private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
     protected static MockRegistry mockRegistry;
 
@@ -81,6 +84,36 @@ public class AbstractBCOTest {
      */
     @After
     public void autoCancelActionsAfterTestRun() {
+
+        // before canceling pending actions lets just validate that the test did not cause any deadlocks
+        final long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
+        if (deadlockedThreads != null) {
+            LOGGER.error("Deadlock detected!");
+
+            final Map<Thread, StackTraceElement[]> stackTraceMap = Thread.getAllStackTraces();
+            for (final ThreadInfo threadInfo : threadMXBean.getThreadInfo(deadlockedThreads)) {
+
+                // filter if thread was not a part of the deadlock any longer
+                if (threadInfo == null) {
+                    continue;
+                }
+
+                for (final Thread thread : stackTraceMap.keySet()) {
+
+                    // filter non target thread
+                    if (thread.getId() != threadInfo.getThreadId()) {
+                        continue;
+                    }
+
+                    // print report
+                    LOGGER.error(threadInfo.toString().trim());
+                    for (StackTraceElement stackTrance : thread.getStackTrace()) {
+                        LOGGER.error("\t" + stackTrance.toString().trim());
+                    }
+                }
+            }
+        }
+
         try {
             cancelAllTestActions();
         } catch (Exception ex) {
