@@ -446,9 +446,16 @@ public class ActionImpl implements SchedulableAction {
                     }
 
                     // trigger reschedule because any next action can be executed.
-                    unit.reschedule();
-
+                    try {
+                        unit.reschedule();
+                    } catch (CouldNotPerformException ex) {
+                        // if the reschedule is not possible because of an system shutdown everything is fine, otherwise its a controller error and there is no need to inform the remote about any error if the cancellation was successful.
+                        if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                            ExceptionPrinter.printHistory("Reschedule of " + unit + " failed after action cancellation!", ex, LOGGER);
+                        }
+                    }
                     return getActionDescription();
+
                 });
             } catch (RejectedExecutionException ex) {
                 return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel " + this, ex));
@@ -700,6 +707,7 @@ public class ActionImpl implements SchedulableAction {
                 switch (state) {
                     case SCHEDULED:
                     case INITIATING:
+                    case REJECTED: // this is a special case were the action is rejected before it is initiating. This is common during system shutdown and a valid transition because the initialization would not notified anyway.
                         return;
                     default:
                         throw new InvalidStateException("State transition " + getActionState().name() + " -> " + state.name() + " is invalid!");

@@ -237,7 +237,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             @Override
             public void expired() {
                 logger.debug("Reschedule by timer.");
-                reschedule();
+                try {
+                    reschedule();
+                } catch (CouldNotPerformException ex) {
+                    if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not reschedule via timer!", ex), logger, LogLevel.WARN);
+                    }
+                }
             }
         };
 
@@ -799,18 +805,25 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     private Future<ActionDescription> scheduleAction(final SchedulableAction actionToSchedule) {
-        Action executingAction = reschedule(actionToSchedule);
+        final Action executingAction;
+        try {
+            executingAction = reschedule(actionToSchedule);
 
-        if (actionToSchedule != executingAction) {
-            logger.trace("================================================================================");
-            if (executingAction == null) {
-                logger.error("{} seems not to be valid and was excluded from execution of {}.", actionToSchedule, this);
+            if (actionToSchedule != executingAction) {
+                logger.trace("================================================================================");
+                if (executingAction == null) {
+                    logger.error("{} seems not to be valid and was excluded from execution of {}.", actionToSchedule, this);
+                } else {
+                    if (JPService.verboseMode()) {
+                        logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+                    } else {
+                        logger.trace("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
+                    }
+                }
             }
-            if (JPService.verboseMode()) {
-                logger.info("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
-            } else {
-                logger.trace("{} was postponed because of {} and added to the scheduling queue of {} at position {}.", actionToSchedule, executingAction, this, getSchedulingIndex(actionToSchedule));
-            }
+
+        } catch (CouldNotPerformException ex) {
+            FutureProcessor.canceledFuture(ex);
         }
 
         return FutureProcessor.completedFuture(actionToSchedule.getActionDescription());
@@ -832,8 +845,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
+     *
+     * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
-    public Action reschedule() {
+    public Action reschedule() throws CouldNotPerformException {
         return reschedule(null);
     }
 
@@ -845,12 +860,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
+     *
+     * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
-    private Action reschedule(final SchedulableAction actionToSchedule) {
+    private Action reschedule(final SchedulableAction actionToSchedule) throws CouldNotPerformException {
 
         // avoid scheduling during shutdown
         if (isShutdownInProgress()) {
-            return null;
+            throw new ShutdownInProgressException(this);
         }
 
         builderSetup.lockWrite(LOCK_CONSUMER_SCHEDULEING);
