@@ -33,10 +33,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.TokenGenerator;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jps.preset.JPLogLevel;
-import org.openbase.jps.preset.JPLogLevel.LogLevel;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -215,7 +211,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         waitForRegistration(lowPrioLongtermAction);
 
         System.out.println("apply normal prio action...");
-        Flag dominantActionExtentionFlag = new Flag();
+        final Flag dominantActionExtentionFlag = new Flag();
 
 
         final RemoteAction dominantAction = new RemoteAction(locationRemote.setPowerState(State.ON, mrPinkActionParameter), mrPinkUserToken, () -> {
@@ -228,11 +224,11 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         waitForExecution(dominantAction);
 
         System.out.println("validate light state ON");
-        List<? extends ColorableLightRemote> units = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
+        final List<? extends ColorableLightRemote> units = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
 
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
-            Assert.assertEquals("Light["+unit+"] not on", State.ON, unit.getPowerState().getValue());
+            Assert.assertEquals("Light[" + unit + "] not on", State.ON, unit.getPowerState().getValue());
         }
 
         System.out.println("cancel dominant action");
@@ -240,9 +236,26 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         dominantActionExtentionFlag.setValue(false);
 
         System.out.println("validate light state OFF");
+
+//        while (true) {
+//            boolean success = true;
+//            for (ColorableLightRemote unit : units) {
+//                unit.requestData().get();
+//                if (unit.getPowerState().getValue() != State.OFF) {
+//                    success = false;
+//                    LOGGER.warn("Light[" + unit + "] not off");
+//                }
+//            }
+//
+//            if(success) {
+//                break;
+//            }
+//            Thread.sleep(1000);
+//        }
+
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
-            Assert.assertEquals("Light["+unit+"] not off", State.OFF, unit.getPowerState().getValue());
+            Assert.assertEquals("Light[" + unit + "] not off", State.OFF, unit.getPowerState().getValue());
         }
 
         System.out.println("wait until last extension timeout and validate if no further extension will be performed for dominant action...");
@@ -277,7 +290,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
     }
 
     class Flag {
-        private boolean value = false;
+        private transient boolean value = false;
 
         public void setValue(boolean value) {
             this.value = value;

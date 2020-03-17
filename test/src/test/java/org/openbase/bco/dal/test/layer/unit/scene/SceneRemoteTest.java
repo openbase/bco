@@ -613,13 +613,18 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
         final LocationRemote rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
 
-        final ServiceStateDescription allOffAction = rootLocationRemote.setPowerState(Power.OFF).get().getServiceStateDescription();
+        // trigger all off action to use its service description as prototype for the all off scene.
+        final RemoteAction initialAllOffAction = waitForExecution(rootLocationRemote.setPowerState(Power.OFF));
+        final ServiceStateDescription allOffAction = initialAllOffAction.getActionDescription().getServiceStateDescription();
         final Builder allOffSceneConfig = UnitConfig.newBuilder().setUnitType(UnitType.SCENE);
 
         // setup all off scene
         allOffSceneConfig.getSceneConfigBuilder().addOptionalServiceStateDescription(allOffAction);
         final UnitConfig unitConfig = Registries.getUnitRegistry().registerUnitConfig(allOffSceneConfig.build()).get();
         final SceneRemote allOffScene = Units.getUnit(unitConfig, true, Units.SCENE);
+
+        // cancel action prototype to not interfere with further test actions.
+        initialAllOffAction.cancel().get();
 
         // query all lights
         final List<? extends ColorableLightRemote> colorableLights = rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
