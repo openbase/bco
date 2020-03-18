@@ -22,24 +22,24 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openbase.bco.dal.lib.state.States.Power;
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.jul.extension.type.processing.TimestampProcessor;
-import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.lang.management.ThreadMXBean;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -106,9 +106,34 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of notifyUpdated method, of class PowerPlugRemote.
+     * Test bco performance.
+     *
+     * @throws java.lang.Exception
      */
-    @Ignore
-    public void testNotifyUpdated() {
+    @Test(timeout = 15000)
+    public void testPowerStateServicePerformance() throws Exception {
+        System.out.println("setPowerState");
+
+        for (int i = 0; i < 100; i++) {
+            if ((i & 1) == 0) {
+                // even
+                //observe(
+                powerSwitchRemote.setPowerState(Power.ON)
+                //)
+                ;
+            } else {
+                // odd
+                //observe(
+                powerSwitchRemote.setPowerState(Power.OFF)
+                //)
+                ;
+            }
+        }
+
+        try {
+            powerSwitchRemote.requestData().get(1, TimeUnit.SECONDS);
+        } catch (TimeoutException ex) {
+            assertTrue("PowerSwitch did not response in time after massive load!", true);
+        }
     }
 }
