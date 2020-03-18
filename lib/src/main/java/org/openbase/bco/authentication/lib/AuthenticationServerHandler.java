@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AuthenticationServerHandler {
 
-    public static final long MAX_TIME_DIFF_SERVER_CLIENT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(1) : TimeUnit.MINUTES.toMillis(2);
+    public static final long MAX_TIME_DIFF_SERVER_CLIENT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(2) : TimeUnit.MINUTES.toMillis(2);
 
     /**
      * Handles a Key Distribution Center (KDC) login request
@@ -222,7 +222,9 @@ public class AuthenticationServerHandler {
         if (authenticator.getTimestamp().getTime() < (currentTime.getTime() - TimeUnit.MILLISECONDS.toMicros(MAX_TIME_DIFF_SERVER_CLIENT)) ||
                 authenticator.getTimestamp().getTime() > (currentTime.getTime() + TimeUnit.MILLISECONDS.toMicros(MAX_TIME_DIFF_SERVER_CLIENT))) {
             throw new SessionExpiredException("Request timestamp [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(authenticator.getTimestamp()))) + "]" +
-                    "differs more than 2 minutes from server time [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(currentTime))) + "]");
+                    " differs more than " +
+                    (JPService.testMode() ? TimeUnit.MILLISECONDS.toSeconds(MAX_TIME_DIFF_SERVER_CLIENT) + " seconds" : TimeUnit.MILLISECONDS.toMinutes(MAX_TIME_DIFF_SERVER_CLIENT) + " minutes")
+                    + " from server time [" + DATE_FORMAT.format(new Date(TimestampJavaTimeTransform.transform(currentTime))) + "]");
         }
     }
 
