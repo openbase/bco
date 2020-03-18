@@ -193,11 +193,14 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         unitGroupRemote.waitForData();
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(20).setTemperatureDataUnit(DataUnit.CELSIUS).build();
 
+        ExceptionPrinter.setBeQuit(true);
         try {
             unitGroupRemote.setTargetTemperatureState(temperatureState).get();
             fail("UnitGroup allows to set the unsupported target temperature state!");
         } catch (ExecutionException ex) {
             // do nothing because this action should fail
+        } finally {
+            ExceptionPrinter.setBeQuit(false);
         }
     }
 
