@@ -142,11 +142,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
     private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
 
+    private static final String LOCK_CONSUMER_NOTIFICATION = AbstractUnitController.class.getSimpleName() + ".notifyScheduledActionList(..)";
     private static final String LOCK_CONSUMER_SCHEDULEING = AbstractUnitController.class.getSimpleName() + ".reschedule(..)";
     private static final String LOCK_CONSUMER_INDEX_LOOKUP = AbstractUnitController.class.getSimpleName() + ".getSchedulingIndex()";
     private static final String LOCK_CONSUMER_CANCEL_ACTION = AbstractUnitController.class.getSimpleName() + ".cancelAction(..)";
     private static final String LOCK_CONSUMER_EXTEND_ACTION = AbstractUnitController.class.getSimpleName() + ".extendAction(..)";
-    private static final String LOCK_CONSUMER_SYNC_ACTION_LIST = AbstractUnitController.class.getSimpleName() + ".syncActionList(..)";
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
@@ -1070,17 +1070,30 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      */
     public void notifyScheduledActionList() {
 
-        if (actionListNotificationLock.isWriteLocked()) {
-            // skip since notification will be performed when lock is unlocked anyway.
-            logger.debug("skip action list notification.");
+        // skip notification when builder setup is locked since then the notification is performed anyway.
+        if (!builderSetup.tryLockWrite(LOCK_CONSUMER_NOTIFICATION)) {
             return;
         }
-
-        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
-            // sync
-            syncActionList(dataBuilder.getInternalBuilder());
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
+        try {
+            // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
+            if (!actionListNotificationLock.writeLock().tryLock()) {
+                // skip since notification will be performed when lock is unlocked anyway.
+                logger.debug("skip action list notification.");
+                return;
+            }
+            try {
+                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+                    // sync
+                    syncActionList(dataBuilder.getInternalBuilder());
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
+                }
+            } finally {
+                actionListNotificationLock.writeLock().unlock();
+            }
+        } finally {
+            // unlock but do not notify because it has already performed.
+            builderSetup.unlockWrite(false);
         }
     }
 
