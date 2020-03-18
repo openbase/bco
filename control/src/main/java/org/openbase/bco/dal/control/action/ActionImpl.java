@@ -595,7 +595,7 @@ public class ActionImpl implements SchedulableAction {
             //            }
 
             try {
-                waitForActionTaskFinalization(1, TimeUnit.SECONDS);
+                waitForActionTaskFinalization(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (TimeoutException ex) {
@@ -605,6 +605,7 @@ public class ActionImpl implements SchedulableAction {
             // check if finished after force
             if (!isActionTaskFinish()) {
                 LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
+                StackTracePrinter.printStackTrace(LOGGER, LogLevel.WARN);
             }
         }
     }
