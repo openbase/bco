@@ -1,5 +1,8 @@
 # Use an official debian as parent image
-FROM buildpack-deps:jessie-curl
+FROM amd64/debian:stable
+
+# Prepare dependencies
+RUN apt-get update && apt-get install -y gnupg2 wget
 
 # Install spread
 RUN echo 'deb http://packages.cor-lab.de/ubuntu/ xenial main' | tee -a /etc/apt/sources.list
@@ -7,8 +10,7 @@ RUN echo 'deb http://packages.cor-lab.de/ubuntu/ xenial testing' | tee -a /etc/a
 RUN wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | apt-key add -
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-    spread \
-    librsbspread0.17
+    spread
 
 # Make spread port available
 EXPOSE 4803
