@@ -1057,11 +1057,27 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
             } finally {
                 actionListNotificationLock.writeLock().unlock();
-                notifyScheduledActionList();
+                //notifyScheduledActionList();
+
+                // sync action list but do not notify since  builder is still locked.
+                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, false)) {
+                    // sync
+                    syncActionList(dataBuilder.getInternalBuilder());
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
+                }
             }
         } finally {
-            // unlock but do not notify because it has already performed.
-            builderSetup.unlockWrite(false);
+
+            // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
+            final boolean notify = actionListNotificationLock.writeLock().tryLock();
+            try {
+                builderSetup.unlockWrite(notify);
+            } finally {
+                if (notify) {
+                    actionListNotificationLock.writeLock().unlock();
+                }
+            }
         }
     }
 
@@ -1082,7 +1098,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 return;
             }
             try {
-                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+                // golden rule, do not notify if builder is locked.
+                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, false)) {
                     // sync
                     syncActionList(dataBuilder.getInternalBuilder());
                 } catch (Exception ex) {
@@ -1092,8 +1109,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 actionListNotificationLock.writeLock().unlock();
             }
         } finally {
-            // unlock but do not notify because it has already performed.
-            builderSetup.unlockWrite(false);
+            // unlock and notify
+            builderSetup.unlockWrite(true);
         }
     }
 
@@ -1629,7 +1646,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             return serviceStateBuilder.build();
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not force execute action!", ex);
+            throw new CouldNotPerformException("Could not force action execution!", ex);
         }
     }
 
