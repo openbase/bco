@@ -386,7 +386,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
                                 actionList.add(actionFuture.get(timeout, TimeUnit.MILLISECONDS));
                             }
-                        } catch (TimeoutException | ExecutionException | CouldNotPerformException ex) {
+                        } catch (TimeoutException | ExecutionException | CancellationException | CouldNotPerformException ex) {
                             // stop disabled, so scene can be reactivated because it will never be active but still possilble required actions are executed.
                             // stop();
                             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("At least one required action could not be executed", ex));
@@ -409,6 +409,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                 actionList.add(actionFuture.get(timeout, TimeUnit.MILLISECONDS));
                             } catch (TimeoutException | ExecutionException ex) {
                                 actionFuture.cancel(true);
+                            } catch (CancellationException ex) {
+                                // action already canceled just continue with next one...
                             }
                         }
                     } catch (InterruptedException ex) {
