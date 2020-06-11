@@ -25,11 +25,11 @@ package org.openbase.bco.dal.control.layer.unit.user;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivityMultiStateOperationService;
-import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.lib.layer.unit.user.UserController;
+import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -40,11 +40,8 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
-import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivityMultiStateType.ActivityMultiState;
@@ -53,6 +50,9 @@ import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
 import org.openbase.type.domotic.state.UserTransitStateType.UserTransitState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.user.UserDataType.UserData;
+import org.slf4j.LoggerFactory;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -137,7 +137,6 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
 
-
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         synchronized (netDeviceDetectorMapLock) {
@@ -219,7 +218,9 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                         internalBuilder.getLocalPositionStateBuilder().addLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId());
                         copyResponsibleAction(PRESENCE_STATE_SERVICE, LOCAL_POSITION_STATE_SERVICE, internalBuilder);
                     } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory("Could not update local position state location id because of user transit update", ex, logger, LogLevel.WARN);
+                        if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                            ExceptionPrinter.printHistory("Could not update local position state location id because of user transit update.", ex, logger, LogLevel.WARN);
+                        }
                     }
                 }
                 break;
@@ -247,7 +248,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                     reachable = checkIfReachable();
                     notifyObservers(reachable);
                 } catch (CouldNotPerformException ex) {
-                    if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                         ExceptionPrinter.printHistory("Could not inform observer about reachable state change!", ex, logger);
                     }
                 }
