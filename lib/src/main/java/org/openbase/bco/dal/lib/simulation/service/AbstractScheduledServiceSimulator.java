@@ -29,14 +29,15 @@ import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -122,7 +123,9 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Me
                 unitController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder), serviceType);
                 increaseSimCount();
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not apply service modification!", ex, LOGGER);
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory("Could not apply service modification!", ex, LOGGER);
+                }
             }
         };
     }
@@ -139,7 +142,9 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Me
             simulationTaskFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(simulationTask, RANDOM.nextInt((int) changeRate) + DEFAULT_STARTUP_DELAY, changeRate, TimeUnit.MILLISECONDS);
             futureList.add(simulationTaskFuture);
         } catch (IllegalArgumentException | RejectedExecutionException | NotAvailableException ex) {
-            ExceptionPrinter.printHistory("Could not execute random service simulation of " + unitController + "!", ex, LOGGER);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not execute random service simulation of " + unitController + "!", ex, LOGGER);
+            }
         }
         return futureList;
     }

@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.simulation.unit.AbstractUnitSimulator;
 import org.openbase.bco.dal.lib.simulation.unit.GenericUnitSimulator;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -83,7 +84,9 @@ public class UnitSimulationManager<CONTROLLER extends UnitController<?, ?>> impl
             });
             updateUnitSimulators(unitControllerRegistry, unitControllerRegistry.getValue().values());
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new InitializationException(this, ex), LOGGER);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(new InitializationException(this, ex), LOGGER);
+            }
         }
     }
 
@@ -114,7 +117,9 @@ public class UnitSimulationManager<CONTROLLER extends UnitController<?, ?>> impl
                     }
 
                 } catch (CouldNotPerformException | NullPointerException ex) {
-                    ExceptionPrinter.printHistory("Could not handle " + unitController + " update!", ex, LOGGER);
+                    if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                        ExceptionPrinter.printHistory("Could not handle " + unitController + " update!", ex, LOGGER);
+                    }
                 }
             }
             // remove outdated controller
@@ -123,7 +128,9 @@ public class UnitSimulationManager<CONTROLLER extends UnitController<?, ?>> impl
                 try {
                     unitSimulatorMap.remove(unitId).deactivate();
                 } catch (CouldNotPerformException | NullPointerException ex) {
-                    ExceptionPrinter.printHistory("Could not deactivate simulation of Unit[" + unitId + "]", ex, LOGGER);
+                    if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                        ExceptionPrinter.printHistory("Could not deactivate simulation of Unit[" + unitId + "]", ex, LOGGER);
+                    }
                 }
             }
         }
@@ -144,7 +151,9 @@ public class UnitSimulationManager<CONTROLLER extends UnitController<?, ?>> impl
                     try {
                         simulator.activate();
                     } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory("Could not activate " + simulator, ex, LOGGER);
+                        if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                            ExceptionPrinter.printHistory("Could not activate " + simulator, ex, LOGGER);
+                        }
                     }
                 }
             }
@@ -166,7 +175,9 @@ public class UnitSimulationManager<CONTROLLER extends UnitController<?, ?>> impl
                     try {
                         simulator.deactivate();
                     } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory("Could not activate " + simulator, ex, LOGGER);
+                        if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                            ExceptionPrinter.printHistory("Could not activate " + simulator, ex, LOGGER);
+                        }
                     }
                 }
             }
