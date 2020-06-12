@@ -344,7 +344,7 @@ public class Registries {
         try {
             return (Future<M>) invokeMethod("register", message);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return (Future<M>) FutureProcessor.canceledFuture(ex);
         }
     }
 
@@ -362,7 +362,7 @@ public class Registries {
         try {
             return (Future<M>) invokeMethod("update", message);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return (Future<M>) FutureProcessor.canceledFuture(ex);
         }
     }
 
@@ -380,7 +380,7 @@ public class Registries {
         try {
             return (Future<M>) invokeMethod("remove", message);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return (Future<M>) FutureProcessor.canceledFuture(ex);
         }
     }
 

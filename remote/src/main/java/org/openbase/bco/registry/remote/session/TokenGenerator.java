@@ -32,6 +32,7 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType.Authentic
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class TokenGenerator {
 
@@ -66,7 +67,7 @@ public class TokenGenerator {
                     String.class,
                     authenticatedValue.getTicketAuthenticatorWrapper(),
                     sessionManager).get();
-            return AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(authenticationToken).build();
+            return AuthToken.newBuilder().setAuthenticationToken(authenticationToken).build();
         } catch (CouldNotPerformException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not generate token!", ex);
         }

@@ -48,7 +48,7 @@ public class CachedUnitRegistryRemote {
     private static final SyncObject REGISTY_LOCK = new SyncObject("RegistyLock");
 
     private static UnitRegistryRemote registryRemote;
-    private transient static boolean shutdown = false;
+    private static volatile boolean shutdown = false;
 
     /**
      * Setup shutdown hook

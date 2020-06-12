@@ -72,7 +72,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
         try {
             return getUnitTransformation(getRootLocationConfig(), unitConfigTarget);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
     }
 
@@ -87,7 +87,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
         try {
             return getUnitTransformation(unitConfigTarget, getRootLocationConfig());
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
     }
 
@@ -102,27 +102,27 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
     default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
 
         if (unitConfigSource.getEnablingState().getValue() != State.ENABLED) {
-            return FutureProcessor.canceledFuture(new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] is disbled and does not provide any transformation!"));
+            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] is disbled and does not provide any transformation!"));
         }
 
         if (unitConfigTarget.getEnablingState().getValue() != State.ENABLED) {
-            return FutureProcessor.canceledFuture(new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] is disbled and does not provide any transformation!"));
+            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] is disbled and does not provide any transformation!"));
         }
 
         if (!unitConfigSource.hasPlacementConfig() || !unitConfigSource.getPlacementConfig().hasPose()) {
-            return FutureProcessor.canceledFuture(new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide any position!"));
+            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide any position!"));
         }
 
         if (!unitConfigTarget.hasPlacementConfig() || !unitConfigTarget.getPlacementConfig().hasPose()) {
-            return FutureProcessor.canceledFuture(new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide any position!"));
+            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide any position!"));
         }
 
         if (!unitConfigSource.getPlacementConfig().hasTransformationFrameId() || unitConfigSource.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-            return FutureProcessor.canceledFuture(new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide yet a transformation frame id!"));
+            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide yet a transformation frame id!"));
         }
 
         if (!unitConfigTarget.getPlacementConfig().hasTransformationFrameId() || unitConfigTarget.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-            return FutureProcessor.canceledFuture(new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation frame id!"));
+            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation frame id!"));
         }
 
 
