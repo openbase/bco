@@ -38,7 +38,7 @@ public class CachedAuthenticationRemote {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedAuthenticationRemote.class);
 
     private static AuthenticationRemote authenticationRemote;
-    private static transient boolean shutdown = false;
+    private static volatile boolean shutdown = false;
     private static final SyncObject REMOTE_LOCK = new SyncObject("CachedAuthenticationRemote");
     private static final SyncObject REGISTY_LOCK = new SyncObject("RegistyLock");
 
