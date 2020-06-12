@@ -117,7 +117,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
         try {
             return register(password, generateDefaultAuthorizationToken());
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(Void.class, ex);
         }
     }
 
