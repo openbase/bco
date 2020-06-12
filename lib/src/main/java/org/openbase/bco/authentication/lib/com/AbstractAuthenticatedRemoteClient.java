@@ -91,7 +91,7 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
                 return super.internalRequestStatus();
             }
         } catch (RejectedException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(Event.class, ex);
         }
     }
 

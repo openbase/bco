@@ -101,7 +101,7 @@ public class AbstractAuthenticatedConfigurableRemote<M extends Message, CONFIG e
                 return super.internalRequestStatus();
             }
         } catch (RejectedException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(Event.class, ex);
         }
     }
 

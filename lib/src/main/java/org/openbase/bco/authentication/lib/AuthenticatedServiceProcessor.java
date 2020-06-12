@@ -232,7 +232,7 @@ public class AuthenticatedServiceProcessor {
                 return new AuthenticatedValueFuture<>(future, responseClass, null, sessionManager);
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(responseClass, ex);
         }
     }
 
