@@ -34,6 +34,7 @@ import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.timing.TimestampType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +91,8 @@ public class HowToQueryAggregatedState {
                     .setTimeRangeStop(TimestampType.Timestamp.newBuilder().setTime(time).build())
                     .setAggregatedWindow("1m")
                     .build();
-            AggregatedServiceStateType.AggregatedServiceState aggregatedServiceState = testLocation.queryAggregatedServiceState(query).get();
-            AggregatedServiceStateType.AggregatedServiceState aggregatedEnumServiceState = testLocation.queryAggregatedServiceState(enumQuery).get();
+            AggregatedServiceState aggregatedServiceState = testLocation.queryAggregatedServiceState(query).get();
+            AggregatedServiceState aggregatedEnumServiceState = testLocation.queryAggregatedServiceState(enumQuery).get();
 
             LOGGER.info(aggregatedServiceState.toString());
             LOGGER.info(aggregatedEnumServiceState.toString());

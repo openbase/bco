@@ -28,9 +28,9 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.TimeoutException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -859,7 +859,7 @@ public class RemoteAction implements Action {
 
         // if this action is not listed on its target unit and its not just the initial sync where the action id is maybe not yet listed,
         // then we can be sure that this action is an outdated one and the remote action can be cleaned up.
-        if(!initialSync) {
+        if (!initialSync) {
             cleanup();
         }
     }
@@ -959,92 +959,6 @@ public class RemoteAction implements Action {
             }
         }
     }
-
-
-
-//    /**
-//     * This method blocks until the action is executing.
-//     * Depending of your execution priority and emphasis category the execution can be delayed for a longer term.
-//     * <p>
-//     * Note: This can really take some time in case the execution target unit can not directly be allocated.
-//     *
-//     * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
-//     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
-//     */
-//    public void waitForExecution() throws CouldNotPerformException, InterruptedException {
-//        waitForExecution(0L, TimeUnit.MILLISECONDS);
-//    }
-
-//    /**
-//     * This method blocks until the action is executing.
-//     * Depending of your execution priority and emphasis category the execution can be delayed for a longer term.
-//     * <p>
-//     * Note: This can really take some time in case the execution target unit can not directly be allocated.
-//     *
-//     * @param timeout  the maximal time to wait for the execution.
-//     * @param timeUnit the time unit of the timeout.
-//     *
-//     * @throws CouldNotPerformException is thrown in case is the action was canceled or rejected before the execution toke place.
-//     * @throws TimeoutException         is thrown in case the timeout is reached.
-//     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
-//     */
-//    public void waitForExecution(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, org.openbase.jul.exception.TimeoutException, InterruptedException {
-//        waitForActionState(State.EXECUTING, timeout, timeUnit);
-//        final long timestamp = System.currentTimeMillis();
-//
-//        waitForRegistration(timeout, timeUnit);
-//
-//        try {
-//            if (actionDescription.getIntermediary()) {
-//
-//                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-//                    // todo split timeout
-//                    impactedRemoteAction.waitForExecution(timeout, timeUnit);
-//                }
-//                return;
-//            }
-//        } catch (NotAvailableException ex) {
-//            // if the action description is not available, then we just continue and wait for it.
-//            // sure? this does not work for intermediary actions!
-//            ExceptionPrinter.printHistory("Could not observe intermediary actions!", ex, LOGGER);
-//        }
-//
-//        // wait until unit is ready
-//        targetUnit.waitForData(timeout, timeUnit);
-//
-//        // wait on this action
-//        synchronized (executionSync) {
-//            // wait until state is reached
-//
-//            waitForActionState(State.EXECUTING);
-//
-//            while (!isStateExecuting()) {
-//                if (isDone()) {
-//                    throw new CouldNotPerformException(this + " is done but is has never been executed.");
-//                }
-//
-//                // handle waiting without a timeout.
-//                if (timeout == 0L) {
-//                    executionSync.wait(0);
-//                    continue;
-//                }
-//
-//                // handle waiting with timeout
-//                final long timeToWait = timeUnit.toMillis(timeout) - (System.currentTimeMillis() - timestamp);
-//                if (timeToWait < 0) {
-//                    throw new org.openbase.jul.exception.TimeoutException();
-//                }
-//                executionSync.wait(timeToWait);
-//            }
-//        }
-//    }
-//
-//    private boolean isStateExecuting() throws CouldNotPerformException {
-//        final Message serviceState = Services.invokeProviderServiceMethod(actionDescription.getServiceStateDescription().getServiceType(), targetUnit);
-//        final Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-//        final ActionDescription responsibleAction = (ActionDescription) serviceState.getField(descriptor);
-//        return actionDescription.getActionId().equals(responsibleAction.getActionId());
-//    }
 
     /**
      * Method blocks until the next successful action extension or the timeout was reached.

@@ -313,7 +313,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @return true if the action is currently processing, otherwise false.
      */
     default boolean isProcessing() {
-       return isProcessing(getActionState());
+        return isProcessing(getActionState());
     }
 
     /**

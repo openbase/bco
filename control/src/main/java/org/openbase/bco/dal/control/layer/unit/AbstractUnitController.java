@@ -105,7 +105,6 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
-import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -481,7 +480,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
-    public UnitTemplate.UnitType getUnitType() throws NotAvailableException {
+    public UnitType getUnitType() throws NotAvailableException {
         return getConfig().getUnitType();
     }
 
@@ -1057,7 +1056,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
             } finally {
                 actionListNotificationLock.writeLock().unlock();
-                //notifyScheduledActionList();
 
                 // sync action list but do not notify since  builder is still locked.
                 try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, false)) {
@@ -1892,7 +1890,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
-    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(QueryType.Query databaseQuery) {
+    public Future<AggregatedServiceState> queryAggregatedServiceState(QueryType.Query databaseQuery) {
         return InfluxDbProcessor.queryAggregatedServiceState(databaseQuery);
     }
 
