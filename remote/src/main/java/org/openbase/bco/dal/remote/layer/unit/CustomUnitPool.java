@@ -119,7 +119,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
      */
     @Override
     public void init(final Collection<Filter<UnitConfig>> filters) throws InitializationException, InterruptedException {
-        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
         try {
             filterSet.clear();
             filterSet.add(UnitFilters.DISABELED_UNIT_FILTER);
@@ -143,7 +143,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
         }
 
         try {
-            UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+            UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
             try {
                 unitConfigDiff.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
 
@@ -282,7 +282,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
         try {
 
             // skip run if already active
@@ -306,7 +306,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
         try {
             active = false;
             try {

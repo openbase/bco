@@ -740,7 +740,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     protected Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final String authenticatedId) {
         logger.trace("cancel action " + actionDescription.getActionId() + " on controller with " + authenticatedId);
         try {
-            builderSetup.lockWrite(LOCK_CONSUMER_CANCEL_ACTION);
+            try {
+                builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_CANCEL_ACTION);
+            } catch (InterruptedException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+            }
             try {
                 // retrieve action
                 final Action actionToCancel;
@@ -1059,7 +1063,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 actionListNotificationLock.writeLock().unlock();
 
                 // sync action list but do not notify since  builder is still locked.
-                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, false)) {
+                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this, false)) {
                     // sync
                     syncActionList(dataBuilder.getInternalBuilder());
                 } catch (Exception ex) {
@@ -1091,9 +1095,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
             try {
                 // golden rule, do not notify if builder is locked.
-                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, false)) {
+                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this, false)) {
                     // sync
                     syncActionList(dataBuilder.getInternalBuilder());
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    return;
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
                 }
@@ -1328,7 +1335,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public void applyDataUpdate(Message newState, final ServiceType serviceType) throws CouldNotPerformException {
-        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
 
             // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
@@ -1371,6 +1378,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // sync updated action list
             syncActionList(dataBuilder.getInternalBuilder());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return;
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + newState + "] for " + this + "!", ex);
         }

@@ -203,7 +203,7 @@ public class Units {
     private static final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> UNIT_REGISTRY_OBSERVER = new Observer<DataProvider<UnitRegistryData>, UnitRegistryData>() {
         @Override
         public void update(DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-            UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+            UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
             try {
                 // avoid wait for data while holding the lock
                 UNIT_DIFF.diffMessages(Registries.getUnitRegistry(false).getUnitConfigs());
@@ -311,7 +311,7 @@ public class Units {
         ExceptionStack stack = null;
         final HashMap<UnitRemote<?>, Future<?>> syncTaskList = new HashMap<>();
 
-        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
         try {
             for (UnitRemote<?> unitRemote : unitRemoteRegistry.getEntries()) {
                 try {
@@ -418,7 +418,7 @@ public class Units {
             // it is important that this wait is performed outside of the lock to avoid deadlocks in case registry changes are applied via the observer.
             Registries.getUnitRegistry(true);
 
-            UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+            UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
             try {
                 if (!unitRemoteRegistry.contains(unitId)) {
                     // create new instance.
@@ -468,7 +468,7 @@ public class Units {
         final boolean newInstance;
         final UnitRemote unitRemote;
         try {
-            UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+            UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
             try {
                 if (!unitRemoteRegistry.contains(unitConfig.getId())) {
                     // create new instance.

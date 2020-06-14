@@ -198,7 +198,15 @@ public class UnitSelectionPaneController extends AbstractFXController {
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        updateComponentLock.writeLock().lock();
+        try {
+            updateComponentLock.writeLock().lockInterruptibly();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+
+            // just skip component update on interruption.
+            return;
+        }
+
         try {
             LOGGER.debug("Update selectorPanel!");
             // store selection to recover state after update

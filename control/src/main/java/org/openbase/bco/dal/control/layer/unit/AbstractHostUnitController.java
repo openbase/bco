@@ -103,8 +103,8 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         }
     }
 
-    protected <B extends Message.Builder> B registerUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
-        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, isActive())) {
+    protected <B extends Message.Builder> B registerUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this, isActive())) {
             DB builder = dataBuilder.getInternalBuilder();
             Class builderClass = builder.getClass();
             String unitTypeName = StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name());

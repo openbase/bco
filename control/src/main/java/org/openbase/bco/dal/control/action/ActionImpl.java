@@ -205,7 +205,11 @@ public class ActionImpl implements SchedulableAction {
     public Future<ActionDescription> execute() {
 
         // builder lock has to be locked first before locking the action task lock to avoid deadlocks
-        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+        } catch (InterruptedException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
         try {
             synchronized (actionTaskLock) {
 
@@ -356,8 +360,8 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
-    private void setRequestedState() throws CouldNotPerformException {
-        try (ClosableDataBuilder dataBuilder = unit.getDataBuilder(this)) {
+    private void setRequestedState() throws CouldNotPerformException, InterruptedException {
+        try (ClosableDataBuilder dataBuilder = unit.getDataBuilderInterruptible(this, false)) {
 
             if (!Services.hasResponsibleAction(serviceState)) {
                 StackTracePrinter.printStackTrace(LOGGER);
@@ -423,7 +427,11 @@ public class ActionImpl implements SchedulableAction {
     @Override
     public Future<ActionDescription> cancel() {
 
-        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+        } catch (InterruptedException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
         try {
             // if action is not executing, set to canceled if not already done and finish
             if (!isProcessing()) {
@@ -484,7 +492,11 @@ public class ActionImpl implements SchedulableAction {
 
     @Override
     public Future<ActionDescription> abort(boolean forceReject) {
-        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+        } catch (InterruptedException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
         try {
             if (!isProcessing()) {
                 // this should never happen since a task should be executing before it is aborted
@@ -836,7 +848,11 @@ public class ActionImpl implements SchedulableAction {
 
     @Override
     public Future<ActionDescription> extend() {
-        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+        } catch (InterruptedException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
         try {
             actionDescriptionBuilder.setLastExtensionTimestamp(TimestampProcessor.getCurrentTimestamp());
             return FutureProcessor.completedFuture(actionDescriptionBuilder.build());

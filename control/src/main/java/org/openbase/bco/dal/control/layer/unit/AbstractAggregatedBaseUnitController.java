@@ -72,7 +72,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         // filter updates through internal units by the provided frequency
         unitEventFilter = new RecurrenceEventFilter<Void>(Math.max(maxUpdateFrequency, MINIMAL_UPDATE_FREQUENCY)) {
             @Override
-            public void relay() {
+            public void relay() throws InterruptedException {
                 updateUnitData();
             }
         };
@@ -131,7 +131,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     /**
      * Call to {@link #updateUnitData(boolean)} with notify change as true.
      */
-    private void updateUnitData() {
+    private void updateUnitData() throws InterruptedException {
         updateUnitData(true);
     }
 
@@ -140,8 +140,8 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
      *
      * @param notifyChange flag determining if the data builder should be notified afterwards.
      */
-    private void updateUnitData(final boolean notifyChange) {
-        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, notifyChange)) {
+    private void updateUnitData(final boolean notifyChange) throws InterruptedException {
+        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this, notifyChange)) {
             serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder.getInternalBuilder(), getDataClass(), getSupportedServiceTypes());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);

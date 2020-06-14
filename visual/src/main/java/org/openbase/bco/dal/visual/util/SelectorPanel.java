@@ -149,7 +149,14 @@ public class SelectorPanel extends javax.swing.JPanel {
     private synchronized void updateDynamicComponents() {
         MultiException.ExceptionStack exceptionStack = null;
 
-        updateComponentLock.writeLock().lock();
+        try {
+            updateComponentLock.writeLock().lockInterruptibly();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+
+            // just skip component update on interruption.
+            return;
+        }
         try {
             if (!init) {
                 return;
