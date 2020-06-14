@@ -216,14 +216,14 @@ public class ActionImpl implements SchedulableAction {
 
                 // validate if action task is already executing
                 if (isProcessing()) {
-                    return FutureProcessor.canceledFuture(new InvalidStateException("Can not execute an already processing action!"));
+                    return FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException("Can not execute an already processing action!"));
                 }
 
                 // handle abortion or cancellation before the execution has started.
                 if (actionDescriptionBuilder.getActionState().getValue() == State.CANCELING) {
-                    return FutureProcessor.canceledFuture(new InvalidStateException("Action was canceled before the execution has started."));
+                    return FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException("Action was canceled before the execution has started."));
                 } else if (actionDescriptionBuilder.getActionState().getValue() == State.ABORTING) {
-                    return FutureProcessor.canceledFuture(new InvalidStateException("Action was aborted before the execution has started."));
+                    return FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException("Action was aborted before the execution has started."));
                 }
 
                 // Initiate

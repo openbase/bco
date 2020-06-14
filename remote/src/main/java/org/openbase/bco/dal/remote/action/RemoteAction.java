@@ -284,7 +284,7 @@ public class RemoteAction implements Action {
                 return setActionDescriptionAndStartObservation(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not execute " + this + "!", ex));
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not execute " + this + "!", ex));
         }
     }
 
@@ -379,7 +379,7 @@ public class RemoteAction implements Action {
         this.targetUnitId = actionReference.getServiceStateDescription().getUnitId();
 
         if (isInitializedByIntermediaryActionReference()) {
-            futureObservationTask = FutureProcessor.canceledFuture(new InvalidStateException("Intermediary actions initialized by an action reference do not offer an action description!"));
+            futureObservationTask = FutureProcessor.canceledFuture(ActionDescription.class, new InvalidStateException("Intermediary actions initialized by an action reference do not offer an action description!"));
             return futureObservationTask;
         }
 
@@ -684,7 +684,7 @@ public class RemoteAction implements Action {
                 return registerPostActionStateUpdate(future, State.CANCELED);
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         } finally {
             // cleanup when cancellation is done
             if (future == null || future.isDone()) {
@@ -706,7 +706,7 @@ public class RemoteAction implements Action {
                         }
                     });
                 } catch (RejectedExecutionException ex) {
-                    return FutureProcessor.canceledFuture(ex);
+                    return FutureProcessor.canceledFuture(ActionDescription.class, ex);
                 }
             }
         }
@@ -1080,7 +1080,7 @@ public class RemoteAction implements Action {
             // set extend flag and reapply
             return targetUnit.extendAction(getActionDescription(), authToken);
         } catch (NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 

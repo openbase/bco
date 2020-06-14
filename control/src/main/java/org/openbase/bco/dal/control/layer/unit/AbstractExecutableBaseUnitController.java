@@ -206,10 +206,10 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                             stop(activationStateBuilder.build());
                         } catch (InterruptedException ex) {
                             Thread.currentThread().interrupt();
-                            return FutureProcessor.canceledFuture(ex);
+                            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
                         } catch (Exception ex) {
                             ExceptionPrinter.printHistory("stop failed", ex, logger);
-                            return FutureProcessor.canceledFuture(ex);
+                            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
                         }
                         try {
                             logger.trace("inform about " + activationStateBuilder.getValue().name());

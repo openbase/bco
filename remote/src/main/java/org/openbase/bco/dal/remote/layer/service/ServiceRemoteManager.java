@@ -422,7 +422,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
             }
             return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
         } catch (NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
@@ -458,7 +458,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
             }
             return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescription.toBuilder(), SessionManager.getInstance().getSessionKey());
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }
     }
 
@@ -481,7 +481,7 @@ public abstract class ServiceRemoteManager<D extends Message> implements Activat
         try {
             return getServiceRemote(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).applyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, sessionKey);
         } catch (NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }
     }
 

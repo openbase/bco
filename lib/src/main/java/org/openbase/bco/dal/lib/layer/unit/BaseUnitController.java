@@ -51,7 +51,7 @@ public interface BaseUnitController<D extends AbstractMessage, DB extends D.Buil
         try {
             applyDataUpdate(serviceState, serviceType);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(Void.class, ex);
         }
         return FutureProcessor.completedFuture(null);
     }

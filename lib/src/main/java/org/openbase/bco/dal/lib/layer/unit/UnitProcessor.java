@@ -168,7 +168,7 @@ public class UnitProcessor {
                 return FutureProcessor.allOf((input, time, timeUnit)  -> null, generateSnapshotActions(snapshot, null, null, logger, units));
             }
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new CouldNotPerformException("Could not record snapshot authenticated!", ex));
+            return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Could not record snapshot authenticated!", ex));
         }
     }
 

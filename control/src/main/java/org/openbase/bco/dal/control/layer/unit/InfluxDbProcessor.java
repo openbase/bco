@@ -45,7 +45,7 @@ import org.openbase.type.domotic.database.QueryType;
 import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
-import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.timing.TimestampType;
 import org.slf4j.Logger;
@@ -335,7 +335,7 @@ public class InfluxDbProcessor {
             List<FluxTable> fluxTableList = sendQuery(databaseQuery.getRawQuery());
             return FutureProcessor.completedFuture(convertFluxTablesToRecordCollections(fluxTableList));
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query Record!", ex)));
+            return FutureProcessor.canceledFuture(RecordCollectionType.RecordCollection.class, new CouldNotPerformException("Could not query Record!", ex));
         }
     }
 
@@ -415,11 +415,11 @@ public class InfluxDbProcessor {
      *
      * @return AggregatedServiceState  with the aggregated value coverage, the databaseQuery the service_type and the unit_id.
      */
-    public static Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
+    public static Future<AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
         try {
             ServiceTemplateType.ServiceTemplate.ServiceType serviceType = databaseQuery.getServiceType();
             Message.Builder serviceStateBuilder = Services.generateServiceStateBuilder(serviceType);
-            AggregatedServiceStateType.AggregatedServiceState.Builder builder = AggregatedServiceStateType.AggregatedServiceState.newBuilder();
+            AggregatedServiceState.Builder builder = AggregatedServiceState.newBuilder();
             builder.setServiceType(serviceType);
             builder.setQuery(databaseQuery);
 
@@ -457,11 +457,11 @@ public class InfluxDbProcessor {
                 }
             }
             Services.invokeOperationServiceMethod(serviceType, builder, serviceStateBuilder.build());
-            AggregatedServiceStateType.AggregatedServiceState newAggregatedServiceState = builder.build();
+            AggregatedServiceState newAggregatedServiceState = builder.build();
 
             return FutureProcessor.completedFuture(newAggregatedServiceState);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture((new CouldNotPerformException("Could not query aggregated service state", ex)));
+            return FutureProcessor.canceledFuture(AggregatedServiceState.class,new CouldNotPerformException("Could not query aggregated service state", ex));
         }
     }
 }

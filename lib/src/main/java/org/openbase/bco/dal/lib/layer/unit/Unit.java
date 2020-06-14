@@ -61,6 +61,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.AggregatedServiceStateType;
+import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -344,7 +345,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getRootToUnitTransformation(getConfig());
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
     }
 
@@ -357,7 +358,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getUnitToRootTransformation(getConfig());
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
     }
 
@@ -370,7 +371,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getRootToUnitTransform3D(getConfig());
         } catch (final CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("Transform3D", ex));
+            return FutureProcessor.canceledFuture(Transform3D.class, new NotAvailableException("Transform3D", ex));
         }
     }
 
@@ -385,7 +386,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getUnitToRootTransform3D(getConfig());
         } catch (NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("Transform3Dinverse", ex));
+            return FutureProcessor.canceledFuture(Transform3D.class, new NotAvailableException("Transform3Dinverse", ex));
         }
     }
 
@@ -398,7 +399,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getUnitPositionGlobalPoint3d(getConfig());
         } catch (NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalPositionVector", ex));
+            return FutureProcessor.canceledFuture(Point3d.class, new NotAvailableException("GlobalPositionVector", ex));
         }
     }
 
@@ -411,7 +412,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getUnitPositionGlobal(getConfig());
         } catch (NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalPosition", ex));
+            return FutureProcessor.canceledFuture(Translation.class, new NotAvailableException("GlobalPosition", ex));
         }
     }
 
@@ -424,7 +425,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getUnitRotationGlobalQuat4d(getConfig());
         } catch (final NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalRotationQuat", ex));
+            return FutureProcessor.canceledFuture(Quat4d.class, new NotAvailableException("GlobalRotationQuat", ex));
         }
     }
 
@@ -437,7 +438,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getUnitRotationGlobal(getConfig());
         } catch (final NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalRotation", ex));
+            return FutureProcessor.canceledFuture(Rotation.class, new NotAvailableException("GlobalRotation", ex));
         }
     }
 
@@ -461,7 +462,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         try {
             return Registries.getUnitRegistry().getUnitBoundingBoxCenterGlobalPoint3d(getConfig());
         } catch (NotAvailableException ex) {
-            return FutureProcessor.canceledFuture(new NotAvailableException("GlobalBoundingBoxCenter", ex));
+            return FutureProcessor.canceledFuture(Point3d.class, new NotAvailableException("GlobalBoundingBoxCenter", ex));
         }
     }
 
@@ -737,7 +738,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     @RPCMethod
     Future<AuthenticatedValueType.AuthenticatedValue> queryAggregatedServiceStateAuthenticated(final AuthenticatedValueType.AuthenticatedValue databaseQuery);
 
-    Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery);
+    Future<AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery);
 
     @RPCMethod
     Future<AuthenticatedValueType.AuthenticatedValue> queryRecordAuthenticated(final AuthenticatedValueType.AuthenticatedValue databaseQuery);

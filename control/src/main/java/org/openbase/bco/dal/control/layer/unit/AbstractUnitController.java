@@ -108,6 +108,7 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.timing.TimestampType.Timestamp;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -822,7 +823,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
 
         } catch (CouldNotPerformException ex) {
-            FutureProcessor.canceledFuture(ex);
+            FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
 
         return FutureProcessor.completedFuture(actionToSchedule.getActionDescription());
@@ -1197,7 +1198,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         try {
             return FutureProcessor.completedFuture(AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, AbstractUnitController.this, internalIdentifiedProcessable));
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }
     }
 

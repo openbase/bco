@@ -81,7 +81,7 @@ public interface EmphasisStateOperationService extends OperationService, Emphasi
         try {
             return setEmphasisState(updateSecurityEmphasis(securityValue, getEmphasisState()), actionParameter);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
@@ -98,7 +98,7 @@ public interface EmphasisStateOperationService extends OperationService, Emphasi
         try {
             return setEmphasisState(updateEconomyEmphasis(economyValue, getEmphasisState()), actionParameter);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
@@ -115,7 +115,7 @@ public interface EmphasisStateOperationService extends OperationService, Emphasi
         try {
             return setEmphasisState(updateComfortEmphasis(comfortValue, getEmphasisState()), actionParameter);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
@@ -131,7 +131,7 @@ public interface EmphasisStateOperationService extends OperationService, Emphasi
         try {
             return setEmphasisState(updateSecurityEmphasis(securityValue, getEmphasisState()));
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
@@ -147,7 +147,7 @@ public interface EmphasisStateOperationService extends OperationService, Emphasi
         try {
             return setEmphasisState(updateEconomyEmphasis(economyValue, getEmphasisState()));
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
@@ -163,7 +163,7 @@ public interface EmphasisStateOperationService extends OperationService, Emphasi
         try {
             return setEmphasisState(updateComfortEmphasis(comfortValue, getEmphasisState()));
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
