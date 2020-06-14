@@ -654,7 +654,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
-        builderSetup.lockWrite(lockConsumer);
+        builderSetup.lockRead(lockConsumer);
         try {
             // lookup action to cancel
             for (SchedulableAction action : scheduledActionList) {
@@ -672,7 +672,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
             throw new NotAvailableException("Action[" + actionId + "]");
         } finally {
-            builderSetup.unlockWrite(false);
+            builderSetup.unlockRead(false);
         }
     }
 

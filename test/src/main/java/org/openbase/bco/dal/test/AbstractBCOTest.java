@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -41,10 +42,12 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
@@ -57,7 +60,7 @@ public class AbstractBCOTest {
 
     protected static MockRegistry mockRegistry;
 
-    private final List<RemoteAction> testActions = new ArrayList<>();
+    private final List<RemoteAction> testActions = Collections.synchronizedList(new ArrayList<>());
 
     public static void setUpClass() throws Throwable {
         try {
@@ -118,7 +121,6 @@ public class AbstractBCOTest {
             cancelAllTestActions();
         } catch (Exception ex) {
             Assert.fail("Could not cancel all test actions of test suite: " + getClass().getName());
-            ExceptionPrinter.printHistory("Could not cancel all test actions of test suite: " + getClass().getName(), ex, LOGGER);
         }
     }
 
@@ -413,7 +415,7 @@ public class AbstractBCOTest {
 
         final List<Future<?>> cancelTasks = new ArrayList<>();
 
-        for (RemoteAction testAction : testActions) {
+        for (RemoteAction testAction : new ArrayList<>(testActions)) {
             cancelTasks.add(testAction.cancel());
         }
 

@@ -290,7 +290,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
     }
 
     class Flag {
-        private transient boolean value = false;
+        private volatile boolean value = false;
 
         public void setValue(boolean value) {
             this.value = value;

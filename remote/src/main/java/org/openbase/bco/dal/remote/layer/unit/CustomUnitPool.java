@@ -66,7 +66,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
     private final ProtobufListDiff<String, UnitConfig, Builder> unitConfigDiff;
     private final Set<Filter<UnitConfig>> filterSet;
     private final ObservableImpl<ServiceStateProvider<Message>, Message> unitDataObservable;
-    private transient boolean active;
+    private volatile boolean active;
 
     public CustomUnitPool() throws InstantiationException {
         try {

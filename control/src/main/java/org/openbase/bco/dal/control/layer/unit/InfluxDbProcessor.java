@@ -203,7 +203,7 @@ public class InfluxDbProcessor {
     }
 
     private static final SyncObject queryLock = new SyncObject("QueryLock");
-    private transient static boolean queryInProgress = false;
+    private volatile static boolean queryInProgress = false;
 
     /**
      * Creates a connection to the influxdb and sends a query.
