@@ -1000,7 +1000,16 @@ public class RemoteAction implements Action {
 
         try {
             if (futureObservationTask != null) {
-                futureObservationTask.get();
+                try {
+                    futureObservationTask.get();
+                } catch (CancellationException ex) {
+                    // in case the observation task is canceled the action is possibly already done.
+                    try {
+                        getActionDescription();
+                    } catch (NotAvailableException exx) {
+                        throw new CouldNotPerformException("Registration task was canceled but action description never received!");
+                    }
+                }
             }
 
             if (getActionDescription().getIntermediary()) {
@@ -1046,7 +1055,7 @@ public class RemoteAction implements Action {
                 }
             }
         } catch (ExecutionException | CancellationException ex) {
-            throw new CouldNotPerformException("Could not wait for action registration!", ex);
+            throw new CouldNotPerformException("Could not wait for registration of " + this + "!", ex);
         }
     }
 

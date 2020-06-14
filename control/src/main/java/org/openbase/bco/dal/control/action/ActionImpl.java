@@ -430,6 +430,23 @@ public class ActionImpl implements SchedulableAction {
                 if (!isDone()) {
                     updateActionState(State.CANCELED);
                 }
+
+                // we need to update the transaction id to inform the remote that the action was successful even when already canceled.
+                try {
+                    unit.updateTransactionId();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update transaction id", ex, LOGGER);
+                }
+
+                // notify transaction id change
+                try {
+                    unit.notifyChange();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not notify transaction id update", ex, LOGGER);
+                } catch (InterruptedException ex) {
+                    return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+                }
+
                 return FutureProcessor.completedFuture(getActionDescription());
             }
 
@@ -512,7 +529,22 @@ public class ActionImpl implements SchedulableAction {
         try {
 
             if (isProcessing()) {
-                abort(true);
+                final Future<ActionDescription> abortionTask = abort(true);
+
+                // apply error handling
+                if (abortionTask.isCancelled()) {
+                    try {
+                        abortionTask.get();
+                    } catch (Exception ex) {
+                        // in case of internal interruption just interrupt thread and return
+                        // handle recursive interruption as well because interruption can be encapsulated in ExecutionException.
+                        if(ExceptionProcessor.isCausedByInterruption(ex)) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                        ExceptionPrinter.printHistory("Could not abort " + this + " in order to schedule it.", ex, LOGGER);
+                    }
+                }
             }
 
             // if not already finished then we force the state.
@@ -537,7 +569,22 @@ public class ActionImpl implements SchedulableAction {
         try {
 
             if (isProcessing()) {
-                abort(true);
+                final Future<ActionDescription> abortionTask = abort(true);
+
+                // apply error handling
+                if (abortionTask.isCancelled()) {
+                    try {
+                        abortionTask.get();
+                    } catch (Exception ex) {
+                        // in case of internal interruption just interrupt thread and return
+                        // handle recursive interruption as well because interruption can be encapsulated in ExecutionException.
+                        if(ExceptionProcessor.isCausedByInterruption(ex)) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                        ExceptionPrinter.printHistory("Could not abort " + this + " in order to reject it.", ex, LOGGER);
+                    }
+                }
             }
 
             // if not already finished then we force the state.
@@ -644,7 +691,7 @@ public class ActionImpl implements SchedulableAction {
                 if (JPService.testMode()) {
                     new FatalImplementationErrorException("Found illegal state transition!", this, ex);
                 } else {
-                    ExceptionPrinter.printHistory("Found illegal state transition!", ex, LOGGER, LogLevel.WARN);
+                    ExceptionPrinter.printHistory("Found illegal state transition!", ex, LOGGER, LogLevel.ERROR);
                 }
             }
 
@@ -726,6 +773,7 @@ public class ActionImpl implements SchedulableAction {
                 switch (state) {
                     case SUBMISSION:
                     case REJECTED:
+                    case ABORTING:
                     case CANCELED:
                         return;
                     default:

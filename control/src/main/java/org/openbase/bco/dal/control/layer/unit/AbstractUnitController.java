@@ -1067,16 +1067,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
             }
         } finally {
-
-            // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
-            final boolean notify = actionListNotificationLock.writeLock().tryLock();
-            try {
-                builderSetup.unlockWrite(notify);
-            } finally {
-                if (notify) {
-                    actionListNotificationLock.writeLock().unlock();
-                }
-            }
+            // unlock the builder setup but only notify if this is not just a recursive rescheduling
+            // where the notification will done anyway as soon as the last rescheduling call hits this point.
+            builderSetup.unlockWrite(!actionListNotificationLock.isWriteLockedByCurrentThread());
         }
     }
 
