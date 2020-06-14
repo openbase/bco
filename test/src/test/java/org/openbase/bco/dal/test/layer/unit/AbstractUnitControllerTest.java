@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test.layer.unit;
 
 import com.google.protobuf.Message;
 import org.junit.*;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.state.States;
@@ -31,28 +32,32 @@ import org.openbase.bco.dal.lib.state.States.Brightness;
 import org.openbase.bco.dal.lib.state.States.Color;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
-import org.openbase.bco.dal.remote.layer.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.session.TokenGenerator;
+import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
-import org.openbase.type.vision.ColorType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -62,6 +67,8 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
 
     private static ColorableLightRemote colorableLightRemote;
     private static UnitController<?, ?> colorableLightController;
+    private static final SessionManager sessionManager = new SessionManager();
+    private static AuthToken adminToken = null;
 
     public AbstractUnitControllerTest() {
     }
@@ -71,14 +78,33 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         AbstractBCODeviceManagerTest.setUpClass();
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, Units.COLORABLE_LIGHT);
         colorableLightController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(colorableLightRemote.getId());
+
+        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
+
+        if (adminToken == null) {
+            adminToken = TokenGenerator.generateAuthToken(sessionManager);
+        }
+    }
+    @AfterClass
+    public static void tearDownClass() throws Throwable {
+        sessionManager.logout();
+        AbstractBCODeviceManagerTest.tearDownClass();
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        for (ActionDescription actionDescription : colorableLightController.getActionList()) {
+            final RemoteAction remoteAction = new RemoteAction(actionDescription);
+            Assert.assertTrue("Found ongoing " + remoteAction + " on stack which could interfere with test execution!", remoteAction.isDone());
+        }
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws NotAvailableException, InterruptedException, InstantiationException, TimeoutException, ExecutionException {
+        // cleanup leftover actions which were manually submitted to the controller.
+        for (ActionDescription actionDescription : colorableLightController.getActionList()) {
+            new RemoteAction(actionDescription, adminToken).cancel().get(5, TimeUnit.SECONDS);
+        }
     }
 
     @Test
@@ -103,7 +129,6 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Power state updated was not applied to remote instance!", State.OFF, colorableLightRemote.getData().getPowerState().getValue());
-
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             ExceptionPrinter.printHistory(ex, System.err);
             Assert.assertTrue("Error occurred during update!", false);
@@ -114,21 +139,26 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     public void applyCustomDataStateUpdateTest() {
         try {
             for (int i = 0; i < 10; i++) {
+
+                System.out.println("apply on " + i);
                 colorableLightController.applyServiceState(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
                 Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
                 Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
                 Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor().getHsbColor().getBrightness(), 0.0001);
 
+                System.out.println("apply off " + i);
                 colorableLightController.applyServiceState(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
                 Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
                 Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
                 Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor().getHsbColor().getBrightness(), 0.0001);
 
+                System.out.println("apply green " + i);
                 colorableLightController.applyServiceState(States.Color.GREEN, ServiceType.COLOR_STATE_SERVICE);
                 Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
                 Assert.assertEquals("Power state updated was not applied!", 1.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
                 Assert.assertEquals("Power state updated was not applied!", Color.GREEN_VALUE, ((ColorableLightData) colorableLightController.getData()).getColorState().getColor());
 
+                System.out.println("apply black " + i);
                 colorableLightController.applyServiceState(Color.BLACK, ServiceType.COLOR_STATE_SERVICE);
                 Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
                 Assert.assertEquals("Power state updated was not applied!", 0.0, ((ColorableLightData) colorableLightController.getData()).getBrightnessState().getBrightness(), 0.0001);
@@ -238,7 +268,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
 
         String anotherColorableLightId = null;
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.COLORABLE_LIGHT)) {
-            if(!unitConfig.equals(colorableLightRemote.getId())) {
+            if (!unitConfig.equals(colorableLightRemote.getId())) {
                 anotherColorableLightId = unitConfig.getId();
                 break;
             }

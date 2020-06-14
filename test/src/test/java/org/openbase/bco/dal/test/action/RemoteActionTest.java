@@ -141,9 +141,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
         for (int i = 0; i < 10; i++) {
             PowerStateType.PowerState.State powerState = (i % 2 == 0) ? PowerStateType.PowerState.State.ON : PowerStateType.PowerState.State.OFF;
-
-            final RemoteAction locationRemoteAction = new RemoteAction(locationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT, mrPinkActionParameter), mrPinkUserToken);
-            waitForExecution(locationRemoteAction);
+            final RemoteAction locationRemoteAction = waitForExecution(locationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT, mrPinkActionParameter), mrPinkUserToken);
             assertTrue("Action of location does not offer an id after submission!", !locationRemoteAction.getId().isEmpty());
 
             for (ColorableLightRemote unit : units) {
@@ -206,6 +204,8 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
                 return true;
             }
         });
+
+        observe(lowPrioLongtermAction);
 
         System.out.println("wait for low prio action...");
         waitForRegistration(lowPrioLongtermAction);

@@ -570,17 +570,14 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             final PowerState.State powerState = (i % 2 == 0) ? State.ON : State.OFF;
 
             // execute an action
-            final Future<ActionDescription> actionFuture = rootLocationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT);
-            // wait for its execution
-            waitForExecution(actionFuture);
+            final RemoteAction remoteAction = waitForExecution(rootLocationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT));
             // save the action description
-            final ActionDescription actionDescription = actionFuture.get();
 
             // validate that actions are running on the triggered units
             for (final ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
                 boolean actionRunning = false;
                 for (final ActionReferenceType.ActionReference actionReference : colorableLightRemote.getActionList().get(0).getActionCauseList()) {
-                    if (actionReference.getActionId().equals(actionDescription.getActionId())) {
+                    if (actionReference.getActionId().equals(remoteAction.getActionId())) {
                         actionRunning = true;
                         break;
                     }
@@ -589,7 +586,6 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             }
 
             // cancel the action
-            final RemoteAction remoteAction = new RemoteAction(actionDescription);
             remoteAction.waitForRegistration();
             remoteAction.cancel().get();
             //locationRemote.cancelAction(actionDescription).get();
@@ -598,7 +594,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
                 ActionDescription causedAction = null;
                 for (final ActionDescription description : colorableLightRemote.getActionList()) {
                     for (ActionReferenceType.ActionReference actionReference : description.getActionCauseList()) {
-                        if (actionReference.getActionId().equals(actionDescription.getActionId())) {
+                        if (actionReference.getActionId().equals(remoteAction.getActionId())) {
                             causedAction = description;
                             break;
                         }

@@ -30,16 +30,11 @@ import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
-import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.TokenGenerator;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jps.preset.JPLogLevel;
-import org.openbase.jps.preset.JPLogLevel.LogLevel;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -66,6 +61,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -82,7 +78,11 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
     private static final long VALID_EXECUTION_VARIATION = 100;
 
+    private final SessionManager sessionManager;
+    private AuthToken adminToken = null;
+
     public UnitAllocationTest() {
+        this.sessionManager = new SessionManager();
     }
 
     @BeforeClass
@@ -111,10 +111,16 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
     @Before
     public void setUp() throws Exception {
+        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
+
+        if (adminToken == null) {
+            adminToken = TokenGenerator.generateAuthToken(sessionManager);
+        }
     }
 
     @After
     public void tearDown() throws CouldNotPerformException {
+        sessionManager.logout();
     }
 
     /**
@@ -127,7 +133,6 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         LOGGER.info("testActionStateNotifications");
         // expected order of action states
         final ActionState.State[] actionStates = {
-                ActionState.State.SUBMISSION,
                 ActionState.State.EXECUTING,
                 ActionState.State.CANCELED
         };
@@ -139,7 +144,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         colorableLightRemote.addDataObserver(ServiceTempus.UNKNOWN, actionStateObserver);
 
         // set the power state of the colorable light
-        final RemoteAction remoteAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
+        final RemoteAction remoteAction = observe(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         remoteAction.addActionDescriptionObserver((source, data) -> LOGGER.warn("Remote action received state {}", data.getActionState().getValue()));
 
         // wait for executing because it is likely to be initiating before
@@ -164,10 +169,10 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals("ActionState is not canceled", ActionState.State.CANCELED, remoteAction.getActionState());
 
         // validate state order
-        actionStateObserver.validateActionStates();
+        actionStateObserver.validateActionStates(remoteAction.getActionId());
 
         // validate that all states were notified
-        assertEquals("Not all action states have been notified", actionStates.length, actionStateObserver.getReceivedActionStateCounter());
+        assertEquals("Not all action states have been notified", actionStates.length, actionStateObserver.getReceivedActionStateCounter(remoteAction.getActionId()));
 
         // remove the action state observer
         colorableLightRemote.removeDataObserver(actionStateObserver);
@@ -180,11 +185,11 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         private final ActionState.State[] actionStates;
 
-        private final ArrayList<ActionState.State> actionList;
+        private final HashMap<String, ArrayList<ActionState.State>> actionIdStateMap;
 
         ActionStateObserver(final ActionState.State[] actionStates) {
             this.actionStates = actionStates;
-            this.actionList = new ArrayList<>();
+            this.actionIdStateMap = new HashMap<>();
         }
 
         @Override
@@ -194,25 +199,38 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
             // do nothing if the there is no action
             if (data.getActionCount() == 0) {
-                System.out.println("no action");
                 return;
             }
 
-            // do nothing if the action state has not been updated
-            if (getReceivedActionStateCounter() > 0 && getReceivedActionStateCounter() - 1 < actionStates.length && data.getAction(0).getActionState().getValue() == actionStates[getReceivedActionStateCounter() - 1]) {
-                System.out.println("no update");
-                return;
+            for (ActionDescription actionDescription : data.getActionList()) {
+
+                // filter non observed states
+                if (!Arrays.stream(actionStates).anyMatch(actionDescription.getActionState().getValue()::equals)) {
+                    return;
+                }
+
+                // create missing units
+                if (!actionIdStateMap.containsKey(actionDescription.getActionId())) {
+                    actionIdStateMap.put(actionDescription.getActionId(), new ArrayList<>());
+                }
+
+                final ArrayList<ActionState.State> stateList = actionIdStateMap.get(actionDescription.getActionId());
+
+                // do nothing if the action state has not been updated
+                if (!stateList.isEmpty() && stateList.get(stateList.size() - 1) == actionDescription.getActionState().getValue()) {
+                    return;
+                }
+
+                stateList.add(actionDescription.getActionState().getValue());
             }
-
-            actionList.add(data.getAction(0).getActionState().getValue());
         }
 
-        public int getReceivedActionStateCounter() {
-            return actionList.size();
+        public int getReceivedActionStateCounter(final String actionId) {
+            return actionIdStateMap.size();
         }
 
-        void validateActionStates() {
-            assertEquals("Unexpected action state order.", StringProcessor.transformCollectionToString(Arrays.asList(actionStates), ", "), StringProcessor.transformCollectionToString(actionList,", "));
+        void validateActionStates(final String actionId) {
+            assertEquals("Unexpected action state order.", StringProcessor.transformCollectionToString(Arrays.asList(actionStates), ", "), StringProcessor.transformCollectionToString(actionIdStateMap.get(actionId), ", "));
         }
     }
 
@@ -225,7 +243,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     public void testMultiActionsBySameInitiator() throws Exception {
         LOGGER.info("testMultiActionsBySameInitiator");
         // set the power state of the colorable light
-        final RemoteAction firstAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
+        final RemoteAction firstAction = observe(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         firstAction.waitForActionState(ActionState.State.EXECUTING);
 
         assertEquals(firstAction.getId(), colorableLightRemote.getActionList().get(0).getActionId());
@@ -235,7 +253,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // set the color of the light
         final HSBColor hsb = HSBColor.newBuilder().setBrightness(1.0d).setHue(12).setSaturation(1.0d).build();
-        final RemoteAction secondAction = new RemoteAction(colorableLightRemote.setColor(hsb, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
+        final RemoteAction secondAction = observe(colorableLightRemote.setColor(hsb, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         secondAction.waitForActionState(ActionState.State.EXECUTING);
 
         assertEquals(secondAction.getId(), colorableLightRemote.getActionList().get(0).getActionId());
@@ -258,11 +276,9 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testRescheduling() throws Exception {
         LOGGER.info("testRescheduling");
-        final SessionManager sessionManager = new SessionManager();
-        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
         // set the power state of the colorable lightue with the bco user
-        final RemoteAction firstAction = new RemoteAction(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
+        final RemoteAction firstAction = observe(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         firstAction.waitForActionState(ActionState.State.EXECUTING);
 
         assertEquals(firstAction.getId(), colorableLightRemote.getActionList().get(0).getActionId());
@@ -327,8 +343,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         secondaryActionParameter.addCategory(Category.ECONOMY);
         secondaryActionParameter.setSchedulable(true);
         secondaryActionParameter.setInterruptible(true);
-        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(0.90d, secondaryActionParameter.build()), () -> true);
-        secondaryAction.waitForActionState(ActionState.State.EXECUTING);
+        final RemoteAction secondaryAction = waitForExecution(colorableLightRemote.setBrightness(0.90d, secondaryActionParameter.build()), true);
 
         assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getActionId());
         assertEquals(ActionState.State.EXECUTING, secondaryAction.getActionState());
@@ -336,9 +351,6 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(0.90d, colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
 
         // set the brightness state with the admin user to 50 for 500 ms
-        final SessionManager sessionManager = new SessionManager();
-        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
-
         final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(0.5d).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(6000));
         primaryActionParameter.setPriority(Priority.HIGH);
@@ -353,9 +365,8 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
 
-        final AuthToken adminToken = TokenGenerator.generateAuthToken(sessionManager);
+        final RemoteAction primaryAction = observe(authenticatedValueFuture, adminToken, true);
 
-        final RemoteAction primaryAction = new RemoteAction(authenticatedValueFuture, adminToken, () -> true);
         primaryAction.waitForActionState(ActionState.State.EXECUTING);
         secondaryAction.waitForActionState(ActionState.State.SCHEDULED);
 
@@ -403,7 +414,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         secondaryActionParameter.setPriority(Priority.LOW);
         secondaryActionParameter.setSchedulable(true);
         secondaryActionParameter.setInterruptible(true);
-        final RemoteAction secondaryAction = new RemoteAction(colorableLightRemote.setBrightness(.90d, secondaryActionParameter.build()));
+        final RemoteAction secondaryAction = observe(colorableLightRemote.setBrightness(.90d, secondaryActionParameter.build()));
         secondaryAction.waitForActionState(ActionState.State.EXECUTING);
 
         assertEquals(secondaryAction.getId(), colorableLightRemote.getActionList().get(0).getActionId());
@@ -412,8 +423,6 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         assertEquals(0.9d, colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
 
         // set the brightness state with the admin user to 50 for 500 ms
-        final SessionManager sessionManager = new SessionManager();
-        sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
         final ActionParameter.Builder primaryActionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(BrightnessState.newBuilder().setBrightness(0.5d).build(), ServiceType.BRIGHTNESS_STATE_SERVICE, colorableLightRemote);
         primaryActionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(500));
         primaryActionParameter.setPriority(Priority.HIGH);
@@ -422,7 +431,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build(), null);
         AuthenticatedValueFuture<ActionDescription> authenticatedValueFuture = new AuthenticatedValueFuture<>(colorableLightRemote.applyActionAuthenticated(authenticatedValue), ActionDescription.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager);
 
-        final RemoteAction primaryAction = new RemoteAction(authenticatedValueFuture);
+        final RemoteAction primaryAction = observe(authenticatedValueFuture, adminToken, true);
         primaryAction.waitForActionState(ActionState.State.EXECUTING);
         secondaryAction.waitForActionState(ActionState.State.SCHEDULED);
 
@@ -472,7 +481,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         actionToExtendParameter.setPriority(Priority.LOW);
         actionToExtendParameter.setSchedulable(true);
         actionToExtendParameter.setInterruptible(true);
-        final RemoteAction actionToExtend = new RemoteAction(colorableLightRemote.setPowerState(State.ON, actionToExtendParameter.build()));
+        final RemoteAction actionToExtend = observe(colorableLightRemote.setPowerState(State.ON, actionToExtendParameter.build()));
         actionToExtend.waitForActionState(ActionState.State.EXECUTING);
 
         assertEquals(actionToExtend.getId(), colorableLightRemote.getActionList().get(0).getActionId());

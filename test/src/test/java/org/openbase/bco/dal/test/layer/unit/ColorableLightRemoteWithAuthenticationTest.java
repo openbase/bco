@@ -40,6 +40,7 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.session.TokenGenerator;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
@@ -97,14 +98,13 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
     @Before
     public void setUp() throws CouldNotPerformException, InterruptedException, ExecutionException {
+
         sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
         if (adminToken == null) {
-            AuthenticationToken build = AuthenticationToken.newBuilder().setUserId(sessionManager.getUserClientPair().getUserId()).build();
-            AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(build, null);
-            Future<AuthenticatedValue> authenticatedValueFuture = Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue);
-            adminToken = AuthToken.newBuilder().setAuthenticationToken(new AuthenticatedValueFuture<>(authenticatedValueFuture, String.class, authenticatedValue.getTicketAuthenticatorWrapper(), sessionManager).get()).build();
+            adminToken = TokenGenerator.generateAuthToken(sessionManager);
         }
+
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
         colorableLightRemote.setSessionManager(sessionManager);
     }

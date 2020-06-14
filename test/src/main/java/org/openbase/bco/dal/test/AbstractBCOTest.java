@@ -120,6 +120,7 @@ public class AbstractBCOTest {
         try {
             cancelAllTestActions();
         } catch (Exception ex) {
+            ExceptionPrinter.printHistory("Could not cancel all test actions of test suite: " + getClass().getName(), ex, LOGGER);
             Assert.fail("Could not cancel all test actions of test suite: " + getClass().getName());
         }
     }
