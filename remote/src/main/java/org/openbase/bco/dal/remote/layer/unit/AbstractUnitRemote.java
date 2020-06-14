@@ -711,7 +711,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     }
 
     @Override
-    public Future<AggregatedServiceStateType.AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
+    public Future<AggregatedServiceState> queryAggregatedServiceState(final QueryType.Query databaseQuery) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(databaseQuery, AggregatedServiceState.class, SessionManager.getInstance(), authenticatedValue -> queryAggregatedServiceStateAuthenticated(authenticatedValue));
 
     }
