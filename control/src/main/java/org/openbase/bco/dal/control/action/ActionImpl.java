@@ -657,6 +657,7 @@ public class ActionImpl implements SchedulableAction {
                 waitForActionTaskFinalization(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                return;
             } catch (TimeoutException ex) {
                 // timeout
             }
