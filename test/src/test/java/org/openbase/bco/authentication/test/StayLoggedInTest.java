@@ -64,7 +64,7 @@ public class StayLoggedInTest extends AuthenticationTest {
      *
      * @throws Exception if something does not work as expected
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 20000)
     public void testStayingLoggedIn() throws Exception {
         // validate that the session timeout has been setup accordingly
         assertEquals("Session timeout has not been initialized correctly", SESSION_TIMEOUT, (long) JPService.getProperty(JPSessionTimeout.class).getValue());
