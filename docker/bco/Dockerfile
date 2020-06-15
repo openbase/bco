@@ -12,31 +12,20 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     bco
 
-# Setup Environment 
-#ENV prefix /usr/local/bco
-#RUN echo 'export PATH="$PATH:$prefix/bin"' >> ~/.bashrc
-#RUN . ~/.bashrc
-#RUN mkdir -p $prefix
-
-# Set the working directory to the prefix
-#WORKDIR $prefix
-
-# Create RSB configuration
-#RUN mkdir -p ~/.config
-#ADD rsb.conf $prefix/
-#RUN mv rsb.conf ~/.config/
-
-# Create MVN configuration
-#RUN mkdir -p ~/.m2
-#ADD mvn-settings.xml $prefix/
-#RUN mv mvn-settings.xml ~/.m2/settings.xml
-
-#EXPOSE 4803
+# Fix UTF8
+RUN export LC_ALL=en_US.UTF-8 && \
+    export LANG=en_US.UTF-8 && \
+    locale-gen en_US.UTF-8
 
 #VOLUME $prefix/var
 #VOLUME $prefix/etc
 #VOLUME $prefix/share
 
-#RUN git clone https://github.com/openbase/bco.git bco
-#RUN cd bco; ./install.sh --batch-mode; cd ..
+# Create bco user because bco does not need any root privileges
+RUN groupadd -r bco && \
+    useradd --no-log-init -r -g bco bco
+
+RUN useradd -ms /bin/bash bco
+USER bco
+
 CMD exec bco

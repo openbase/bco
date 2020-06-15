@@ -16,7 +16,7 @@ RUN apt-get update && \
 EXPOSE 4803
 
 # Create spread user because spread will not start as root
-RUN useradd -ms /bin/bash spread
+RUN groupadd -r spread && useradd --no-log-init -r -g spread spread
 USER spread
 WORKDIR /home/spread
 
