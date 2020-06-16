@@ -25,7 +25,6 @@ RUN export LC_ALL=en_US.UTF-8 && \
 RUN groupadd -r bco && \
     useradd --no-log-init -r -g bco bco
 
-RUN useradd -ms /bin/bash bco
 USER bco
 
 CMD exec bco
