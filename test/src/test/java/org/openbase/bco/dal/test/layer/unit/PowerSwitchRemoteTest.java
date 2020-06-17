@@ -119,7 +119,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 15000)
+    //@Test(timeout = 15000)
     public void testPowerStateServicePerformance() throws Exception {
         System.out.println("testPowerStateServicePerformance");
 
@@ -168,7 +168,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 15000)
+    //@Test(timeout = 15000)
     public void testPowerStateServiceCancellationPerformance() throws Exception {
         System.out.println("testPowerStateServiceCancellationPerformance");
 
