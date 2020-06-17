@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.Map;
 
 /**
- * This db converter is just a place holder for a manual refactoring of the RFID -> RFIDTerminal Unit which requires a version increase.
+ * This db converter is just a place holder for a manual refactoring of RFID to RFIDTerminal Unit which requires a version increase.
  *
  * @author <a href="mailto:divineq@openbase.org">Marian Pohling</a>
  */

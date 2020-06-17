@@ -166,8 +166,6 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      * @param unitTemplate {@inheritDoc}.
      *
      * @return {@inheritDoc}
-     *
-     * @throws NotAvailableException in case no data is available.
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) {

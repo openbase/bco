@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.Map;
 
 /**
- * This db converter is just a place holder for a manual refactoring of the RFID_STATE -> R_F_I_D_STATE service type which requires a version increase.
+ * This db converter is just a place holder for a manual refactoring of RFID_STATE to R_F_I_D_STATE service type which requires a version increase.
  *
  * @author <a href="mailto:divineq@openbase.org">Marian Pohling</a>
  */
