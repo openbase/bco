@@ -801,7 +801,7 @@ public class ActionDescriptionProcessor {
 
 
     /**
-     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message)}
+     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message.Builder)}
      * is called to update the action description. Therefore, this method only allows to verify a builder.
      * In addition, this method returns a de-serialized and updated service state contained in the action description.
      * The reason for this is to minimize de-serializing operations because verifying a service state also updates it.
@@ -823,7 +823,7 @@ public class ActionDescriptionProcessor {
     }
 
     /**
-     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Builder)}
+     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message.Builder)} 
      * is called to update the action description. Therefore, this method only allows to verify a builder.
      * In addition, this method returns a de-serialized and updated service state contained in the action description.
      * The reason for this is to minimize de-serializing operations because verifying a service state also updates it.
