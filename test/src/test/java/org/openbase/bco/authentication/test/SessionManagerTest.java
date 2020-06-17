@@ -48,7 +48,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 
 /**
- * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class SessionManagerTest extends AuthenticationTest {
 
