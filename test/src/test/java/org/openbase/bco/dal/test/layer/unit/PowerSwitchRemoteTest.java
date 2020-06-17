@@ -46,6 +46,7 @@ import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -119,7 +120,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    //@Test(timeout = 15000)
+    @Test(timeout = 15000)
     public void testPowerStateServicePerformance() throws Exception {
         System.out.println("testPowerStateServicePerformance");
 
@@ -168,7 +169,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    //@Test(timeout = 15000)
+    @Test(timeout = 15000)
     public void testPowerStateServiceCancellationPerformance() throws Exception {
         System.out.println("testPowerStateServiceCancellationPerformance");
 
