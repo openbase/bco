@@ -154,8 +154,6 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         waitForExecution(unitGroupRemote.setPowerState(state));
 
-        LOGGER.warn("Config: {}", unitGroupRemote.getConfig());
-
         for (final Unit<?> unit : UNIT_LIST) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
