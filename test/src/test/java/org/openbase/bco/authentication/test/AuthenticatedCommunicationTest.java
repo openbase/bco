@@ -121,7 +121,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
 
         LOGGER.info("Start communication test");
 
-        try (ClosableDataBuilder<Builder> dataBuilder = communicationService.getDataBuilderInterruptible(this, true)) {
+        try (ClosableDataBuilder<Builder> dataBuilder = communicationService.getDataBuilderInterruptible(this)) {
             dataBuilder.getInternalBuilder().addAgentUnitConfig(otherAgentConfig);
             dataBuilder.getInternalBuilder().addAgentUnitConfig(userAgentConfig);
         }
