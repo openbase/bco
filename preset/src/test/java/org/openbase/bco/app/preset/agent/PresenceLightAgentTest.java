@@ -75,7 +75,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
     // @BeforeClass //uncomment to enable debug mode
     public static void showActionInspector() throws Throwable {
 
-        JPService.registerProperty(JPDebugMode.class, true);
+        //JPService.registerProperty(JPDebugMode.class, true);
 
         // uncomment to visualize action inspector during tests
         String[] args = {};
