@@ -23,8 +23,10 @@ package org.openbase.bco.dal.remote.action;
  */
 
 import com.google.protobuf.Message;
+import com.google.protobuf.Timestamp;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -34,6 +36,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.*;
@@ -894,8 +897,7 @@ public class RemoteAction implements Action {
     }
 
     /**
-     * Wait until this action reaches a provided action state. It is only possible to wait for states which will
-     * certainly be notified (see {@link #isNotifiedActionState(State)}).
+     * Wait until this action reaches a provided action state.
      *
      * @param actionState the state on which is waited.
      *
@@ -912,8 +914,7 @@ public class RemoteAction implements Action {
     }
 
     /**
-     * Wait until this action reaches a provided action state. It is only possible to wait for states which will
-     * certainly be notified (see {@link #isNotifiedActionState(State)}).
+     * Wait until this action reaches a provided action state.
      *
      * @param actionState the state on which is waited.
      *
@@ -925,9 +926,10 @@ public class RemoteAction implements Action {
     public void waitForActionState(final ActionState.State actionState, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         final TimeoutSplitter timeSplit = new TimeoutSplitter(timeout, timeUnit);
 
-        if (!isNotifiedActionState(actionState)) {
-            throw new CouldNotPerformException("Cannot wait for state[" + actionState + "] because it is not always notified");
-        }
+        // check not required anymore since state history is observed as well.
+//        if (!isNotifiedActionState(actionState)) {
+//            throw new CouldNotPerformException("Cannot wait for state[" + actionState + "] because it is not always notified");
+//        }
 
         waitForRegistration(timeSplit.getTime(), TimeUnit.MILLISECONDS);
 
@@ -948,15 +950,24 @@ public class RemoteAction implements Action {
         // wait until unit is ready
         targetUnit.waitForData(timeSplit.getTime(), TimeUnit.MILLISECONDS);
 
+
         synchronized (executionSync) {
             // wait until state is reached
-            while (actionDescription == null || actionDescription.getActionState().getValue() != actionState) {
+            while (actionDescription == null || (actionDescription.getActionState().getValue() != actionState) && !checkIfStateWasPassed(actionState, timeSplit.getTimestamp(), actionDescription)) {
                 // Waiting makes no sense if the action is done but the state is still not reached.
                 if (actionDescription != null && isDone()) {
                     throw new CouldNotPerformException("Stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
                 }
                 executionSync.wait(timeSplit.getTime());
             }
+        }
+    }
+
+    private static boolean checkIfStateWasPassed(final ActionState.State actionState, final long timestamp, final ActionDescription actionDescription) {
+        try {
+            return TimestampProcessor.getTimestamp(ServiceStateProcessor.getLatestValueOccurrence(actionState, actionDescription), TimeUnit.MILLISECONDS) > timestamp;
+        } catch (NotAvailableException e) {
+            return false;
         }
     }
 
@@ -1005,7 +1016,9 @@ public class RemoteAction implements Action {
                 } catch (CancellationException ex) {
                     // in case the observation task is canceled the action is possibly already done.
                     try {
-                        getActionDescription();
+                        if (!getActionDescription().hasActionId()) {
+                            throw new CouldNotPerformException("Registration task was canceled but action id never received!");
+                        }
                     } catch (NotAvailableException exx) {
                         throw new CouldNotPerformException("Registration task was canceled but action description never received!");
                     }
