@@ -37,6 +37,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.BuilderSyncSetup.NotificationStrategy;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
@@ -117,7 +118,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         // activate and service remote manager and update data without notification before calling super activate
         // the super call will then automatically notify the updated unit data
         serviceRemoteManager.activate();
-        updateUnitData(false);
+        updateUnitData(NotificationStrategy.SKIP);
         super.activate();
     }
 
@@ -129,19 +130,19 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     }
 
     /**
-     * Call to {@link #updateUnitData(boolean)} with notify change as true.
+     * Call to {@link #updateUnitData(NotificationStrategy)} to change the default notification strategy {@code NotificationStrategy.AFTER_LAST_RELEASE}.
      */
     private void updateUnitData() throws InterruptedException {
-        updateUnitData(true);
+        updateUnitData(NotificationStrategy.AFTER_LAST_RELEASE);
     }
 
     /**
      * Synchronize the data from all internal units managed by the service remote manager into the data builder.
      *
-     * @param notifyChange flag determining if the data builder should be notified afterwards.
+     * @param notificationStrategy the notification strategy to follow.
      */
-    private void updateUnitData(final boolean notifyChange) throws InterruptedException {
-        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this, notifyChange)) {
+    private void updateUnitData(final NotificationStrategy notificationStrategy) throws InterruptedException {
+        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this, notificationStrategy)) {
             serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder.getInternalBuilder(), getDataClass(), getSupportedServiceTypes());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);

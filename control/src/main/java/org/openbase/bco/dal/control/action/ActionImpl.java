@@ -361,7 +361,7 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void setRequestedState() throws CouldNotPerformException, InterruptedException {
-        try (ClosableDataBuilder dataBuilder = unit.getDataBuilderInterruptible(this, false)) {
+        try (ClosableDataBuilder dataBuilder = unit.getDataBuilderInterruptible(this)) {
 
             if (!Services.hasResponsibleAction(serviceState)) {
                 StackTracePrinter.printStackTrace(LOGGER);
@@ -448,7 +448,9 @@ public class ActionImpl implements SchedulableAction {
 
                 // notify transaction id change
                 try {
-                    unit.notifyChange();
+                    if(!unit.isDataBuilderWriteLockedByCurrentThread()) {
+                        unit.notifyChange();
+                    }
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not notify transaction id update", ex, LOGGER);
                 } catch (InterruptedException ex) {

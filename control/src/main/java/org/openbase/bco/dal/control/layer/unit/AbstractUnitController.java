@@ -66,6 +66,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.BuilderSyncSetup;
+import org.openbase.jul.extension.protobuf.BuilderSyncSetup.NotificationStrategy;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -761,8 +762,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // cancel the action which automatically triggers a reschedule.
                 return actionToCancel.cancel();
             } finally {
-                // unlock but do not notify because it has already performed.
-                builderSetup.unlockWrite(false);
+                builderSetup.unlockWrite();
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel Action[" + actionDescription.getActionId() + "]", ex));
@@ -801,7 +801,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 return FutureProcessor.completedFuture(actionToExtend.getActionDescription());
             } finally {
                 // unlock and notify
-                builderSetup.unlockWrite(true);
+                builderSetup.unlockWrite();
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not extend Action[" + actionDescription.getActionId() + "]", ex));
@@ -1062,8 +1062,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             } finally {
                 actionListNotificationLock.writeLock().unlock();
 
-                // sync action list but do not notify since  builder is still locked.
-                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this, false)) {
+                // sync action list but do not notify since builder is still locked.
+                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
                     // sync
                     syncActionList(dataBuilder.getInternalBuilder());
                 } catch (Exception ex) {
@@ -1073,12 +1073,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         } finally {
             // unlock the builder setup but only notify if this is not just a recursive rescheduling
             // where the notification will done anyway as soon as the last rescheduling call hits this point.
-            builderSetup.unlockWrite(!actionListNotificationLock.isWriteLockedByCurrentThread());
+            //builderSetup.unlockWrite(!actionListNotificationLock.isWriteLockedByCurrentThread());
+            builderSetup.unlockWrite();
         }
     }
 
     /**
-     * Update the action list in the data builder and notify. Skip updates if the unit is currently rescheduling actions.
+     * Update the action list in the data builder and notify.
+     *
+     * Note: The sync and notification is skip if the unit is currently rescheduling actions or the write lock is still hold.
      */
     public void notifyScheduledActionList() {
 
@@ -1094,8 +1097,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 return;
             }
             try {
-                // golden rule, do not notify if builder is locked.
-                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this, false)) {
+                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
                     // sync
                     syncActionList(dataBuilder.getInternalBuilder());
                 } catch (InterruptedException ex) {
@@ -1108,8 +1110,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 actionListNotificationLock.writeLock().unlock();
             }
         } finally {
-            // unlock and notify
-            builderSetup.unlockWrite(true);
+            builderSetup.unlockWrite();
         }
     }
 
