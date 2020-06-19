@@ -1,8 +1,0 @@
-Package: [[name]]
-Version: [[version]]
-Section: misc
-Priority: optional
-Architecture: all
-Description: [[description]]
-Maintainer: Marian Pohling <divine@openbase.org>
-Depends: default-jre | java8-runtime | zulu-8
