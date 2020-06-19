@@ -46,6 +46,7 @@ import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priori
 import org.openbase.type.domotic.action.ActionReferenceType;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.state.ActionStateType;
+import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.PowerStateType;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitConfigType;
@@ -237,6 +238,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
         System.out.println("validate light state OFF");
 
+        // hopefully outdated since we can wait for the execution of the low prio action.
 //        while (true) {
 //            boolean success = true;
 //            for (ColorableLightRemote unit : units) {
@@ -252,6 +254,8 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 //            }
 //            Thread.sleep(1000);
 //        }
+
+        lowPrioLongtermAction.waitForActionState(ActionState.State.EXECUTING);
 
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
