@@ -1,5 +1,4 @@
 #!/bin/bash
-
 NC='\033[0m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -16,12 +15,21 @@ SCM=https://github.com/openbase/bco.git
 ARCHITECTURE=all,mips,armhf,arm64,armel,i386,amd64
 COMPONENT=unstable,testing
 #COMPONENT=main,free,unstable,testing
-USER=divinethreepwood
-API_KEY= <todo: generate via https://bintray.com/profile/edit and insert>
+DEPLOY_USER=${DEPlOY_USER:-divinethreepwood}
+API_KEY=${API_KEY:-<todo: generate via https://bintray.com/profile/edit and insert>}
 FILE_TARGET_PATH=pool/main/b/bco/bco_$VERSION.deb
-SOURCE_FILE_PATH=target/bco_2.0\~*.deb
+SOURCE_FILE_PATH=$(echo target/bco_2.0\~*.deb)
 BINTRAY_REPO=https://api.bintray.com/content/openbase/deb/bco
-
+PUBLISH=${PUBLISH:-1}
+OVERRIDE=${OVERRIDE:-1}
+TARGET_URL="${BINTRAY_REPO}/$VERSION/${FILE_TARGET_PATH};deb_distribution=${DISTRIBUTION};deb_component=${COMPONENT};deb_architecture=${ARCHITECTURE};publish=${PUBLISH};override=${OVERRIDE}"
 echo -e "=== ${APP_NAME} project ${WHITE}upload${NC}" &&
-eval curl -T $(SOURCE_FILE_PATH) -u$(USER):$(API_KEY) $(BINTRAY_REPO)/$VERSION/$(FILE_TARGET_PATH);deb_distribution=${DISTRIBUTION};deb_component=${COMPONENT};deb_architecture=${ARCHITECTURE}
-echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} build to ${WHITE}${prefix}${NC}"
+  RESULT=$(curl -s -T "${SOURCE_FILE_PATH}" -u${DEPLOY_USER}:${API_KEY} "${TARGET_URL}")
+if [[ "$RESULT" == "{"message":"success"}" ]]; then
+  echo -e "\n=== ${APP_NAME} was ${GREEN}successfully${NC} build to ${WHITE}${prefix}${NC}"
+  exit 0
+else
+  echo -e "\n=== ${APP_NAME} ${RED}error${NC} uploading to ${WHITE}${TARGET_URL}${NC}"
+  echo -e "\n=== ${RED}ERROR:${NC} ${RESULT}"
+  exit 1
+fi
