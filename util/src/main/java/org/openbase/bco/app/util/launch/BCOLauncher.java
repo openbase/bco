@@ -89,7 +89,7 @@ public class BCOLauncher {
         JPService.registerProperty(JPDeviceManager.class);
 
         // pre evaluate device manager selection in order to preload modules.
-        switch (JPService.getPreEvaluatedValue(JPDeviceManager.class, BuildinDeviceManager.NON)) {
+        switch (JPService.getPreEvaluatedValue(JPDeviceManager.class, args, BuildinDeviceManager.NON)) {
             case OPENHAB:
                 launcher.add(OpenHABDeviceManagerLauncher.class);
                 launcher.add(OpenHABConfigSynchronizerLauncher.class);
