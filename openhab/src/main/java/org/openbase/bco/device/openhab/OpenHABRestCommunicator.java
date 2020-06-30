@@ -41,6 +41,8 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,8 @@ public class OpenHABRestCommunicator implements Shutdownable {
     private static OpenHABRestCommunicator instance = null;
 
     private boolean shutdownInitiated = false;
+
+    private ConnectionState.State openhabConnectionState = State.DISCONNECTED;
 
     public static OpenHABRestCommunicator getInstance() {
         if (instance == null) {
@@ -131,8 +135,12 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
     public void waitForOpenHAB() throws InterruptedException {
         while (!isOpenHABOnline()) {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         }
+    }
+
+    private void setConnectState(final ConnectionState.State connectState) {
+        this.openhabConnectionState = connectState;
     }
 
     public boolean isShutdownInitiated() {
@@ -170,8 +178,11 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
                 try {
                     LOGGER.info("Wait for openHAB...");
+                    setConnectState(State.CONNECTING);
                     waitForOpenHAB();
                     LOGGER.info("OpenHAB is online");
+                    // todo release: connection state needs to be updated and a proper reconnect performed in case the connection is lost!
+                    setConnectState(State.CONNECTED);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -415,6 +426,11 @@ public class OpenHABRestCommunicator implements Shutdownable {
 
     private String post(final String target, final String value, final MediaType mediaType) throws CouldNotPerformException {
         try {
+
+            if(openhabConnectionState != State.CONNECTED) {
+                throw new InvalidStateException("Openhab not reachable yet!");
+            }
+
             final WebTarget webTarget = baseWebTarget.path(target);
             final Response response = webTarget.request().post(Entity.entity(value, mediaType));
 

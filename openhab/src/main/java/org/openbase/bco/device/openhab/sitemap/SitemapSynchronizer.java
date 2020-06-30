@@ -65,7 +65,7 @@ public class SitemapSynchronizer implements Launchable<Void>, VoidInitializable 
 
             };
 
-            FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(JPService.getProperty(JPOpenHABSitemap.class).getValue().getParent());
+            FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(JPService.getProperty(JPOpenHABSitemap.class).getValue().getAbsolutePath());
             fileAlterationObserver.initialize();
             fileAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
 
