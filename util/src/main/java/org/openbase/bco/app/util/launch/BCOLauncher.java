@@ -32,7 +32,6 @@ import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
 import org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher;
-import org.openbase.bco.device.openhab.manager.OpenHABDeviceManager;
 import org.openbase.bco.device.openhab.registry.OpenHABConfigSynchronizerLauncher;
 import org.openbase.bco.device.openhab.sitemap.OpenHABSitemapSynchronizerLauncher;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
@@ -86,14 +85,11 @@ public class BCOLauncher {
         /**
          * Configure dynamic Device Manager Launcher
          */
-
-        // preload jp service to already access device manager property
-        JPService.setApplicationName(BCO.class);
+        // register device manager property
         JPService.registerProperty(JPDeviceManager.class);
-        JPService.parseAndExitOnError(args);
 
-        // load dynamic launcher
-        switch (JPService.getValue(JPDeviceManager.class, BuildinDeviceManager.NON)) {
+        // pre evaluate device manager selection in order to preload modules.
+        switch (JPService.getPreEvaluatedValue(JPDeviceManager.class, BuildinDeviceManager.NON)) {
             case OPENHAB:
                 launcher.add(OpenHABDeviceManagerLauncher.class);
                 launcher.add(OpenHABConfigSynchronizerLauncher.class);
@@ -103,12 +99,6 @@ public class BCOLauncher {
             default:
                 // skip dynamic launcher registration
         }
-
-        // reset jp service to enable registration of java properties of all launchers.
-        JPService.reset();
-
-        // register property again so it is listed in the generated application help overview.
-        JPService.registerProperty(JPDeviceManager.class);
 
         /**
          * Launch BCO
