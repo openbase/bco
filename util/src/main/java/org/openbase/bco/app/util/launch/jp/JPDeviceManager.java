@@ -59,6 +59,6 @@ public class JPDeviceManager extends AbstractJPEnum<BuildinDeviceManager> {
 
     @Override
     public String getDescription() {
-        return "Can be used to declare a list of device mangers (e.g.: "+ StringProcessor.transformCollectionToString(Arrays.asList(BuildinDeviceManager.values()), ", ") +") to launch within this bco instance.";
+        return "Can be used to declare a list of device mangers (e.g.: "+ StringProcessor.transformCollectionToString(Arrays.asList(BuildinDeviceManager.values()), buildinDeviceManager -> buildinDeviceManager.name(), ", ") +") to launch within this bco instance.";
     }
 }
