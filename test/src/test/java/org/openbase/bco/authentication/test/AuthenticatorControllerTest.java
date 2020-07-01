@@ -304,4 +304,31 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         // handle SS response on client side
         AuthenticationClientHandler.handleServiceServerResponse(ticketWrapperSessionKeyPair.getSessionKey(), request1, response1);
     }
+
+    @Test(timeout = 5000)
+    public void testLoginCombinations() throws Exception {
+        final UserClientPair clientSymmetricUserSymmetric = UserClientPair.newBuilder()
+                .setClientId(MockCredentialStore.CLIENT_SYMMETRIC_ID)
+                .setUserId(MockCredentialStore.USER_SYMMETRIC_ID)
+                .build();
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientSymmetricUserSymmetric).get();
+
+        final UserClientPair clientAsymmetricUserSymmetric = UserClientPair.newBuilder()
+                .setClientId(MockCredentialStore.CLIENT_ASYMMETRIC_ID)
+                .setUserId(MockCredentialStore.USER_SYMMETRIC_ID)
+                .build();
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientAsymmetricUserSymmetric).get();
+
+        final UserClientPair clientSymmetricUserAsymmetric = UserClientPair.newBuilder()
+                .setClientId(MockCredentialStore.CLIENT_SYMMETRIC_ID)
+                .setUserId(MockCredentialStore.USER_ASYMMETRIC_ID)
+                .build();
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientSymmetricUserAsymmetric).get();
+
+        final UserClientPair clientAsymmetricUserAsymmetric = UserClientPair.newBuilder()
+                .setClientId(MockCredentialStore.CLIENT_ASYMMETRIC_ID)
+                .setUserId(MockCredentialStore.USER_ASYMMETRIC_ID)
+                .build();
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientAsymmetricUserAsymmetric).get();
+    }
 }

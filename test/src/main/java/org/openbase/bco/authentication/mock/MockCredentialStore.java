@@ -46,6 +46,20 @@ public class MockCredentialStore extends CredentialStore {
     public static final String ADMIN_PASSWORD = "password";
     public static final byte[] ADMIN_PASSWORD_HASH = EncryptionHelper.hash(USER_PASSWORD);
 
+    public static final String USER_SYMMETRIC_ID = "symmetric-user";
+    public static final String USER_SYMMETRIC_PASSWORD = "symmetric-user-password";
+    public static final byte[] USER_SYMMETRIC_PASSWORD_HASH = EncryptionHelper.hash(USER_SYMMETRIC_PASSWORD);
+
+    public static final String USER_ASYMMETRIC_ID = "asymmetric-user";
+    public static final KeyPair USER_ASYMMETRIC_PAIR = EncryptionHelper.generateKeyPair();
+
+    public static final String CLIENT_SYMMETRIC_ID = "symmetric-client";
+    public static final String CLIENT_SYMMETRIC_PASSWORD = "symmetric-client-password";
+    public static final byte[] CLIENT_SYMMETRIC_PASSWORD_HASH = EncryptionHelper.hash(CLIENT_SYMMETRIC_PASSWORD);
+
+    public static final String CLIENT_ASYMMETRIC_ID = "asymmetric-client";
+    public static final KeyPair CLIENT_ASYMMETRIC_PAIR = EncryptionHelper.generateKeyPair();
+
     public static final KeyPair SERVICE_SERVER_KEY_PAIR = EncryptionHelper.generateKeyPair();
 
     private static Map<String, LoginCredentials> entryMapCopy;
@@ -70,6 +84,12 @@ public class MockCredentialStore extends CredentialStore {
         this.addCredentials(ADMIN_ID, ADMIN_PASSWORD_HASH, true, true);
         this.addCredentials(USER_ID, USER_PASSWORD_HASH, false, true);
         this.addCredentials(SERVICE_SERVER_ID, SERVICE_SERVER_KEY_PAIR.getPublic().getEncoded(), false, false);
+
+        this.addCredentials(USER_SYMMETRIC_ID, USER_SYMMETRIC_PASSWORD_HASH, false, true);
+        this.addCredentials(USER_ASYMMETRIC_ID, USER_ASYMMETRIC_PAIR.getPublic().getEncoded(), false, false);
+        this.addCredentials(CLIENT_SYMMETRIC_ID, CLIENT_SYMMETRIC_PASSWORD_HASH, false, true);
+        this.addCredentials(CLIENT_ASYMMETRIC_ID, CLIENT_ASYMMETRIC_PAIR.getPublic().getEncoded(), false, false);
+
         try {
             this.setAdmin(ADMIN_ID, true);
         } catch (CouldNotPerformException ex) {
