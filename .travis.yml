@@ -1,14 +1,12 @@
 language: java
 
+os: linux
+
 dist: xenial
 
 jdk:
   - openjdk11
   - openjdk-ea
-
-matrix:
-  allow_failures:
-  - jdk: openjdk-ea
 
 # cache disabled since it cause many issues where artifacts are not correctly updated.
 #cache:
@@ -17,9 +15,6 @@ matrix:
 
 install:
   - mvn --settings .travis/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --update-snapshots --show-version --quiet
-
-before_script:
-  - #cd distribution
 
 script:
   - mvn test -Dmaven.javadoc.skip=true --batch-mode --fail-fast # --quiet
@@ -33,11 +28,6 @@ notifications:
     email:
         on_success: never
         on_failure: never
-    slack:
-        on_failure: change
-        on_success: change
-        rooms:
-            - openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#build
 stages:
   - compile
   - test
@@ -46,6 +36,8 @@ stages:
   - trigger
 
 jobs:
+  allow_failures:
+    - jdk: openjdk-ea
   include:
     - &compile
       stage: compile
@@ -65,13 +57,13 @@ jobs:
       deploy:
       - provider: script
         script: .travis/deploy.sh
-        skip_cleanup: true
+        cleanup: false
         on:
             repo: ${REPO_ID}
             branch: master
       - provider: script
         script: .travis/deploy.sh
-        skip_cleanup: true
+        cleanup: false
         on:
             repo: ${REPO_ID}
             tags: true
