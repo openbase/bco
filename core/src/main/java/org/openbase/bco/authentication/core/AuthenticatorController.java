@@ -243,6 +243,12 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     clientCredentials = credentialStore.getCredentials(userClientPair.getClientId());
                 }
 
+                if(userCredentials != null && clientCredentials != null) {
+                    if (!userCredentials.getSymmetric() && !clientCredentials.getSymmetric()) {
+                        throw new NotSupportedException("Login with two asymmetric keys", AuthenticatorController.class);
+                    }
+                }
+
                 // handle request
                 return AuthenticationServerHandler.handleKDCRequest(userClientPair, userCredentials, clientCredentials, ticketGrantingServiceSecretKey, ticketValidityTime);
             } catch (NotAvailableException ex) {
@@ -250,6 +256,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 ExceptionReporter.getInstance().report(ex);
                 throw new NotAvailableException(ex.getMessage());
             } catch (CouldNotPerformException ex) {
+                if (ex instanceof NotSupportedException) {
+                    throw ex;
+                }
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                 throw new CouldNotPerformException("Internal server error. Please try again.");
             }

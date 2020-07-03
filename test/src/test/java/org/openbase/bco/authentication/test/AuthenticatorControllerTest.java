@@ -33,7 +33,9 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.bco.authentication.mock.MockCredentialStore;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.com.exception.RSBResolvedException;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticatorType;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -329,6 +332,13 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
                 .setClientId(MockCredentialStore.CLIENT_ASYMMETRIC_ID)
                 .setUserId(MockCredentialStore.USER_ASYMMETRIC_ID)
                 .build();
-        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientAsymmetricUserAsymmetric).get();
+        try {
+            ExceptionPrinter.setBeQuit(true);
+            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientAsymmetricUserAsymmetric).get();
+        } catch (ExecutionException ex) {
+            assertTrue(ex.getCause().getCause().getCause().getCause() instanceof NotSupportedException);
+        } finally {
+            ExceptionPrinter.setBeQuit(false);
+        }
     }
 }
