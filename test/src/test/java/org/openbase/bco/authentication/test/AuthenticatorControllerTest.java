@@ -335,6 +335,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         try {
             ExceptionPrinter.setBeQuit(true);
             CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientAsymmetricUserAsymmetric).get();
+            fail("No exception throw even when authentication method is not supported.");
         } catch (ExecutionException ex) {
             assertTrue(ex.getCause().getCause().getCause().getCause() instanceof NotSupportedException);
         } finally {
