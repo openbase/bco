@@ -33,7 +33,9 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.bco.authentication.mock.MockCredentialStore;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.com.exception.RSBResolvedException;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticatorType;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -303,5 +306,40 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
 
         // handle SS response on client side
         AuthenticationClientHandler.handleServiceServerResponse(ticketWrapperSessionKeyPair.getSessionKey(), request1, response1);
+    }
+
+    @Test(timeout = 5000)
+    public void testLoginCombinations() throws Exception {
+        final UserClientPair clientSymmetricUserSymmetric = UserClientPair.newBuilder()
+                .setClientId(MockCredentialStore.CLIENT_SYMMETRIC_ID)
+                .setUserId(MockCredentialStore.USER_SYMMETRIC_ID)
+                .build();
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientSymmetricUserSymmetric).get();
+
+        final UserClientPair clientAsymmetricUserSymmetric = UserClientPair.newBuilder()
+                .setClientId(MockCredentialStore.CLIENT_ASYMMETRIC_ID)
+                .setUserId(MockCredentialStore.USER_SYMMETRIC_ID)
+                .build();
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientAsymmetricUserSymmetric).get();
+
+        final UserClientPair clientSymmetricUserAsymmetric = UserClientPair.newBuilder()
+                .setClientId(MockCredentialStore.CLIENT_SYMMETRIC_ID)
+                .setUserId(MockCredentialStore.USER_ASYMMETRIC_ID)
+                .build();
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientSymmetricUserAsymmetric).get();
+
+        final UserClientPair clientAsymmetricUserAsymmetric = UserClientPair.newBuilder()
+                .setClientId(MockCredentialStore.CLIENT_ASYMMETRIC_ID)
+                .setUserId(MockCredentialStore.USER_ASYMMETRIC_ID)
+                .build();
+        try {
+            ExceptionPrinter.setBeQuit(true);
+            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientAsymmetricUserAsymmetric).get();
+            fail("No exception throw even when authentication method is not supported.");
+        } catch (ExecutionException ex) {
+            assertTrue(ex.getCause().getCause().getCause().getCause() instanceof NotSupportedException);
+        } finally {
+            ExceptionPrinter.setBeQuit(false);
+        }
     }
 }
