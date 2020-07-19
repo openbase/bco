@@ -24,12 +24,15 @@ package org.openbase.bco.dal.lib.state;
 
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
+import org.openbase.type.domotic.state.BlindStateType;
+import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.vision.ColorType;
+import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 
@@ -73,6 +76,9 @@ public class States {
         public static final ColorType.Color GREEN_VALUE = ColorType.Color.newBuilder().setType(Type.HSB).setHsbColor(HSBColor.newBuilder().setHue(120.0).setSaturation(1.0).setBrightness(1.0).build()).build();
         public static final ColorType.Color BLUE_VALUE = ColorType.Color.newBuilder().setType(Type.HSB).setHsbColor(HSBColor.newBuilder().setHue(240.0).setSaturation(1.0).setBrightness(1.0).build()).build();
         public static final ColorType.Color YELLOW_VALUE = ColorType.Color.newBuilder().setType(Type.HSB).setHsbColor(HSBColor.newBuilder().setHue(60.0).setSaturation(1.0).setBrightness(1.0).build()).build();
+        public static final ColorType.Color ORANGE_VALUE = ColorType.Color.newBuilder().setType(Type.HSB).setHsbColor(HSBColor.newBuilder().setHue(30).setSaturation(1.0).setBrightness(1.0).build()).build();
+        public static final ColorType.Color PURPLE_VALUE = ColorType.Color.newBuilder().setType(Type.HSB).setHsbColor(HSBColor.newBuilder().setHue(270).setSaturation(1.0).setBrightness(1.0).build()).build();
+        public static final ColorType.Color PINK_VALUE = ColorType.Color.newBuilder().setType(Type.HSB).setHsbColor(HSBColor.newBuilder().setHue(300).setSaturation(1.0).setBrightness(1.0).build()).build();
 
         public static final ColorState BLACK = ColorState.newBuilder().setColor(BLACK_VALUE).build();
         public static final ColorState WHITE = ColorState.newBuilder().setColor(WHITE_VALUE).build();
@@ -80,6 +86,9 @@ public class States {
         public static final ColorState GREEN = ColorState.newBuilder().setColor(GREEN_VALUE).build();
         public static final ColorState BLUE = ColorState.newBuilder().setColor(BLUE_VALUE).build();
         public static final ColorState YELLOW = ColorState.newBuilder().setColor(YELLOW_VALUE).build();
+        public static final ColorState ORANGE = ColorState.newBuilder().setColor(ORANGE_VALUE).build();
+        public static final ColorState PURPLE = ColorState.newBuilder().setColor(PURPLE_VALUE).build();
+        public static final ColorState PINK = ColorState.newBuilder().setColor(PINK_VALUE).build();
     }
 
     /**
@@ -98,5 +107,13 @@ public class States {
     public static class Motion {
         public static final MotionState MOTION = MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
         public static final MotionState NO_MOTION = MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build();
+    }
+
+    /**
+     * Blind State Prototypes
+     */
+    public static class Blind {
+        public static final BlindState UP = BlindState.newBuilder().setValue(BlindState.State.UP).build();
+        public static final BlindState DOWN = BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
     }
 }
