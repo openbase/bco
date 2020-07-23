@@ -49,7 +49,7 @@ public class RootLocationElement extends LocationElement {
     public void serialize(final SitemapBuilder sitemap) throws CouldNotPerformException {
         super.serialize(sitemap);
 
-        sitemap.openTextContext("Settings", SitemapIconType.SETTINGS);
+        sitemap.openFrameContext("Settings", SitemapIconType.SETTINGS);
 
         // open compositions
         sitemap.openFrameContext("Ansichten", SitemapIconType.NONE);
