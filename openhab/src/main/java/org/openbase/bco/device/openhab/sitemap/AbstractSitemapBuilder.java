@@ -76,6 +76,25 @@ public abstract class AbstractSitemapBuilder implements SitemapBuilder {
 
     @Override
     public SitemapBuilder closeContext() {
+
+        // validate that this context is not empty, otherwise remove the entire context.
+        if(body.endsWith(OPEN_BODY)) {
+
+            LOGGER.debug("Empty Context detected which will be removed to guarantee correct sitemap syntax.");
+
+            // remove body part
+            body = body.substring(0, body.lastIndexOf(OPEN_BODY));
+
+            // remove context header
+            body = body.substring(0, body.lastIndexOf(System.lineSeparator()) + System.lineSeparator().length());
+
+            // reset tab level
+            decreaseTabLevel();
+
+            // after removal we are finish with this body.
+            return this;
+        }
+
         decreaseTabLevel();
         body += prefix + CLOSE_BODY;
         return this;
