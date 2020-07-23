@@ -55,7 +55,7 @@ public class LocationElement extends AbstractUnitSitemapElement {
             final Map<String, UnitConfig> labelSortedUnitConfigMap = new TreeMap<>();
             for (String childId : unitConfig.getLocationConfig().getChildIdList()) {
                 final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(childId);
-                labelSortedUnitConfigMap.put(LabelProcessor.getBestMatch(locationUnitConfig.getLabel(),"?"), locationUnitConfig);
+                labelSortedUnitConfigMap.put(LabelProcessor.getBestMatch(locationUnitConfig.getLabel(), "?"), locationUnitConfig);
             }
             for (Entry<String, UnitConfig> labelUnitConfigEntry : labelSortedUnitConfigMap.entrySet()) {
                 sitemap.openTextContext(labelUnitConfigEntry.getKey(), SitemapIconType.CORRIDOR);
@@ -74,7 +74,9 @@ public class LocationElement extends AbstractUnitSitemapElement {
         sitemap.openFrameContext("Steuerung");
         sitemap.addColorpickerElement(getItem(ServiceType.COLOR_STATE_SERVICE), "Raumfarbe", SitemapIconType.COLORWHEEL);
         sitemap.addSwitchElement(getItem(ServiceType.POWER_STATE_SERVICE), "Geräte", SitemapIconType.SWITCH);
-        sitemap.addSwitchElement(getItem(ServiceType.STANDBY_STATE_SERVICE), "Standby", SitemapIconType.SWITCH);
+
+        // remove standy since its currently not supported by bco
+        //sitemap.addSwitchElement(getItem(ServiceType.STANDBY_STATE_SERVICE), "Standby", SitemapIconType.SWITCH);
         sitemap.addSliderElement(getItem(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE), "Wunschtemperatur [%.1f °C]", SitemapIconType.HEATING);
         sitemap.closeContext();
 
@@ -84,95 +86,85 @@ public class LocationElement extends AbstractUnitSitemapElement {
 //        }
 //        sitemap.closeContext();
 
-
         List<UnitConfig> unitConfigList;
 
         // add scenes
         unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.SCENE, false);
-        if (!unitConfigList.isEmpty()) {
-            sitemap.openFrameContext("Scenen");
-            for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.SCENE)) {
-                sitemap.append(new GenericUnitSitemapElement(unitConfig));
-            }
-            sitemap.closeContext();
+        sitemap.openFrameContext("Scenen");
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.SCENE)) {
+            sitemap.append(new GenericUnitSitemapElement(unitConfig));
         }
+        sitemap.closeContext();
 
         // add apps
         unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.APP, false);
-        if (!unitConfigList.isEmpty()) {
-            sitemap.openFrameContext("Apps");
-            for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.APP)) {
-                sitemap.append(new GenericUnitSitemapElement(unitConfig));
-            }
-            sitemap.closeContext();
+        sitemap.openFrameContext("Apps");
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.APP)) {
+            sitemap.append(new GenericUnitSitemapElement(unitConfig));
         }
+        sitemap.closeContext();
 
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.AGENT,false);
+        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.AGENT, false);
         if (!unitConfigList.isEmpty() || !unitConfig.getLocationConfig().getUnitIdList().isEmpty()) {
             sitemap.openFrameContext("Sonstiges");
             // add agents
-            if (!unitConfigList.isEmpty()) {
-                sitemap.openTextContext("Verhaltensweisen", SitemapIconType.CHART);
-                for (UnitConfig unitConfig : unitConfigList) {
+            sitemap.openTextContext("Verhaltensweisen", SitemapIconType.CHART);
+            for (UnitConfig unitConfig : unitConfigList) {
+                sitemap.append(new GenericUnitSitemapElement(unitConfig));
+            }
+            sitemap.closeContext();
+
+            // add all other units
+            sitemap.openTextContext("Geräteübersicht", SitemapIconType.FLOW);
+            final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
+
+            // load unit configs
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdRecursive(unitConfig.getId(), false)) {
+
+                // filter devices
+                if (unitConfig.getUnitType() == UnitType.DEVICE) {
+                    continue;
+                }
+
+                // filter user
+                if (unitConfig.getUnitType() == UnitType.USER) {
+                    continue;
+                }
+
+                // filter auth groups
+                if (unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) {
+                    continue;
+                }
+
+                // filter buttons
+                if (unitConfig.getUnitType() == UnitType.BUTTON) {
+                    continue;
+                }
+
+                if (!unitTypeUnitConfigMap.containsKey(unitConfig.getUnitType())) {
+                    unitTypeUnitConfigMap.put(unitConfig.getUnitType(), new ArrayList<>());
+                }
+                unitTypeUnitConfigMap.get(unitConfig.getUnitType()).add(unitConfig);
+            }
+
+            for (List<UnitConfig> unitConfigListValue : unitTypeUnitConfigMap.values()) {
+                // sort by name
+                Collections.sort(unitConfigListValue, Comparator.comparing(o -> LabelProcessor.getBestMatch(o.getLabel(), "?")));
+            }
+
+            for (UnitType unitType : unitTypeUnitConfigMap.keySet()) {
+
+                if (unitTypeUnitConfigMap.get(unitType).isEmpty()) {
+                    continue;
+                }
+
+                sitemap.openFrameContext(StringProcessor.formatHumanReadable(StringProcessor.transformUpperCaseToPascalCase(unitType.name())));
+                for (UnitConfig unitConfig : unitTypeUnitConfigMap.get(unitType)) {
                     sitemap.append(new GenericUnitSitemapElement(unitConfig));
                 }
                 sitemap.closeContext();
             }
-
-            // add all other units
-            if (!unitConfig.getLocationConfig().getUnitIdList().isEmpty()) {
-                sitemap.openTextContext("Geräte Übersicht", SitemapIconType.FLOW);
-                final Map<UnitType, List<UnitConfig>> unitTypeUnitConfigMap = new TreeMap<>();
-
-
-                // load unit configs
-                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdRecursive(unitConfig.getId(), false)) {
-
-                    // filter devices
-                    if (unitConfig.getUnitType() == UnitType.DEVICE) {
-                        continue;
-                    }
-
-                    // filter user
-                    if (unitConfig.getUnitType() == UnitType.USER) {
-                        continue;
-                    }
-
-                    // filter auth groups
-                    if (unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) {
-                        continue;
-                    }
-
-                    // filter buttons
-                    if (unitConfig.getUnitType() == UnitType.BUTTON) {
-                        continue;
-                    }
-
-                    if (!unitTypeUnitConfigMap.containsKey(unitConfig.getUnitType())) {
-                        unitTypeUnitConfigMap.put(unitConfig.getUnitType(), new ArrayList<>());
-                    }
-                    unitTypeUnitConfigMap.get(unitConfig.getUnitType()).add(unitConfig);
-                }
-
-                for (List<UnitConfig> unitConfigListValue : unitTypeUnitConfigMap.values()) {
-                    // sort by name
-                    Collections.sort(unitConfigListValue, Comparator.comparing(o -> LabelProcessor.getBestMatch(o.getLabel(), "?")));
-                }
-
-                for (UnitType unitType : unitTypeUnitConfigMap.keySet()) {
-
-                    if (unitTypeUnitConfigMap.get(unitType).isEmpty()) {
-                        continue;
-                    }
-
-                    sitemap.openFrameContext(StringProcessor.formatHumanReadable(StringProcessor.transformUpperCaseToPascalCase(unitType.name())));
-                    for (UnitConfig unitConfig : unitTypeUnitConfigMap.get(unitType)) {
-                        sitemap.append(new GenericUnitSitemapElement(unitConfig));
-                    }
-                    sitemap.closeContext();
-                }
-                sitemap.closeContext();
-            }
+            sitemap.closeContext();
             sitemap.closeContext();
         }
     }
