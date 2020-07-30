@@ -222,7 +222,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
                 return true;
             }
         } catch (CouldNotPerformException ex) {
-            if(ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(new InvalidStateException("Not supported check failed!", ex), logger);
             }
         }

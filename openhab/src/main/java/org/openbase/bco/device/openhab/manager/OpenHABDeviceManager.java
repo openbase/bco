@@ -28,6 +28,7 @@ import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.device.openhab.manager.service.OpenHABOperationServiceFactory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -95,7 +96,9 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                         }
                     }
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not retrieve item states from openHAB!", ex, LOGGER, LogLevel.WARN);
+                    if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                        ExceptionPrinter.printHistory("Could not retrieve item states from openHAB!", ex, LOGGER, LogLevel.WARN);
+                    }
                 }
             }
         };
