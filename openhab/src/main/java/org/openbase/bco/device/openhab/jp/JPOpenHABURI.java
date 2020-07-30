@@ -34,7 +34,7 @@ import java.util.List;
 public class JPOpenHABURI extends AbstractJavaProperty<URI> {
 
     private static final String[] ARGUMENT_IDENTIFIERS = {"URI"};
-    private static final String[] COMMAND_IDENTIFIERS = {"--uri"};
+    private static final String[] COMMAND_IDENTIFIERS = {"--openhab-url", "--openhab-uri", "--uri"};
 
     private static final String DEFAULT_URI = "http://localhost:8080";
 
