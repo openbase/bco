@@ -56,7 +56,7 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(args, OpenHABDeviceManagerLauncher.class, OpenHABDeviceManagerLauncher.class,
+        AbstractLauncher.main(args, BCO.class, OpenHABDeviceManagerLauncher.class, OpenHABDeviceManagerLauncher.class,
                 OpenHABConfigSynchronizerLauncher.class,
                 OpenHABSitemapSynchronizerLauncher.class);
     }
