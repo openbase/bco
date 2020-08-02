@@ -29,7 +29,7 @@ import org.eclipse.smarthome.core.thing.dto.ChannelDTO;
 import org.eclipse.smarthome.core.thing.dto.ThingDTO;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
-import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;

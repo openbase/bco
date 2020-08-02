@@ -24,12 +24,11 @@ package org.openbase.bco.device.openhab.manager;
 
 import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerImpl;
-import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.device.openhab.manager.service.OpenHABOperationServiceFactory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -42,15 +41,12 @@ import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map.Entry;
-
-public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable {
+public class OpenHABDeviceManager extends DeviceManagerImpl implements Launchable<Void>, VoidInitializable {
 
     public static final String ITEM_STATE_TOPIC_FILTER = "smarthome/items/(.+)/state";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABDeviceManager.class);
 
-    private final DeviceManagerImpl deviceManager;
     private final CommandExecutor commandExecutor;
     /**
      * Synchronization observer that triggers resynchronization of all units if their configuration changes.
@@ -59,28 +55,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
     private final RecurrenceEventFilter<Object> unitChangeSynchronizationFilter;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
-        this.deviceManager = new DeviceManagerImpl(new OpenHABOperationServiceFactory() ,false) {
-
-            @Override
-            public boolean isSupported(UnitConfig config) {
-                DeviceClass deviceClass;
-                try {
-                    try {
-                        deviceClass = Registries.getClassRegistry(true).getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return false;
-                    }
-                } catch (CouldNotPerformException e) {
-                    return false;
-                }
-                if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
-                    return false;
-                }
-
-                return super.isSupported(config);
-            }
-        };
+        super(new OpenHABOperationServiceFactory() ,false);
 
         // the sync observer triggers a lot when the device manager is initially activated and all unit controllers are created
         // thus add an event filter
@@ -102,32 +77,42 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                 }
             }
         };
-        this.commandExecutor = new CommandExecutor(deviceManager.getUnitControllerRegistry());
+        this.commandExecutor = new CommandExecutor(getUnitControllerRegistry());
         this.synchronizationObserver = ((observable, value) -> unitChangeSynchronizationFilter.trigger());
     }
 
     @Override
-    public void init() throws InterruptedException, InitializationException {
-        deviceManager.init();
+    public boolean isSupported(UnitConfig config) {
+        DeviceClass deviceClass;
+        try {
+            try {
+                deviceClass = Registries.getClassRegistry(true).getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        } catch (CouldNotPerformException e) {
+            return false;
+        }
+        if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
+            return false;
+        }
+
+        return super.isSupported(config);
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        deviceManager.getUnitControllerRegistry().addObserver(synchronizationObserver);
-        deviceManager.activate();
+        getUnitControllerRegistry().addObserver(synchronizationObserver);
+        super.activate();
         OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
         unitChangeSynchronizationFilter.trigger();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        deviceManager.getUnitControllerRegistry().removeObserver(synchronizationObserver);
+        getUnitControllerRegistry().removeObserver(synchronizationObserver);
         OpenHABRestCommunicator.getInstance().removeSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
-        deviceManager.deactivate();
-    }
-
-    @Override
-    public boolean isActive() {
-        return deviceManager.isActive();
+        super.deactivate();
     }
 }

@@ -24,7 +24,7 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
 
 import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
-import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.device.openhab.registry.diff.IdentifiableEnrichedItemDTO;
 import org.openbase.bco.device.openhab.registry.synchronizer.OpenHABItemProcessor.OpenHABItemNameMetaData;
 import org.openbase.bco.registry.remote.Registries;

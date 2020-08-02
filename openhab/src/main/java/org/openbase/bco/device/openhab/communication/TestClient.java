@@ -1,4 +1,4 @@
-package org.openbase.bco.device.openhab;
+package org.openbase.bco.device.openhab.communication;
 
 /*-
  * #%L

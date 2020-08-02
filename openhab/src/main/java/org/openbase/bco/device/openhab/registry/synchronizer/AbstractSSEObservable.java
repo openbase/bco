@@ -23,7 +23,7 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  */
 
 import com.google.gson.JsonObject;
-import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;

@@ -24,7 +24,7 @@ package org.openbase.bco.device.openhab.manager.service;
 
 import com.google.protobuf.Message;
 import org.eclipse.smarthome.core.types.Command;
-import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.device.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.device.openhab.manager.transform.ServiceTypeCommandMapping;
 import org.openbase.bco.device.openhab.registry.synchronizer.OpenHABItemProcessor;

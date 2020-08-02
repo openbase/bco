@@ -24,7 +24,7 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
 
 
 import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
-import org.openbase.bco.device.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
