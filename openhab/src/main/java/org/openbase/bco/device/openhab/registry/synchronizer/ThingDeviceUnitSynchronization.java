@@ -174,7 +174,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
                 }
 
                 // filter devices with another label
-                if (!LabelProcessor.contains(unitConfig.getLabel(), unitLabel)) {
+                if (!LabelProcessor.contains(config.getLabel(), unitLabel)) {
                     continue;
                 }
 
