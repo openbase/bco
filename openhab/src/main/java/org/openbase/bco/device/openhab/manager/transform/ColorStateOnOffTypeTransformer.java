@@ -26,9 +26,7 @@ import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.HSBType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.TypeNotSupportedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.extension.type.transform.HSBColorToRGBColorTransformer;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType;
@@ -68,10 +66,26 @@ public class ColorStateOnOffTypeTransformer implements ServiceStateCommandTransf
     public OnOffType transform(final ColorState colorState) throws CouldNotTransformException {
         try {
             HSBColorType.HSBColor hsbColor;
-            if (colorState.getColor().getType() == Type.RGB) {
-                hsbColor = HSBColorToRGBColorTransformer.transform(colorState.getColor().getRgbColor());
-            } else {
-                hsbColor = colorState.getColor().getHsbColor();
+
+            if (!colorState.hasColor()) {
+                throw new NotAvailableException("Color");
+            }
+
+            if (!colorState.getColor().hasType()) {
+                throw new NotAvailableException("ColorType");
+            }
+
+            // convert to hsv space if possible
+            switch (colorState.getColor().getType()) {
+                case RGB:
+                    hsbColor = HSBColorToRGBColorTransformer.transform(colorState.getColor().getRgbColor());
+                    break;
+                case HSB:
+                    hsbColor = colorState.getColor().getHsbColor();
+                    break;
+                case RGB24:
+                default:
+                    throw new NotSupportedException(colorState.getColor().getType().name(), this);
             }
 
             if (hsbColor.getBrightness() > 0) {

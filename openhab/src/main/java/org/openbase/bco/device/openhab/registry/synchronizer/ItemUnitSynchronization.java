@@ -34,6 +34,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.ArrayList;
@@ -46,6 +47,12 @@ public class ItemUnitSynchronization extends AbstractSynchronizer<String, Identi
 
     public ItemUnitSynchronization(final SyncObject synchronizationLock) throws InstantiationException {
         super(new ItemObservable(), synchronizationLock);
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        OpenHABRestCommunicator.getInstance().waitForConnectionState(ConnectionState.State.CONNECTED);
+        super.activate();
     }
 
     @Override
@@ -100,8 +107,8 @@ public class ItemUnitSynchronization extends AbstractSynchronizer<String, Identi
         final String label = SynchronizationProcessor.generateItemLabel(unitConfig, serviceType);
         if (item.label == null || !item.label.equals(label)) {
 
-            if (item.name != null) {
-                logger.info("ItemName change from {} to {}", item.label, label);
+            if (item.label != null) {
+                logger.info("Item name of {} change from {} to {}", item.name, label, item.label, label);
             }
 
             item.label = label;

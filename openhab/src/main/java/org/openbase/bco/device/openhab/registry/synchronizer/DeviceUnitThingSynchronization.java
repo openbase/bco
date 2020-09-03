@@ -45,6 +45,7 @@ import org.openbase.type.configuration.EntryType.Entry;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
@@ -85,6 +86,12 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      */
     public DeviceUnitThingSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
         super(Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(false), synchronizationLock);
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        OpenHABRestCommunicator.getInstance().waitForConnectionState(ConnectionState.State.CONNECTED);
+        super.activate();
     }
 
     /**

@@ -81,8 +81,9 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
         final String itemName = topic.split(OpenHABRestCommunicator.TOPIC_SEPARATOR)[2];
 
         // extract payload
-        final String state = jsonParser.parse(payload.get(PAYLOAD_KEY).getAsString()).getAsJsonObject().get(PAYLOAD_STATE_KEY).getAsString();
-        final String type = jsonParser.parse(payload.get(PAYLOAD_KEY).getAsString()).getAsJsonObject().get(PAYLOAD_STATE_TYPE_KEY).getAsString();
+        final JsonObject payloadObject = jsonParser.parse(payload.get(PAYLOAD_KEY).getAsString()).getAsJsonObject();
+        final String state = payloadObject.get(PAYLOAD_STATE_KEY).getAsString();
+        final String type = payloadObject.get(PAYLOAD_STATE_TYPE_KEY).getAsString();
 
         try {
             applyStateUpdate(itemName, type, state);
@@ -135,6 +136,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
                 serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, false, false, true, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             }
 
+            LOGGER.info("Apply ItemUpdate[" + itemName + "=" + state + "].");
             unitController.applyDataUpdate(serviceStateBuilder, metaData.getServiceType());
         } catch (NotAvailableException ex) {
             if (!unitControllerRegistry.isInitiallySynchronized()) {

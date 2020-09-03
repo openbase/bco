@@ -36,6 +36,7 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import org.slf4j.Logger;
@@ -61,7 +62,18 @@ public class OpenHABDeviceManager extends DeviceManagerImpl implements Launchabl
         // thus add an event filter
         this.unitChangeSynchronizationFilter = new RecurrenceEventFilter<Object>(5000) {
             @Override
-            public void relay() {
+            public void relay() throws InterruptedException {
+
+                // skip update if openhab is not available but trigger again so the sync is performed later on.
+                if (!OpenHABRestCommunicator.getInstance().isConnected()) {
+                    try {
+                        unitChangeSynchronizationFilter.triggerDelayed();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not delay unit sync task!", ex, LOGGER);
+                    }
+                    return;
+                }
+
                 try {
                     for (final EnrichedItemDTO item : OpenHABRestCommunicator.getInstance().getItems()) {
                         try {

@@ -38,6 +38,7 @@ import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.ArrayList;
@@ -58,6 +59,12 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
 
     public ThingUnitSynchronization(final SyncObject synchronizationLock) throws InstantiationException {
         super(new ThingObservable(), synchronizationLock);
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        OpenHABRestCommunicator.getInstance().waitForConnectionState(ConnectionState.State.CONNECTED);
+        super.activate();
     }
 
     @Override
@@ -92,7 +99,6 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
     public void remove(final IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
         logger.trace("Synchronize removal {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(getUnitId(identifiableEnrichedThingDTO.getDTO()));
-//        Registries.getUnitRegistry().removeUnitConfig(unitConfig);
         try {
             Registries.getUnitRegistry().removeUnitConfig(unitConfig).get();
         } catch (ExecutionException ex) {

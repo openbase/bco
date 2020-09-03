@@ -37,6 +37,7 @@ import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.state.InventoryStateType.InventoryState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
@@ -59,6 +60,12 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
     public ThingDeviceUnitSynchronization(final SyncObject synchronizationLock) throws InstantiationException {
         super(new ThingObservable(), synchronizationLock);
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        OpenHABRestCommunicator.getInstance().waitForConnectionState(ConnectionState.State.CONNECTED);
+        super.activate();
     }
 
     @Override
@@ -121,7 +128,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
     }
 
     private void registerDevice(ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
-        //TODO: should this whole action be rolled back if one part fails?
+        //TODO: should this entire action be rolled back if one part fails?
         // get device class for thing
         DeviceClass deviceClass;
         try {
@@ -197,7 +204,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
                     final String thingUID = metaConfigVariableProvider.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY);
 
                     if (thingDTO.UID.equals(thingUID)) {
-                        logger.warn("skip registration because thing {} is already registered as device ", thingDTO.UID, LabelProcessor.getBestMatch(config.getLabel(), "?"));
+                        logger.warn("skip registration because thing {} is already registered as device {}", thingDTO.UID, LabelProcessor.getBestMatch(config.getLabel(), "?"));
                         return;
                     }
                     // same class, label and location but meta config entry differs so the collision has to be resolved by setting a new label.

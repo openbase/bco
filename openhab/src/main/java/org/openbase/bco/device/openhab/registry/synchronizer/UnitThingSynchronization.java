@@ -23,6 +23,7 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  */
 
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
+import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -33,6 +34,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.AbstractSynchronizer;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -60,6 +62,12 @@ public class UnitThingSynchronization extends AbstractSynchronizer<String, Ident
      */
     public UnitThingSynchronization(final SyncObject synchronizationLock) throws InstantiationException, NotAvailableException {
         super(Registries.getUnitRegistry().getUnitConfigRemoteRegistry(false), synchronizationLock);
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        OpenHABRestCommunicator.getInstance().waitForConnectionState(ConnectionState.State.CONNECTED);
+        super.activate();
     }
 
     @Override
