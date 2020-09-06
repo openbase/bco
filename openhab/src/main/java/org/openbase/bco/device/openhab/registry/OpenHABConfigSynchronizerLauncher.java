@@ -42,6 +42,6 @@ public class OpenHABConfigSynchronizerLauncher extends AbstractLauncher<OpenHABC
 
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(args, OpenHABConfigSynchronizerLauncher.class, OpenHABConfigSynchronizerLauncher.class);
+        AbstractLauncher.main(BCO.class, OpenHABConfigSynchronizerLauncher.class, args, OpenHABConfigSynchronizerLauncher.class);
     }
 }

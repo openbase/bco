@@ -52,6 +52,6 @@ public class OpenHABSitemapSynchronizerLauncher extends AbstractLauncher<Sitemap
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
         BCO.printLogo();
-        AbstractLauncher.main(args, SitemapSynchronizer.class, OpenHABSitemapSynchronizerLauncher.class);
+        AbstractLauncher.main(BCO.class, SitemapSynchronizer.class, args, OpenHABSitemapSynchronizerLauncher.class);
     }
 }
