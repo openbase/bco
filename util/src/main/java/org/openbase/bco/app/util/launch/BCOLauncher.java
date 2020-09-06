@@ -103,6 +103,6 @@ public class BCOLauncher {
         /**
          * Launch BCO
          */
-        AbstractLauncher.main(args, BCO.class, launcher.toArray(new Class[launcher.size()]));
+        AbstractLauncher.main(BCO.class, args, launcher.toArray(new Class[launcher.size()]));
     }
 }

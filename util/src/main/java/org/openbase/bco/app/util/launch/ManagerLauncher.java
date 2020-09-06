@@ -41,7 +41,7 @@ public class ManagerLauncher {
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(args, Manager.class,
+        AbstractLauncher.main(BCO.class, Manager.class, args,
                 AgentManagerLauncher.class,
                 AppManagerLauncher.class,
                 DeviceManagerLauncher.class,

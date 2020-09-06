@@ -47,7 +47,7 @@ public class BCOTestLauncher {
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(args, BCO.class,
+        AbstractLauncher.main(BCO.class, args,
                 AuthenticatorLauncher.class,
                 /**
                  * Registry *
