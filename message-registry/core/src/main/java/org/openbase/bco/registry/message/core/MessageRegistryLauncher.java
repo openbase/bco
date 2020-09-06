@@ -68,6 +68,6 @@ public class MessageRegistryLauncher extends AbstractRegistryLauncher<MessageReg
 
     public static void main(String[] args) throws Throwable {
         BCO.printLogo();
-        main(args, MessageRegistry.class, MessageRegistryLauncher.class);
+        main(BCO.class, MessageRegistry.class, args, MessageRegistryLauncher.class);
     }
 }

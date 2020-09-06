@@ -42,7 +42,8 @@ public class RegistryLauncher {
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(args, Registry.class,
+        AbstractLauncher.main(BCO.class, Registry.class,
+                args,
                 AuthenticatorLauncher.class,
                 TemplateRegistryLauncher.class,
                 ClassRegistryLauncher.class,

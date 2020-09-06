@@ -53,7 +53,7 @@ public class ClassRegistryLauncher extends AbstractRegistryLauncher<ClassRegistr
 
     public static void main(String[] args) throws Throwable {
         BCO.printLogo();
-        main(args, ClassRegistry.class, ClassRegistryLauncher.class);
+        main(BCO.class, ClassRegistry.class, args, ClassRegistryLauncher.class);
     }
 
     @Override

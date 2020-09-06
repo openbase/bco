@@ -73,6 +73,6 @@ public class ActivityRegistryLauncher extends AbstractRegistryLauncher<ActivityR
 
     public static void main(String[] args) throws Throwable {
         BCO.printLogo();
-        AbstractLauncher.main(args, ActivityRegistry.class, ActivityRegistryLauncher.class);
+        AbstractLauncher.main(BCO.class, ActivityRegistry.class, args, ActivityRegistryLauncher.class);
     }
 }
