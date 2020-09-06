@@ -50,7 +50,7 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerImpl> {
 
     public static void main(String[] args) throws Throwable {
         BCO.printLogo();
-        main(args, DeviceManager.class, DeviceManagerLauncher.class);
+        main(BCO.class, DeviceManager.class, args, DeviceManagerLauncher.class);
     }
 }
 

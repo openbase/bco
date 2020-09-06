@@ -44,6 +44,6 @@ public class AgentManagerLauncher extends AbstractLauncher<AgentManagerImpl> {
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(args, AgentManager.class, AgentManagerLauncher.class);
+        AbstractLauncher.main(BCO.class, AgentManager.class, args, AgentManagerLauncher.class);
     }
 }
