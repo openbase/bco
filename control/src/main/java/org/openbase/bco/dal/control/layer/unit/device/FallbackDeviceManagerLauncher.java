@@ -49,6 +49,6 @@ public class FallbackDeviceManagerLauncher extends AbstractLauncher<FallbackDevi
 
     public static void main(String[] args) throws Throwable {
         BCO.printLogo();
-        main(args, FallbackDeviceManagerLauncher.class, FallbackDeviceManagerLauncher.class);
+        main(BCO.class, FallbackDeviceManagerLauncher.class, args, FallbackDeviceManagerLauncher.class);
     }
 }

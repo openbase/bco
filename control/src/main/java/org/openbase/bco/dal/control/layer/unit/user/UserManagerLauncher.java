@@ -48,6 +48,6 @@ public class UserManagerLauncher extends AbstractLauncher<UserManagerImpl> {
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
         BCO.printLogo();
-        AbstractLauncher.main(args, UserManager.class, UserManagerLauncher.class);
+        AbstractLauncher.main(BCO.class, UserManager.class, args, UserManagerLauncher.class);
     }
 }

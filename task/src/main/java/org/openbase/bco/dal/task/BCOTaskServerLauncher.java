@@ -48,6 +48,6 @@ public class BCOTaskServerLauncher extends AbstractLauncher<BCOTaskServerControl
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
         BCO.printLogo();
-        AbstractLauncher.main(args, BCOTaskServer.class, BCOTaskServerLauncher.class);
+        AbstractLauncher.main(BCO.class, BCOTaskServer.class, args, BCOTaskServerLauncher.class);
     }
 }
