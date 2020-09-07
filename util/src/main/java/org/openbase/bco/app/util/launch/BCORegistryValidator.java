@@ -66,8 +66,11 @@ public class BCORegistryValidator extends BCOSystemValidator {
             System.out.println("==================================================");
             System.out.println();
 
+            // prepare registries
+            Registries.getRegistries(false);
+
             // skip validation if middleware is not ready
-            if (!checkMiddleware()) {
+            if (!checkMiddleware(Registries.getTemplateRegistry(false))) {
                 return;
             }
 
@@ -79,7 +82,7 @@ public class BCORegistryValidator extends BCOSystemValidator {
         } catch (InterruptedException | CancellationException ex) {
             System.exit(253);
             return;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not validate system!", ex), System.err);
                 System.exit(254);

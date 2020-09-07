@@ -34,6 +34,7 @@ import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPVerbose;
+import org.openbase.jul.communication.controller.AbstractRemoteClient;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -91,10 +92,11 @@ public class BCOSystemValidator {
             System.out.println();
 
             // skip validation if middleware is not ready
-            if (!checkMiddleware()) {
+            if (!checkMiddleware(Registries.getTemplateRegistry(false))) {
                 return;
             }
 
+            // validate registry
             BCORegistryValidator.validateRegistries();
             System.out.println();
 
@@ -134,7 +136,7 @@ public class BCOSystemValidator {
         } catch (InterruptedException | CancellationException ex) {
             System.exit(253);
             return;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not validate system!", ex), System.err);
                 System.exit(254);
@@ -176,13 +178,15 @@ public class BCOSystemValidator {
         System.exit(Math.min(errorCounter, 200));
     }
 
-    public static boolean checkMiddleware() throws CouldNotPerformException, InterruptedException {
+    public static boolean checkMiddleware(final AbstractRemoteClient<?> remote) throws CouldNotPerformException, InterruptedException {
         try {
-            CachedTemplateRegistryRemote.getRegistry(false).validateMiddleware();
+            remote.waitForMiddleware(3, TimeUnit.SECONDS);
+            remote.validateMiddleware();
             return true;
-        } catch (InvalidStateException ex) {
+        } catch (InvalidStateException | org.openbase.jul.exception.TimeoutException ex) {
             System.out.println();
-            System.out.println(AnsiColor.colorize("VALIDATION FAILED", AnsiColor.ANSI_RED) + " Middleware error detected! Please check your broker connection!");
+            System.out.println(AnsiColor.colorize("VALIDATION FAILED", AnsiColor.ANSI_RED) + " Middleware not reachable! Please check your broker connection!");
+            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(BCOSystemValidator.class), LogLevel.DEBUG);
             System.exit(252);
         }
         return false;
