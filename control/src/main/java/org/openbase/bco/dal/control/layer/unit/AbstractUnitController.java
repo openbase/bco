@@ -1080,7 +1080,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     /**
      * Update the action list in the data builder and notify.
-     *
+     * <p>
      * Note: The sync and notification is skip if the unit is currently rescheduling actions or the write lock is still hold.
      */
     public void notifyScheduledActionList() {
@@ -1336,54 +1336,68 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public void applyDataUpdate(Message newState, final ServiceType serviceType) throws CouldNotPerformException {
-        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
-            DB internalBuilder = dataBuilder.getInternalBuilder();
 
-            // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
+        try {
+            if (!builderSetup.tryLockWrite(5, TimeUnit.SECONDS, this)) {
+                throw new InvalidStateException("Unit seems to be stuck!");
+            }
+
+            // builder write unlock  block
             try {
-                newState = computeNewState(newState, serviceType, internalBuilder);
-            } catch (RejectedException ex) {
-                // update not required since its compatible with the currently applied state, therefore we just skip the update.
-                return;
+                try (ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
+                    DB internalBuilder = dataBuilder.getInternalBuilder();
+
+                    // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
+                    try {
+                        newState = computeNewState(newState, serviceType, internalBuilder);
+                    } catch (RejectedException ex) {
+                        // update not required since its compatible with the currently applied state, therefore we just skip the update.
+                        return;
+                    }
+
+                    // verify the service state
+                    newState = Services.verifyAndRevalidateServiceState(newState);
+
+                    // move current state to last state
+                    updateLastWithCurrentState(serviceType, internalBuilder);
+
+                    // copy latestValueOccurrence map from current state, only if available
+                    try {
+                        Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
+                        Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
+                        newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
+                    } catch (NotAvailableException ex) {
+                        // skip last value update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
+                    }
+
+                    // log state transition
+                    logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
+                    if (!Services.hasResponsibleAction(newState)) {
+                        StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
+                    }
+
+                    // update the current state
+                    Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
+
+                    // Update timestamps
+                    updatedAndValidateTimestamps(serviceType, internalBuilder);
+
+                    // do custom state depending update in sub classes
+                    applyCustomDataUpdate(internalBuilder, serviceType);
+
+                    // sync updated action list
+                    syncActionList(dataBuilder.getInternalBuilder());
+                }
+
+            } finally {
+                // skip notification because it has already be performed by the internal builder setup
+                builderSetup.unlockWrite(NotificationStrategy.SKIP);
             }
-
-            // verify the service state
-            newState = Services.verifyAndRevalidateServiceState(newState);
-
-            // move current state to last state
-            updateLastWithCurrentState(serviceType, internalBuilder);
-
-            // copy latestValueOccurrence map from current state, only if available
-            try {
-                Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
-                Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
-                newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
-            } catch (NotAvailableException ex) {
-                // skip last value update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
-            }
-
-            // log state transition
-            logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
-            if (!Services.hasResponsibleAction(newState)) {
-                StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
-            }
-
-            // update the current state
-            Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
-
-            // Update timestamps
-            updatedAndValidateTimestamps(serviceType, internalBuilder);
-
-            // do custom state depending update in sub classes
-            applyCustomDataUpdate(internalBuilder, serviceType);
-
-            // sync updated action list
-            syncActionList(dataBuilder.getInternalBuilder());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return;
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + newState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply Service[" + serviceType.name() + "] Update[" + newState + "] for " + this + "!", ex);
         }
     }
 
