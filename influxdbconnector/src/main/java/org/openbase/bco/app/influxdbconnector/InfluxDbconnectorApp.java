@@ -23,12 +23,15 @@ package org.openbase.bco.app.influxdbconnector;
  */
 
 
-import com.influxdb.client.*;
-import com.influxdb.client.domain.WritePrecision;
-import com.influxdb.client.write.Point;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import com.influxdb.client.InfluxDBClient;
+import com.influxdb.client.InfluxDBClientFactory;
+import com.influxdb.client.WriteApi;
+import com.influxdb.client.WriteOptions;
 import com.influxdb.client.domain.Bucket;
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
 import com.influxdb.client.write.events.WriteErrorEvent;
 import com.influxdb.client.write.events.WriteSuccessEvent;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
@@ -39,13 +42,14 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -55,6 +59,7 @@ import org.openbase.type.domotic.service.ServiceTempusTypeType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.language.LabelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,15 +68,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
+import java.util.concurrent.*;
 
 import static org.openbase.bco.dal.control.layer.unit.InfluxDbProcessor.*;
+import static org.openbase.bco.dal.lib.layer.service.Services.resolveStateValue;
 
 public class InfluxDbconnectorApp extends AbstractAppController {
 
@@ -99,17 +100,19 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     }
 
     @Override
-    public UnitConfigType.UnitConfig applyConfigUpdate(UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        config = super.applyConfigUpdate(config);
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            config = super.applyConfigUpdate(config);
 
-        bucketName = generateVariablePool().getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
-        batchTime = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT));
-        batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
-        databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
-        token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
-        org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
+            bucketName = generateVariablePool().getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
+            batchTime = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT));
+            batchLimit = Integer.valueOf(generateVariablePool().getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT));
+            databaseUrl = generateVariablePool().getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
+            token = generateVariablePool().getValue(INFLUXDB_TOKEN).toCharArray();
+            org = generateVariablePool().getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
 
-        return config;
+            return config;
+        }
     }
 
     @Override

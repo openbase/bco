@@ -32,6 +32,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType;
@@ -60,14 +61,16 @@ public class OpenApiServerApp extends AbstractAppController {
 
     @Override
     public UnitConfigType.UnitConfig applyConfigUpdate(UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        config = super.applyConfigUpdate(config);
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            config = super.applyConfigUpdate(config);
 
-        // setup port from meta config
-        final MetaConfigPool metaConfigPool = new MetaConfigPool();
-        metaConfigPool.register(new MetaConfigVariableProvider("OpenApiAppConfig", config.getMetaConfig()));
-        final String port = metaConfigPool.getValue(KEY_PORT, DEFAULT_PORT);
-        springApplication.setDefaultProperties(Collections.singletonMap("server.port", port));
-        return config;
+            // setup port from meta config
+            final MetaConfigPool metaConfigPool = new MetaConfigPool();
+            metaConfigPool.register(new MetaConfigVariableProvider("OpenApiAppConfig", config.getMetaConfig()));
+            final String port = metaConfigPool.getValue(KEY_PORT, DEFAULT_PORT);
+            springApplication.setDefaultProperties(Collections.singletonMap("server.port", port));
+            return config;
+        }
     }
 
     @Override

@@ -22,25 +22,22 @@ package org.openbase.bco.app.preset;
  * #L%
  */
 
-import jnr.ffi.annotations.In;
+import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
@@ -48,14 +45,13 @@ import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.openbase.type.vision.HSBColorType.HSBColor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * UnitConfig
@@ -78,10 +74,9 @@ public class NightLightApp extends AbstractAppController {
     }
 
     /**
-     *
-     * @param location the location to process
+     * @param location    the location to process
      * @param eventSource the source which has triggered the update: location / childlocation / timeout / init (null)
-     * @param timeout the timeout of the location
+     * @param timeout     the timeout of the location
      */
     private void update(final LocationRemote location, final Object eventSource, final Timeout timeout) {
         try {
@@ -89,7 +84,7 @@ public class NightLightApp extends AbstractAppController {
             // skip update when not active
             if (getActivationState().getValue() != ActivationState.State.ACTIVE) {
 
-                if(!executing) {
+                if (!executing) {
                     logger.warn("app inactive but still executing! Force stopp...");
                     try {
                         stop(getActivationState());
@@ -124,7 +119,7 @@ public class NightLightApp extends AbstractAppController {
             switch (presentState) {
                 case PRESENT:
 
-                    if(eventSource == location) {
+                    if (eventSource == location) {
                         timeout.restart(10, TimeUnit.MINUTES);
                     } else {
                         timeout.restart(2, TimeUnit.MINUTES);
@@ -137,9 +132,9 @@ public class NightLightApp extends AbstractAppController {
 
                     // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
                     final Set<ServiceType> availableServiceTypes = location.getAvailableServiceTypes();
-                    if (availableServiceTypes .contains(ServiceType.COLOR_STATE_SERVICE)) {
+                    if (availableServiceTypes.contains(ServiceType.COLOR_STATE_SERVICE)) {
                         presentsActionLocationMap.put(location, observe(location.setColor(COLOR_ORANGE, getDefaultActionParameter())));
-                    } else if (availableServiceTypes .contains(ServiceType.BRIGHTNESS_STATE_SERVICE)) {
+                    } else if (availableServiceTypes.contains(ServiceType.BRIGHTNESS_STATE_SERVICE)) {
                         presentsActionLocationMap.put(location, observe(location.setBrightness(COLOR_ORANGE.getBrightness(), getDefaultActionParameter())));
                     } else {
                         // location not supported for nightlight
@@ -175,9 +170,11 @@ public class NightLightApp extends AbstractAppController {
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        config = super.applyConfigUpdate(config);
-        updateLocationMap();
-        return config;
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            config = super.applyConfigUpdate(config);
+            updateLocationMap();
+            return config;
+        }
     }
 
     private void updateLocationMap() throws CouldNotPerformException {

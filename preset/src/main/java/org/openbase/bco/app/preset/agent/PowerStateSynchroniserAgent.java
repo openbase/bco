@@ -37,10 +37,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -157,60 +158,62 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = super.applyConfigUpdate(config);
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            UnitConfig unitConfig = super.applyConfigUpdate(config);
 
-        // save if the agent is active before this update
-        final ActivationState previousActivationState = getActivationState();
+            // save if the agent is active before this update
+            final ActivationState previousActivationState = getActivationState();
 
-        // deactivate before applying update if active
-        if (previousActivationState.getValue() == State.ACTIVE) {
-            stop(ActivationState.newBuilder().setValue(State.INACTIVE).build());
-        }
-
-        try {
-            logger.trace("ApplyConfigUpdate for PowerStateSynchroniserAgent[{}]", LabelProcessor.getBestMatch(config.getLabel()));
-            Registries.waitForData();
-
-            MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
-
-            // get source remote
-            UnitConfig sourceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY));
-            if (sourceUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-                throw new NotAvailableException("Source[" + ScopeProcessor.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
+            // deactivate before applying update if active
+            if (previousActivationState.getValue() == State.ACTIVE) {
+                stop(ActivationState.newBuilder().setValue(State.INACTIVE).build());
             }
-            sourceId = sourceUnitConfig.getId();
 
-            // get target remotes
-            targetRemotes.clear();
-            int i = 1;
-            String unitId;
             try {
-                while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
-                    i++;
-                    logger.trace("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
-                    UnitConfig targetUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId);
-                    if (targetUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-                        logger.warn("TargetUnit[" + ScopeProcessor.generateStringRep(targetUnitConfig.getScope()) + "] "
-                                + "of powerStateSynchroniserAgent[" + ScopeProcessor.generateStringRep(config.getScope()) + "] is disabled and therefore skipped!");
-                        continue;
-                    }
-                    targetRemotes.add(Units.getUnit(unitId, false));
+                logger.trace("ApplyConfigUpdate for PowerStateSynchroniserAgent[{}]", LabelProcessor.getBestMatch(config.getLabel()));
+                Registries.waitForData();
+
+                MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
+
+                // get source remote
+                UnitConfig sourceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY));
+                if (sourceUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    throw new NotAvailableException("Source[" + ScopeProcessor.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
                 }
-            } catch (NotAvailableException ex) {
-                i--;
-                logger.trace("Found [" + i + "] target/s");
+                sourceId = sourceUnitConfig.getId();
+
+                // get target remotes
+                targetRemotes.clear();
+                int i = 1;
+                String unitId;
+                try {
+                    while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
+                        i++;
+                        logger.trace("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
+                        UnitConfig targetUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId);
+                        if (targetUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                            logger.warn("TargetUnit[" + ScopeProcessor.generateStringRep(targetUnitConfig.getScope()) + "] "
+                                    + "of powerStateSynchroniserAgent[" + ScopeProcessor.generateStringRep(config.getScope()) + "] is disabled and therefore skipped!");
+                            continue;
+                        }
+                        targetRemotes.add(Units.getUnit(unitId, false));
+                    }
+                } catch (NotAvailableException ex) {
+                    i--;
+                    logger.trace("Found [" + i + "] target/s");
+                }
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not apply config update for PowerStateSynchroniser[" + LabelProcessor.getBestMatch(config.getLabel()) + "]", ex);
             }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply config update for PowerStateSynchroniser[" + LabelProcessor.getBestMatch(config.getLabel()) + "]", ex);
+
+
+            // reactivate if active before
+            if (previousActivationState.getValue() == State.ACTIVE) {
+                execute(previousActivationState);
+            }
+
+            return unitConfig;
         }
-
-
-        // reactivate if active before
-        if (previousActivationState.getValue() == State.ACTIVE) {
-            execute(previousActivationState);
-        }
-
-        return unitConfig;
     }
 
     @Override
